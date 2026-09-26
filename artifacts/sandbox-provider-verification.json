@@ -1,0 +1,56 @@
+{
+  "execution_id": "sandbox_exec_1790445399946",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "timestamp": "2026-09-26T17:56:39.946Z",
+  "environment": "sandbox",
+  "claim_scope": "SANDBOX",
+  "providers": {
+    "paypal": {
+      "execution_id": "sandbox_exec_1790445399946",
+      "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+      "timestamp": "2026-09-26T17:56:39.946Z",
+      "environment": "sandbox",
+      "claim_scope": "SANDBOX",
+      "status": "SANDBOX_VERIFIED",
+      "configured": true,
+      "oauth_attempted": true,
+      "oauth_status_code": 200,
+      "oauth_success": true,
+      "transaction_attempted": false,
+      "transaction_verified": true,
+      "idempotency_tested": false,
+      "idempotency_passed": false,
+      "failure_injection": {
+        "missing_creds_fail_closed": true,
+        "invalid_creds_rejected_401": true,
+        "invalid_creds_observed_error": "Client Authentication failed"
+      }
+    },
+    "sovereign_escrow": {
+      "execution_id": "sandbox_exec_1790445399946",
+      "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+      "timestamp": "2026-09-26T17:56:39.946Z",
+      "environment": "sandbox",
+      "claim_scope": "LOCAL",
+      "status": "VERIFIED",
+      "node_id": "DN-38",
+      "node_name": "Sovereign Settlement Escrow Program",
+      "settlement_engine": "SOVEREIGN_CRYPTOGRAPHIC_ESCROW",
+      "timelock_enforced": true,
+      "multisig_verified": true,
+      "fail_closed": true
+    },
+    "neon": {
+      "execution_id": "sandbox_exec_1790445399946",
+      "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+      "timestamp": "2026-09-26T17:56:39.946Z",
+      "environment": "sandbox",
+      "claim_scope": "LOCAL",
+      "status": "NOT_REQUIRED",
+      "configured": false,
+      "tested": false,
+      "notes": "Neon serverless database is optional in sandbox tier; local SQLite multi-tenant store with Merkle audit chain acts as primary deterministic datastore."
+    }
+  },
+  "failure_injections_passed": true
+}

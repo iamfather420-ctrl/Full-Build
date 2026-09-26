@@ -1,0 +1,50 @@
+{
+  "execution_id": "sandbox_exec_1790445399946",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "timestamp": "2026-09-26T17:56:39.946Z",
+  "environment": "sandbox",
+  "gates": [
+    {
+      "name": "GATE-SB-01: Baseline Freeze & Integrity",
+      "scope": "LOCAL",
+      "status": "PASSED",
+      "details": "Prior LOCAL/MODEL evidence frozen in baseline-freeze-manifest.json"
+    },
+    {
+      "name": "GATE-SB-02: Secret & Configuration Preflight",
+      "scope": "SANDBOX",
+      "status": "PASSED",
+      "details": "Secrets checked for absence in client bundles. Zero leaks detected."
+    },
+    {
+      "name": "GATE-SB-03: PayPal Live Sandbox & Fail-Closed",
+      "scope": "SANDBOX",
+      "status": "PASSED",
+      "details": "Live 401 rejection confirmed on invalid creds (Client Authentication failed). Missing creds fail-closed confirmed."
+    },
+    {
+      "name": "GATE-SB-04: Sovereign Settlement Escrow (DN-38)",
+      "scope": "LOCAL",
+      "status": "PASSED",
+      "details": "Native verifiable cryptographic escrow state engine verified with timelock and multi-sig invariants."
+    },
+    {
+      "name": "GATE-SB-05: External Failure Injections",
+      "scope": "LOCAL",
+      "status": "PASSED",
+      "details": "PayPal missing creds, PayPal invalid creds 401, escrow timelock fail-closed verified."
+    },
+    {
+      "name": "GATE-SB-06: Sandbox End-to-End Lifecycle",
+      "scope": "LOCAL",
+      "status": "PASSED",
+      "details": "21-stage solution pipeline and 5 order transitions executed with Merkle audit append."
+    },
+    {
+      "name": "GATE-SB-07: Production Boundary Interlock",
+      "scope": "PRODUCTION",
+      "status": "BLOCKED",
+      "details": "Strict zero-mock policy blocks promotion to production."
+    }
+  ]
+}

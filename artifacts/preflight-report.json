@@ -1,6 +1,6 @@
 {
-  "timestamp": 1790395324814,
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "timestamp": 1790447488145,
+  "commit_sha": "PROVENANCE_UNVERIFIED",
   "environment_mode": "local",
   "node_version": "v22.23.2",
   "platform": "linux",
@@ -64,14 +64,28 @@
   ],
   "configurations": [
     {
-      "key": "PAYPAL_CLIENT_ID",
+      "key": "PAYPAL_SANDBOX_CLIENT_ID",
       "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
       "format_valid": false,
       "environment_scope": "local",
       "notes": "Not set in process.env"
     },
     {
-      "key": "PAYPAL_CLIENT_SECRET",
+      "key": "PAYPAL_SANDBOX_CLIENT_SECRET",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "PAYPAL_LIVE_CLIENT_ID",
+      "status": "PRESENT",
+      "format_valid": true,
+      "environment_scope": "local",
+      "notes": "Configured in runtime environment"
+    },
+    {
+      "key": "PAYPAL_LIVE_CLIENT_SECRET",
       "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
       "format_valid": false,
       "environment_scope": "local",
@@ -79,20 +93,6 @@
     },
     {
       "key": "NEON_DATABASE_URL",
-      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
-      "format_valid": false,
-      "environment_scope": "local",
-      "notes": "Not set in process.env"
-    },
-    {
-      "key": "SOLANA_RPC_URL",
-      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
-      "format_valid": false,
-      "environment_scope": "local",
-      "notes": "Not set in process.env"
-    },
-    {
-      "key": "SOLANA_PROGRAM_ID",
       "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
       "format_valid": false,
       "environment_scope": "local",

@@ -28,7 +28,7 @@
       "name": "Multi-Tenant Cryptographic Partition Isolation",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 2,
+      "duration_ms": 5,
       "details": {
         "status": "PASSED"
       }
@@ -38,7 +38,7 @@
       "name": "Audit Chain Cryptographic Hash Continuity",
       "category": "AUDIT",
       "passed": true,
-      "duration_ms": 2,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -48,7 +48,7 @@
       "name": "Anti-Tamper Sentinel Active Tamper Detection",
       "category": "AUDIT",
       "passed": true,
-      "duration_ms": 4,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -138,7 +138,7 @@
       "name": "21-Stage Problem Resolution Pipeline Full Traversal",
       "category": "PIPELINE",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -185,7 +185,7 @@
     },
     {
       "test_number": 19,
-      "name": "External Adapter Inventory Transparency (Neon, PayPal, Solana)",
+      "name": "External Adapter Inventory Transparency (Neon, PayPal)",
       "category": "ADAPTERS",
       "passed": true,
       "duration_ms": 0,
@@ -208,7 +208,7 @@
       "name": "Daisy Node Registry (54 Distinct Nodes)",
       "category": "NODES",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
@@ -218,7 +218,7 @@
       "name": "System Status API Endpoint Computes Real State",
       "category": "API",
       "passed": true,
-      "duration_ms": 4,
+      "duration_ms": 5,
       "details": {
         "status": "PASSED"
       }
@@ -228,7 +228,7 @@
       "name": "SqliteStore Multi-Tenant Persistence & 27 Tables Integrity",
       "category": "DATABASE",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -248,7 +248,7 @@
       "name": "Fail-Closed: UNKNOWN / UNVERIFIED Order Creation Blocked",
       "category": "MARKETPLACE",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
@@ -268,17 +268,17 @@
       "name": "Fail-Closed: Cross-Tenant Data Access Blocked",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
     },
     {
       "test_number": 28,
-      "name": "Fail-Closed: Missing PayPal & Solana Credentials Evaluated",
+      "name": "Fail-Closed: Missing PayPal Credentials Evaluated",
       "category": "ADAPTERS",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1081,
       "details": {
         "status": "PASSED"
       }
@@ -288,7 +288,7 @@
       "name": "Order Lifecycle State Machine Validates Transitions & Failures",
       "category": "MARKETPLACE",
       "passed": true,
-      "duration_ms": 6,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -298,7 +298,7 @@
       "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
       "category": "REVERSIBILITY",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }

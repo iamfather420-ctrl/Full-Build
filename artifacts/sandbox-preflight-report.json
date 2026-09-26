@@ -1,10 +1,9 @@
 {
-  "timestamp": 1790447488145,
-  "commit_sha": "PROVENANCE_UNVERIFIED",
-  "environment_mode": "local",
-  "node_version": "v22.23.2",
-  "platform": "linux",
-  "arch": "x64",
+  "execution_id": "sandbox_exec_1790445399946",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "timestamp": "2026-09-26T17:56:39.946Z",
+  "environment": "sandbox",
+  "claim_scope": "SANDBOX",
   "dependencies": [
     {
       "name": "node",
@@ -64,48 +63,29 @@
   ],
   "configurations": [
     {
+      "key": "SOLVEX_ENV",
+      "value": "sandbox",
+      "status": "CONFIGURED"
+    },
+    {
       "key": "PAYPAL_SANDBOX_CLIENT_ID",
-      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
-      "format_valid": false,
-      "environment_scope": "local",
-      "notes": "Not set in process.env"
+      "value": "CONFIGURED",
+      "status": "PRESENT"
     },
     {
       "key": "PAYPAL_SANDBOX_CLIENT_SECRET",
-      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
-      "format_valid": false,
-      "environment_scope": "local",
-      "notes": "Not set in process.env"
+      "value": "CONFIGURED",
+      "status": "PRESENT"
     },
     {
-      "key": "PAYPAL_LIVE_CLIENT_ID",
-      "status": "PRESENT",
-      "format_valid": true,
-      "environment_scope": "local",
-      "notes": "Configured in runtime environment"
-    },
-    {
-      "key": "PAYPAL_LIVE_CLIENT_SECRET",
-      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
-      "format_valid": false,
-      "environment_scope": "local",
-      "notes": "Not set in process.env"
+      "key": "PAYPAL_ENVIRONMENT",
+      "value": "sandbox",
+      "status": "CONFIGURED"
     },
     {
       "key": "NEON_DATABASE_URL",
-      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
-      "format_valid": false,
-      "environment_scope": "local",
-      "notes": "Not set in process.env"
-    },
-    {
-      "key": "GEMINI_API_KEY",
-      "status": "PRESENT",
-      "format_valid": true,
-      "environment_scope": "local",
-      "notes": "Configured in runtime environment"
+      "value": "MISSING",
+      "status": "OPTIONAL_MISSING"
     }
-  ],
-  "blockers": [],
-  "passed": true
+  ]
 }

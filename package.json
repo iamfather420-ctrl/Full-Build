@@ -15,6 +15,7 @@
     "verify:dfrl": "tsx scripts/verify_dfrl.ts",
     "verify:proofs": "tsx scripts/verify_dfrl.ts",
     "verify:nodes": "tsx scripts/verify_nodes.ts",
+    "verify:paypal": "tsx scripts/verify_paypal_dual_env.ts",
     "verify:authoritative": "tsx scripts/verify_authoritative.ts",
     "verify:sandbox": "tsx scripts/verify_sandbox.ts",
     "verify:all": "tsx scripts/verify_authoritative.ts"

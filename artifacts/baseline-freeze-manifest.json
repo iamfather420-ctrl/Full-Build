@@ -1,0 +1,25 @@
+{
+  "manifest_type": "BASELINE_FREEZE_MANIFEST",
+  "prior_execution_id": "exec_pipeline_1790394862640",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "frozen_at": "2026-09-26T17:56:39.946Z",
+  "frozen_status": "LOCAL_VERIFIED / MODEL_VERIFIED",
+  "prior_artifacts_preserved": [
+    "artifacts/DFRL-88-MACHINE-VERIFICATION-AUDIT.md",
+    "artifacts/DFRL-88-MACHINE-VERIFICATION-AUDIT.json",
+    "artifacts/enterprise-verification-report.json",
+    "artifacts/enterprise-verification-report.md",
+    "artifacts/solvex-manifest.json",
+    "artifacts/preflight-report.json",
+    "artifacts/preflight-report.md",
+    "artifacts/execution-gates.json",
+    "artifacts/execution-gates.md",
+    "artifacts/daisy-54-node-execution.json",
+    "artifacts/persistence-verification.json"
+  ],
+  "current_working_tree": {
+    "git_clean_policy": "PRESERVE_EXISTING_ARCHITECTURE",
+    "fail_closed_active": true
+  },
+  "next_target_environment": "sandbox"
+}

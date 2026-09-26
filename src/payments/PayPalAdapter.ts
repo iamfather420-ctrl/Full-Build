@@ -70,22 +70,52 @@ export class PayPalAdapter {
     return PayPalAdapter.instance;
   }
 
+  public getActiveEnvironment(): 'sandbox' | 'live' {
+    if (typeof process === 'undefined' || !process.env) return 'sandbox';
+    const active = process.env.PAYPAL_ACTIVE_ENVIRONMENT || process.env.PAYPAL_ENVIRONMENT || process.env.SOLVEX_ENV;
+    if (active && (active.toLowerCase() === 'live' || active.toLowerCase() === 'production')) {
+      return 'live';
+    }
+    return 'sandbox';
+  }
+
+  public getSandboxCredentials(): PayPalCredentials | null {
+    if (typeof process === 'undefined' || !process.env) return null;
+    const cid = process.env.PAYPAL_SANDBOX_CLIENT_ID || process.env.PAYPAL_SANDBOX_ID || (this.getActiveEnvironment() === 'sandbox' ? process.env.PAYPAL_CLIENT_ID : undefined);
+    const sec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET || process.env.PAYPAL_SANDBOX_KEY || (this.getActiveEnvironment() === 'sandbox' ? process.env.PAYPAL_CLIENT_SECRET : undefined);
+    if (cid && sec) {
+      return {
+        clientId: cid.trim(),
+        clientSecret: sec.trim(),
+        environment: 'sandbox'
+      };
+    }
+    return null;
+  }
+
+  public getLiveCredentials(): PayPalCredentials | null {
+    if (typeof process === 'undefined' || !process.env) return null;
+    const cid = process.env.PAYPAL_LIVE_CLIENT_ID || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_ID : undefined);
+    const sec = process.env.PAYPAL_LIVE_CLIENT_SECRET || process.env.PAYPAL_LIVE_LIVE_NT_SECRET || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_SECRET : undefined);
+    if (cid && sec) {
+      return {
+        clientId: cid.trim(),
+        clientSecret: sec.trim(),
+        environment: 'live'
+      };
+    }
+    return null;
+  }
+
   public getEffectiveCredentials(): PayPalCredentials | null {
     if (this.sessionCredentials && this.sessionCredentials.clientId && this.sessionCredentials.clientSecret) {
       return this.sessionCredentials;
     }
-    const envClientId = typeof process !== 'undefined' && process.env?.PAYPAL_CLIENT_ID;
-    const envSecret = typeof process !== 'undefined' && process.env?.PAYPAL_CLIENT_SECRET;
-    const envMode = (typeof process !== 'undefined' && process.env?.PAYPAL_ENVIRONMENT === 'live') ? 'live' : 'sandbox';
-
-    if (envClientId && envSecret) {
-      return {
-        clientId: envClientId.trim(),
-        clientSecret: envSecret.trim(),
-        environment: envMode
-      };
+    const envMode = this.getActiveEnvironment();
+    if (envMode === 'live') {
+      return this.getLiveCredentials();
     }
-    return null;
+    return this.getSandboxCredentials();
   }
 
   public setSessionCredentials(clientId: string, clientSecret: string, environment: 'sandbox' | 'live' = 'sandbox'): void {

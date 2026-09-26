@@ -26,14 +26,14 @@ async function main() {
   console.log(`Observed API Error : ${report.paypal.failure_injection.invalid_creds_observed_error}`);
   console.log(`Evidence Hash      : ${report.paypal.evidence_hash}`);
 
-  console.log('\n--- SOLANA DEVNET AUDIT ---');
-  console.log(`Status             : ${report.solana.status}`);
-  console.log(`Devnet RPC URL     : ${report.solana.rpc_url}`);
-  console.log(`RPC Connected      : ${report.solana.rpc_connected}`);
-  console.log(`Live Health Result : ${JSON.stringify(report.solana.rpc_health_observed)}`);
-  console.log(`Program Configured : ${report.solana.program_configured}`);
-  console.log(`Missing Prog Guard : ${report.solana.failure_injection.missing_program_fail_closed ? 'PASSED (fail-closed enforced)' : 'FAILED'}`);
-  console.log(`Evidence Hash      : ${report.solana.evidence_hash}`);
+  console.log('\n--- SOVEREIGN SETTLEMENT ESCROW (DN-38) AUDIT ---');
+  console.log(`Node ID            : ${report.sovereign_escrow.node_id}`);
+  console.log(`Status             : ${report.sovereign_escrow.status}`);
+  console.log(`Settlement Engine  : ${report.sovereign_escrow.settlement_engine}`);
+  console.log(`Timelock Enforced  : ${report.sovereign_escrow.timelock_enforced ? 'PASSED' : 'FAILED'}`);
+  console.log(`Multi-Sig Verified : ${report.sovereign_escrow.multisig_verified ? 'PASSED' : 'FAILED'}`);
+  console.log(`Fail-Closed Guard  : ${report.sovereign_escrow.fail_closed ? 'PASSED' : 'FAILED'}`);
+  console.log(`Evidence Hash      : ${report.sovereign_escrow.evidence_hash}`);
 
   console.log('\n--- NEON POSTGRESQL AUDIT ---');
   console.log(`Status             : ${report.neon.status}`);

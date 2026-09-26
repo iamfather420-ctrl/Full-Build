@@ -383,7 +383,7 @@ export class AuthoritativeVerificationPipeline {
     );
 
     // ==========================================
-    // GATE 11: External Provider Verification (Neon, PayPal, Solana)
+    // GATE 11: External Provider Verification (Neon, PayPal)
     // ==========================================
     const g11Start = performance.now();
     const pp = PayPalAdapter.getInstance();
@@ -402,14 +402,10 @@ export class AuthoritativeVerificationPipeline {
       neonConn = await neon.connect();
     }
 
-    const solanaRpc = process.env.SOLANA_RPC_URL;
-    const solanaProg = process.env.SOLANA_PROGRAM_ID;
-    const hasSolana = Boolean(solanaRpc && solanaProg);
-
     recordGate(
       11,
       'GATE-11',
-      'External Provider Gateways (Neon, PayPal, Solana)',
+      'External Provider Gateways (Neon, PayPal)',
       'LOCAL',
       (ppAuth && neonConn) ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
       performance.now() - g11Start,
@@ -425,11 +421,6 @@ export class AuthoritativeVerificationPipeline {
           configured: hasNeon,
           connected: neonConn,
           status: hasNeon ? (neonConn ? 'CONNECTED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED',
-          claim_scope: 'LOCAL'
-        },
-        solana: {
-          configured: hasSolana,
-          status: hasSolana ? 'RPC_CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
           claim_scope: 'LOCAL'
         },
         stripe: {
@@ -628,7 +619,6 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       gateways: {
         neon: hasNeon ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
         paypal: hasPayPal ? 'CONFIGURED' : 'CONFIGURATION_REQUIRED',
-        solana: hasSolana ? 'RPC_CONFIGURED' : 'CONFIGURATION_REQUIRED',
         stripe: 'PROHIBITED_BLOCKED'
       }
     };
@@ -693,9 +683,6 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       }
       if (!hasNeon || !neonConn) {
         productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
-      }
-      if (!hasSolana) {
-        productionBlockers.push('GATE-11 Solana smart contract RPC not configured. SOLANA_RPC_URL and SOLANA_PROGRAM_ID required for live escrow.');
       }
     } else {
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
@@ -820,7 +807,8 @@ ${report.production_blockers.map(b => `- ${b}`).join('\n')}
 - **Z3 Failure Injection Enforced:** YES (error, proved=false, never unsat)
 - **Daisy Nodes Subsystems:** 54 / 54 (Registered, Instantiated, Reachable, Executed, Output Asserted, Evidence Generated)
 - **Persistence Verification:** 9 / 9 Local SQLite invariants verified; Neon reports PROVIDER_REQUIRED.
-- **External Gateways:** 3 (DN-34 Neon PostgreSQL, DN-35 PayPal Gateway, DN-38 Solana Escrow)
+- **External Gateways:** 2 (DN-34 Neon PostgreSQL, DN-35 PayPal Gateway)
+- **Settlement Escrow:** DN-38 Sovereign Settlement Escrow Program (Native cryptographic state verification)
 - **Policy Guard:** DN-36 (Stripe Prohibited Interlock; Exclusive PayPal DN-35 routing)
 
 ---

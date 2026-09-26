@@ -321,20 +321,36 @@ export async function runEnterpriseVerification() {
   // 18. Server-Authoritative PayPal DN-35 Fail-Closed Execution
   runTest('PayPal DN-35 Server-Authoritative Fail-Closed Enforcement', 'PAYMENTS', async () => {
     const paypal = PayPalAdapter.getInstance();
-    // Temporarily clear credentials for fail-closed test
-    const origCreds = paypal.getEffectiveCredentials();
-    paypal.clearSessionCredentials();
-    const res = await paypal.captureOrderPayment('ORD_TEST_123', 2500, 'IDEMP_KEY_001');
-    if (origCreds) {
-      paypal.setSessionCredentials(origCreds.clientId, origCreds.clientSecret, origCreds.environment);
-    }
-    if (res.status !== 'EXTERNAL_PROVIDER_REQUIRED') {
-      throw new Error(`Expected EXTERNAL_PROVIDER_REQUIRED without credentials, received ${res.status}`);
+    const origSbId = process.env.PAYPAL_SANDBOX_ID;
+    const origSbKey = process.env.PAYPAL_SANDBOX_KEY;
+    const origSbClientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
+    const origSbClientSec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+    const origClientId = process.env.PAYPAL_CLIENT_ID;
+    const origClientSec = process.env.PAYPAL_CLIENT_SECRET;
+    try {
+      delete process.env.PAYPAL_SANDBOX_ID;
+      delete process.env.PAYPAL_SANDBOX_KEY;
+      delete process.env.PAYPAL_SANDBOX_CLIENT_ID;
+      delete process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+      delete process.env.PAYPAL_CLIENT_ID;
+      delete process.env.PAYPAL_CLIENT_SECRET;
+      paypal.clearSessionCredentials();
+      const res = await paypal.captureOrderPayment('ORD_TEST_123', 2500, 'IDEMP_KEY_001');
+      if (res.status !== 'EXTERNAL_PROVIDER_REQUIRED') {
+        throw new Error(`Expected EXTERNAL_PROVIDER_REQUIRED without credentials, received ${res.status}`);
+      }
+    } finally {
+      if (origSbId) process.env.PAYPAL_SANDBOX_ID = origSbId;
+      if (origSbKey) process.env.PAYPAL_SANDBOX_KEY = origSbKey;
+      if (origSbClientId) process.env.PAYPAL_SANDBOX_CLIENT_ID = origSbClientId;
+      if (origSbClientSec) process.env.PAYPAL_SANDBOX_CLIENT_SECRET = origSbClientSec;
+      if (origClientId) process.env.PAYPAL_CLIENT_ID = origClientId;
+      if (origClientSec) process.env.PAYPAL_CLIENT_SECRET = origClientSec;
     }
   });
 
   // 19. External Provider Inventory Transparency
-  runTest('External Adapter Inventory Transparency (Neon, PayPal, Solana)', 'ADAPTERS', () => {
+  runTest('External Adapter Inventory Transparency (Neon, PayPal)', 'ADAPTERS', () => {
     const inventory = ExternalAdapterRegistry.getInventory();
     if (inventory.length < 3) throw new Error('Expected at least 3 external adapters cataloged');
     const pp = inventory.find(i => i.adapter_id === 'DN-35');
@@ -441,8 +457,8 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // 28. Fail-Closed: Missing PayPal & Solana Credentials Evaluated
-  runTest('Fail-Closed: Missing PayPal & Solana Credentials Evaluated', 'ADAPTERS', async () => {
+  // 28. Fail-Closed: Missing PayPal Credentials Evaluated
+  runTest('Fail-Closed: Missing PayPal Credentials Evaluated', 'ADAPTERS', async () => {
     const paypal = PayPalAdapter.getInstance();
     const orig = paypal.getEffectiveCredentials();
     paypal.clearSessionCredentials();

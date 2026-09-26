@@ -16,7 +16,6 @@ export class ExternalAdapterRegistry {
     const paypalAdapter = PayPalAdapter.getInstance();
     const hasPayPal = paypalAdapter.hasActiveCredentials();
     const hasNeon = Boolean(typeof process !== 'undefined' && process.env?.NEON_DATABASE_URL);
-    const hasSolana = Boolean(typeof process !== 'undefined' && process.env?.SOLANA_RPC_URL && process.env?.SOLANA_PROGRAM_ID);
 
     return [
       {
@@ -38,16 +37,6 @@ export class ExternalAdapterRegistry {
         provided_env_vars: hasPayPal ? ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'] : [],
         live_connected: hasPayPal,
         notes: 'Server-authoritative payment capture. Enforces fail-closed: refuses to fabricate synthetic payment receipts.'
-      },
-      {
-        adapter_id: 'DN-38',
-        name: 'Solana Escrow Program',
-        category: 'SETTLEMENT',
-        status: hasSolana ? 'AVAILABLE' : 'EXTERNAL_PROVIDER_REQUIRED',
-        required_env_vars: ['SOLANA_RPC_URL', 'SOLANA_PROGRAM_ID'],
-        provided_env_vars: hasSolana ? ['SOLANA_RPC_URL'] : [],
-        live_connected: hasSolana,
-        notes: 'Decentralized trustless escrow settlement contract. Halts safely closed without external cluster configuration.'
       },
       {
         adapter_id: 'DN-36',

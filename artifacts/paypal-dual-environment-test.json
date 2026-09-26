@@ -1,0 +1,73 @@
+{
+  "test_suite": "PAYPAL_DUAL_ENVIRONMENT_FORENSIC_TEST",
+  "execution_id": "exec_paypal_1790447436751",
+  "timestamp": "2026-09-26T18:30:36.751Z",
+  "results": {
+    "configuration": {
+      "sandbox_client_id": "PRESENT",
+      "sandbox_client_secret": "PRESENT",
+      "sandbox_var_names_used": [
+        "PAYPAL_SANDBOX_ID",
+        "PAYPAL_SANDBOX_KEY"
+      ],
+      "live_client_id": "PRESENT",
+      "live_client_secret": "PRESENT",
+      "live_var_names_used": [
+        "PAYPAL_LIVE_CLIENT_ID",
+        "PAYPAL_LIVE_LIVE_NT_SECRET"
+      ],
+      "active_environment_configured": "SANDBOX"
+    },
+    "authentication": {
+      "sandbox_auth": "PASS",
+      "sandbox_status_code": 200,
+      "sandbox_duration_ms": 209,
+      "sandbox_token_received": true,
+      "sandbox_expires_in": 32400,
+      "sandbox_environment": "SANDBOX",
+      "live_auth": "PASS",
+      "live_status_code": 200,
+      "live_duration_ms": 370,
+      "live_token_received": true,
+      "live_expires_in": 32400,
+      "live_environment": "LIVE"
+    },
+    "api_connectivity": {
+      "sandbox_api": "PASS",
+      "sandbox_api_status_code": 200,
+      "sandbox_api_duration_ms": 168,
+      "sandbox_endpoint_reached": "https://api-m.sandbox.paypal.com/v1/notifications/webhooks",
+      "live_api": "PASS",
+      "live_api_status_code": 200,
+      "live_api_duration_ms": 431,
+      "live_endpoint_reached": "https://api-m.paypal.com/v1/notifications/webhooks"
+    },
+    "environment_isolation": {
+      "sandbox_to_live_crossover": "PASS",
+      "live_to_sandbox_crossover": "PASS",
+      "missing_credential_fail_closed": "PASS",
+      "invalid_credential_fail_closed": "PASS",
+      "unknown_environment_fail_closed": "PASS"
+    },
+    "security": {
+      "live_secret_frontend_exposure": "NOT_FOUND",
+      "sandbox_secret_frontend_exposure": "NOT_FOUND",
+      "secret_log_exposure": "NOT_FOUND",
+      "git_secret_exposure": "NOT_FOUND"
+    },
+    "transaction_safety": {
+      "real_transaction_executed": "NO",
+      "real_money_moved": "NO"
+    },
+    "final_status": {
+      "paypal_sandbox_ready": "YES",
+      "paypal_live_authenticated": "YES",
+      "paypal_live_api_reachable": "YES",
+      "paypal_production_transaction_ready": "NOT_TESTED",
+      "classification": "VERIFIED"
+    },
+    "stop_conditions_tripped": []
+  },
+  "stop_conditions": [],
+  "truth_boundary_attestation": "Zero secrets, access tokens, or authorization headers included in evidence."
+}

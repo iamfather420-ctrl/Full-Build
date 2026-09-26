@@ -219,22 +219,18 @@ export class PreflightService {
       };
     };
 
-    // 1. PAYPAL_CLIENT_ID
-    items.push(checkVar('PAYPAL_CLIENT_ID', true, (v) => v.length >= 8));
+    // 1. PayPal Sandbox / Default Credentials
+    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_ID', false, (v) => v.length >= 8));
+    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8));
 
-    // 2. PAYPAL_CLIENT_SECRET
-    items.push(checkVar('PAYPAL_CLIENT_SECRET', true, (v) => v.length >= 8));
+    // 2. PayPal Live Credentials (Required in Production)
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8));
 
     // 3. NEON_DATABASE_URL
     items.push(checkVar('NEON_DATABASE_URL', false, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
 
-    // 4. SOLANA_RPC_URL
-    items.push(checkVar('SOLANA_RPC_URL', false, (v) => v.startsWith('http://') || v.startsWith('https://')));
-
-    // 5. SOLANA_PROGRAM_ID
-    items.push(checkVar('SOLANA_PROGRAM_ID', false, (v) => v.length >= 32));
-
-    // 6. GEMINI_API_KEY
+    // 4. GEMINI_API_KEY
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
 
     return items;

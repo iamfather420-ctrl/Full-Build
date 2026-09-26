@@ -1,12 +1,12 @@
 {
   "pipeline_name": "Project AGATE Sovereign Core Authoritative 15-Gate Verification",
   "version": "1.0.0-PROD",
-  "execution_id": "exec_pipeline_1790395324622",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "execution_id": "exec_pipeline_1790447487935",
+  "commit_sha": "PROVENANCE_UNVERIFIED",
   "environment": "local",
-  "started_at": "2026-09-26T04:02:04.622Z",
-  "completed_at": "2026-09-26T04:02:12.870Z",
-  "total_duration_ms": 8247.6,
+  "started_at": "2026-09-26T18:31:27.934Z",
+  "completed_at": "2026-09-26T18:31:37.804Z",
+  "total_duration_ms": 9869.27,
   "gates_total": 15,
   "gates_passed": 13,
   "production_gate_verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
@@ -19,14 +19,14 @@
     {
       "gate_index": 0,
       "gate_id": "GATE-00",
-      "name": "Repository Integrity & Baseline Provenance",
+      "name": "Repository Integrity",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 9.8,
+      "duration_ms": 7.55,
       "details": {
-        "execution_id": "exec_pipeline_1790395324622",
-        "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-        "modified_files_count": 14
+        "execution_id": "exec_pipeline_1790447487935",
+        "commit_sha": "PROVENANCE_UNVERIFIED",
+        "note": "Static snapshot without git working copy"
       }
     },
     {
@@ -52,6 +52,7 @@
       "details": {
         "environment": "local",
         "present_vars": [
+          "PAYPAL_LIVE_CLIENT_ID",
           "GEMINI_API_KEY"
         ],
         "absent_vars": []
@@ -76,7 +77,7 @@
       "name": "Build & TypeScript Static Verification",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 2268.71,
+      "duration_ms": 2182.3,
       "details": {
         "typecheck": "CLEAN"
       }
@@ -87,7 +88,7 @@
       "name": "Unit & Enterprise Invariant Test Suite",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 35.72,
+      "duration_ms": 1110.21,
       "details": {
         "total_tests": 30,
         "passed_tests": 30,
@@ -100,7 +101,7 @@
       "name": "DFRL 88-Operator Z3 SMT Formal Verification",
       "claim_scope": "MODEL",
       "status": "PASSED",
-      "duration_ms": 5649.69,
+      "duration_ms": 5942.98,
       "details": {
         "total_propositions": 88,
         "attempted": 88,
@@ -110,7 +111,7 @@
         "generated_models_count": 68,
         "solver_engine": "Microsoft Research Z3 WASM (z3-solver)",
         "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-        "root_sha256": "59e709b56c51d482f712028589be26231a183f497a6c93325bc8c290d1e72542"
+        "root_sha256": "cfaa7b35fd0f069a4a98823e6b1d11101fa7b5efa14754a231d415b6112d822b"
       }
     },
     {
@@ -133,7 +134,7 @@
       "name": "SMT Mutation, SHA-256 Tamper & Fail-Closed Tests",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 77.37,
+      "duration_ms": 72.91,
       "details": {
         "smt_mutation_detected": true,
         "smt_mutation_transition": "unsat -> sat",
@@ -148,7 +149,7 @@
       "name": "Daisy 54-Node Architecture CUJ Execution Coverage",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 12.93,
+      "duration_ms": 217.95,
       "details": {
         "total_nodes": 54,
         "registered_nodes": 54,
@@ -159,8 +160,8 @@
         "evidence_generated_nodes": 54,
         "unsatisfied_node_ids": [],
         "baseline_internal_18": 18,
-        "expanded_internal_33": 33,
-        "gateways_3": 3,
+        "expanded_internal_33": 34,
+        "gateways_3": 2,
         "policy_interlocks_1": 1
       }
     },
@@ -170,7 +171,7 @@
       "name": "Multi-Tenant Relational & Merkle Chain Persistence",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 2.63,
+      "duration_ms": 2.3,
       "details": {
         "sqlite_tables_count": 27,
         "required_tables": 27,
@@ -187,26 +188,21 @@
     {
       "gate_index": 11,
       "gate_id": "GATE-11",
-      "name": "External Provider Gateways (Neon, PayPal, Solana)",
+      "name": "External Provider Gateways (Neon, PayPal)",
       "claim_scope": "LOCAL",
       "status": "EXTERNAL_PROVIDER_REQUIRED",
-      "duration_ms": 0.03,
+      "duration_ms": 121.7,
       "details": {
         "paypal": {
-          "configured": false,
-          "environment": "NOT_CONFIGURED",
-          "authenticated": false,
-          "status": "EXTERNAL_PROVIDER_REQUIRED",
+          "configured": true,
+          "environment": "sandbox",
+          "authenticated": true,
+          "status": "AUTHENTICATED",
           "claim_scope": "LOCAL"
         },
         "neon": {
           "configured": false,
           "connected": false,
-          "status": "EXTERNAL_PROVIDER_REQUIRED",
-          "claim_scope": "LOCAL"
-        },
-        "solana": {
-          "configured": false,
           "status": "EXTERNAL_PROVIDER_REQUIRED",
           "claim_scope": "LOCAL"
         },
@@ -222,16 +218,16 @@
       "name": "End-to-End Lifecycle Execution",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 0.82,
+      "duration_ms": 1.04,
       "details": {
         "solution_pipeline": {
           "success": true,
           "completed_stages": 21,
           "total_stages": 21,
-          "solution_id": "DH-S-MUHV5KAQ"
+          "solution_id": "DH-S-MUIQ7N0O"
         },
         "order_lifecycle": {
-          "order_id": "e2e_order_1790395332866",
+          "order_id": "e2e_order_1790447497800",
           "transitions_executed": [
             "ORDER_CREATED",
             "ESCROW_FUNDED",
@@ -242,8 +238,8 @@
           "final_status": "DEPLOYED"
         },
         "merkle_audit_append": {
-          "record_id": "audit_1790395332867_15",
-          "record_hash": "235a23bb54d8a7f4a17812a30fc28f63fc39bba8c83ce0c3e5655c7ced531ae7"
+          "record_id": "audit_1790447497801_15",
+          "record_hash": "4330f888589165dabe3de5e81c4a502522e7c7e9b17a06339f10f029dbc2f4b2"
         }
       }
     },
@@ -253,7 +249,7 @@
       "name": "Evidence Generation & Artifact Packaging",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 3.01,
+      "duration_ms": 3.25,
       "details": {
         "artifacts_generated": [
           "DFRL-88-MACHINE-VERIFICATION-AUDIT.md",
@@ -273,9 +269,9 @@
       "name": "Final Truth-Boundary Audit & Production Gate",
       "claim_scope": "LOCAL",
       "status": "BLOCKED",
-      "duration_ms": 0.04,
+      "duration_ms": 0.06,
       "details": {
-        "execution_id": "exec_pipeline_1790395324622",
+        "execution_id": "exec_pipeline_1790447487935",
         "verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
         "claim_scope": "LOCAL_VERIFIED / MODEL_VERIFIED",
         "blockers_count": 1,

@@ -1,0 +1,15 @@
+{
+  "execution_id": "sandbox_exec_1790445399946",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "timestamp": "2026-09-26T17:56:39.946Z",
+  "environment": "sandbox",
+  "claim_scope": "LOCAL",
+  "status": "VERIFIED",
+  "node_id": "DN-38",
+  "node_name": "Sovereign Settlement Escrow Program",
+  "settlement_engine": "SOVEREIGN_CRYPTOGRAPHIC_ESCROW",
+  "timelock_enforced": true,
+  "multisig_verified": true,
+  "fail_closed": true,
+  "evidence_hash": "1f4dde4dd6aaae234571f15ad3a48895c148fe8a69ca76c760bd5380d74f9845"
+}

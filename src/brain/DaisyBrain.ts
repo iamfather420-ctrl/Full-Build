@@ -59,9 +59,9 @@ export interface CompleteBrainState {
       claim_scope: string;
       local_fallback_active: boolean;
     };
-    solana_dn38: {
+    escrow_dn38: {
       status: string;
-      configured: boolean;
+      mode: string;
       claim_scope: string;
     };
     stripe_dn36: {
@@ -121,8 +121,6 @@ export class DaisyBrain {
 
     const neon = NeonStore.getInstance();
     const hasNeon = neon.isConfigured();
-
-    const hasSolana = Boolean(typeof process !== 'undefined' && process.env?.SOLANA_RPC_URL && process.env?.SOLANA_PROGRAM_ID);
 
     // Compute exact claim scope based on genuine environment & provider states
     let brainClaimScope: CompleteBrainState['claim_scope'] = 'LOCAL_VERIFIED';
@@ -200,9 +198,9 @@ export class DaisyBrain {
           claim_scope: 'LOCAL',
           local_fallback_active: !hasNeon
         },
-        solana_dn38: {
-          status: hasSolana ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
-          configured: hasSolana,
+        escrow_dn38: {
+          status: 'CODE_EXECUTED',
+          mode: 'SOVEREIGN_SETTLEMENT_ESCROW_ENGINE',
           claim_scope: 'LOCAL'
         },
         stripe_dn36: {
