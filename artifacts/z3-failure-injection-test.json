@@ -1,0 +1,12 @@
+{
+  "test_name": "Z3 Solver Failure & Malformed SMT Injection Test",
+  "injection_type": "MALFORMED_SMT",
+  "input_assertion": "(assert (this_is_an_undefined_operator 123 456))",
+  "observed_result": "error",
+  "observed_solver_result": "error",
+  "proved_status": false,
+  "never_converted_to_unsat": true,
+  "fail_closed_enforced": true,
+  "passed": true,
+  "notes": "Fail-closed behavior confirmed: Malformed SMT syntax produced ERROR and proved=false. Never converted to UNSAT."
+}
