@@ -1,7 +1,7 @@
 {
-  "execution_id": "sandbox_exec_1790445399946",
+  "execution_id": "sandbox_exec_1790448773828",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-09-26T17:56:39.946Z",
+  "timestamp": "2026-09-26T18:52:53.828Z",
   "environment": "sandbox",
   "claim_scope": "LOCAL",
   "solution_pipeline_passed": true,
@@ -9,6 +9,6 @@
   "order_lifecycle_passed": true,
   "final_order_status": "DEPLOYED",
   "merkle_audit_recorded": true,
-  "audit_record_hash": "ab4958ededca584d933f4a89a510bbff9389a2fdffd391fd91fe099dd243bdcb",
-  "evidence_hash": "5db7112178ffedbca0ee4055f8c673e16389ef2f776ea5f6946d1f2c6b8f1682"
+  "audit_record_hash": "d9e56b8acd589b1dc2ea094447d251ac2ec7c3d23ef06e0659dc407e656a8c1d",
+  "evidence_hash": "da4dddb39316679c7a5c509e2ec8eb7e9032929f31a3af12115422b4719f6fa2"
 }

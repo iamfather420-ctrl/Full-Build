@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-26T18:31:37.676Z",
+  "timestamp": "2026-09-26T18:53:32.030Z",
   "claim_scope": "LOCAL",
   "sqlite": {
     "status": "VERIFIED",
@@ -19,7 +19,7 @@
       {
         "step": "MIGRATION_AND_SCHEMA_CREATION",
         "passed": true,
-        "duration_ms": 0.03434500000003027,
+        "duration_ms": 0.03394699999989825,
         "details": {
           "table_count": 27,
           "required": 27
@@ -28,16 +28,16 @@
       {
         "step": "RECORD_INSERT",
         "passed": true,
-        "duration_ms": 0.08546299999943585,
+        "duration_ms": 0.09060300000055577,
         "details": {
           "tenant_id": "TENANT_ALPHA",
-          "id": "sol_test_1790447497676"
+          "id": "sol_test_1790448812030"
         }
       },
       {
         "step": "RECORD_SELECT",
         "passed": true,
-        "duration_ms": 0.06374099999993632,
+        "duration_ms": 0.06369499999891559,
         "details": {
           "records_found": 1,
           "record_matched": true
@@ -46,25 +46,25 @@
       {
         "step": "RECORD_UPDATE",
         "passed": true,
-        "duration_ms": 0.027996999999231775,
+        "duration_ms": 0.02251799999976356,
         "details": {
-          "target_id": "sol_test_1790447497676",
+          "target_id": "sol_test_1790448812030",
           "updated_status": "VERIFIED_ACTIVE"
         }
       },
       {
         "step": "TRANSACTION_ROLLBACK",
         "passed": true,
-        "duration_ms": 0.37863199999992503,
+        "duration_ms": 0.3585209999982908,
         "details": {
-          "rolled_back_id": "sol_rb_1790447497676",
+          "rolled_back_id": "sol_rb_1790448812030",
           "record_absent_after_rollback": true
         }
       },
       {
         "step": "RESTART_READBACK",
         "passed": true,
-        "duration_ms": 0.037024000001110835,
+        "duration_ms": 0.037677000000257976,
         "details": {
           "disk_file_exists": false,
           "readback_verified": true
@@ -73,7 +73,7 @@
       {
         "step": "TENANT_ISOLATION",
         "passed": true,
-        "duration_ms": 0.005817000001115957,
+        "duration_ms": 0.016467999999804306,
         "details": {
           "tenant_a": "TENANT_ALPHA",
           "tenant_b": "TENANT_BETA",
@@ -84,9 +84,9 @@
       {
         "step": "AUDIT_CHAIN_PERSISTENCE",
         "passed": true,
-        "duration_ms": 0.7702380000009725,
+        "duration_ms": 0.8383109999995213,
         "details": {
-          "audit_record_id": "audit_1790447497677_9",
+          "audit_record_id": "audit_1790448812031_9",
           "merkle_chain_valid": true,
           "chain_blocks": 10
         }
@@ -94,9 +94,9 @@
       {
         "step": "EVIDENCE_PERSISTENCE",
         "passed": true,
-        "duration_ms": 0.11054100000001199,
+        "duration_ms": 0.18066499999986263,
         "details": {
-          "bundle_id": "ev_bundle_1790447497678",
+          "bundle_id": "ev_bundle_1790448812032",
           "verified": true
         }
       }

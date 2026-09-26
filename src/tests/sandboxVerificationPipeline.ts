@@ -213,12 +213,16 @@ export class SandboxVerificationPipeline {
     const origSbKey = process.env.PAYPAL_SANDBOX_KEY;
     const origSbClientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
     const origSbClientSec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+    const origClientId = process.env.PAYPAL_CLIENT_ID;
+    const origClientSec = process.env.PAYPAL_CLIENT_SECRET;
     let missingCredsCapture: any;
     try {
       delete process.env.PAYPAL_SANDBOX_ID;
       delete process.env.PAYPAL_SANDBOX_KEY;
       delete process.env.PAYPAL_SANDBOX_CLIENT_ID;
       delete process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+      delete process.env.PAYPAL_CLIENT_ID;
+      delete process.env.PAYPAL_CLIENT_SECRET;
       ppAdapter.clearSessionCredentials();
       missingCredsCapture = await ppAdapter.captureOrderPayment(
         'ORDER_FAIL_TEST_MISSING',
@@ -230,6 +234,8 @@ export class SandboxVerificationPipeline {
       if (origSbKey) process.env.PAYPAL_SANDBOX_KEY = origSbKey;
       if (origSbClientId) process.env.PAYPAL_SANDBOX_CLIENT_ID = origSbClientId;
       if (origSbClientSec) process.env.PAYPAL_SANDBOX_CLIENT_SECRET = origSbClientSec;
+      if (origClientId) process.env.PAYPAL_CLIENT_ID = origClientId;
+      if (origClientSec) process.env.PAYPAL_CLIENT_SECRET = origClientSec;
     }
     const missingCredsFailClosed =
       missingCredsCapture.status === 'EXTERNAL_PROVIDER_REQUIRED' &&
