@@ -336,8 +336,8 @@ export class DFRLFormalVerifier {
     }
 
     const replaysMatched = replays.filter(r => r.replay_match).length;
-    const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
-    const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
+    const authoredCount = results.filter(r => /^DFRL-P-0(0[1-9]|1[0-9]|20)$/.test(r.operator_id)).length;
+    const generatedCount = results.length - authoredCount;
 
     const allExecuted = executed === REAL_88_PARADOX_REGISTRY.length && errorCount === 0 && unknownCount === 0;
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
