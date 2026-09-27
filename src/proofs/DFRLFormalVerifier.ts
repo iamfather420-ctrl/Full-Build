@@ -55,7 +55,7 @@ export interface DFRL88VerificationReport {
   authored_models_count: number;
   generated_models_count: number;
   deterministic_replays_matched: number;
-  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED';
+  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED' | 'EXISTENTIAL_WITNESS' | 'COMPETING_ASSUMPTIONS' | 'MIXED';
   solver_engine: string;
   solver_version: string;
   overall_status: 'VERIFIED' | 'FAILED' | 'PARTIAL';
