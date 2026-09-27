@@ -2,26 +2,4 @@
 > react-example@0.0.0 lint
 > tsc --noEmit
 
-src/data/paradoxData.ts(31,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(45,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(59,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(73,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(87,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(101,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(115,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(129,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(143,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(157,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(171,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(185,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(199,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(213,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(227,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(241,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(255,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(269,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(283,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(297,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/data/paradoxData.ts(316,5): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/proofs/DFRLFormalVerifier.ts(460,7): error TS2353: Object literal may only specify known properties, and 'expected_solver_result' does not exist in type 'DFRLParadoxItem'.
-src/proofs/Z3FormalProofEngine.ts(237,30): error TS2307: Cannot find module 'z3-solver/node' or its corresponding type declarations.
+src/proofs/Z3FormalProofEngine.ts(257,5): error TS1472: 'catch' or 'finally' expected.
