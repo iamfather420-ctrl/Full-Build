@@ -14,6 +14,8 @@ async function main() {
   console.log(`UNSAT Results:           ${report.unsat_count}`);
   console.log(`Exact Models Verified:   ${report.exact_verified_count}`);
   console.log(`Bounded Models Verified:  ${report.bounded_model_verified_count}`);
+  console.log(`Existential Witnesses:      ${report.existential_witness_count}`);
+  console.log(`Competing Assumptions:      ${report.competing_assumption_count}`);
   console.log(`SAT Results:            ${report.sat_count}`);
   console.log(`Unknown Results:        ${report.unknown_count}`);
   console.log(`Execution Errors:       ${report.error_count}`);
