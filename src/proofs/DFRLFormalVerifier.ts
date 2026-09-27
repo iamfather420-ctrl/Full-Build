@@ -215,7 +215,7 @@ export class DFRLFormalVerifier {
       solver_version: this.solverVersion,
       execution_id: executionId,
       solver_result: solverResult,
-      proved: solverResult === (item as DFRLParadoxItem & { expected_solver_result?: 'unsat' | 'sat' }).expected_solver_result,
+      proved: solverResult === item.expected_solver_result,
       claim_scope: THEOREM_SPECIFIC_68.some(m => m.code === item.code && m.scope === 'FINITE_ABSTRACTION') ? 'BOUNDED_MODEL_VERIFIED' : 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
