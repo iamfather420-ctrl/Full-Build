@@ -2,16 +2,16 @@ import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 
 async function main() {
   console.log('===========================================================');
-  console.log(' DFRL 88-OPERATOR FORMAL SMT VERIFICATION (Z3 WASM)');
+  console.log(' DFRL 88-OPERATOR EXECUTION + REPLAY VERIFICATION (Z3 WASM)');
   console.log('===========================================================');
 
   const verifier = DFRLFormalVerifier.getInstance();
-  console.log('Executing 88 operator assertions through Microsoft Research Z3...');
+  console.log('Executing 88 operator assertions through Microsoft Research Z3 and independently replaying each result...');
   const report = await verifier.verifyAll88();
   console.log(`Propositions Evaluated: ${report.total_operators}`);
   console.log(`Attempted:              ${report.attempted}`);
   console.log(`Executed:               ${report.executed}`);
-  console.log(`UNSAT Theorems Proved:  ${report.unsat_proved_count}`);
+  console.log(`UNSAT Results:          ${report.unsat_proved_count}`);
   console.log(`SAT Results:            ${report.sat_count}`);
   console.log(`Unknown Results:        ${report.unknown_count}`);
   console.log(`Execution Errors:       ${report.error_count}`);
@@ -33,8 +33,17 @@ async function main() {
   const tamp = verifier.runArtifactTamperTest(report);
   console.log(`Tamper Test Passed:     ${tamp.passed} (Alarm Triggered: ${tamp.alarm_triggered})`);
 
-  if (report.unsat_proved_count === 88 && mut.passed && failInj.passed && tamp.passed) {
-    console.log('\n✅ DFRL 88-OPERATOR FORMAL VERIFICATION: 100% SUCCESS');
+  if (
+    report.executed === 88 &&
+    report.unknown_count === 0 &&
+    report.error_count === 0 &&
+    report.deterministic_replays_matched === 88 &&
+    report.overall_status === 'VERIFIED' &&
+    mut.passed &&
+    failInj.passed &&
+    tamp.passed
+  ) {
+    console.log('\n✅ DFRL 88-OPERATOR EXECUTION/REPLAY VERIFICATION: 100% SUCCESS');
   } else {
     console.error('\n❌ DFRL VERIFICATION FAILED');
     process.exit(1);
