@@ -2,4 +2,4 @@
 > react-example@0.0.0 lint
 > tsc --noEmit
 
-src/proofs/Z3FormalProofEngine.ts(257,5): error TS1472: 'catch' or 'finally' expected.
+src/proofs/DFRLFormalVerifier.ts(376,7): error TS2322: Type '"MIXED"' is not assignable to type '"BOUNDED_MODEL_VERIFIED" | "MODEL_VERIFIED"'.
