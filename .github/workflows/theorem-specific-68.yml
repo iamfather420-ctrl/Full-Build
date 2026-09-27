@@ -34,7 +34,7 @@ jobs:
         run: npm run verify:dfrl > dfrl-output.txt 2>&1
 
       - name: Preserve DFRL diagnostics
-        if: failure()
+        if: always()
         run: |
           cat dfrl-output.txt
           git config user.name "github-actions[bot]"
