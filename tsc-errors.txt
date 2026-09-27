@@ -1,0 +1,5 @@
+
+> react-example@0.0.0 lint
+> tsc --noEmit
+
+src/proofs/DFRLFormalVerifier.ts(376,7): error TS2322: Type '"MIXED"' is not assignable to type '"BOUNDED_MODEL_VERIFIED" | "MODEL_VERIFIED"'.

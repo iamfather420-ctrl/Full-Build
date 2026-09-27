@@ -1,0 +1,35 @@
+
+> react-example@0.0.0 verify:dfrl
+> tsx scripts/verify_dfrl.ts
+
+===========================================================
+ DFRL 88-OPERATOR FORMAL SMT VERIFICATION (Z3 WASM)
+===========================================================
+Executing 88 operator assertions through Microsoft Research Z3...
+Propositions Evaluated: 88
+Attempted:              88
+Executed:               88
+UNSAT Results:           28
+Exact Models Verified:   26
+Bounded Models Verified:  60
+Existential Witnesses:      2
+Competing Assumptions:      0
+SAT Results:            60
+Unknown Results:        0
+Execution Errors:       0
+Authored Models:        20 (DFRL-P-001 to P-020)
+Generated Models:       68 (DFRL-P-021 to P-088)
+Deterministic Replays:  88
+Claim Scope:            MIXED
+Root Hash:              f97c6dab2f08ffbea5f08af8804cf9b6f9d2dad4087d268035ac7cfd93da245f
+
+Running SMT Operator Premise Perturbation Mutation Test...
+Mutation Test Passed:   true (DFRL-P-025: unsat -> sat)
+
+Running Z3 Failure Injection & Fail-Closed Guard Test...
+Failure Injection Passed: true (Observed: error, Never UNSAT: true)
+
+Running Cryptographic Proof Artifact Tamper Test...
+Tamper Test Passed:     true (Alarm Triggered: true)
+
+✅ DFRL 88-OPERATOR FORMAL MODEL VERIFICATION: EXECUTION + REPLAY + TEST GATES PASSED
