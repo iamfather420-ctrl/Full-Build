@@ -589,10 +589,12 @@ export class AuthoritativeVerificationPipeline {
 - **Commit SHA:** \`${commitSha}\`
 - **Solver Engine:** \`${dfrlReport.solver_engine}\`
 - **Verification Root Hash:** \`${dfrlReport.verification_root_sha256}\`
-- **Propositions Evaluated:** 88 / 88 (Z3 WASM UNSAT)
+- **Propositions Executed:** 88 / 88 (Z3 WASM)
+- **Solver Results:** ${dfrlReport.unsat_count} UNSAT / ${dfrlReport.sat_count} SAT / ${dfrlReport.unknown_count} UNKNOWN / ${dfrlReport.error_count} ERRORS
 - **Authored Models:** ${dfrlReport.authored_models_count} (DFRL-P-001 to P-020)
 - **Generated Models:** ${dfrlReport.generated_models_count} (DFRL-P-021 to P-088)
 - **Deterministic Cleanroom Replays:** ${dfrlReport.deterministic_replays_matched} / 88
+- **DH Bootstrap Registry:** ${dhBootstrapReport.executed} / 32 records executed; ${dhBootstrapReport.deterministic_replays_matched} / 32 deterministic registry replays
 - **SMT Mutation Detection:** ${mutTest.passed ? 'PASSED (UNSAT -> SAT confirmed)' : 'FAILED'}
 - **Z3 Fault Injection (Fail-Closed):** ${failInjTest.passed ? 'PASSED (error, proved=false, never unsat)' : 'FAILED'}
 - **Tamper Detection Alarm:** ${tampTest.passed ? 'PASSED (Alarm Triggered)' : 'FAILED'}
