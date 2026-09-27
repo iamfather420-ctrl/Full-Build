@@ -52,7 +52,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "SEMANTIC_LOGIC",
     "claim": "Classical bivalent self-reference L = not L is inconsistent.",
     "smt_script": "(declare-const L Bool) (assert (= L (not L))) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "EXACT_CLASSICAL"
   },
   {
@@ -61,7 +61,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "PROOF_THEORY",
     "claim": "Bounded classical encoding of C <-> (C -> False) is inconsistent.",
     "smt_script": "(declare-const C Bool) (declare-const F Bool) (assert (not F)) (assert (= C (=> C F))) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "EXACT_CLASSICAL"
   },
   {
@@ -70,7 +70,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "FIRST_ORDER_LOGIC",
     "claim": "The barber specification applied to the barber itself yields S(B,B) <-> not S(B,B).",
     "smt_script": "(declare-const S Bool) (assert (= S (not S))) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "EXACT_CLASSICAL"
   },
   {
@@ -79,7 +79,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "SEMANTICS",
     "claim": "Self-application of a classical heterological predicate yields H <-> not H.",
     "smt_script": "(declare-const H Bool) (assert (= H (not H))) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "EXACT_CLASSICAL"
   },
   {
@@ -88,7 +88,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "SET_THEORY",
     "claim": "Naive comprehension instance R in R iff R not in R has no classical model.",
     "smt_script": "(declare-const R Bool) (assert (= R (not R))) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "EXACT_CLASSICAL"
   },
   {
@@ -106,7 +106,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "ORDINAL_ARITHMETIC",
     "claim": "A universal ordinal would have to be strictly greater than itself.",
     "smt_script": "(declare-const omega Int) (assert (> omega omega)) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "EXACT_CLASSICAL"
   },
   {
