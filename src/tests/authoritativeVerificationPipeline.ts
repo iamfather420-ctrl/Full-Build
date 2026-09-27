@@ -297,7 +297,7 @@ export class AuthoritativeVerificationPipeline {
       7,
       'GATE-07',
       'Cleanroom Deterministic Replay Verification',
-      'MODEL',
+      'LOCAL',
       replayOk ? 'PASSED' : 'FAILED',
       performance.now() - g7Start,
       {
@@ -315,8 +315,10 @@ export class AuthoritativeVerificationPipeline {
       JSON.stringify(
         {
           timestamp: new Date().toISOString(),
-          total_replayed: 88,
-          replays_matched: dfrlReport.deterministic_replays_matched,
+          total_replayed: 120,
+          replays_matched: dfrlReport.deterministic_replays_matched + dhBootstrapReport.deterministic_replays_matched,
+          dfrl_replays_matched: dfrlReport.deterministic_replays_matched,
+          dh_bootstrap_replays_matched: dhBootstrapReport.deterministic_replays_matched,
           status: replayOk ? 'PASSED' : 'FAILED',
           replays: dfrlReport.replays,
           dh_bootstrap_replays: dhBootstrapReport.replays
