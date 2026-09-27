@@ -97,7 +97,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "SET_THEORY",
     "claim": "Finite cardinal abstraction: power-set cardinality is strictly greater than base-set cardinality.",
     "smt_script": "(declare-const n Int) (declare-const p Int) (assert (>= n 0)) (assert (> p n)) (assert (= p n)) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "FINITE_ABSTRACTION"
   },
   {
@@ -169,7 +169,7 @@ export const THEOREM_SPECIFIC_68: TheoremSpecificModel[] = [
     "domain": "INFINITE_LOGIC",
     "claim": "Bounded-prefix abstraction: S0 and S1 cannot both be true when each denies all later members.",
     "smt_script": "(declare-const S0 Bool) (declare-const S1 Bool) (declare-const S2 Bool) (assert S0) (assert S1) (assert (=> S0 (not S1))) (assert (=> S1 (not S2))) (check-sat)\\n(check-sat)",
-    "expected_solver_result": "sat",
+    "expected_solver_result": "unsat",
     "scope": "FINITE_ABSTRACTION"
   },
   {
