@@ -18,7 +18,7 @@ export interface DFRLVerificationResult {
   execution_id: string;
   solver_result: 'unsat' | 'sat' | 'unknown' | 'error' | 'formal_execution_not_performed';
   proved: boolean;
-  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED' | 'EXISTENTIAL_WITNESS' | 'COMPETING_ASSUMPTIONS';
+  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED' | 'EXISTENTIAL_WITNESS' | 'COMPETING_ASSUMPTIONS' | 'MIXED';
   execution_duration_ms: number;
   duration_ms?: number;
   error?: string;
@@ -373,7 +373,7 @@ export class DFRLFormalVerifier {
       authored_models_count: authoredCount,
       generated_models_count: generatedCount,
       deterministic_replays_matched: replaysMatched,
-      claim_scope: 'MODEL_VERIFIED',
+      claim_scope: 'MIXED',
       solver_engine: 'Microsoft Research Z3 WASM (z3-solver)',
       solver_version: this.solverVersion,
       overall_status: overallStatus,
