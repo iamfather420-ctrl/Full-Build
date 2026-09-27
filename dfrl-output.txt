@@ -1,0 +1,30 @@
+
+> react-example@0.0.0 verify:dfrl
+> tsx scripts/verify_dfrl.ts
+
+===========================================================
+ DFRL 88-OPERATOR FORMAL SMT VERIFICATION (Z3 WASM)
+===========================================================
+Executing 88 operator assertions through Microsoft Research Z3...
+Propositions Evaluated: 88
+Attempted:              88
+Executed:               88
+UNSAT Results:           20
+Exact Models Verified:   20
+Bounded Models Verified:  0
+SAT Results:            0
+Unknown Results:        0
+Execution Errors:       68
+Authored Models:        88 (DFRL-P-001 to P-020)
+Generated Models:       0 (DFRL-P-021 to P-088)
+Deterministic Replays:  88
+Claim Scope:            MODEL_VERIFIED
+Root Hash:              47db4d51ac4846462ead195c5192bf05880b6a49b50bf97a47aac18d3d19a3ea
+
+Running SMT Operator Premise Perturbation Mutation Test...
+[FATAL] DFRL verification error: Error: (error "line 1 column 58: unexpected character")
+
+    at throwIfError (/home/runner/work/Full-Build/Full-Build/node_modules/z3-solver/build/high-level/high-level.js:92:23)
+    at SolverImpl.fromString (/home/runner/work/Full-Build/Full-Build/node_modules/z3-solver/build/high-level/high-level.js:1578:17)
+    at DFRLFormalVerifier.runSmtMutationTest (/home/runner/work/Full-Build/Full-Build/src/proofs/DFRLFormalVerifier.ts:411:22)
+    at async main (/home/runner/work/Full-Build/Full-Build/scripts/verify_dfrl.ts:27:15)
