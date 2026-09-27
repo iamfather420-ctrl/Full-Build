@@ -176,6 +176,7 @@ export class DFRLFormalVerifier {
     }
 
     let solverResult: DFRLVerificationResult['solver_result'] = 'unknown';
+    const expectedResult: 'unsat' | 'sat' = THEOREM_SPECIFIC_68.find(m => m.code === item.code)?.expected_solver_result ?? 'unsat';
     let execError: string | undefined = undefined;
 
     try {
@@ -215,7 +216,7 @@ export class DFRLFormalVerifier {
       solver_version: this.solverVersion,
       execution_id: executionId,
       solver_result: solverResult,
-      proved: solverResult === item.expected_solver_result,
+      proved: solverResult === expectedResult,
       claim_scope: THEOREM_SPECIFIC_68.some(m => m.code === item.code && m.scope === 'FINITE_ABSTRACTION') ? 'BOUNDED_MODEL_VERIFIED' : 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
