@@ -236,8 +236,7 @@ export class Z3FormalProofEngine {
     // Real Z3 execution: parse the SMT-LIB2 program and ask the bundled Z3 WASM kernel.
     const api = await import('z3-solver');
     const z3 = await api.init();
-    try {
-      const { Context } = z3;
+    const { Context } = z3;
       const { Solver } = new Context('verification');
       const solver = new Solver();
       const executableScript = smtScript.replace(/\(check-sat\)/g, '').trim();
@@ -252,10 +251,6 @@ export class Z3FormalProofEngine {
         (solverResult === expectedResult
           ? `Z3 returned ${solverResult.toUpperCase()} for the formal proposition.`
           : `Z3 returned ${solverResult.toUpperCase()} but the registry expected ${expectedResult.toUpperCase()}.`);
-    } catch (err) {
-      throw err;
-    }
-
     const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const durationMs = Number((end - start).toFixed(2));
     const proved = solverResult === expectedResult;
