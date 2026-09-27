@@ -1,0 +1,8 @@
+
+> react-example@0.0.0 lint
+> tsc --noEmit
+
+src/proofs/Z3FormalProofEngine.ts(253,13): error TS1127: Invalid character.
+src/proofs/Z3FormalProofEngine.ts(286,17): error TS1005: ';' expected.
+src/proofs/Z3FormalProofEngine.ts(286,29): error TS1005: ';' expected.
+src/proofs/Z3FormalProofEngine.ts(297,1): error TS1160: Unterminated template literal.
