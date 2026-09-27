@@ -10,16 +10,18 @@ Propositions Evaluated: 88
 Attempted:              88
 Executed:               88
 UNSAT Results:           28
-Exact Models Verified:   28
+Exact Models Verified:   26
 Bounded Models Verified:  60
+Existential Witnesses:      2
+Competing Assumptions:      0
 SAT Results:            60
 Unknown Results:        0
 Execution Errors:       0
-Authored Models:        88 (DFRL-P-001 to P-020)
-Generated Models:       0 (DFRL-P-021 to P-088)
+Authored Models:        20 (DFRL-P-001 to P-020)
+Generated Models:       68 (DFRL-P-021 to P-088)
 Deterministic Replays:  88
-Claim Scope:            MODEL_VERIFIED
-Root Hash:              8c4d8b5eee3c9d5cf82500206c7425aa16694342794a98822bb499af54116a79
+Claim Scope:            MIXED
+Root Hash:              f97c6dab2f08ffbea5f08af8804cf9b6f9d2dad4087d268035ac7cfd93da245f
 
 Running SMT Operator Premise Perturbation Mutation Test...
 Mutation Test Passed:   true (DFRL-P-025: unsat -> sat)
