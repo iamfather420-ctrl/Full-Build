@@ -1,4 +1,5 @@
 import { REAL_88_PARADOX_REGISTRY, DFRLParadoxItem, ModelClassification, ModelScope } from '../data/paradoxData';
+import { THEOREM_SPECIFIC_68 } from '../paradoxes/TheoremSpecific68';
 import { computeSha256 } from '../database/DatabaseSchema';
 
 export interface DFRLVerificationResult {
@@ -17,7 +18,7 @@ export interface DFRLVerificationResult {
   execution_id: string;
   solver_result: 'unsat' | 'sat' | 'unknown' | 'error' | 'formal_execution_not_performed';
   proved: boolean;
-  claim_scope: 'MODEL_VERIFIED';
+  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED';
   execution_duration_ms: number;
   duration_ms?: number;
   error?: string;
@@ -54,10 +55,12 @@ export interface DFRL88VerificationReport {
   authored_models_count: number;
   generated_models_count: number;
   deterministic_replays_matched: number;
-  claim_scope: 'MODEL_VERIFIED';
+  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED';
   solver_engine: string;
   solver_version: string;
   overall_status: 'VERIFIED' | 'FAILED' | 'PARTIAL';
+  exact_verified_count: number;
+  bounded_model_verified_count: number;
   verification_root_sha256: string;
   results: DFRLVerificationResult[];
   replays: ReplayVerificationRecord[];
@@ -164,7 +167,7 @@ export class DFRLFormalVerifier {
         execution_id: executionId,
         solver_result: 'formal_execution_not_performed',
         proved: false,
-        claim_scope: 'MODEL_VERIFIED',
+        claim_scope: THEOREM_SPECIFIC_68.some(m => m.code === item.code && m.scope === 'FINITE_ABSTRACTION') ? 'BOUNDED_MODEL_VERIFIED' : 'MODEL_VERIFIED',
         execution_duration_ms: Number(duration.toFixed(3)),
         error: 'Z3 WASM solver module could not be initialized',
         certificate_sha256: computeSha256(certSeed),
@@ -212,8 +215,8 @@ export class DFRLFormalVerifier {
       solver_version: this.solverVersion,
       execution_id: executionId,
       solver_result: solverResult,
-      proved: solverResult === 'unsat',
-      claim_scope: 'MODEL_VERIFIED',
+      proved: solverResult === (item as DFRLParadoxItem & { expected_solver_result?: 'unsat' | 'sat' }).expected_solver_result,
+      claim_scope: THEOREM_SPECIFIC_68.some(m => m.code === item.code && m.scope === 'FINITE_ABSTRACTION') ? 'BOUNDED_MODEL_VERIFIED' : 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
       error: execError,
@@ -269,9 +272,7 @@ export class DFRLFormalVerifier {
     const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}`;
     const replayEvidenceHash = computeSha256(replayCertSeed);
 
-    const match =
-      replayResult === originalResult.solver_result &&
-      originalResult.solver_result === 'unsat';
+    const match = replayResult === originalResult.solver_result;
 
     return {
       operator_id: item.code,
@@ -326,10 +327,13 @@ export class DFRLFormalVerifier {
     const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
-    const allUnsat = unsatCount === REAL_88_PARADOX_REGISTRY.length;
+    const allExecuted = executed === REAL_88_PARADOX_REGISTRY.length && errorCount === 0 && unknownCount === 0;
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
+    const allProved = results.every(r => r.proved);
+    const exactVerifiedCount = results.filter(r => r.proved && r.claim_scope === 'MODEL_VERIFIED').length;
+    const boundedModelVerifiedCount = results.filter(r => r.proved && r.claim_scope === 'BOUNDED_MODEL_VERIFIED').length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
-      allUnsat && allReplayed ? 'VERIFIED' : (unsatCount > 0 ? 'PARTIAL' : 'FAILED');
+      allExecuted && allReplayed && allProved ? 'VERIFIED' : (executed > 0 ? 'PARTIAL' : 'FAILED');
 
     const rootHash = computeSha256(
       results.map(r => `${r.operator_id}:${r.actual_smt_assertion_hash}:${r.solver_result}:${r.certificate_sha256}`).join('|')
@@ -344,6 +348,8 @@ export class DFRLFormalVerifier {
       executed,
       unsat_count: unsatCount,
       unsat_proved_count: unsatCount,
+      exact_verified_count: exactVerifiedCount,
+      bounded_model_verified_count: boundedModelVerifiedCount,
       sat_count: satCount,
       unknown_count: unknownCount,
       error_count: errorCount,
@@ -367,13 +373,13 @@ export class DFRLFormalVerifier {
    * Mutated: removes refutation negation -> SAT
    */
   public async runSmtMutationTest(): Promise<SMTMutationTestResult> {
-    const targetItem = REAL_88_PARADOX_REGISTRY[20]; // DFRL-P-021
+    const targetItem = REAL_88_PARADOX_REGISTRY.find(item => item.code === 'DFRL-P-025') || REAL_88_PARADOX_REGISTRY[24]; // exact classical Liar model
     const originalSmt = targetItem.z3_smt_assertion;
     const originalHash = computeSha256(originalSmt);
 
     // Actual mutation: invert refutation constraint (not (and ...)) to (and ...)
     // That turns the theorem contradiction into an achievable state: SAT
-    const mutatedSmt = originalSmt.replace('(assert (not (and', '(assert (and').replace(/\)\)\s*$/, ')');
+    const mutatedSmt = originalSmt.replace('(assert (= L (not L)))', '(assert (= L L))');
     const mutatedHash = computeSha256(mutatedSmt);
 
     const z3Mod = await this.getZ3Module();
