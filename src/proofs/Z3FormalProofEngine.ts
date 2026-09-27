@@ -229,63 +229,37 @@ export class Z3FormalProofEngine {
     provedExplanation?: string
   ): Promise<Z3ProofResult> {
     const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    let solverResult: 'unsat' | 'sat' | 'unknown' = 'unknown';
+    let counterexample: Record<string, string> | undefined;
+    let explanation = '';
 
-    // Formal Symbolic SMT Solver Engine
-    // Solves propositional constraints, self-referential equalities, contradiction checks, and arithmetic bounds
-    let solverResult: 'unsat' | 'sat' | 'unknown' = 'unsat';
-    let counterexample: Record<string, string> | undefined = undefined;
-
-    const normalized = smtScript.replace(/;[^\n]*/g, '').trim();
-
-    // Check for direct contradiction patterns:
-    // 1. (= X (not X)) -> boolean impossibility (UNSAT)
-    // 2. (= v1 0) and (= v2 1) and (= v1 v2) -> 0 = 1 (UNSAT)
-    // 3. (> Omega Omega) -> irreflexive strict order (UNSAT)
-    // 4. Pigeonhole distinct p0..p3 in range 1..3 -> |Domain| > |Codomain| (UNSAT)
-    // 5. Decrement progress negation: (not (and (< (s - 1) s) (>= (s - 1) 0))) for s > 0 -> s - 1 < s is true and s - 1 >= 0 is true, so and is true, not is false -> UNSAT
-    // 6. Real halving: (not (and (< d/2 d) (> d/2 0))) for d > 0 -> true, not is false -> UNSAT
-    if (
-      normalized.includes('(= (Member R R) (not (Member R R)))') ||
-      normalized.includes('(forall ((p Person)) (= (Shaves Barber p) (not (Shaves p p))))') ||
-      normalized.includes('(= LiarStatement (not LiarStatement))') ||
-      normalized.includes('(= Liar (not Liar))') ||
-      normalized.includes('(= C (=> C FalseConst))') ||
-      normalized.includes('(not (and (< s_next s) (>= s_next 0)))') ||
-      normalized.includes('(not (and (< d_next d) (> d_next 0.0)))') ||
-      (normalized.includes('(= v1 0)') && normalized.includes('(= v2 1)') && normalized.includes('(= v1 v2)')) ||
-      (normalized.includes('distinct p0 p1 p2 p3') && normalized.includes('<= p3 3')) ||
-      normalized.includes('(= s_next (- s')
-    ) {
-      solverResult = 'unsat';
-    } else if (normalized.includes('(assert false)') || normalized.includes('(assert (= 0 1))')) {
-      solverResult = 'unsat';
-    } else if (normalized.includes('(assert true)')) {
-      solverResult = 'sat';
-      counterexample = { 'model': 'true' };
-    } else {
-      // General DPLL symbolic evaluation
-      solverResult = expectedResult;
+    // Real Z3 execution: parse the SMT-LIB2 program and ask the bundled Z3 WASM kernel.
+    const api = await import('z3-solver/node');
+    const z3 = await api.init();
+    try {
+      const { Context } = z3;
+      const { Solver } = new Context('verification');
+      const solver = new Solver();
+      const executableScript = smtScript.replace(/\(check-sat\)/g, '').trim();
+      solver.fromString(executableScript);
+      const result = await solver.check();
+      solverResult = result as 'unsat' | 'sat' | 'unknown';
+      if (solverResult === 'sat') {
+        const model = solver.model();
+        counterexample = { model: model.toString() };
+      }
+      explanation = provedExplanation ||
+        (solverResult === expectedResult
+          ? \`Z3 returned \${solverResult.toUpperCase()} for the formal proposition.\`
+          : \`Z3 returned \${solverResult.toUpperCase()} but the registry expected \${expectedResult.toUpperCase()}.\`);
+    } finally {
+      await api.killThreads(z3.em);
     }
 
     const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const durationMs = Number((end - start).toFixed(2));
-
     const proved = solverResult === expectedResult;
-    const explanation = proved
-      ? (provedExplanation || `Theorem proved: Z3 SMT solver confirmed status [${solverResult.toUpperCase()}].`)
-      : `Verification failed: Z3 solver returned [${solverResult.toUpperCase()}], expected [${expectedResult.toUpperCase()}].`;
-
-    const certPayload = {
-      theoremId,
-      theoremName,
-      claim,
-      solverResult,
-      proved,
-      smtScript,
-      durationMs,
-      timestamp: Date.now()
-    };
-
+    const certPayload = { theoremId, theoremName, claim, solverResult, proved, smtScript, durationMs, timestamp: Date.now() };
     return {
       theorem_id: theoremId,
       theorem_name: theoremName,
