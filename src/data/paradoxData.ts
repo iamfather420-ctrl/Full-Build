@@ -10,7 +10,7 @@ export interface DFRLParadoxItem {
   model_scope: ModelScope;
   classical_antinomy: string;
   formal_invariant: string;
-  machine_checked_status: 'VERIFIED' | 'EQUIVALENT_FAMILY' | 'SMT_CERTIFIED';
+  machine_checked_status: 'VERIFIED' | 'EQUIVALENT_FAMILY' | 'SMT_CERTIFIED' | 'PROVISIONAL' | 'CLAIM_ONLY';
   z3_smt_assertion: string;
   proof_bundle_ref: string;
 }
@@ -278,22 +278,20 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
   }
 ];
 
-// Generate remainder of 88 formal operators programmatically:
-// Operators 21 through 88 are explicitly classified as GENERATED_GENERALIZED_MODEL.
-// They model well-founded inductive ranking metric termination variants.
-for (let i = 21; i <= 88; i++) {
-  const codeNum = String(i).padStart(3, '0');
+import { THEOREM_SPECIFIC_68 } from '../paradoxes/TheoremSpecific68';
+
+for (const model of THEOREM_SPECIFIC_68) {
   REAL_88_PARADOX_REGISTRY.push({
-    code: `DFRL-P-${codeNum}`,
-    name: `Sovereign DFRL Formal Paradox Operator #${codeNum}`,
-    domain: i % 2 === 0 ? 'FORMAL_SYSTEMS' : 'DISTRIBUTED_CONSENSUS',
-    category: i % 3 === 0 ? 'MATHEMATICAL_ANALYSIS' : i % 3 === 1 ? 'LOGICAL_ANTINOMY' : 'CONSENSUS_INVARIANT',
-    model_classification: 'GENERATED_GENERALIZED_MODEL',
+    code: model.code,
+    name: model.name,
+    domain: model.domain,
+    category: model.domain,
+    model_classification: 'AUTHORED_MODEL',
     model_scope: 'MODEL_ONLY',
-    classical_antinomy: `Classical formulation ${codeNum}: Antinomic state boundary in finite model category.`,
-    formal_invariant: `Formal invariant ${codeNum}: Machine-checked SMT inductive reduction guarantees convergence without contradiction.`,
-    machine_checked_status: 'VERIFIED',
-    z3_smt_assertion: `(declare-const s_${codeNum} Int) (declare-const s_next_${codeNum} Int) (assert (> s_${codeNum} 0)) (assert (= s_next_${codeNum} (- s_${codeNum} 1))) (assert (not (and (< s_next_${codeNum} s_${codeNum}) (>= s_next_${codeNum} 0))))`,
-    proof_bundle_ref: `PB-DFRL-${codeNum}`
+    classical_antinomy: model.claim,
+    formal_invariant: model.claim,
+    machine_checked_status: 'PROVISIONAL',
+    z3_smt_assertion: model.smt_script,
+    proof_bundle_ref: `PB-${model.code}`
   });
 }
