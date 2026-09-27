@@ -252,6 +252,8 @@ export class Z3FormalProofEngine {
         (solverResult === expectedResult
           ? `Z3 returned ${solverResult.toUpperCase()} for the formal proposition.`
           : `Z3 returned ${solverResult.toUpperCase()} but the registry expected ${expectedResult.toUpperCase()}.`);
+    } catch (err) {
+      throw err;
     }
 
     const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
