@@ -1,7 +1,7 @@
 {
-  "execution_id": "sandbox_exec_1790448773828",
+  "execution_id": "sandbox_exec_1790484595057",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-09-26T18:52:53.828Z",
+  "timestamp": "2026-09-27T04:49:55.057Z",
   "environment": "sandbox",
   "gates": [
     {
@@ -18,8 +18,8 @@
     },
     {
       "name": "GATE-SB-03: PayPal Live Sandbox & Fail-Closed",
-      "scope": "SANDBOX",
-      "status": "PASSED",
+      "scope": "LOCAL",
+      "status": "CONFIGURATION_REQUIRED",
       "details": "Live 401 rejection confirmed on invalid creds (Client Authentication failed). Missing creds fail-closed confirmed."
     },
     {

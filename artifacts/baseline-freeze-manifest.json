@@ -2,7 +2,7 @@
   "manifest_type": "BASELINE_FREEZE_MANIFEST",
   "prior_execution_id": "exec_pipeline_1790394862640",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "frozen_at": "2026-09-26T18:52:53.828Z",
+  "frozen_at": "2026-09-27T04:49:55.057Z",
   "frozen_status": "LOCAL_VERIFIED / MODEL_VERIFIED",
   "prior_artifacts_preserved": [
     "artifacts/DFRL-88-MACHINE-VERIFICATION-AUDIT.md",

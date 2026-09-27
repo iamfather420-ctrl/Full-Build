@@ -1,23 +1,23 @@
 {
-  "execution_id": "sandbox_exec_1790448773828",
+  "execution_id": "sandbox_exec_1790484595057",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-09-26T18:52:53.828Z",
+  "timestamp": "2026-09-27T04:49:55.057Z",
   "environment": "sandbox",
   "claim_scope": "SANDBOX",
   "providers": {
     "paypal": {
-      "execution_id": "sandbox_exec_1790448773828",
+      "execution_id": "sandbox_exec_1790484595057",
       "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-      "timestamp": "2026-09-26T18:52:53.828Z",
+      "timestamp": "2026-09-27T04:49:55.057Z",
       "environment": "sandbox",
-      "claim_scope": "SANDBOX",
-      "status": "SANDBOX_VERIFIED",
+      "claim_scope": "LOCAL",
+      "status": "AUTHENTICATION_FAILED",
       "configured": true,
       "oauth_attempted": true,
-      "oauth_status_code": 200,
-      "oauth_success": true,
+      "oauth_status_code": 401,
+      "oauth_success": false,
       "transaction_attempted": false,
-      "transaction_verified": true,
+      "transaction_verified": false,
       "idempotency_tested": false,
       "idempotency_passed": false,
       "failure_injection": {
@@ -27,9 +27,9 @@
       }
     },
     "sovereign_escrow": {
-      "execution_id": "sandbox_exec_1790448773828",
+      "execution_id": "sandbox_exec_1790484595057",
       "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-      "timestamp": "2026-09-26T18:52:53.828Z",
+      "timestamp": "2026-09-27T04:49:55.057Z",
       "environment": "sandbox",
       "claim_scope": "LOCAL",
       "status": "VERIFIED",
@@ -41,9 +41,9 @@
       "fail_closed": true
     },
     "neon": {
-      "execution_id": "sandbox_exec_1790448773828",
+      "execution_id": "sandbox_exec_1790484595057",
       "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-      "timestamp": "2026-09-26T18:52:53.828Z",
+      "timestamp": "2026-09-27T04:49:55.057Z",
       "environment": "sandbox",
       "claim_scope": "LOCAL",
       "status": "NOT_REQUIRED",

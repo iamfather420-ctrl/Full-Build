@@ -1,7 +1,7 @@
 {
-  "execution_id": "sandbox_exec_1790448773828",
+  "execution_id": "sandbox_exec_1790484595057",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-09-26T18:52:53.828Z",
+  "timestamp": "2026-09-27T04:49:55.057Z",
   "environment": "sandbox",
   "claim_scope": "LOCAL",
   "status": "VERIFIED",
@@ -11,5 +11,5 @@
   "timelock_enforced": true,
   "multisig_verified": true,
   "fail_closed": true,
-  "evidence_hash": "6c3e79d4fc1c689532fdc50096e211c7656010f141f7ef7786cd35713fe43255"
+  "evidence_hash": "a5a5777be6cbfc6f07250b56d6b57f479171cc16a597442c7a7793cea7acae3f"
 }

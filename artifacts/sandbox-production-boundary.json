@@ -1,14 +1,15 @@
 {
-  "execution_id": "sandbox_exec_1790448773828",
+  "execution_id": "sandbox_exec_1790484595057",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-09-26T18:52:53.828Z",
+  "timestamp": "2026-09-27T04:49:55.057Z",
   "model_scope": "VERIFIED",
   "local_scope": "VERIFIED",
-  "sandbox_scope": "SANDBOX_VERIFIED",
+  "sandbox_scope": "CONFIGURATION_REQUIRED",
   "production_scope": "BLOCKED",
   "production_blockers": [
     "Environment is currently set to [sandbox]. Production requires explicit SOLVEX_ENV=production opt-in.",
     "Production external execution has not occurred. Sandbox provider validation does not equal production execution.",
+    "PayPal enterprise production credentials have not been configured or executed in live mode.",
     "Neon PostgreSQL live production database has not been connected."
   ]
 }

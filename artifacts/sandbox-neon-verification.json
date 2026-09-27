@@ -1,12 +1,12 @@
 {
-  "execution_id": "sandbox_exec_1790448773828",
+  "execution_id": "sandbox_exec_1790484595057",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-09-26T18:52:53.828Z",
+  "timestamp": "2026-09-27T04:49:55.057Z",
   "environment": "sandbox",
   "claim_scope": "LOCAL",
   "status": "NOT_REQUIRED",
   "configured": false,
   "tested": false,
   "notes": "Neon serverless database is optional in sandbox tier; local SQLite multi-tenant store with Merkle audit chain acts as primary deterministic datastore.",
-  "evidence_hash": "69d56b82a3c3b1b92c0a76b4e00489b59a3103df30e8fac989f845d8de3f4a60"
+  "evidence_hash": "e9c48dd83c00a0565d7a7144564ca2333ddf646e9813ddec7182f33114eab354"
 }
