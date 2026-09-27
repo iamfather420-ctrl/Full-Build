@@ -13,6 +13,7 @@ export interface DFRLParadoxItem {
   machine_checked_status: 'VERIFIED' | 'EQUIVALENT_FAMILY' | 'SMT_CERTIFIED' | 'PROVISIONAL' | 'CLAIM_ONLY';
   z3_smt_assertion: string;
   proof_bundle_ref: string;
+  expected_solver_result: 'unsat' | 'sat';
 }
 
 export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
@@ -292,6 +293,7 @@ for (const model of THEOREM_SPECIFIC_68) {
     formal_invariant: model.claim,
     machine_checked_status: 'PROVISIONAL',
     z3_smt_assertion: model.smt_script,
-    proof_bundle_ref: `PB-${model.code}`
+    proof_bundle_ref: `PB-${model.code}`,
+    expected_solver_result: model.expected_solver_result
   });
 }
