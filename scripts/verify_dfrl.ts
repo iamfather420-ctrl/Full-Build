@@ -11,7 +11,9 @@ async function main() {
   console.log(`Propositions Evaluated: ${report.total_operators}`);
   console.log(`Attempted:              ${report.attempted}`);
   console.log(`Executed:               ${report.executed}`);
-  console.log(`UNSAT Theorems Proved:  ${report.unsat_proved_count}`);
+  console.log(`UNSAT Results:           ${report.unsat_count}`);
+  console.log(`Exact Models Verified:   ${report.exact_verified_count}`);
+  console.log(`Bounded Models Verified:  ${report.bounded_model_verified_count}`);
   console.log(`SAT Results:            ${report.sat_count}`);
   console.log(`Unknown Results:        ${report.unknown_count}`);
   console.log(`Execution Errors:       ${report.error_count}`);
@@ -33,8 +35,8 @@ async function main() {
   const tamp = verifier.runArtifactTamperTest(report);
   console.log(`Tamper Test Passed:     ${tamp.passed} (Alarm Triggered: ${tamp.alarm_triggered})`);
 
-  if (report.unsat_proved_count === 88 && mut.passed && failInj.passed && tamp.passed) {
-    console.log('\n✅ DFRL 88-OPERATOR FORMAL VERIFICATION: 100% SUCCESS');
+  if (report.overall_status === 'VERIFIED' && report.deterministic_replays_matched === 88 && mut.passed && failInj.passed && tamp.passed) {
+    console.log('\n✅ DFRL 88-OPERATOR FORMAL MODEL VERIFICATION: EXECUTION + REPLAY + TEST GATES PASSED');
   } else {
     console.error('\n❌ DFRL VERIFICATION FAILED');
     process.exit(1);
