@@ -18,7 +18,7 @@ export interface DFRLVerificationResult {
   execution_id: string;
   solver_result: 'unsat' | 'sat' | 'unknown' | 'error' | 'formal_execution_not_performed';
   proved: boolean;
-  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED';
+  claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED' | 'EXISTENTIAL_WITNESS' | 'COMPETING_ASSUMPTIONS';
   execution_duration_ms: number;
   duration_ms?: number;
   error?: string;
@@ -61,6 +61,8 @@ export interface DFRL88VerificationReport {
   overall_status: 'VERIFIED' | 'FAILED' | 'PARTIAL';
   exact_verified_count: number;
   bounded_model_verified_count: number;
+  existential_witness_count: number;
+  competing_assumption_count: number;
   verification_root_sha256: string;
   results: DFRLVerificationResult[];
   replays: ReplayVerificationRecord[];
@@ -119,6 +121,15 @@ export class DFRLFormalVerifier {
     return DFRLFormalVerifier.instance;
   }
 
+  private getClaimScope(item: DFRLParadoxItem): DFRLVerificationResult['claim_scope'] {
+    const model = THEOREM_SPECIFIC_68.find(m => m.code === item.code);
+    if (!model) return 'MODEL_VERIFIED';
+    if (model.scope === 'FINITE_ABSTRACTION') return 'BOUNDED_MODEL_VERIFIED';
+    if (model.scope === 'EXISTENTIAL_WITNESS') return 'EXISTENTIAL_WITNESS';
+    if (model.scope === 'COMPETING_ASSUMPTIONS') return 'COMPETING_ASSUMPTIONS';
+    return 'MODEL_VERIFIED';
+  }
+
   private async getZ3Module(): Promise<any> {
     if (!this.z3InitPromise) {
       this.z3InitPromise = (async () => {
@@ -167,7 +178,7 @@ export class DFRLFormalVerifier {
         execution_id: executionId,
         solver_result: 'formal_execution_not_performed',
         proved: false,
-        claim_scope: THEOREM_SPECIFIC_68.some(m => m.code === item.code && m.scope === 'FINITE_ABSTRACTION') ? 'BOUNDED_MODEL_VERIFIED' : 'MODEL_VERIFIED',
+        claim_scope: this.getClaimScope(item),
         execution_duration_ms: Number(duration.toFixed(3)),
         error: 'Z3 WASM solver module could not be initialized',
         certificate_sha256: computeSha256(certSeed),
@@ -217,7 +228,7 @@ export class DFRLFormalVerifier {
       execution_id: executionId,
       solver_result: solverResult,
       proved: solverResult === expectedResult,
-      claim_scope: THEOREM_SPECIFIC_68.some(m => m.code === item.code && m.scope === 'FINITE_ABSTRACTION') ? 'BOUNDED_MODEL_VERIFIED' : 'MODEL_VERIFIED',
+      claim_scope: this.getClaimScope(item),
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
       error: execError,
@@ -333,6 +344,8 @@ export class DFRLFormalVerifier {
     const allProved = results.every(r => r.proved);
     const exactVerifiedCount = results.filter(r => r.proved && r.claim_scope === 'MODEL_VERIFIED').length;
     const boundedModelVerifiedCount = results.filter(r => r.proved && r.claim_scope === 'BOUNDED_MODEL_VERIFIED').length;
+    const existentialWitnessCount = results.filter(r => r.proved && r.claim_scope === 'EXISTENTIAL_WITNESS').length;
+    const competingAssumptionCount = results.filter(r => r.proved && r.claim_scope === 'COMPETING_ASSUMPTIONS').length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
       allExecuted && allReplayed && allProved ? 'VERIFIED' : (executed > 0 ? 'PARTIAL' : 'FAILED');
 
@@ -351,6 +364,8 @@ export class DFRLFormalVerifier {
       unsat_proved_count: unsatCount,
       exact_verified_count: exactVerifiedCount,
       bounded_model_verified_count: boundedModelVerifiedCount,
+      existential_witness_count: existentialWitnessCount,
+      competing_assumption_count: competingAssumptionCount,
       sat_count: satCount,
       unknown_count: unknownCount,
       error_count: errorCount,
