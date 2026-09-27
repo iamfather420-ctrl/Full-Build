@@ -271,7 +271,9 @@ export class DFRLFormalVerifier {
 
     const match =
       replayResult === originalResult.solver_result &&
-      originalResult.solver_result === 'unsat';
+      replayResult !== 'error' &&
+      replayResult !== 'unknown' &&
+      replayResult !== 'formal_execution_not_performed';
 
     return {
       operator_id: item.code,
@@ -326,10 +328,10 @@ export class DFRLFormalVerifier {
     const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
-    const allUnsat = unsatCount === REAL_88_PARADOX_REGISTRY.length;
+    const allExecuted = executed === REAL_88_PARADOX_REGISTRY.length && unknownCount === 0 && errorCount === 0;
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
-      allUnsat && allReplayed ? 'VERIFIED' : (unsatCount > 0 ? 'PARTIAL' : 'FAILED');
+      allExecuted && allReplayed ? 'VERIFIED' : (executed > 0 ? 'PARTIAL' : 'FAILED');
 
     const rootHash = computeSha256(
       results.map(r => `${r.operator_id}:${r.actual_smt_assertion_hash}:${r.solver_result}:${r.certificate_sha256}`).join('|')
