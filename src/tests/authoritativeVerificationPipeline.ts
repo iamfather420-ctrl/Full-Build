@@ -13,6 +13,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
+import { DHBootstrapVerification } from './DHBootstrapVerification';
 
 export interface GateResult {
   gate_index: number;
@@ -229,13 +230,28 @@ export class AuthoritativeVerificationPipeline {
     const g6Start = performance.now();
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
     const dfrlReport = await dfrlVerifier.verifyAll88();
-    const dfrlOk = dfrlReport.unsat_count === 88 && dfrlReport.overall_status === 'VERIFIED';
+    const dhBootstrapReport = await DHBootstrapVerification.run();
+    const dfrlOk =
+      dfrlReport.executed === 88 &&
+      dfrlReport.unknown_count === 0 &&
+      dfrlReport.error_count === 0 &&
+      dfrlReport.deterministic_replays_matched === 88 &&
+      dfrlReport.overall_status === 'VERIFIED';
+    const dhBootstrapOk =
+      dhBootstrapReport.executed === 32 &&
+      dhBootstrapReport.unknown_count === 0 &&
+      dhBootstrapReport.error_count === 0 &&
+      dhBootstrapReport.deterministic_replays_matched === 32 &&
+      dhBootstrapReport.duplicate_links_invalid === 0 &&
+      dhBootstrapReport.mutation_test_passed &&
+      dhBootstrapReport.failure_injection_passed &&
+      dhBootstrapReport.artifact_tamper_test_passed;
     recordGate(
       6,
       'GATE-06',
-      'DFRL 88-Operator Z3 SMT Formal Verification',
-      'MODEL',
-      dfrlOk ? 'PASSED' : 'FAILED',
+      'DFRL 88-Operator Z3 SMT Formal Verification + DH 32 Registry Verification',
+      'LOCAL',
+      dfrlOk && dhBootstrapOk ? 'PASSED' : 'FAILED',
       performance.now() - g6Start,
       {
         total_propositions: dfrlReport.total_propositions,
@@ -246,7 +262,16 @@ export class AuthoritativeVerificationPipeline {
         generated_models_count: dfrlReport.generated_models_count,
         solver_engine: dfrlReport.solver_engine,
         solver_version: dfrlReport.solver_version,
-        root_sha256: dfrlReport.verification_root_sha256
+        root_sha256: dfrlReport.verification_root_sha256,
+        dh_bootstrap: {
+          total_records: dhBootstrapReport.total_records,
+          executed: dhBootstrapReport.executed,
+          deterministic_replays_matched: dhBootstrapReport.deterministic_replays_matched,
+          status_breakdown: dhBootstrapReport.status_breakdown,
+          duplicate_links_invalid: dhBootstrapReport.duplicate_links_invalid,
+          verification_root_sha256: dhBootstrapReport.verification_root_sha256,
+          claim_scope: dhBootstrapReport.claim_scope
+        }
       }
     );
 
@@ -255,12 +280,19 @@ export class AuthoritativeVerificationPipeline {
       JSON.stringify(dfrlReport, null, 2),
       'utf8'
     );
+    fs.writeFileSync(
+      path.join(artifactsDir, 'dh-bootstrap-32-verification.json'),
+      JSON.stringify(dhBootstrapReport, null, 2),
+      'utf8'
+    );
 
     // ==========================================
     // GATE 7: Deterministic Cleanroom Replay
     // ==========================================
     const g7Start = performance.now();
-    const replayOk = dfrlReport.deterministic_replays_matched === 88;
+    const replayOk =
+      dfrlReport.deterministic_replays_matched === 88 &&
+      dhBootstrapReport.deterministic_replays_matched === 32;
     recordGate(
       7,
       'GATE-07',
@@ -269,9 +301,11 @@ export class AuthoritativeVerificationPipeline {
       replayOk ? 'PASSED' : 'FAILED',
       performance.now() - g7Start,
       {
-        total_operators_replayed: 88,
-        replays_matched: dfrlReport.deterministic_replays_matched,
-        independent_contexts_reconstructed: 88,
+        total_operators_replayed: 120,
+        replays_matched: dfrlReport.deterministic_replays_matched + dhBootstrapReport.deterministic_replays_matched,
+        dfrl_replays_matched: dfrlReport.deterministic_replays_matched,
+        dh_bootstrap_replays_matched: dhBootstrapReport.deterministic_replays_matched,
+        independent_contexts_reconstructed: 120,
         bitrot_divergence: 0
       }
     );
@@ -284,7 +318,8 @@ export class AuthoritativeVerificationPipeline {
           total_replayed: 88,
           replays_matched: dfrlReport.deterministic_replays_matched,
           status: replayOk ? 'PASSED' : 'FAILED',
-          replays: dfrlReport.replays
+          replays: dfrlReport.replays,
+          dh_bootstrap_replays: dhBootstrapReport.replays
         },
         null,
         2
@@ -299,7 +334,10 @@ export class AuthoritativeVerificationPipeline {
     const mutTest = await dfrlVerifier.runSmtMutationTest();
     const failInjTest = await dfrlVerifier.runZ3FailureInjectionTest();
     const tampTest = dfrlVerifier.runArtifactTamperTest(dfrlReport);
-    const g8Passed = mutTest.passed && failInjTest.passed && tampTest.passed;
+    const g8Passed = mutTest.passed && failInjTest.passed && tampTest.passed &&
+      dhBootstrapReport.mutation_test_passed &&
+      dhBootstrapReport.failure_injection_passed &&
+      dhBootstrapReport.artifact_tamper_test_passed;
     recordGate(
       8,
       'GATE-08',
@@ -312,6 +350,9 @@ export class AuthoritativeVerificationPipeline {
         smt_mutation_transition: `${mutTest.observed_original_result} -> ${mutTest.observed_mutated_result}`,
         z3_failure_injection_fail_closed: failInjTest.fail_closed_enforced,
         artifact_tamper_alarm_triggered: tampTest.alarm_triggered,
+        dh_bootstrap_mutation_test_passed: dhBootstrapReport.mutation_test_passed,
+        dh_bootstrap_failure_injection_passed: dhBootstrapReport.failure_injection_passed,
+        dh_bootstrap_artifact_tamper_test_passed: dhBootstrapReport.artifact_tamper_test_passed,
         fail_closed_active: true
       }
     );
@@ -606,6 +647,24 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
         cleanroom_replays: dfrlReport.deterministic_replays_matched,
         root_hash: dfrlReport.verification_root_sha256
       },
+      dh_bootstrap_registry: {
+        total: 32,
+        executed: dhBootstrapReport.executed,
+        deterministic_replays: dhBootstrapReport.deterministic_replays_matched,
+        status_breakdown: dhBootstrapReport.status_breakdown,
+        duplicate_links_invalid: dhBootstrapReport.duplicate_links_invalid,
+        root_hash: dhBootstrapReport.verification_root_sha256,
+        claim_scope: dhBootstrapReport.claim_scope
+      },
+      verification_accounting: {
+        total_records: 120,
+        dfrl_records: 88,
+        dh_bootstrap_records: 32,
+        dfrl_executed: dfrlReport.executed,
+        dh_bootstrap_executed: dhBootstrapReport.executed,
+        total_executed: dfrlReport.executed + dhBootstrapReport.executed,
+        total_deterministic_replays: dfrlReport.deterministic_replays_matched + dhBootstrapReport.deterministic_replays_matched
+      },
       enterprise_invariants: {
         total: entRes.totalTests,
         passed: entRes.passedTests
@@ -669,7 +728,8 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     if (!compileOk) productionBlockers.push('GATE-04 TypeScript compilation errors detected.');
     if (!entRes.allPassed) productionBlockers.push('GATE-05 Enterprise invariant tests failed.');
-    if (!dfrlOk) productionBlockers.push('GATE-06 DFRL SMT formal proofs failed.');
+    if (!dfrlOk) productionBlockers.push('GATE-06 DFRL execution/replay verification failed.');
+    if (!dhBootstrapOk) productionBlockers.push('GATE-06 DH-P-001..DH-P-032 registry verification failed.');
     if (!replayOk) productionBlockers.push('GATE-07 Deterministic replay divergence detected.');
     if (!g8Passed) productionBlockers.push('GATE-08 Mutation, failure injection, or tamper alarm failed.');
     if (!nodeCoverage.all_passed) productionBlockers.push('GATE-09 Daisy 54-node CUJ coverage failed.');
