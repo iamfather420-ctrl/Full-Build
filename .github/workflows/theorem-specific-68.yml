@@ -30,4 +30,15 @@ jobs:
           git add tsc-errors.txt
           git diff --cached --quiet || git commit -m "diagnostic: capture TypeScript verification errors [skip ci]"
           git push
-      - run: npm run verify:dfrl
+      - name: DFRL verification
+        run: npm run verify:dfrl > dfrl-output.txt 2>&1
+
+      - name: Preserve DFRL diagnostics
+        if: failure()
+        run: |
+          cat dfrl-output.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dfrl-output.txt
+          git diff --cached --quiet || git commit -m "diagnostic: capture DFRL verification output [skip ci]"
+          git push
