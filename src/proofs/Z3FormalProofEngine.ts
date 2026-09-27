@@ -250,8 +250,8 @@ export class Z3FormalProofEngine {
       }
       explanation = provedExplanation ||
         (solverResult === expectedResult
-          ? \`Z3 returned \${solverResult.toUpperCase()} for the formal proposition.\`
-          : \`Z3 returned \${solverResult.toUpperCase()} but the registry expected \${expectedResult.toUpperCase()}.\`);
+          ? `Z3 returned ${solverResult.toUpperCase()} for the formal proposition.`
+          : `Z3 returned ${solverResult.toUpperCase()} but the registry expected ${expectedResult.toUpperCase()}.`);
     } finally {
       await api.killThreads(z3.em);
     }
