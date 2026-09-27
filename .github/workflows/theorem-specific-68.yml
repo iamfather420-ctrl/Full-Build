@@ -6,6 +6,9 @@ on:
     branches:
       - dfrl/real-68-theorem-models
 
+permissions:
+  contents: write
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -15,5 +18,16 @@ jobs:
         with:
           node-version: 22
       - run: npm install --legacy-peer-deps --no-audit --no-fund
-      - run: npm run lint
+      - name: TypeScript lint
+        run: npm run lint > tsc-errors.txt 2>&1
+
+      - name: Preserve compiler diagnostics
+        if: failure()
+        run: |
+          cat tsc-errors.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tsc-errors.txt
+          git diff --cached --quiet || git commit -m "diagnostic: capture TypeScript verification errors [skip ci]"
+          git push
       - run: npm run verify:dfrl
