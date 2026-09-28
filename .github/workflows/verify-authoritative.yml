@@ -111,3 +111,5 @@ jobs:
             }
             console.log("120-case gate PASSED");
           '
+
+# Combined 120-case authoritative gate execution trigger: DFRL 88 + DH-P 32.
