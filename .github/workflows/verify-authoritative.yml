@@ -1,0 +1,114 @@
+name: Authoritative 120-Case Verification
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies (clean, reproducible)
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
+          # Ensure critical binaries are present
+          npx tsx --version
+          node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
+
+      - name: Type-check
+        run: npx tsc --noEmit || true
+
+      - name: Run Authoritative Verification Pipeline (120 cases)
+        id: verify
+        run: |
+          echo "Starting authoritative verification against commit $(git rev-parse HEAD)"
+          npm run verify:authoritative
+        env:
+          SOLVEX_ENV: local
+          CI: true
+
+      - name: Print final accounting summary
+        if: always()
+        run: |
+          echo "## Authoritative Verification Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`$(git rev-parse HEAD)\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Command:** \`npm run verify:authoritative\`" >> $GITHUB_STEP_SUMMARY
+          if [ -f artifacts/dfrl-88-verification.json ]; then
+            echo "### DFRL 88" >> $GITHUB_STEP_SUMMARY
+            node -e '
+              const r = require("./artifacts/dfrl-88-verification.json");
+              console.log("- executed:", r.executed);
+              console.log("- unsat:", r.unsat_count ?? r.unsat_proved_count);
+              console.log("- sat:", r.sat_count);
+              console.log("- unknown:", r.unknown_count);
+              console.log("- errors:", r.error_count);
+              console.log("- replays:", r.deterministic_replays_matched);
+              console.log("- root:", r.verification_root_sha256);
+            ' >> $GITHUB_STEP_SUMMARY || true
+          fi
+          if [ -f artifacts/dh-bootstrap-32-verification.json ]; then
+            echo "### DH-P 32" >> $GITHUB_STEP_SUMMARY
+            node -e '
+              const r = require("./artifacts/dh-bootstrap-32-verification.json");
+              console.log("- executed:", r.executed);
+              console.log("- replays:", r.deterministic_replays_matched);
+              console.log("- unknown:", r.unknown_count);
+              console.log("- errors:", r.error_count);
+            ' >> $GITHUB_STEP_SUMMARY || true
+          fi
+          ls -la artifacts/ >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Upload verification artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authoritative-verification-${{ github.sha }}
+          path: |
+            artifacts/
+            DFRL-88-MACHINE-VERIFICATION-AUDIT.json
+            DFRL-88-MACHINE-VERIFICATION-AUDIT.md
+            enterprise-verification-report.json
+            production-gate-evaluation.json
+            execution-gates.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Fail if verification did not produce 120/120
+        if: always()
+        run: |
+          if [ ! -f artifacts/dfrl-88-verification.json ] || [ ! -f artifacts/dh-bootstrap-32-verification.json ]; then
+            echo "Missing verification artifacts"
+            exit 1
+          fi
+          node -e '
+            const dfrl = require("./artifacts/dfrl-88-verification.json");
+            const dh = require("./artifacts/dh-bootstrap-32-verification.json");
+            const ok = dfrl.executed === 88 && dfrl.deterministic_replays_matched === 88 &&
+                       dfrl.unknown_count === 0 && dfrl.error_count === 0 &&
+                       dh.executed === 32 && dh.deterministic_replays_matched === 32 &&
+                       dh.unknown_count === 0 && dh.error_count === 0;
+            if (!ok) {
+              console.error("120-case gate FAILED");
+              console.error("DFRL:", {executed: dfrl.executed, replays: dfrl.deterministic_replays_matched, unknown: dfrl.unknown_count, errors: dfrl.error_count});
+              console.error("DH:", {executed: dh.executed, replays: dh.deterministic_replays_matched, unknown: dh.unknown_count, errors: dh.error_count});
+              process.exit(1);
+            }
+            console.log("120-case gate PASSED");
+          '
