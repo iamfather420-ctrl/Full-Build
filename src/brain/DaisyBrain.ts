@@ -6,6 +6,8 @@ import { REAL_88_PARADOX_REGISTRY } from '../data/paradoxData';
 import { vaultService } from '../services/vaultService';
 import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { NeonStore } from '../database/NeonPersistence';
+import { DaisyActivationGate } from './DaisyActivationGate';
+import { DaisyReasoningKernel, ReasoningComponent, TetherEdge, CompositeCandidate } from './DaisyReasoningKernel';
 
 export interface CompleteBrainState {
   core_engine: string;
@@ -69,6 +71,7 @@ export interface CompleteBrainState {
       policy: string;
     };
   };
+  activation_status: 'INACTIVE' | 'ACTIVE' | 'BLOCKED';
   integrity_sentinel: {
     fail_closed_active: boolean;
     audit_chain_continuous: boolean;
@@ -90,6 +93,7 @@ export class DaisyBrain {
   private static instance: DaisyBrain | null = null;
   private verifiedDFRLCount: number = 88;
   private verifiedReplayCount: number = 88;
+  private readonly reasoningKernel = new DaisyReasoningKernel();
 
   private constructor() {}
 
@@ -105,6 +109,20 @@ export class DaisyBrain {
     this.verifiedReplayCount = replayCount;
   }
 
+  public isAutonomousReasoningActive(): boolean {
+    return DaisyActivationGate.isActive();
+  }
+
+  public proposeCompositeCandidate(
+    problemId: string,
+    components: ReasoningComponent[],
+    tetherEdges: TetherEdge[],
+    rationale: string
+  ): CompositeCandidate {
+    // The reasoning kernel itself fail-closes against the corpus activation gate.
+    return this.reasoningKernel.proposeCompositeCandidate(problemId, components, tetherEdges, rationale);
+  }
+
   public getLiveBrainState(): CompleteBrainState {
     const nodeReg = NodeRegistry.getInstance();
     const paradoxReg = ParadoxRegistry.getInstance();
@@ -114,6 +132,8 @@ export class DaisyBrain {
     const nodes = nodeReg.getAllNodes();
 
     const env = ((typeof process !== 'undefined' && process.env?.SOLVEX_ENV) || 'local').toLowerCase() as 'local' | 'sandbox' | 'production';
+    const activationGate = DaisyActivationGate.read();
+    const brainActive = activationGate?.status === 'ACTIVE';
 
     const pp = PayPalAdapter.getInstance();
     const ppCreds = pp.getEffectiveCredentials();
@@ -151,8 +171,8 @@ export class DaisyBrain {
       version: `1.0.0-${env.toUpperCase()} (Project AGATE Sovereign Unified Core)`,
       environment: env,
       architecture: 'Neural-Symbolic SMT Formal Verifier + 54-Node Sovereign Mesh',
-      status: brainClaimScope,
-      claim_scope: brainClaimScope,
+      status: brainActive ? brainClaimScope : 'EXTERNAL_PROVIDER_REQUIRED',
+      claim_scope: brainActive ? brainClaimScope : 'EXTERNAL_PROVIDER_REQUIRED',
       intelligence_nexus: {
         total_nodes: nodes.length,
         code_executed_nodes: nodes.filter(n => n.execution_mode === 'CODE_EXECUTED').length,
@@ -208,6 +228,7 @@ export class DaisyBrain {
           policy: 'Stripe prohibited per Sovereign Directive; fiat settlements exclusively route via PayPal DN-35'
         }
       },
+      activation_status: brainActive ? 'ACTIVE' : 'BLOCKED',
       integrity_sentinel: {
         fail_closed_active: true,
         audit_chain_continuous: chainVerification.valid,
