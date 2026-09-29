@@ -1,0 +1,14 @@
+{
+  "execution_classification": "CODE_EXECUTED",
+  "cases": [
+    {"name":"anonymous order read denied","expected":401,"observed":401,"passed":true},
+    {"name":"anonymous pipeline denied","expected":401,"observed":401,"passed":true},
+    {"name":"public role-selecting login retired","expected":410,"observed":410,"passed":true},
+    {"name":"public offer catalogue allowed","expected":200,"observed":200,"passed":true},
+    {"name":"authenticated candidate intake accepted but not verified","expected":202,"observed":202,"passed":true},
+    {"name":"candidate publication is blocked","expected":400,"observed":400,"passed":true},
+    {"name":"payment checkout denies missing provider credentials","expected":400,"observed":400,"passed":true}
+  ],
+  "all_passed": true,
+  "failures": []
+}
