@@ -1,0 +1,23 @@
+{
+  "integration_source": "https://github.com/iamfather420-ctrl/full-build",
+  "source_commit": "6833b6f87f7fc2a82a096fada16ad8997a37d9f4",
+  "source_scope": "PUBLIC_REPOSITORY",
+  "integration_decision": "COMPATIBLE_LINEAGE_RECORDED_NO_UNTRUSTED_OVERWRITE",
+  "retained_hardened_modules": [
+    "src/b2b/B2BReferenceCaseService.ts",
+    "src/services/EnvironmentConfig.ts",
+    "src/services/preflight.ts",
+    "src/payments/PayPalAdapter.ts",
+    "src/api/ApiRouter.ts",
+    "src/api/SystemStatus.ts"
+  ],
+  "compatible_upstream_assets": [
+    "src/paradoxes/DHBootstrapParadoxRegistry.ts",
+    "scripts/verify_paypal_dual_env.ts",
+    "artifacts/paypal-dual-environment-test.json"
+  ],
+  "conflict_policy": "The current tree remains authoritative where it contains stronger fail-closed, B2B, or evidence-boundary controls. Upstream assets are provenance inputs only until independently reviewed.",
+  "upstream_file_count": 49,
+  "upstream_tree_sha256": "5fd7d5abc30a3d02c7424469bc252a749f2d83d19d1515b138a3fd048fdccf3f",
+  "external_claims": "NONE"
+}

@@ -1,0 +1,107 @@
+{
+  "execution_classification": "CODE_EXECUTED",
+  "synthetic_data_only": true,
+  "customer_claims": "NONE",
+  "candidate_id": "DH-C-B28A191DCBFE70D0",
+  "reference_case_id": "b2bref_76b59e5168231346a407942e",
+  "negative_cases": [
+    {
+      "status": 401,
+      "error": "Authentication is required",
+      "timestamp": 1790674701740
+    },
+    {
+      "name": "missing acceptance criteria",
+      "passed": true,
+      "reason": "At least one acceptance criterion is required"
+    },
+    {
+      "name": "missing evaluator authorization",
+      "passed": true,
+      "reason": "Dataset, authorization, and evaluator references are required"
+    },
+    {
+      "name": "unauthorized evaluator role",
+      "passed": true,
+      "reason": "Role CUSTOMER is not authorized for VIEW_EVIDENCE"
+    },
+    {
+      "name": "wrong candidate",
+      "passed": true,
+      "reason": "Candidate not found"
+    },
+    {
+      "name": "authorized server-side B2B API path",
+      "passed": true
+    },
+    {
+      "name": "failed business outcome",
+      "passed": true
+    },
+    {
+      "name": "failed acceptance",
+      "passed": true,
+      "reason": "Evidence type is not eligible for B2B acceptance"
+    },
+    {
+      "name": "synthetic evidence cannot be accepted as customer evidence",
+      "passed": true,
+      "reason": "Evidence type is not eligible for B2B acceptance"
+    },
+    {
+      "name": "duplicate evaluation replay",
+      "passed": true,
+      "reason": "Duplicate or replayed evaluation rejected"
+    },
+    {
+      "name": "wrong implementation hash",
+      "passed": true,
+      "reason": "Exact candidate implementation binding failed"
+    },
+    {
+      "name": "technical pass without B2B acceptance remains blocked",
+      "passed": true,
+      "readiness": {
+        "candidate_id": "DH-C-B28A191DCBFE70D0",
+        "technical_verification": "PASSED",
+        "b2b_acceptance": "MISSING",
+        "independent_b2b_evidence": "MISSING",
+        "marketplace_publication": "BLOCKED",
+        "payment": "NOT_CONFIGURED",
+        "production": "BLOCKED",
+        "reasons": [
+          "B2B acceptance evidence is missing",
+          "Independent B2B evidence is missing",
+          "Payment is not configured",
+          "Commercial production prerequisites are not configured"
+        ]
+      }
+    }
+  ],
+  "readiness": {
+    "candidate_id": "DH-C-B28A191DCBFE70D0",
+    "technical_verification": "PASSED",
+    "b2b_acceptance": "MISSING",
+    "independent_b2b_evidence": "MISSING",
+    "marketplace_publication": "BLOCKED",
+    "payment": "NOT_CONFIGURED",
+    "production": "BLOCKED",
+    "reasons": [
+      "B2B acceptance evidence is missing",
+      "Independent B2B evidence is missing",
+      "Payment is not configured",
+      "Commercial production prerequisites are not configured"
+    ]
+  },
+  "lifecycle": [
+    "PARTIAL",
+    "TECHNICALLY_VERIFIED",
+    "B2B_REFERENCE_READY",
+    "AUTHORIZED_EVALUATION",
+    "B2B_ACCEPTANCE_EVIDENCE",
+    "INDEPENDENT_VERIFICATION",
+    "VERIFIED",
+    "MARKETPLACE_PUBLISHED"
+  ],
+  "marketplace_publication": "NOT_ATTEMPTED"
+}

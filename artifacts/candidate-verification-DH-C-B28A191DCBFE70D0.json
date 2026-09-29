@@ -1,0 +1,390 @@
+{
+  "execution_classification": "CODE_EXECUTED",
+  "candidate_id": "DH-C-B28A191DCBFE70D0",
+  "problem_id": "DH-P-001",
+  "stages": [
+    {
+      "stage": 1,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 2,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 3,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 4,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 5,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 6,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 7,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 8,
+      "name": "Memory safety inspection",
+      "status": "IMPLEMENTED",
+      "evidence": "finite numeric inputs and bounded source size"
+    },
+    {
+      "stage": 9,
+      "name": "Non-termination inspection",
+      "status": "IMPLEMENTED",
+      "evidence": "no loops, recursion, dynamic code, or child process imports"
+    },
+    {
+      "stage": 10,
+      "name": "Ranking-function inspection",
+      "status": "IMPLEMENTED",
+      "evidence": "distance decreases by half for distance > epsilon"
+    },
+    {
+      "stage": 11,
+      "name": "Candidate-specific SMT proof",
+      "status": "IMPLEMENTED",
+      "claim_scope": "MODEL_VERIFIED"
+    },
+    {
+      "stage": 12,
+      "name": "Proof certificate generation",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 13,
+      "name": "Hermetic test execution",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 14,
+      "name": "Independent oracle attestation",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 15,
+      "name": "Cleanroom replay",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 16,
+      "name": "Pricing calculation",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 17,
+      "name": "Customer evidence projection",
+      "status": "BLOCKED_BY_EXTERNAL_DEPENDENCY"
+    },
+    {
+      "stage": 18,
+      "name": "Audit ledger append",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 19,
+      "name": "Tenant partition verification",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 20,
+      "name": "Checkpoint creation",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "stage": 21,
+      "name": "Marketplace eligibility decision",
+      "status": "BLOCKED_BY_EXTERNAL_DEPENDENCY"
+    }
+  ],
+  "stages_completed": 19,
+  "stages_total": 21,
+  "implementation_hash": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
+  "evidence_bundle_hash": "591e332f75c6985db62c0783a7ff0bd67b515ffe209ac1bc56c9cd28679c08aa",
+  "formal_proof_status": "CANDIDATE_SPECIFIC_UNSAT_EXECUTED",
+  "machine_check_status": "unsat",
+  "hermetic_test_status": "PASSED",
+  "independent_oracle_status": "PASSED",
+  "cleanroom_replay_status": "MATCH",
+  "evidence_bundle_status": "LOCAL_COMPLETE_HOLD",
+  "verification_status": "HOLD",
+  "marketplace_publication_status": "NOT_PUBLISHED_BLOCKED",
+  "paypal_configuration_status": "NOT_CONFIGURED",
+  "pyusd_evidence_status": "NOT_OBSERVED",
+  "payment_test_status": "NOT_PERFORMED",
+  "fulfillment_test_status": "NOT_PERFORMED",
+  "commercial_production_status": "COMMERCIAL_PRODUCTION_BLOCKED",
+  "external_blocks": [
+    "No customer-specific evidence or authorized customer acceptance exists for this candidate.",
+    "No production identity, managed database, or production secrets are configured.",
+    "No PayPal/PYUSD provider operation is authorized or performed."
+  ],
+  "evidence_bundle": {
+    "candidate_id": "DH-C-B28A191DCBFE70D0",
+    "problem_id": "DH-P-001",
+    "solution_id": "DH-C-B28A191DCBFE70D0",
+    "solution_version": "1.0.0-candidate",
+    "problem_definition": "Zeno Achilles: compute one bounded convergence step for positive distance and epsilon.",
+    "implementation_hash": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
+    "source_provenance": "existing registry DH-P-001; prior persisted candidate",
+    "dependency_manifest": {
+      "node": "v22.13.0",
+      "esbuild": "local node_modules",
+      "z3": "z3-solver WASM"
+    },
+    "formal_proof": {
+      "result": {
+        "operator_id": "DH-C-B28A191DCBFE70D0-FORMAL-01",
+        "code": "DH-C-B28A191DCBFE70D0-FORMAL-01",
+        "operator_name": "Zeno convergence step candidate contract",
+        "name": "Zeno convergence step candidate contract",
+        "model_classification": "CANDIDATE_SPECIFIC",
+        "model_scope": "IMPLEMENTATION_BOUND",
+        "domain": "MATHEMATICAL_ANALYSIS",
+        "category": "CANDIDATE_IMPLEMENTATION",
+        "assertion": "For finite positive distance and epsilon, the implementation output is finite, non-negative, no greater than distance, and follows its exact branch definition.",
+        "assertion_hash": "69d4cd79d88b3cfbf5da4d5a2eab31a577022656eb9410d356c9425ba94d6dfb",
+        "actual_smt_assertion_hash": "f425aeff1404e99410743f36c61776214592f1979472be1d2f1ad69ea702ab11",
+        "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+        "execution_id": "candidate-proof-1790674700858",
+        "solver_result": "unsat",
+        "proved": true,
+        "claim_scope": "MODEL_VERIFIED",
+        "execution_duration_ms": 376.287,
+        "duration_ms": 376.287,
+        "certificate_sha256": "e2cb373116bf8d96cfe99d0519dcf3c18de38967689b13e3e1e6016617121a6c",
+        "timestamp": "2026-09-29T09:38:20.860Z"
+      },
+      "smt": "(set-logic QF_LRA)\n(declare-const d Real)\n(declare-const e Real)\n(declare-const out Real)\n(assert (> d 0.0))\n(assert (> e 0.0))\n(assert (= out (ite (<= d e) 0.0 (/ d 2.0))))\n(assert (not (and (>= out 0.0) (<= out d) (or (and (<= d e) (= out 0.0)) (and (> d e) (= out (/ d 2.0)))))))\n(check-sat)",
+      "passed": true
+    },
+    "hermetic_test": {
+      "payload": {
+        "implementation_hash": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
+        "compiled_hash": "1f5b8add54bbaab59ca366128037a2e5646a9b44163320e0f59e835704956b9f",
+        "cases": [
+          {
+            "distance": 10,
+            "epsilon": 1,
+            "output": 5
+          },
+          {
+            "distance": 1,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 0.25,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 5e-324,
+            "epsilon": 5e-324,
+            "output": 0
+          },
+          {
+            "distance": 100,
+            "epsilon": 0.5,
+            "output": 50
+          }
+        ],
+        "expected": [
+          {
+            "distance": 10,
+            "epsilon": 1,
+            "output": 5
+          },
+          {
+            "distance": 1,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 0.25,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 5e-324,
+            "epsilon": 5e-324,
+            "output": 0
+          },
+          {
+            "distance": 100,
+            "epsilon": 0.5,
+            "output": 50
+          }
+        ],
+        "invalid_input_rejected": true,
+        "passed": true
+      },
+      "receipt_hash": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8"
+    },
+    "independent_oracle": {
+      "payload": {
+        "oracle_id": "ORACLE-ZENO-REFERENCE-001",
+        "oracleVersion": "oracle-zeno-reference-v1",
+        "method": "independent mathematical reference evaluator; no candidate source imported",
+        "expected": [
+          {
+            "distance": 10,
+            "epsilon": 1,
+            "output": 5
+          },
+          {
+            "distance": 1,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 0.25,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 5e-324,
+            "epsilon": 5e-324,
+            "output": 0
+          },
+          {
+            "distance": 100,
+            "epsilon": 0.5,
+            "output": 50
+          }
+        ],
+        "observed": [
+          {
+            "distance": 10,
+            "epsilon": 1,
+            "output": 5
+          },
+          {
+            "distance": 1,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 0.25,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 5e-324,
+            "epsilon": 5e-324,
+            "output": 0
+          },
+          {
+            "distance": 100,
+            "epsilon": 0.5,
+            "output": 50
+          }
+        ],
+        "matches": true
+      },
+      "attestation_hash": "fb9e013c1d1096710cb27af61376464f00e14eb9f98a9a08773332e8f07d040d"
+    },
+    "cleanroom_replay": {
+      "replay_id": "cleanroom-1790674701241",
+      "expected_hash": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8",
+      "observed_hash": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8",
+      "status": "MATCH",
+      "replay_payload": {
+        "implementation_hash": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
+        "compiled_hash": "1f5b8add54bbaab59ca366128037a2e5646a9b44163320e0f59e835704956b9f",
+        "cases": [
+          {
+            "distance": 10,
+            "epsilon": 1,
+            "output": 5
+          },
+          {
+            "distance": 1,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 0.25,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 5e-324,
+            "epsilon": 5e-324,
+            "output": 0
+          },
+          {
+            "distance": 100,
+            "epsilon": 0.5,
+            "output": 50
+          }
+        ],
+        "expected": [
+          {
+            "distance": 10,
+            "epsilon": 1,
+            "output": 5
+          },
+          {
+            "distance": 1,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 0.25,
+            "epsilon": 1,
+            "output": 0
+          },
+          {
+            "distance": 5e-324,
+            "epsilon": 5e-324,
+            "output": 0
+          },
+          {
+            "distance": 100,
+            "epsilon": 0.5,
+            "output": 50
+          }
+        ],
+        "invalid_input_rejected": true,
+        "passed": true
+      }
+    },
+    "pricing": {
+      "cost_basis_cents": 500,
+      "complexity_factor": 1.2,
+      "risk_class": "LOW",
+      "risk_multiplier": 1.1,
+      "margin_factor": 1.35,
+      "final_price_cents": 891,
+      "calculation_hash": "4a04876d0c755be762efe36c7657e5b2a9acbdf15e96aceeb1c137895f6f2e90"
+    },
+    "checkpoint_id": "chk_5eaafa8aad9e2ee7f0",
+    "audit_record_hash": "c3fa7298b9d748e6aa82ae8117d4d6cee2a3e6c2e5244c28f56ba1dce6021572",
+    "tenant_isolation_verified": true,
+    "verification_timestamp": "2026-09-29T09:38:21.267Z",
+    "verification_authority": "LOCAL_INDEPENDENT_VERIFICATION_HARNESS",
+    "evidence_hashes": {
+      "implementation": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
+      "hermetic": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8",
+      "oracle": "fb9e013c1d1096710cb27af61376464f00e14eb9f98a9a08773332e8f07d040d",
+      "replay": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8"
+    },
+    "local_evidence_complete": true,
+    "verification_status": "HOLD",
+    "external_blocks": [
+      "No customer-specific evidence or authorized customer acceptance exists for this candidate.",
+      "No production identity, managed database, or production secrets are configured.",
+      "No PayPal/PYUSD provider operation is authorized or performed."
+    ]
+  }
+}

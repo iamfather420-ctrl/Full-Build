@@ -1,0 +1,111 @@
+{
+  "timestamp": 1790405524400,
+  "commit_sha": "UNKNOWN",
+  "environment_mode": "local",
+  "node_version": "v22.13.0",
+  "platform": "linux",
+  "arch": "x64",
+  "dependencies": [
+    {
+      "name": "node",
+      "category": "RUNTIME",
+      "status": "PRESENT",
+      "version": "v22.13.0",
+      "tested_import_path": "process.version",
+      "notes": "Node.js LTS runtime"
+    },
+    {
+      "name": "bun",
+      "category": "RUNTIME",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "notes": "Optional runtime; Node.js is primary"
+    },
+    {
+      "name": "z3-solver",
+      "category": "SOLVER",
+      "status": "PRESENT",
+      "version": "5.2.0-wasm",
+      "tested_import_path": "import('z3-solver')",
+      "notes": "Microsoft Research Z3 Automated Theorem Prover WASM Kernel"
+    },
+    {
+      "name": "tsx",
+      "category": "COMPILER",
+      "status": "PRESENT",
+      "tested_import_path": "cli / package.json",
+      "notes": "TypeScript execution engine"
+    },
+    {
+      "name": "sqlite",
+      "category": "DATABASE",
+      "status": "PRESENT",
+      "notes": "Universal SQLite Interface with 27-Table Relational Schema"
+    },
+    {
+      "name": "@neondatabase/serverless",
+      "category": "DATABASE",
+      "status": "PRESENT",
+      "version": "^1.1.0",
+      "tested_import_path": "import('@neondatabase/serverless')",
+      "notes": "Neon serverless Postgres driver for cloud persistence"
+    },
+    {
+      "name": "crypto-sha256",
+      "category": "CRYPTO",
+      "status": "PRESENT",
+      "notes": "Native hardware-accelerated SHA-256 with pure-JS fallback"
+    },
+    {
+      "name": "http-client",
+      "category": "HTTP_GATEWAY",
+      "status": "PRESENT",
+      "notes": "Global fetch for REST API communication"
+    }
+  ],
+  "configurations": [
+    {
+      "key": "PAYPAL_CLIENT_ID",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "PAYPAL_CLIENT_SECRET",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "NEON_DATABASE_URL",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "SOLANA_RPC_URL",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "SOLANA_PROGRAM_ID",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "GEMINI_API_KEY",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    }
+  ],
+  "blockers": [],
+  "passed": true
+}

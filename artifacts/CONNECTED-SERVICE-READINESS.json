@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-09-29T03:25:06Z",
+  "environment": "CONNECTOR_VERIFIED_RUNTIME_BINDING_PENDING",
+  "services": {
+    "neon": {
+      "connector": "Neon",
+      "enabled": true,
+      "project_id": "flat-unit-34950816",
+      "project_name": "SolveX",
+      "branch_id": "br-soft-dawn-b4wkrjox",
+      "branch_name": "production",
+      "branch_state": "ready",
+      "table_count": 27,
+      "schema_check": "TABLES_LISTED_READ_ONLY",
+      "application_runtime_binding": "NOT_VERIFIED",
+      "rls_and_indexes": "NOT_VERIFIED"
+    },
+    "paypal": {
+      "connector": "PayPal for Business",
+      "enabled": true,
+      "read_only_transaction_query": {
+        "window_start": "2026-09-01T00:00:00Z",
+        "window_end": "2026-09-29T23:59:59Z",
+        "result": "NO_TRANSACTIONS_FOUND"
+      },
+      "payment_created": false,
+      "payment_captured": false,
+      "money_moved": false,
+      "pyusd_evidence": "NOT_OBSERVED",
+      "webhook_verification": "NOT_VERIFIED"
+    }
+  },
+  "truth_boundary": "Connector availability is not equivalent to application runtime configuration, provider-authenticated payment evidence, PYUSD evidence, customer acceptance, or production commercial readiness.",
+  "overall_commercial_state": "BLOCKED"
+}

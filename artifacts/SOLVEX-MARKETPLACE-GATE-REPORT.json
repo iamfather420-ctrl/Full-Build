@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-09-29T09:38:25.110Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "BLOCKED",
+  "candidate_id": "DH-C-B28A191DCBFE70D0",
+  "evidence": {
+    "readiness": {
+      "candidate_id": "DH-C-B28A191DCBFE70D0",
+      "technical_verification": "PASSED",
+      "b2b_acceptance": "MISSING",
+      "independent_b2b_evidence": "MISSING",
+      "marketplace_publication": "BLOCKED",
+      "payment": "NOT_CONFIGURED",
+      "production": "BLOCKED",
+      "reasons": [
+        "B2B acceptance evidence is missing",
+        "Independent B2B evidence is missing",
+        "Payment is not configured",
+        "Commercial production prerequisites are not configured"
+      ]
+    },
+    "published_offer_count": 0,
+    "negative_publication_attempt": {
+      "success": false,
+      "error": "Publication blocked: solution is not independently VERIFIED"
+    },
+    "frontend_bypass": "NOT_AVAILABLE",
+    "implementation_hash_integrity": true,
+    "tenant_integrity": true
+  },
+  "test": "Technical candidate without B2B acceptance and independent evidence remains blocked; no offer is published.",
+  "remaining_requirement": "B2B acceptance evidence is missing; Independent B2B evidence is missing; Payment is not configured; Commercial production prerequisites are not configured",
+  "truth_classification": "BLOCKED"
+}

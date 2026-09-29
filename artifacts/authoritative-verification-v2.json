@@ -1,0 +1,181 @@
+{
+  "report": {
+    "pipeline_name": "SOLVEX Truth-Boundary Verification",
+    "version": "2.0.0",
+    "execution_id": "verification_1790674699319",
+    "commit_sha": "SOURCE_SNAPSHOT_UNVERSIONED",
+    "environment": "local",
+    "completed_at": "2026-09-29T09:38:19.319Z",
+    "gates_total": 4,
+    "gates_passed": 3,
+    "production_gate_verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
+    "production_blockers": [
+      "No live PayPal operation was performed.",
+      "No PayPal provider response supplied explicit PYUSD asset evidence.",
+      "No production identity provider or secret-management deployment was configured.",
+      "No verified marketplace solution exists; all generated intake is candidate-only."
+    ],
+    "claim_scope_verdict": "LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; COMMERCIAL_PRODUCTION_BLOCKED",
+    "artifacts_directory": "/home/ubuntu/solvex-platform/artifacts",
+    "gates": [
+      {
+        "gate_index": 0,
+        "gate_id": "GATE-01",
+        "name": "Security and tenant-isolation regressions",
+        "claim_scope": "LOCAL",
+        "status": "PASSED",
+        "duration_ms": 85,
+        "details": {
+          "total": 9,
+          "passed": 9
+        }
+      },
+      {
+        "gate_index": 1,
+        "gate_id": "GATE-02",
+        "name": "DFRL model verification",
+        "claim_scope": "MODEL",
+        "status": "PASSED",
+        "duration_ms": 3051,
+        "details": {
+          "executed": 88,
+          "unsat": 88,
+          "scope": "MODEL_VERIFIED"
+        }
+      },
+      {
+        "gate_index": 2,
+        "gate_id": "GATE-03",
+        "name": "Marketplace publication inventory",
+        "claim_scope": "LOCAL",
+        "status": "PASSED",
+        "duration_ms": 3051,
+        "details": {
+          "total_solution_records": 4,
+          "independently_verified": 0,
+          "marketplace_published": 0,
+          "policy": "No proof-bound verified solution exists in this execution."
+        }
+      },
+      {
+        "gate_index": 3,
+        "gate_id": "GATE-04",
+        "name": "Commercial production boundary",
+        "claim_scope": "PRODUCTION",
+        "status": "BLOCKED",
+        "duration_ms": 3051,
+        "details": {
+          "blockers": [
+            "No live PayPal operation was performed.",
+            "No PayPal provider response supplied explicit PYUSD asset evidence.",
+            "No production identity provider or secret-management deployment was configured.",
+            "No verified marketplace solution exists; all generated intake is candidate-only."
+          ]
+        },
+        "error": "No live PayPal operation was performed. No PayPal provider response supplied explicit PYUSD asset evidence. No production identity provider or secret-management deployment was configured. No verified marketplace solution exists; all generated intake is candidate-only."
+      }
+    ]
+  },
+  "enterprise": {
+    "allPassed": true,
+    "totalTests": 9,
+    "passedTests": 9,
+    "results": [
+      {
+        "test_number": 1,
+        "name": "Authentication fails closed without a configured key",
+        "category": "SECURITY",
+        "passed": true,
+        "duration_ms": 0,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 2,
+        "name": "HMAC tokens enforce tamper detection, expiry, and tenant scope",
+        "category": "SECURITY",
+        "passed": true,
+        "duration_ms": 4,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 3,
+        "name": "SQLite repository persists and tenant-scopes records",
+        "category": "PERSISTENCE",
+        "passed": true,
+        "duration_ms": 3,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 4,
+        "name": "Daisy static intake creates a PARTIAL candidate, never VERIFIED",
+        "category": "DAISY",
+        "passed": true,
+        "duration_ms": 43,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 5,
+        "name": "Marketplace rejects candidate and proof substitution publication",
+        "category": "MARKETPLACE",
+        "passed": true,
+        "duration_ms": 0,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 6,
+        "name": "PayPal checkout fails closed without server credentials",
+        "category": "PAYMENTS",
+        "passed": true,
+        "duration_ms": 1,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 7,
+        "name": "Sensitive API routes reject unauthenticated callers",
+        "category": "API",
+        "passed": true,
+        "duration_ms": 0,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 8,
+        "name": "Public login does not mint caller-selected roles or tenants",
+        "category": "API",
+        "passed": true,
+        "duration_ms": 0,
+        "details": {
+          "status": "PASSED"
+        }
+      },
+      {
+        "test_number": 9,
+        "name": "Audit chain detects payload tampering",
+        "category": "AUDIT",
+        "passed": true,
+        "duration_ms": 33,
+        "details": {
+          "status": "PASSED"
+        }
+      }
+    ]
+  },
+  "dfrl_summary": {
+    "executed": 88,
+    "status": "VERIFIED",
+    "root": "020a4c50b30b0a6625eb55f104219b5d664175b3b4605c467b691cc833a9fd60"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-09-29T09:38:23.725Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "NOT_CONFIGURED",
+  "evidence": {
+    "masked_provider_status": {
+      "configured": false,
+      "environment": "none",
+      "gateway_state": "EXTERNAL_PROVIDER_REQUIRED",
+      "pyusd_only_policy": "REQUIRED",
+      "webhook_configured": false
+    },
+    "environment_validation": {
+      "valid": false,
+      "environment": "MISSING",
+      "blockers": [
+        "SOLVEX_ENVIRONMENT or SOLVEX_ENV must explicitly declare local, sandbox, or production"
+      ]
+    },
+    "checkout_negative_test": {
+      "status": "EXTERNAL_PROVIDER_REQUIRED",
+      "gateway_state": "EXTERNAL_PROVIDER_REQUIRED",
+      "claim_scope": "LOCAL"
+    },
+    "transaction_executed": false,
+    "money_moved": false
+  },
+  "test": "No real transaction attempted; missing-order/provider gate must fail closed.",
+  "remaining_requirement": "Configure the correct environment-specific PayPal credentials and webhook identity in managed secrets.",
+  "truth_classification": "NOT_CONFIGURED"
+}

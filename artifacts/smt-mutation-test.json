@@ -1,0 +1,17 @@
+{
+  "test_name": "DFRL Operator SMT Invariant Mutation Test",
+  "target_operator_id": "DFRL-P-021",
+  "operator_code": "DFRL-P-021",
+  "original_assertion": "(declare-const s_021 Int) (declare-const s_next_021 Int) (assert (> s_021 0)) (assert (= s_next_021 (- s_021 1))) (assert (not (and (< s_next_021 s_021) (>= s_next_021 0))))",
+  "original_assertion_hash": "1e06a26d423d13a174d6ce17d48bd8e36677d692cef845ae62dd74bbf43d11ab",
+  "mutated_assertion": "(declare-const s_021 Int) (declare-const s_next_021 Int) (assert (> s_021 0)) (assert (= s_next_021 (- s_021 1))) (assert (and (< s_next_021 s_021) (>= s_next_021 0)))",
+  "mutated_assertion_hash": "7b275d85c262029a7054304e36c1eb92cd0c754dcd9ed8e8a673c3a3ff8b8658",
+  "expected_original_result": "unsat",
+  "observed_original_result": "unsat",
+  "expected_mutated_result": "sat",
+  "observed_mutated_result": "sat",
+  "mutation_type": "PREMISE_PERTURBATION_REFUTATION_INVERSION",
+  "mutation_detected": true,
+  "passed": true,
+  "details": "Mutation test passed: Inverting theorem refutation constraint successfully converted UNSAT theorem to SAT counter-model."
+}

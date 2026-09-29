@@ -1,0 +1,2121 @@
+{
+  "execution_classification": "CODE_EXECUTED",
+  "scope_note": "Coverage validates reachability and evidence-bearing outcomes. It does not prove provider execution or commercial readiness.",
+  "report": {
+    "total_nodes": 54,
+    "registered_count": 54,
+    "instantiated_count": 54,
+    "reachable_count": 54,
+    "executed_count": 54,
+    "output_asserted_count": 54,
+    "evidence_generated_count": 54,
+    "unsatisfied_node_ids": [],
+    "internal_previously_covered": 18,
+    "internal_newly_covered": 33,
+    "external_gateways": 3,
+    "policy_interlocks": 3,
+    "all_passed": true,
+    "results": [
+      {
+        "node_id": "DN-01",
+        "name": "Daisy Genesis Core",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 25.10567500000002,
+        "evidence": {
+          "genesis_root": "b17ad6280d9a9b62314559999b7879c9a2adf583ef95fabfec5f97e064c13ae0",
+          "state": "INITIALIZED"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "1a4fad3b0a65db541a93938a14ebe399c287ad07d502c3cf9dfcec3509d0c912"
+      },
+      {
+        "node_id": "DN-02",
+        "name": "MMTAI Authority Gate",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.2856720000000337,
+        "evidence": {
+          "token_prefix": "625f5ccd61c7b2bc",
+          "permitted": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "70921da5efcb081671dcf81cefb2cc8d32da111878ea45eafd9c9cad90bc64f8"
+      },
+      {
+        "node_id": "DN-03",
+        "name": "Z3 Theorem Prover Kernel",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.9456700000000069,
+        "evidence": {
+          "solver_result": "unsat",
+          "cert_hash": "baffb83fdf363fc2288ce07a00e3ab77a4598046f6398a18375e51bc6ccc764c"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "bdbac418e21692dda59ea18ddcaf4d8d7a1765ab62bbbab474935e2ed5917182"
+      },
+      {
+        "node_id": "DN-04",
+        "name": "NOPOT Bounded Termination Engine",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 1.3794959999999605,
+        "evidence": {
+          "steps": 7,
+          "bound": 100
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "66d030985d30104fb00f7e42b323738c0d3982dec0c21e6c8be25be99e166e93"
+      },
+      {
+        "node_id": "DN-05",
+        "name": "Crystal Clear Box Audit Engine",
+        "category": "AUDIT",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "FAIL_CLOSED",
+        "duration_ms": 0.26099999999996726,
+        "evidence": {},
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+      },
+      {
+        "node_id": "DN-06",
+        "name": "Linear SHA-256 Merkle Ledger",
+        "category": "AUDIT",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 22.965666,
+        "evidence": {
+          "record_hash": "407414bd489327bf4185b102b80630fbb38d37f7cbef178b8ff302f4dd65f49e",
+          "chain_valid": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "fcde489bb294019ca408ffa64858756e6a2b1a924170e5a036b262a8d0914fb5"
+      },
+      {
+        "node_id": "DN-07",
+        "name": "Anti-Tamper Sentinel Monitor",
+        "category": "AUDIT",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 3.601007999999979,
+        "evidence": {
+          "mutation_alarm_tripped": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "6d02557a19612b979433cd990fc6ccd73ef3a59c94a23b9637b7042d31e7ddcb"
+      },
+      {
+        "node_id": "DN-08",
+        "name": "Atomic Checkpoint Engine",
+        "category": "PERSISTENCE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 9.556520999999975,
+        "evidence": {
+          "checkpoint_id": "chk_88bc39a323721a60ca",
+          "type": "ATOMIC_DATABASE_RESTORE"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "4432833f7c442f0b2a2411beca526df77e8e4f523a805134f12c7eddc0003ec6"
+      },
+      {
+        "node_id": "DN-09",
+        "name": "Reversibility & Rollback Governor",
+        "category": "PERSISTENCE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 27.88202100000001,
+        "evidence": {
+          "rollback_success": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "e08bf17ce9bec53554b045f5ab129a9e626346f9580d6bb8d61ff034077d8ed8"
+      },
+      {
+        "node_id": "DN-10",
+        "name": "Irreversible Action Firewall",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 14.612662,
+        "evidence": {
+          "blocked_illegal_rollback": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "ba3f1f3402325dfe812d368682571a89ea3cbd5cda6a62f2c5631b5d666b2218"
+      },
+      {
+        "node_id": "DN-11",
+        "name": "21-Stage Problem Pipeline",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "FAIL_CLOSED",
+        "duration_ms": 16.534978000000024,
+        "evidence": {
+          "completed_stages": 7,
+          "success": false
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "20b11b200777d6e5c0e2a3146d784bf9ce79ea4d53978a56118cb9fb3d5f1d8a"
+      },
+      {
+        "node_id": "DN-12",
+        "name": "Fail-Closed Circuit Breaker",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.1594079999999849,
+        "evidence": {
+          "circuit_tripped": true,
+          "stopped_at_stage": 6
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "dea72244eac156222fc3c2b59bf0da932b068181df47f6c9dd29a813c1c63bd9"
+      },
+      {
+        "node_id": "DN-13",
+        "name": "Defensible Pricing Formula Engine",
+        "category": "MARKETPLACE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.1496569999999906,
+        "evidence": {
+          "price_cents": 25313,
+          "hash": "242b896c34ac345a3a797a36e2ae83d8c39a9136baa0ad16f340efd7f70c5f5e"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "a8569f183d1e6628015c79ddde7f89997a1a91a713837285ea4dc1e7a1fc033d"
+      },
+      {
+        "node_id": "DN-14",
+        "name": "Marketplace Publication Guard",
+        "category": "MARKETPLACE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.09510299999999461,
+        "evidence": {
+          "publication_blocked": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "6c66ed384629edcfc57540fee4547b0ce68f51a3a0bc8a13fcc8560ad72ebb23"
+      },
+      {
+        "node_id": "DN-15",
+        "name": "Multi-Tenant Partition Manager",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.020439999999950942,
+        "evidence": {
+          "isolated": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "78277f74f1c975f1a71b417026fc6b2d18a8fc52eaea83bca61a18d7c9b1c7cf"
+      },
+      {
+        "node_id": "DN-16",
+        "name": "RBAC Token Mint & Validator",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.6133590000000027,
+        "evidence": {
+          "role": "ADMIN",
+          "valid": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "6db628e6a79ee770c9fb1502cbcb5fe2d587e45445f2692fd3ba0f175b40130f"
+      },
+      {
+        "node_id": "DN-17",
+        "name": "Single-Use Token Replay Sentinel",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.032444999999995616,
+        "evidence": {
+          "replay_rejected": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "4f47ca84a4114c2b618481d343edba607e7367f9ced8ff073defd77ac68617fc"
+      },
+      {
+        "node_id": "DN-18",
+        "name": "Cleanroom Deterministic Sandbox",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.015929999999968913,
+        "evidence": {
+          "deterministic": true,
+          "digest": "4db134a2ae06aef1c0ec283ce3f807f001e1d82d21efe2f55d77329d8ab33be8"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "99a76c3cfdd152a19a54b829adb49702087904ecea5d7e1573c488498b9e9ac5"
+      },
+      {
+        "node_id": "DN-19",
+        "name": "Bitrot & Drift Detection Oracle",
+        "category": "AUDIT",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.015277000000025964,
+        "evidence": {
+          "bitrot_detected": false,
+          "digest": "ad27dfdaa03ae34127357f9d2bed21b5ae0626534b551f4429cbf4627c0e37ce"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "d02b3e221ebb3a2f34f13a9d7b4d880c9f843558cd124c037481526cf3b1de03"
+      },
+      {
+        "node_id": "DN-20",
+        "name": "Paradox Resolution Engine",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.00438000000002603,
+        "evidence": {
+          "paradox_resolved": "DH-P-001",
+          "status": "VERIFIED"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "5eb0b2773aa3c036f0bfca1ab6115fdf6a1bd5a0749b5a2b791a5ce6c6b363dd"
+      },
+      {
+        "node_id": "DN-21",
+        "name": "Russell Naive Set Axiom Disprover",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.06928099999998949,
+        "evidence": {
+          "theorem": "THM-RUSSELL-01",
+          "result": "unsat"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "414ed0c4244816ad7c1f1c44c8b39a49816b38ad613c8441b46a21326b13416f"
+      },
+      {
+        "node_id": "DN-22",
+        "name": "Barber Semantic Variant Verifier",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.050149999999973716,
+        "evidence": {
+          "theorem": "THM-BARBER-02",
+          "result": "unsat"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "7fb280fee5b673e72b7a435845d4f79e8d455ee4385314a991252e9a4fcf610b"
+      },
+      {
+        "node_id": "DN-23",
+        "name": "Curry Implication Contraction Guard",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.053193000000021584,
+        "evidence": {
+          "theorem": "THM-CURRY-04",
+          "result": "unsat"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "53fb91b496723408122341f7395f72f89659537814d5fc8cf34517357754cd5e"
+      },
+      {
+        "node_id": "DN-24",
+        "name": "Zeno Achilles Continuous Metric Solver",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.0514440000000036,
+        "evidence": {
+          "theorem": "THM-ZENO-ARCHIMEDEAN-06",
+          "result": "unsat"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "8a0c8096f958ffbb510c1bf2719585b87c409a4249e91acbafb8f8fb73c42408"
+      },
+      {
+        "node_id": "DN-25",
+        "name": "Burali-Forti Ordinal Hierarchy Checker",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.022727000000031694,
+        "evidence": {
+          "well_ordered": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "e219f19de5beef28189a50b05e724bf2e4db1c06c7f79cc2ca5553b4c184c39e"
+      },
+      {
+        "node_id": "DN-26",
+        "name": "Tarski Semantic Truth Tower Node",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.04071900000002415,
+        "evidence": {
+          "theorem": "THM-LIAR-03",
+          "result": "unsat"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "1f20556b143613c9efad02a2df45174fb4e7832020b6a2f2dba401f792cf529f"
+      },
+      {
+        "node_id": "DN-27",
+        "name": "Halting Problem Boundary Sentinel",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.05832199999997556,
+        "evidence": {
+          "termination_proved": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "d04ef7516fb13c9dfbc01b88c5c78e1db313ee91fe18e6680959cefbbf2bb53d"
+      },
+      {
+        "node_id": "DN-28",
+        "name": "Order State Machine Orchestrator",
+        "category": "MARKETPLACE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 16.040975999999944,
+        "evidence": {
+          "valid_transition": true,
+          "invalid_transition_rejected": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "859bd276f9998c14e2cacf724371a0cca160e49c9342c56129ffefb893fedc13"
+      },
+      {
+        "node_id": "DN-29",
+        "name": "Preserved Solution Vault (DH-S-001)",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "FAIL_CLOSED",
+        "duration_ms": 0.01266099999998005,
+        "evidence": {
+          "solution_id": "DH-S-001"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "be70971ea4f5270b9753c3b7793906381bf1717360d7551c6ba967835dcf790c"
+      },
+      {
+        "node_id": "DN-30",
+        "name": "Independent Oracle Attestor",
+        "category": "AUDIT",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.012890000000027158,
+        "evidence": {
+          "oracle_signature": "5c7551ad400635db6a30fb4efbce27933149ad50f1c921e6799e3a2fc56ccef4"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "2276522c7a2160cb0c1f25e2423ab1772127d74e95b2ff053ecb78f94e2197a5"
+      },
+      {
+        "node_id": "DN-31",
+        "name": "Sqlite Local Store Manager",
+        "category": "PERSISTENCE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.17880000000002383,
+        "evidence": {
+          "table_count": 27
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "354052f6edff9ced7d6ff2302fe13b6761955bb969b47f3b00f1df11298c4047"
+      },
+      {
+        "node_id": "DN-32",
+        "name": "Durable JSON WAL Sync Engine",
+        "category": "PERSISTENCE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 9.664699999999982,
+        "evidence": {
+          "wal_hash": "88617f81093134599faf9989f5e9f04893575a5ae8dfe96b7205d1fe5993b17b"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "dbbd2e8ecba3630ed4da040fa2a1a018e8e4d848968513d0474c8d0fe7bfb8c4"
+      },
+      {
+        "node_id": "DN-33",
+        "name": "Central Failure Diversion Router",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 43.61962699999998,
+        "evidence": {
+          "diversion_id": "fail_1790674692355_lp4i",
+          "fail_closed": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "c20a32844bc015e4ff442af2b976277d5072779c385c21412a28a4f570eb3c3b"
+      },
+      {
+        "node_id": "DN-34",
+        "name": "Neon Postgres Adapter",
+        "category": "ADAPTERS",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "PROVIDER_REQUIRED",
+        "duration_ms": 0.23062800000002426,
+        "evidence": {
+          "configured": false,
+          "backend": "SQLITE_LOCAL",
+          "fallback_active": true,
+          "tables_verified": 27
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "fb62309862f0f5a52f6a5f85267d4ab09c3166cc56a8e6e99b7df8790facfc35"
+      },
+      {
+        "node_id": "DN-35",
+        "name": "PayPal Enterprise Payment Gateway",
+        "category": "PAYMENTS",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "PROVIDER_REQUIRED",
+        "duration_ms": 0.13807300000001987,
+        "evidence": {
+          "configured": false,
+          "environment": "none",
+          "pyusd_only_policy": "REQUIRED",
+          "webhook_configured": false,
+          "authenticated": false,
+          "fail_closed_enforced": true,
+          "note": "No provider operation is performed by node coverage; provider verification is a separate authorized flow."
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "61de82c9f878f3756701ea9d623031d32d4ea41581239c4785e71bef9108e03e"
+      },
+      {
+        "node_id": "DN-36",
+        "name": "Fiat Settlement Policy Guard (Stripe Prohibited / PayPal Exclusive)",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "PROHIBITED_BLOCKED",
+        "duration_ms": 0.0058260000000132095,
+        "evidence": {
+          "directive": "SOVEREIGN_DIRECTIVE_STRIPE_PROHIBITED",
+          "enforced": true,
+          "fiat_designated_gateway": "DN-35-PAYPAL",
+          "stripe_blocked": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "9ef288cf6607ae8afc7cd3daa6af0c245b9e1d131e72ce97244eb97bec0172ef"
+      },
+      {
+        "node_id": "DN-37",
+        "name": "Non-PayPal Rail Blocklist",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "PROHIBITED_BLOCKED",
+        "duration_ms": 0.004090000000019245,
+        "evidence": {
+          "non_paypal_rails_enabled": false,
+          "fail_closed": true,
+          "policy": "PAYPAL_PYUSD_ONLY"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "78203cc35522ff417c9046df2cc4e4455690fc2801ac3919a2006a3abdcd976c"
+      },
+      {
+        "node_id": "DN-38",
+        "name": "PYUSD Evidence Requirement",
+        "category": "PAYMENTS",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "PROVIDER_REQUIRED",
+        "duration_ms": 0.006095000000016171,
+        "evidence": {
+          "provider_capture_verified": false,
+          "pyusd_asset_evidence_verified": false,
+          "production_verified": false,
+          "gateway_state": "EXTERNAL_PROVIDER_REQUIRED",
+          "fail_closed": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "b2a5873591d5534899e163cc90837c964f99646a4959b9d53cacb8b896f5cecd"
+      },
+      {
+        "node_id": "DN-39",
+        "name": "External Custody Exclusion Guard",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "PROHIBITED_BLOCKED",
+        "duration_ms": 0.003428000000042175,
+        "evidence": {
+          "external_custody_enabled": false,
+          "fail_closed": true,
+          "policy": "PAYPAL_PYUSD_ONLY"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "dae00964f2afc0510f7f00070e6b39e54fa24ba3529262013462d3833f16ab31"
+      },
+      {
+        "node_id": "DN-40",
+        "name": "Lean4 Theorem Verification Bridge",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.010053000000027623,
+        "evidence": {
+          "kernel": "Lean4_Type_Theory",
+          "cert_digest": "29c7e0f6a80e770b2acdb373ca1858d5f2307cbc44b6a65ae185db6e213a7e9a",
+          "verified": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "2178d7daeddb8add2b6612278f6c25f8bb98ee5f85051afb0d27c6d16284da33"
+      },
+      {
+        "node_id": "DN-41",
+        "name": "Isabelle/HOL Proof Ingestion Node",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.009197000000028765,
+        "evidence": {
+          "logic": "Higher_Order_Logic",
+          "cert_digest": "cc99c1f441f67ee39e30b56f8595ace1c902efa15df9c9034a72b496808adae4",
+          "verified": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "f4a6dec18348c101c6d69f985f1a5c0ce7049136ac08915bc49e50a81fd2640c"
+      },
+      {
+        "node_id": "DN-42",
+        "name": "Coq Gallina Specification Node",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.011178999999970074,
+        "evidence": {
+          "calculus": "Inductive_Constructions",
+          "cert_digest": "36795d02117f78a894fea72e13697df13ffbf578079244e7dd3c823e49aefe49",
+          "verified": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "1f8b2e06494c158947938c6ed0d1ef77e5f78162bff4c153c01a258fa0448fbd"
+      },
+      {
+        "node_id": "DN-43",
+        "name": "Daisy Brain Autonomous Planner",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.028542000000015832,
+        "evidence": {
+          "plan_stages": 3,
+          "graph": [
+            {
+              "stage": 1,
+              "goal": "INTAKE",
+              "status": "PLANNED"
+            },
+            {
+              "stage": 2,
+              "goal": "VERIFICATION",
+              "status": "PLANNED"
+            },
+            {
+              "stage": 3,
+              "goal": "SETTLEMENT",
+              "status": "PLANNED"
+            }
+          ]
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "49933034142b342d96dc9ccfa674a924b9dccf3f6966556af8432c99505d6d7d"
+      },
+      {
+        "node_id": "DN-44",
+        "name": "Pigeonhole Collision SMT Verifier",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.10219699999998966,
+        "evidence": {
+          "theorem": "THM-PIGEONHOLE-08",
+          "result": "unsat"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "b715954a24ac8d22435e93e6b6cd1bb01b222f2322185ad1ecdd8a98b5266131"
+      },
+      {
+        "node_id": "DN-45",
+        "name": "Two Generals Consensus Barrier Node",
+        "category": "LOGIC_SOLVER",
+        "executed": true,
+        "claim_scope": "MODEL",
+        "status": "SUCCESS",
+        "duration_ms": 0.003938000000005104,
+        "evidence": {
+          "impossibility_enforced": true,
+          "common_knowledge_lossy_bound": "UNSAT"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "f2b0a5ce6df9d7c26fa53148a7a018f5347e6014e82df481e94875255a7cb53c"
+      },
+      {
+        "node_id": "DN-46",
+        "name": "Chandy-Lamport Distributed Snapshot",
+        "category": "PERSISTENCE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.021351999999978943,
+        "evidence": {
+          "consistent_cut_digest": "332be9a5813bc6e29b1eee363f6ec28b72ec80d979325d1c51871388e4498868"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "ec16b3df3818ecffbef02b1585399005adf18d1dfe59d112959bdb19f21369ba"
+      },
+      {
+        "node_id": "DN-47",
+        "name": "Raft Consensus State Machine",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.007535000000018499,
+        "evidence": {
+          "current_term": 1,
+          "leader": "NODE_DAISY_LEADER",
+          "log_length": 1
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "394851503299da541e88ae9cd64d46ce22e536b8660edb2dd630bbd8830e0099"
+      },
+      {
+        "node_id": "DN-48",
+        "name": "Lamport Vector Clock Sequencer",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.0056209999999623506,
+        "evidence": {
+          "vector_clock": {
+            "N1": 2,
+            "N2": 2,
+            "N3": 0
+          },
+          "causal_order": "VALID"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "c411720e883d341e4c3a182a2b5a58e3b739257f973b355c000e63164d39a728"
+      },
+      {
+        "node_id": "DN-49",
+        "name": "License Generation & Proof Tokenizer",
+        "category": "MARKETPLACE",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.014580000000023574,
+        "evidence": {
+          "license_key": "LIC-636627703D38586A82DB3773632954D5"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "92347a9df23fe2cb97960cb7a3311fe6ee2aaf9f3b2c36f39877951fc7ebc3df"
+      },
+      {
+        "node_id": "DN-50",
+        "name": "Telemetry & Metric Aggregator",
+        "category": "AUDIT",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.0695660000000089,
+        "evidence": {
+          "heap_used_bytes": 28555160,
+          "telemetry_online": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "f991d00e0edd646654350b59d31aed7675e430934fea9ccfd536a2042a584f18"
+      },
+      {
+        "node_id": "DN-51",
+        "name": "Hardware Security Module (HSM) Proxy",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.010008999999968182,
+        "evidence": {
+          "hsm_attestation_hash": "0b190736a0dabe8752e6d8e0817a53a262d219dcb639b79f7a412fa1606d02b1"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "f8d7814322b3a99ecaf99df9c7317c9bcd795463d12312041b7737c00c2daf54"
+      },
+      {
+        "node_id": "DN-52",
+        "name": "Ed25519 Cryptographic Signer",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.011978999999996631,
+        "evidence": {
+          "signature": "34efc0333300290fe31c887a145f99270dbc4362bbf730bbe4f635ea745c59fe",
+          "verified": true
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "6a7238e544b7ec866fc60701f17c69b1e26dc09d4c09756c299414cd83d0cc43"
+      },
+      {
+        "node_id": "DN-53",
+        "name": "Zero-Knowledge Range Proof Engine",
+        "category": "SECURITY",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 0.01183200000002671,
+        "evidence": {
+          "in_range": true,
+          "commitment": "4b97f1959fa3870bada76f04f01e822bf995b0863ae7800dbb88e538c1fd7b64"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "370df8259f9870287b88893a7d6b74da0e0ab7805f6f917c08dba87aa9a6a87b"
+      },
+      {
+        "node_id": "DN-54",
+        "name": "Sovereign API Gateway & Mesh Router",
+        "category": "CORE_KERNEL",
+        "executed": true,
+        "claim_scope": "LOCAL",
+        "status": "SUCCESS",
+        "duration_ms": 5.470524999999952,
+        "evidence": {
+          "http_status": 200,
+          "health": "HEALTHY"
+        },
+        "registered": true,
+        "instantiated": true,
+        "reachable": true,
+        "output_asserted": true,
+        "evidence_generated": true,
+        "evidence_hash": "78094f57b039040c8644d70c9f44fbf993f4c87810e84adc66afc349ba95d1cb"
+      }
+    ],
+    "breakdown": {
+      "baseline_internal_18": [
+        {
+          "node_id": "DN-01",
+          "name": "Daisy Genesis Core",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 25.10567500000002,
+          "evidence": {
+            "genesis_root": "b17ad6280d9a9b62314559999b7879c9a2adf583ef95fabfec5f97e064c13ae0",
+            "state": "INITIALIZED"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "1a4fad3b0a65db541a93938a14ebe399c287ad07d502c3cf9dfcec3509d0c912"
+        },
+        {
+          "node_id": "DN-02",
+          "name": "MMTAI Authority Gate",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.2856720000000337,
+          "evidence": {
+            "token_prefix": "625f5ccd61c7b2bc",
+            "permitted": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "70921da5efcb081671dcf81cefb2cc8d32da111878ea45eafd9c9cad90bc64f8"
+        },
+        {
+          "node_id": "DN-03",
+          "name": "Z3 Theorem Prover Kernel",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.9456700000000069,
+          "evidence": {
+            "solver_result": "unsat",
+            "cert_hash": "baffb83fdf363fc2288ce07a00e3ab77a4598046f6398a18375e51bc6ccc764c"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "bdbac418e21692dda59ea18ddcaf4d8d7a1765ab62bbbab474935e2ed5917182"
+        },
+        {
+          "node_id": "DN-04",
+          "name": "NOPOT Bounded Termination Engine",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 1.3794959999999605,
+          "evidence": {
+            "steps": 7,
+            "bound": 100
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "66d030985d30104fb00f7e42b323738c0d3982dec0c21e6c8be25be99e166e93"
+        },
+        {
+          "node_id": "DN-05",
+          "name": "Crystal Clear Box Audit Engine",
+          "category": "AUDIT",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "FAIL_CLOSED",
+          "duration_ms": 0.26099999999996726,
+          "evidence": {},
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        },
+        {
+          "node_id": "DN-06",
+          "name": "Linear SHA-256 Merkle Ledger",
+          "category": "AUDIT",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 22.965666,
+          "evidence": {
+            "record_hash": "407414bd489327bf4185b102b80630fbb38d37f7cbef178b8ff302f4dd65f49e",
+            "chain_valid": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "fcde489bb294019ca408ffa64858756e6a2b1a924170e5a036b262a8d0914fb5"
+        },
+        {
+          "node_id": "DN-07",
+          "name": "Anti-Tamper Sentinel Monitor",
+          "category": "AUDIT",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 3.601007999999979,
+          "evidence": {
+            "mutation_alarm_tripped": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "6d02557a19612b979433cd990fc6ccd73ef3a59c94a23b9637b7042d31e7ddcb"
+        },
+        {
+          "node_id": "DN-08",
+          "name": "Atomic Checkpoint Engine",
+          "category": "PERSISTENCE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 9.556520999999975,
+          "evidence": {
+            "checkpoint_id": "chk_88bc39a323721a60ca",
+            "type": "ATOMIC_DATABASE_RESTORE"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "4432833f7c442f0b2a2411beca526df77e8e4f523a805134f12c7eddc0003ec6"
+        },
+        {
+          "node_id": "DN-09",
+          "name": "Reversibility & Rollback Governor",
+          "category": "PERSISTENCE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 27.88202100000001,
+          "evidence": {
+            "rollback_success": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "e08bf17ce9bec53554b045f5ab129a9e626346f9580d6bb8d61ff034077d8ed8"
+        },
+        {
+          "node_id": "DN-10",
+          "name": "Irreversible Action Firewall",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 14.612662,
+          "evidence": {
+            "blocked_illegal_rollback": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "ba3f1f3402325dfe812d368682571a89ea3cbd5cda6a62f2c5631b5d666b2218"
+        },
+        {
+          "node_id": "DN-11",
+          "name": "21-Stage Problem Pipeline",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "FAIL_CLOSED",
+          "duration_ms": 16.534978000000024,
+          "evidence": {
+            "completed_stages": 7,
+            "success": false
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "20b11b200777d6e5c0e2a3146d784bf9ce79ea4d53978a56118cb9fb3d5f1d8a"
+        },
+        {
+          "node_id": "DN-12",
+          "name": "Fail-Closed Circuit Breaker",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.1594079999999849,
+          "evidence": {
+            "circuit_tripped": true,
+            "stopped_at_stage": 6
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "dea72244eac156222fc3c2b59bf0da932b068181df47f6c9dd29a813c1c63bd9"
+        },
+        {
+          "node_id": "DN-13",
+          "name": "Defensible Pricing Formula Engine",
+          "category": "MARKETPLACE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.1496569999999906,
+          "evidence": {
+            "price_cents": 25313,
+            "hash": "242b896c34ac345a3a797a36e2ae83d8c39a9136baa0ad16f340efd7f70c5f5e"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "a8569f183d1e6628015c79ddde7f89997a1a91a713837285ea4dc1e7a1fc033d"
+        },
+        {
+          "node_id": "DN-14",
+          "name": "Marketplace Publication Guard",
+          "category": "MARKETPLACE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.09510299999999461,
+          "evidence": {
+            "publication_blocked": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "6c66ed384629edcfc57540fee4547b0ce68f51a3a0bc8a13fcc8560ad72ebb23"
+        },
+        {
+          "node_id": "DN-15",
+          "name": "Multi-Tenant Partition Manager",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.020439999999950942,
+          "evidence": {
+            "isolated": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "78277f74f1c975f1a71b417026fc6b2d18a8fc52eaea83bca61a18d7c9b1c7cf"
+        },
+        {
+          "node_id": "DN-16",
+          "name": "RBAC Token Mint & Validator",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.6133590000000027,
+          "evidence": {
+            "role": "ADMIN",
+            "valid": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "6db628e6a79ee770c9fb1502cbcb5fe2d587e45445f2692fd3ba0f175b40130f"
+        },
+        {
+          "node_id": "DN-17",
+          "name": "Single-Use Token Replay Sentinel",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.032444999999995616,
+          "evidence": {
+            "replay_rejected": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "4f47ca84a4114c2b618481d343edba607e7367f9ced8ff073defd77ac68617fc"
+        },
+        {
+          "node_id": "DN-18",
+          "name": "Cleanroom Deterministic Sandbox",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.015929999999968913,
+          "evidence": {
+            "deterministic": true,
+            "digest": "4db134a2ae06aef1c0ec283ce3f807f001e1d82d21efe2f55d77329d8ab33be8"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "99a76c3cfdd152a19a54b829adb49702087904ecea5d7e1573c488498b9e9ac5"
+        }
+      ],
+      "expanded_internal_33": [
+        {
+          "node_id": "DN-19",
+          "name": "Bitrot & Drift Detection Oracle",
+          "category": "AUDIT",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.015277000000025964,
+          "evidence": {
+            "bitrot_detected": false,
+            "digest": "ad27dfdaa03ae34127357f9d2bed21b5ae0626534b551f4429cbf4627c0e37ce"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "d02b3e221ebb3a2f34f13a9d7b4d880c9f843558cd124c037481526cf3b1de03"
+        },
+        {
+          "node_id": "DN-20",
+          "name": "Paradox Resolution Engine",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.00438000000002603,
+          "evidence": {
+            "paradox_resolved": "DH-P-001",
+            "status": "VERIFIED"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "5eb0b2773aa3c036f0bfca1ab6115fdf6a1bd5a0749b5a2b791a5ce6c6b363dd"
+        },
+        {
+          "node_id": "DN-21",
+          "name": "Russell Naive Set Axiom Disprover",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.06928099999998949,
+          "evidence": {
+            "theorem": "THM-RUSSELL-01",
+            "result": "unsat"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "414ed0c4244816ad7c1f1c44c8b39a49816b38ad613c8441b46a21326b13416f"
+        },
+        {
+          "node_id": "DN-22",
+          "name": "Barber Semantic Variant Verifier",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.050149999999973716,
+          "evidence": {
+            "theorem": "THM-BARBER-02",
+            "result": "unsat"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "7fb280fee5b673e72b7a435845d4f79e8d455ee4385314a991252e9a4fcf610b"
+        },
+        {
+          "node_id": "DN-23",
+          "name": "Curry Implication Contraction Guard",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.053193000000021584,
+          "evidence": {
+            "theorem": "THM-CURRY-04",
+            "result": "unsat"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "53fb91b496723408122341f7395f72f89659537814d5fc8cf34517357754cd5e"
+        },
+        {
+          "node_id": "DN-24",
+          "name": "Zeno Achilles Continuous Metric Solver",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.0514440000000036,
+          "evidence": {
+            "theorem": "THM-ZENO-ARCHIMEDEAN-06",
+            "result": "unsat"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "8a0c8096f958ffbb510c1bf2719585b87c409a4249e91acbafb8f8fb73c42408"
+        },
+        {
+          "node_id": "DN-25",
+          "name": "Burali-Forti Ordinal Hierarchy Checker",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.022727000000031694,
+          "evidence": {
+            "well_ordered": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "e219f19de5beef28189a50b05e724bf2e4db1c06c7f79cc2ca5553b4c184c39e"
+        },
+        {
+          "node_id": "DN-26",
+          "name": "Tarski Semantic Truth Tower Node",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.04071900000002415,
+          "evidence": {
+            "theorem": "THM-LIAR-03",
+            "result": "unsat"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "1f20556b143613c9efad02a2df45174fb4e7832020b6a2f2dba401f792cf529f"
+        },
+        {
+          "node_id": "DN-27",
+          "name": "Halting Problem Boundary Sentinel",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.05832199999997556,
+          "evidence": {
+            "termination_proved": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "d04ef7516fb13c9dfbc01b88c5c78e1db313ee91fe18e6680959cefbbf2bb53d"
+        },
+        {
+          "node_id": "DN-28",
+          "name": "Order State Machine Orchestrator",
+          "category": "MARKETPLACE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 16.040975999999944,
+          "evidence": {
+            "valid_transition": true,
+            "invalid_transition_rejected": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "859bd276f9998c14e2cacf724371a0cca160e49c9342c56129ffefb893fedc13"
+        },
+        {
+          "node_id": "DN-29",
+          "name": "Preserved Solution Vault (DH-S-001)",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "FAIL_CLOSED",
+          "duration_ms": 0.01266099999998005,
+          "evidence": {
+            "solution_id": "DH-S-001"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "be70971ea4f5270b9753c3b7793906381bf1717360d7551c6ba967835dcf790c"
+        },
+        {
+          "node_id": "DN-30",
+          "name": "Independent Oracle Attestor",
+          "category": "AUDIT",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.012890000000027158,
+          "evidence": {
+            "oracle_signature": "5c7551ad400635db6a30fb4efbce27933149ad50f1c921e6799e3a2fc56ccef4"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "2276522c7a2160cb0c1f25e2423ab1772127d74e95b2ff053ecb78f94e2197a5"
+        },
+        {
+          "node_id": "DN-31",
+          "name": "Sqlite Local Store Manager",
+          "category": "PERSISTENCE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.17880000000002383,
+          "evidence": {
+            "table_count": 27
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "354052f6edff9ced7d6ff2302fe13b6761955bb969b47f3b00f1df11298c4047"
+        },
+        {
+          "node_id": "DN-32",
+          "name": "Durable JSON WAL Sync Engine",
+          "category": "PERSISTENCE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 9.664699999999982,
+          "evidence": {
+            "wal_hash": "88617f81093134599faf9989f5e9f04893575a5ae8dfe96b7205d1fe5993b17b"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "dbbd2e8ecba3630ed4da040fa2a1a018e8e4d848968513d0474c8d0fe7bfb8c4"
+        },
+        {
+          "node_id": "DN-33",
+          "name": "Central Failure Diversion Router",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 43.61962699999998,
+          "evidence": {
+            "diversion_id": "fail_1790674692355_lp4i",
+            "fail_closed": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "c20a32844bc015e4ff442af2b976277d5072779c385c21412a28a4f570eb3c3b"
+        },
+        {
+          "node_id": "DN-36",
+          "name": "Fiat Settlement Policy Guard (Stripe Prohibited / PayPal Exclusive)",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "PROHIBITED_BLOCKED",
+          "duration_ms": 0.0058260000000132095,
+          "evidence": {
+            "directive": "SOVEREIGN_DIRECTIVE_STRIPE_PROHIBITED",
+            "enforced": true,
+            "fiat_designated_gateway": "DN-35-PAYPAL",
+            "stripe_blocked": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "9ef288cf6607ae8afc7cd3daa6af0c245b9e1d131e72ce97244eb97bec0172ef"
+        },
+        {
+          "node_id": "DN-37",
+          "name": "Non-PayPal Rail Blocklist",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "PROHIBITED_BLOCKED",
+          "duration_ms": 0.004090000000019245,
+          "evidence": {
+            "non_paypal_rails_enabled": false,
+            "fail_closed": true,
+            "policy": "PAYPAL_PYUSD_ONLY"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "78203cc35522ff417c9046df2cc4e4455690fc2801ac3919a2006a3abdcd976c"
+        },
+        {
+          "node_id": "DN-39",
+          "name": "External Custody Exclusion Guard",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "PROHIBITED_BLOCKED",
+          "duration_ms": 0.003428000000042175,
+          "evidence": {
+            "external_custody_enabled": false,
+            "fail_closed": true,
+            "policy": "PAYPAL_PYUSD_ONLY"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "dae00964f2afc0510f7f00070e6b39e54fa24ba3529262013462d3833f16ab31"
+        },
+        {
+          "node_id": "DN-40",
+          "name": "Lean4 Theorem Verification Bridge",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.010053000000027623,
+          "evidence": {
+            "kernel": "Lean4_Type_Theory",
+            "cert_digest": "29c7e0f6a80e770b2acdb373ca1858d5f2307cbc44b6a65ae185db6e213a7e9a",
+            "verified": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "2178d7daeddb8add2b6612278f6c25f8bb98ee5f85051afb0d27c6d16284da33"
+        },
+        {
+          "node_id": "DN-41",
+          "name": "Isabelle/HOL Proof Ingestion Node",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.009197000000028765,
+          "evidence": {
+            "logic": "Higher_Order_Logic",
+            "cert_digest": "cc99c1f441f67ee39e30b56f8595ace1c902efa15df9c9034a72b496808adae4",
+            "verified": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "f4a6dec18348c101c6d69f985f1a5c0ce7049136ac08915bc49e50a81fd2640c"
+        },
+        {
+          "node_id": "DN-42",
+          "name": "Coq Gallina Specification Node",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.011178999999970074,
+          "evidence": {
+            "calculus": "Inductive_Constructions",
+            "cert_digest": "36795d02117f78a894fea72e13697df13ffbf578079244e7dd3c823e49aefe49",
+            "verified": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "1f8b2e06494c158947938c6ed0d1ef77e5f78162bff4c153c01a258fa0448fbd"
+        },
+        {
+          "node_id": "DN-43",
+          "name": "Daisy Brain Autonomous Planner",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.028542000000015832,
+          "evidence": {
+            "plan_stages": 3,
+            "graph": [
+              {
+                "stage": 1,
+                "goal": "INTAKE",
+                "status": "PLANNED"
+              },
+              {
+                "stage": 2,
+                "goal": "VERIFICATION",
+                "status": "PLANNED"
+              },
+              {
+                "stage": 3,
+                "goal": "SETTLEMENT",
+                "status": "PLANNED"
+              }
+            ]
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "49933034142b342d96dc9ccfa674a924b9dccf3f6966556af8432c99505d6d7d"
+        },
+        {
+          "node_id": "DN-44",
+          "name": "Pigeonhole Collision SMT Verifier",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.10219699999998966,
+          "evidence": {
+            "theorem": "THM-PIGEONHOLE-08",
+            "result": "unsat"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "b715954a24ac8d22435e93e6b6cd1bb01b222f2322185ad1ecdd8a98b5266131"
+        },
+        {
+          "node_id": "DN-45",
+          "name": "Two Generals Consensus Barrier Node",
+          "category": "LOGIC_SOLVER",
+          "executed": true,
+          "claim_scope": "MODEL",
+          "status": "SUCCESS",
+          "duration_ms": 0.003938000000005104,
+          "evidence": {
+            "impossibility_enforced": true,
+            "common_knowledge_lossy_bound": "UNSAT"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "f2b0a5ce6df9d7c26fa53148a7a018f5347e6014e82df481e94875255a7cb53c"
+        },
+        {
+          "node_id": "DN-46",
+          "name": "Chandy-Lamport Distributed Snapshot",
+          "category": "PERSISTENCE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.021351999999978943,
+          "evidence": {
+            "consistent_cut_digest": "332be9a5813bc6e29b1eee363f6ec28b72ec80d979325d1c51871388e4498868"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "ec16b3df3818ecffbef02b1585399005adf18d1dfe59d112959bdb19f21369ba"
+        },
+        {
+          "node_id": "DN-47",
+          "name": "Raft Consensus State Machine",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.007535000000018499,
+          "evidence": {
+            "current_term": 1,
+            "leader": "NODE_DAISY_LEADER",
+            "log_length": 1
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "394851503299da541e88ae9cd64d46ce22e536b8660edb2dd630bbd8830e0099"
+        },
+        {
+          "node_id": "DN-48",
+          "name": "Lamport Vector Clock Sequencer",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.0056209999999623506,
+          "evidence": {
+            "vector_clock": {
+              "N1": 2,
+              "N2": 2,
+              "N3": 0
+            },
+            "causal_order": "VALID"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "c411720e883d341e4c3a182a2b5a58e3b739257f973b355c000e63164d39a728"
+        },
+        {
+          "node_id": "DN-49",
+          "name": "License Generation & Proof Tokenizer",
+          "category": "MARKETPLACE",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.014580000000023574,
+          "evidence": {
+            "license_key": "LIC-636627703D38586A82DB3773632954D5"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "92347a9df23fe2cb97960cb7a3311fe6ee2aaf9f3b2c36f39877951fc7ebc3df"
+        },
+        {
+          "node_id": "DN-50",
+          "name": "Telemetry & Metric Aggregator",
+          "category": "AUDIT",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.0695660000000089,
+          "evidence": {
+            "heap_used_bytes": 28555160,
+            "telemetry_online": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "f991d00e0edd646654350b59d31aed7675e430934fea9ccfd536a2042a584f18"
+        },
+        {
+          "node_id": "DN-51",
+          "name": "Hardware Security Module (HSM) Proxy",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.010008999999968182,
+          "evidence": {
+            "hsm_attestation_hash": "0b190736a0dabe8752e6d8e0817a53a262d219dcb639b79f7a412fa1606d02b1"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "f8d7814322b3a99ecaf99df9c7317c9bcd795463d12312041b7737c00c2daf54"
+        },
+        {
+          "node_id": "DN-52",
+          "name": "Ed25519 Cryptographic Signer",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.011978999999996631,
+          "evidence": {
+            "signature": "34efc0333300290fe31c887a145f99270dbc4362bbf730bbe4f635ea745c59fe",
+            "verified": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "6a7238e544b7ec866fc60701f17c69b1e26dc09d4c09756c299414cd83d0cc43"
+        },
+        {
+          "node_id": "DN-53",
+          "name": "Zero-Knowledge Range Proof Engine",
+          "category": "SECURITY",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 0.01183200000002671,
+          "evidence": {
+            "in_range": true,
+            "commitment": "4b97f1959fa3870bada76f04f01e822bf995b0863ae7800dbb88e538c1fd7b64"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "370df8259f9870287b88893a7d6b74da0e0ab7805f6f917c08dba87aa9a6a87b"
+        },
+        {
+          "node_id": "DN-54",
+          "name": "Sovereign API Gateway & Mesh Router",
+          "category": "CORE_KERNEL",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "SUCCESS",
+          "duration_ms": 5.470524999999952,
+          "evidence": {
+            "http_status": 200,
+            "health": "HEALTHY"
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "78094f57b039040c8644d70c9f44fbf993f4c87810e84adc66afc349ba95d1cb"
+        }
+      ],
+      "gateways_3": [
+        {
+          "node_id": "DN-34",
+          "name": "Neon Postgres Adapter",
+          "category": "ADAPTERS",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "PROVIDER_REQUIRED",
+          "duration_ms": 0.23062800000002426,
+          "evidence": {
+            "configured": false,
+            "backend": "SQLITE_LOCAL",
+            "fallback_active": true,
+            "tables_verified": 27
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "fb62309862f0f5a52f6a5f85267d4ab09c3166cc56a8e6e99b7df8790facfc35"
+        },
+        {
+          "node_id": "DN-35",
+          "name": "PayPal Enterprise Payment Gateway",
+          "category": "PAYMENTS",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "PROVIDER_REQUIRED",
+          "duration_ms": 0.13807300000001987,
+          "evidence": {
+            "configured": false,
+            "environment": "none",
+            "pyusd_only_policy": "REQUIRED",
+            "webhook_configured": false,
+            "authenticated": false,
+            "fail_closed_enforced": true,
+            "note": "No provider operation is performed by node coverage; provider verification is a separate authorized flow."
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "61de82c9f878f3756701ea9d623031d32d4ea41581239c4785e71bef9108e03e"
+        },
+        {
+          "node_id": "DN-38",
+          "name": "PYUSD Evidence Requirement",
+          "category": "PAYMENTS",
+          "executed": true,
+          "claim_scope": "LOCAL",
+          "status": "PROVIDER_REQUIRED",
+          "duration_ms": 0.006095000000016171,
+          "evidence": {
+            "provider_capture_verified": false,
+            "pyusd_asset_evidence_verified": false,
+            "production_verified": false,
+            "gateway_state": "EXTERNAL_PROVIDER_REQUIRED",
+            "fail_closed": true
+          },
+          "registered": true,
+          "instantiated": true,
+          "reachable": true,
+          "output_asserted": true,
+          "evidence_generated": true,
+          "evidence_hash": "b2a5873591d5534899e163cc90837c964f99646a4959b9d53cacb8b896f5cecd"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "allPassed": true,
+  "totalTests": 30,
+  "passedTests": 30,
+  "results": [
+    {
+      "test_number": 1,
+      "name": "Authentication & RBAC Evaluation",
+      "category": "SECURITY",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 2,
+      "name": "MMTAI Single-Use Token Replay Prevention",
+      "category": "SECURITY",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 3,
+      "name": "Multi-Tenant Cryptographic Partition Isolation",
+      "category": "SECURITY",
+      "passed": true,
+      "duration_ms": 2,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 4,
+      "name": "Audit Chain Cryptographic Hash Continuity",
+      "category": "AUDIT",
+      "passed": true,
+      "duration_ms": 2,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 5,
+      "name": "Anti-Tamper Sentinel Active Tamper Detection",
+      "category": "AUDIT",
+      "passed": true,
+      "duration_ms": 4,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 6,
+      "name": "Atomic State Checkpoint & Reversibility Engine",
+      "category": "PERSISTENCE",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 7,
+      "name": "Irreversible Action Rollback Rejection Guard",
+      "category": "PERSISTENCE",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 8,
+      "name": "Paradox Registry Integrity (Exact 32 Bootstrap Set)",
+      "category": "PARADOX",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 9,
+      "name": "Paradox Duplicate & Family Variant Taxonomy",
+      "category": "PARADOX",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 10,
+      "name": "NOPOT Bounded Termination Formal Proof Verification",
+      "category": "PROOFS",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 11,
+      "name": "Preserved Solution DH-S-001 Verification Integrity",
+      "category": "SOLUTIONS",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 12,
+      "name": "Proof Bundle Builder Seal & Independent Oracle Attestation",
+      "category": "PROOFS",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 13,
+      "name": "Cleanroom Replay Bitrot & Divergence Detection",
+      "category": "PROOFS",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 14,
+      "name": "21-Stage Problem Resolution Pipeline Full Traversal",
+      "category": "PIPELINE",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 15,
+      "name": "Pipeline Fail-Closed Gate Halts and Quarantines on Error",
+      "category": "PIPELINE",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 16,
+      "name": "Defensible Pricing Formula v1.4 Deterministic Execution",
+      "category": "MARKETPLACE",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 17,
+      "name": "Marketplace Blocks Publication of Unverified Solutions",
+      "category": "MARKETPLACE",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 18,
+      "name": "PayPal DN-35 Server-Authoritative Fail-Closed Enforcement",
+      "category": "PAYMENTS",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 19,
+      "name": "External Adapter Inventory Transparency (Neon, PayPal, Solana)",
+      "category": "ADAPTERS",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 20,
+      "name": "Crystal Clear Box Redaction Preserves Verifiable Evidence",
+      "category": "AUDIT",
+      "passed": true,
+      "duration_ms": 4,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 21,
+      "name": "Daisy Node Registry (54 Distinct Nodes)",
+      "category": "NODES",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 22,
+      "name": "System Status API Endpoint Computes Real State",
+      "category": "API",
+      "passed": true,
+      "duration_ms": 4,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 23,
+      "name": "SqliteStore Multi-Tenant Persistence & 27 Tables Integrity",
+      "category": "DATABASE",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 24,
+      "name": "Fail-Closed: CLAIM_ONLY / UNVERIFIED Offer Publication Blocked",
+      "category": "MARKETPLACE",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 25,
+      "name": "Fail-Closed: UNKNOWN / UNVERIFIED Order Creation Blocked",
+      "category": "MARKETPLACE",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 26,
+      "name": "Fail-Closed: Unauthorized Runtime Deployment Blocked",
+      "category": "SECURITY",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 27,
+      "name": "Fail-Closed: Cross-Tenant Data Access Blocked",
+      "category": "SECURITY",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 28,
+      "name": "Fail-Closed: Missing PayPal & Solana Credentials Evaluated",
+      "category": "ADAPTERS",
+      "passed": true,
+      "duration_ms": 0,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 29,
+      "name": "Order Lifecycle State Machine Validates Transitions & Failures",
+      "category": "MARKETPLACE",
+      "passed": true,
+      "duration_ms": 6,
+      "details": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "test_number": 30,
+      "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
+      "category": "REVERSIBILITY",
+      "passed": true,
+      "duration_ms": 1,
+      "details": {
+        "status": "PASSED"
+      }
+    }
+  ]
+}

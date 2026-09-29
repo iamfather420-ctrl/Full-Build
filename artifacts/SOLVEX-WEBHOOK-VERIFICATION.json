@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-09-29T09:38:24.201Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "BLOCKED",
+  "evidence": {
+    "missing_configuration_negative_test": {
+      "accepted": false,
+      "status": 503,
+      "error": "Webhook verification is not configured"
+    },
+    "signature_verification_in_source": true,
+    "webhook_id_validation": false,
+    "event_id_persistence": true,
+    "duplicate_replay_rejection": true,
+    "transaction_executed": false
+  },
+  "test": "Unconfigured or unverified webhook event was rejected server-side.",
+  "remaining_requirement": "Configure provider webhook identity/secret and execute a real provider-signed non-destructive webhook verification in the declared environment.",
+  "truth_classification": "BLOCKED"
+}

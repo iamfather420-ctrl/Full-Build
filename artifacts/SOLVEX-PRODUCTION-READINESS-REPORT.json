@@ -1,0 +1,231 @@
+{
+  "timestamp": "2026-09-29T09:39:04.199Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "candidate_id": "DH-C-B28A191DCBFE70D0",
+  "implementation_hash": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
+  "inventory_reference": "SOLVEX-PRODUCTION-READINESS-INVENTORY.json",
+  "connected_services": {
+    "neon": {
+      "connector": "Neon",
+      "enabled": true,
+      "project_id": "flat-unit-34950816",
+      "project_name": "SolveX",
+      "branch_id": "br-soft-dawn-b4wkrjox",
+      "branch_name": "production",
+      "branch_state": "ready",
+      "table_count": 27,
+      "schema_check": "TABLES_LISTED_READ_ONLY",
+      "application_runtime_binding": "NOT_VERIFIED",
+      "rls_and_indexes": "NOT_VERIFIED"
+    },
+    "paypal": {
+      "connector": "PayPal for Business",
+      "enabled": true,
+      "read_only_transaction_query": {
+        "window_start": "2026-09-01T00:00:00Z",
+        "window_end": "2026-09-29T23:59:59Z",
+        "result": "NO_TRANSACTIONS_FOUND"
+      },
+      "payment_created": false,
+      "payment_captured": false,
+      "money_moved": false,
+      "pyusd_evidence": "NOT_OBSERVED",
+      "webhook_verification": "NOT_VERIFIED"
+    }
+  },
+  "neon_schema_reference": "NEON-PRODUCTION-SCHEMA-VERIFICATION.json",
+  "statuses": {
+    "TECHNICAL_VERIFICATION": {
+      "status": "VERIFIED_IMPLEMENTATION",
+      "evidence": "Candidate-specific SMT proof, Z3 WASM UNSAT, hermetic execution, independent oracle, and cleanroom replay artifact present.",
+      "test": "npm run verify:candidate",
+      "remaining_requirement": "None for the local implementation contract; external B2B evidence is separate."
+    },
+    "B2B_REFERENCE_FRAMEWORK": {
+      "status": "VERIFIED_IMPLEMENTATION",
+      "evidence": {
+        "reference_framework": "IMPLEMENTED",
+        "evaluator_workflow": "IMPLEMENTED_TESTED",
+        "customer_acceptance": "MISSING",
+        "independent_evidence": "MISSING",
+        "synthetic_evidence_excluded": true
+      },
+      "test": "npm run verify:b2b",
+      "remaining_requirement": "Use a legitimate authorized business case; synthetic data remains excluded."
+    },
+    "CUSTOMER_ACCEPTANCE": {
+      "status": "BLOCKED",
+      "evidence": "MISSING — no customer or authorized evaluator supplied.",
+      "test": "npm run verify:b2b; synthetic acceptance negative gate passed.",
+      "remaining_requirement": "Actual authorized evaluator/customer, case definition, execution, review, and acceptance decision."
+    },
+    "INDEPENDENT_B2B_EVIDENCE": {
+      "status": "BLOCKED",
+      "evidence": "MISSING — no independent external evidence supplied.",
+      "test": "npm run verify:commercial; independent-evidence gate remains blocked.",
+      "remaining_requirement": "Separate independent evaluator, methodology, observed result, authorization, and hash-linked evidence."
+    },
+    "AUTHENTICATION": {
+      "status": "PARTIAL",
+      "evidence": "Local HMAC server verification and tenant/RBAC tests pass; production IDP is not configured.",
+      "test": "npm run verify:enterprise and npm run verify:security",
+      "remaining_requirement": "Production IDP issuer/client/secret and deployed role/resource ownership verification."
+    },
+    "DATABASE": {
+      "status": "PARTIAL",
+      "evidence": "Neon SolveX production branch is ready with 27 tables and 47 indexes; RLS policy count is 0. Application runtime binding and restart readback remain unverified.",
+      "test": "Neon read-only project, branch, schema, index, and RLS inspection",
+      "remaining_requirement": "Bind the deployed app to the Neon branch, apply reviewed RLS policies, verify migrations/transactions, and prove restart readback."
+    },
+    "TENANT_ISOLATION": {
+      "status": "VERIFIED_IMPLEMENTATION",
+      "evidence": "Local repository tenant scoping and cross-tenant denial tests pass.",
+      "test": "npm run verify:enterprise and npm run verify:security",
+      "remaining_requirement": "Managed production RLS deployment and independent verification."
+    },
+    "PAYPAL_SANDBOX": {
+      "status": "PARTIAL",
+      "evidence": "PayPal for Business connector is active; read-only transaction query returned no transactions. No payment was created or captured.",
+      "test": "PayPal read-only transaction query; no payment mutation attempted",
+      "remaining_requirement": "Bind application runtime credentials, verify environment/webhook identity, and complete a non-destructive provider-authenticated readiness path."
+    },
+    "PAYPAL_PRODUCTION": {
+      "status": "PARTIAL",
+      "evidence": "PayPal for Business connector is active, but application runtime credentials and provider-issued PYUSD evidence are not verified. No transactions were found in the inspected window.",
+      "test": "PayPal read-only transaction query; no payment mutation attempted",
+      "remaining_requirement": "Bind the application to the intended PayPal environment, verify webhook configuration, and obtain explicit PYUSD evidence."
+    },
+    "PAYPAL_WEBHOOKS": {
+      "status": "BLOCKED",
+      "evidence": {
+        "missing_configuration_negative_test": {
+          "accepted": false,
+          "status": 503,
+          "error": "Webhook verification is not configured"
+        },
+        "signature_verification_in_source": true,
+        "webhook_id_validation": false,
+        "event_id_persistence": true,
+        "duplicate_replay_rejection": true,
+        "transaction_executed": false
+      },
+      "test": "npm run verify:webhooks",
+      "remaining_requirement": "Provider-signed webhook verification, event persistence, idempotency, replay rejection, and tenant/order binding."
+    },
+    "PYUSD": {
+      "status": "NOT_OBSERVED",
+      "evidence": "No provider-issued PYUSD asset evidence observed.",
+      "test": "npm run verify:payment; capture path requires explicit PYUSD evidence.",
+      "remaining_requirement": "Explicit provider-issued or independently verifiable PYUSD transaction evidence."
+    },
+    "MARKETPLACE": {
+      "status": "BLOCKED",
+      "evidence": {
+        "readiness": {
+          "candidate_id": "DH-C-B28A191DCBFE70D0",
+          "technical_verification": "PASSED",
+          "b2b_acceptance": "MISSING",
+          "independent_b2b_evidence": "MISSING",
+          "marketplace_publication": "BLOCKED",
+          "payment": "NOT_CONFIGURED",
+          "production": "BLOCKED",
+          "reasons": [
+            "B2B acceptance evidence is missing",
+            "Independent B2B evidence is missing",
+            "Payment is not configured",
+            "Commercial production prerequisites are not configured"
+          ]
+        },
+        "published_offer_count": 0,
+        "negative_publication_attempt": {
+          "success": false,
+          "error": "Publication blocked: solution is not independently VERIFIED"
+        },
+        "frontend_bypass": "NOT_AVAILABLE",
+        "implementation_hash_integrity": true,
+        "tenant_integrity": true
+      },
+      "test": "npm run verify:marketplace",
+      "remaining_requirement": "B2B acceptance evidence is missing; Independent B2B evidence is missing; Payment is not configured; Commercial production prerequisites are not configured"
+    },
+    "ORDERS": {
+      "status": "VERIFIED_IMPLEMENTATION",
+      "evidence": "Server-side order state and payment binding code exists; no commercial order executed.",
+      "test": "npm run verify:api and npm run verify:enterprise",
+      "remaining_requirement": "Published verified offer, real customer order, provider-confirmed payment, and audited transitions."
+    },
+    "FULFILLMENT": {
+      "status": "BLOCKED",
+      "evidence": "No fulfillment executed.",
+      "test": "Negative order/payment gates and lifecycle inspection",
+      "remaining_requirement": "Real verified offer, payment confirmation, explicit fulfillment authorization, delivery evidence, and rollback plan."
+    },
+    "PRODUCTION_DEPLOYMENT": {
+      "status": "BLOCKED",
+      "evidence": "Production environment and managed secrets/database are not configured.",
+      "test": "npm run verify:production",
+      "remaining_requirement": "Managed deployment with production IDP, database, secret management, monitoring, backups, and provider configuration."
+    },
+    "MONITORING": {
+      "status": "PARTIAL",
+      "evidence": "Local audit/telemetry interfaces exist; no production monitoring deployment evidence.",
+      "test": "npm run verify:nodes and source inventory",
+      "remaining_requirement": "Production metrics, logs, alerts, security events, retries, replays, and rollback monitoring."
+    },
+    "BACKUPS": {
+      "status": "BLOCKED",
+      "evidence": "No managed backup/restore evidence performed.",
+      "test": "npm run verify:recovery",
+      "remaining_requirement": "Restorable managed database backup and audit-preservation rehearsal."
+    },
+    "RECOVERY": {
+      "status": "PARTIAL",
+      "evidence": {
+        "local_checkpoint_created": true,
+        "local_fail_closed_diversion": {
+          "fail_closed_enforced": true,
+          "rollback_status": "ROLLED_BACK",
+          "failure_id": "fail_1790674705623_89ss",
+          "evidence_hash": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558"
+        },
+        "audit_chain_valid_after_test": true,
+        "backup_restore_test": "NOT_PERFORMED",
+        "production_restore_test": "NOT_PERFORMED"
+      },
+      "test": "npm run verify:recovery",
+      "remaining_requirement": "Managed database backup, restore rehearsal, migration rollback, configuration recovery, and incident recovery evidence in the production environment."
+    },
+    "SECURITY": {
+      "status": "PARTIAL",
+      "evidence": {
+        "anonymous_acceptance": {
+          "status": 401,
+          "error": "Authentication is required",
+          "timestamp": 1790674704667
+        },
+        "cross_tenant_denial": {
+          "authorized": false,
+          "reason": "Cross-tenant access denied"
+        },
+        "mixed_credential_denial": {
+          "valid": false,
+          "environment": "production",
+          "blockers": [
+            "Sandbox and production PayPal credential sets cannot be mixed"
+          ]
+        },
+        "secret_value_scan": true,
+        "browser_authority": "SERVER_ONLY"
+      },
+      "test": "npm run verify:security",
+      "remaining_requirement": "Independent production security review, IDP integration, secret manager configuration, and deployed RLS verification."
+    },
+    "OVERALL_COMMERCIAL_STATE": {
+      "status": "BLOCKED",
+      "evidence": "Technical implementation is proven locally, but B2B acceptance, independent evidence, payment, production configuration, and marketplace gates are missing.",
+      "test": "npm run verify:all",
+      "remaining_requirement": "Stop at the first missing external prerequisite; do not manufacture customer or payment evidence."
+    }
+  }
+}

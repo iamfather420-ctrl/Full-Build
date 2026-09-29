@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-09-29T09:38:23.233Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "BLOCKED",
+  "candidate_id": "DH-C-B28A191DCBFE70D0",
+  "evidence": {
+    "technical_verification": "HOLD",
+    "b2b_readiness": {
+      "candidate_id": "DH-C-B28A191DCBFE70D0",
+      "technical_verification": "PASSED",
+      "b2b_acceptance": "MISSING",
+      "independent_b2b_evidence": "MISSING",
+      "marketplace_publication": "BLOCKED",
+      "payment": "NOT_CONFIGURED",
+      "production": "BLOCKED",
+      "reasons": [
+        "B2B acceptance evidence is missing",
+        "Independent B2B evidence is missing",
+        "Payment is not configured",
+        "Commercial production prerequisites are not configured"
+      ]
+    },
+    "customer_acceptance": "MISSING",
+    "independent_b2b_evidence": "MISSING"
+  },
+  "test": "Readiness gate requires technical verification, B2B acceptance, independent evidence, authorization, tenant integrity, production configuration, and complete evidence.",
+  "remaining_requirement": "B2B acceptance evidence is missing; Independent B2B evidence is missing; Payment is not configured; Commercial production prerequisites are not configured",
+  "truth_classification": "BLOCKED"
+}
