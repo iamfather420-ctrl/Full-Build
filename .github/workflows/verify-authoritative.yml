@@ -33,11 +33,11 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit || true
 
-      - name: Run Authoritative Verification Pipeline (120 cases)
+      - name: Run Unified 120-Case Reproducible Verification Corpus
         id: verify
         run: |
           echo "Starting authoritative verification against commit $(git rev-parse HEAD)"
-          npm run verify:authoritative
+          npm run verify:120
         env:
           SOLVEX_ENV: local
           CI: true
@@ -48,7 +48,7 @@ jobs:
           echo "## Authoritative Verification Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** \`$(git rev-parse HEAD)\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Command:** \`npm run verify:authoritative\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Command:** \`npm run verify:120\`" >> $GITHUB_STEP_SUMMARY
           if [ -f artifacts/dfrl-88-verification.json ]; then
             echo "### DFRL 88" >> $GITHUB_STEP_SUMMARY
             node -e '
@@ -73,6 +73,20 @@ jobs:
             ' >> $GITHUB_STEP_SUMMARY || true
           fi
           ls -la artifacts/ >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Assert Daisy Brain activation gate
+        if: always()
+        run: |
+          if [ ! -f artifacts/daisy-brain-activation-gate.json ]; then
+            echo "Missing Daisy activation gate"
+            exit 1
+          fi
+          node -e '
+            const g = require("./artifacts/daisy-brain-activation-gate.json");
+            if (g.status !== "ACTIVE") { console.error("DAISY BRAIN ACTIVATION GATE BLOCKED", g); process.exit(1); }
+            if (g.corpus?.total_required !== 120 || g.corpus?.executed !== 120 || g.corpus?.deterministic_replays !== 120 || g.corpus?.unknown !== 0 || g.corpus?.errors !== 0) { console.error("DAISY BRAIN CORPUS ACCOUNTING FAILED", g); process.exit(1); }
+            console.log("DAISY BRAIN ACTIVATION GATE ACTIVE: 120/120 corpus verified and replayed");
+          '
 
       - name: Upload verification artifacts
         if: always()
