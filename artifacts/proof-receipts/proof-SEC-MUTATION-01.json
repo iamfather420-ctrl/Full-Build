@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-SEC-MUTATION-01",
+  "verification_id": "SEC-MUTATION-01",
+  "claim": "SMT Operator Premise Perturbation Mutation Detection",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "test_type": "SEC-MUTATION-01"
+  },
+  "execution_method": "npm run verify:dfrl -> scripts/verify_dfrl.ts",
+  "actual_result": "sat",
+  "expected_result": "sat",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "ad0594ffaaa2aa1bfe0d4757b160684bc0b7f09e9c18ee83f58252d38aa28df6",
+  "source_hash": "299a712f52e88dbfbdf7a1564e001a65ad1e9bf1be02de7cc40a337189ba1108",
+  "artifact_hash": "26f5ddeefd485633f012009f129ef63d80d51f433dd88e9f6e34c01a9d7c86f1",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dfrl",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

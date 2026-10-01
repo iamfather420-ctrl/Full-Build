@@ -107,8 +107,9 @@ export interface ArtifactTamperTestResult {
 export class DFRLFormalVerifier {
   private static instance: DFRLFormalVerifier | null = null;
   private z3InitPromise: Promise<any> | null = null;
-  private sharedCtx: any = null;
   private solverVersion: string = 'Microsoft Research Z3 WASM 5.2.0';
+  private primaryContext: any = null;
+  private cleanroomContext: any = null;
 
   public static getInstance(): DFRLFormalVerifier {
     if (!DFRLFormalVerifier.instance) {
@@ -132,15 +133,18 @@ export class DFRLFormalVerifier {
     return this.z3InitPromise;
   }
 
-  /** Reuse a single Z3 Context across operators (reset per use) to bound WASM memory on low-RAM environments while preserving deterministic SMT results. */
-  private async getSharedContext(): Promise<any> {
-    const z3Mod = await this.getZ3Module();
-    if (!z3Mod) return null;
-    if (!this.sharedCtx) {
-      const { Context } = z3Mod;
-      this.sharedCtx = new Context('dfrl_shared_ctx');
+  private getPrimaryContext(z3Mod: any): any {
+    if (!this.primaryContext) {
+      this.primaryContext = new z3Mod.Context('dfrl_primary_context');
     }
-    return this.sharedCtx;
+    return this.primaryContext;
+  }
+
+  private getCleanroomContext(z3Mod: any): any {
+    if (!this.cleanroomContext) {
+      this.cleanroomContext = new z3Mod.Context('dfrl_cleanroom_context');
+    }
+    return this.cleanroomContext;
   }
 
   /**
@@ -150,7 +154,7 @@ export class DFRLFormalVerifier {
    */
   public async verifyProposition(
     item: DFRLParadoxItem,
-    executionId: string = `exec_\( {Date.now()}_ \){Math.random().toString(36).slice(2, 8)}`
+    executionId: string = `exec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   ): Promise<DFRLVerificationResult> {
     const start = performance.now();
     const timestamp = new Date().toISOString();
@@ -161,7 +165,7 @@ export class DFRLFormalVerifier {
     if (!z3Mod) {
       // FAIL-CLOSED: Solver unavailable. NEVER convert to unsat.
       const duration = performance.now() - start;
-      const certSeed = `\( {item.code}: \){item.formal_invariant}:${smtHash}:formal_execution_not_performed`;
+      const certSeed = `${item.code}:${item.formal_invariant}:${smtHash}:formal_execution_not_performed`;
       return {
         operator_id: item.code,
         operator_name: item.name,
@@ -188,19 +192,16 @@ export class DFRLFormalVerifier {
     let execError: string | undefined = undefined;
 
     try {
-      const ctx = await this.getSharedContext();
-      if (!ctx) throw new Error('Z3 shared context unavailable');
+      const ctx = this.getPrimaryContext(z3Mod);
       const solver = new ctx.Solver();
-      try {
-        // EXECUTE THE ACTUAL OPERATOR SMT ASSERTION DIRECTLY
-        await solver.fromString(item.z3_smt_assertion);
-        const res = await solver.check();
-        if (res === 'unsat') solverResult = 'unsat';
-        else if (res === 'sat') solverResult = 'sat';
-        else solverResult = 'unknown';
-      } finally {
-        try { solver.reset(); } catch { /* ignore */ }
-      }
+
+      // EXECUTE THE ACTUAL OPERATOR SMT ASSERTION DIRECTLY
+      await solver.fromString(item.z3_smt_assertion);
+      const res = await solver.check();
+
+      if (res === 'unsat') solverResult = 'unsat';
+      else if (res === 'sat') solverResult = 'sat';
+      else solverResult = 'unknown';
     } catch (err: any) {
       // FAIL-CLOSED: SMT parsing or execution exception. NEVER convert to unsat.
       solverResult = 'error';
@@ -208,7 +209,7 @@ export class DFRLFormalVerifier {
     }
 
     const duration = performance.now() - start;
-    const certSeed = `\( {item.code}: \){item.formal_invariant}:\( {smtHash}: \){solverResult}:${executionId}`;
+    const certSeed = `${item.code}:${item.formal_invariant}:${smtHash}:${solverResult}:${executionId}`;
     const certHash = computeSha256(certSeed);
 
     return {
@@ -249,7 +250,7 @@ export class DFRLFormalVerifier {
     item: DFRLParadoxItem,
     originalResult: DFRLVerificationResult
   ): Promise<ReplayVerificationRecord> {
-    const replayExecId = `replay_\( {Date.now()}_ \){Math.random().toString(36).slice(2, 8)}`;
+    const replayExecId = `replay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const z3Mod = await this.getZ3Module();
 
     if (!z3Mod) {
@@ -269,29 +270,22 @@ export class DFRLFormalVerifier {
 
     let replayResult = 'unknown';
     try {
-      // Reuse shared context with full solver reset — still re-parses SMT from source for independence of result
-      const replayCtx = await this.getSharedContext();
-      if (!replayCtx) throw new Error('Z3 shared context unavailable');
+      // Independent cleanroom context
+      const replayCtx = this.getCleanroomContext(z3Mod);
       const replaySolver = new replayCtx.Solver();
-      try {
-        await replaySolver.fromString(item.z3_smt_assertion);
-        const res = await replaySolver.check();
-        replayResult = res;
-      } finally {
-        try { replaySolver.reset(); } catch { /* ignore */ }
-      }
+      await replaySolver.fromString(item.z3_smt_assertion);
+      const res = await replaySolver.check();
+      replayResult = res;
     } catch {
       replayResult = 'error';
     }
 
-    const replayCertSeed = `\( {item.code}: \){item.formal_invariant}:\( {computeSha256(item.z3_smt_assertion)}: \){replayResult}`;
+    const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}`;
     const replayEvidenceHash = computeSha256(replayCertSeed);
 
     const match =
       replayResult === originalResult.solver_result &&
-      replayResult !== 'error' &&
-      replayResult !== 'unknown' &&
-      replayResult !== 'formal_execution_not_performed';
+      originalResult.solver_result === 'unsat';
 
     return {
       operator_id: item.code,
@@ -340,24 +334,19 @@ export class DFRLFormalVerifier {
       // Independent cleanroom replay
       const replayRec = await this.replayPropositionCleanroom(item, res);
       replays.push(replayRec);
-
-      // Encourage GC between operators to keep WASM memory footprint bounded
-      if (typeof globalThis.gc === 'function') {
-        globalThis.gc();
-      }
     }
 
     const replaysMatched = replays.filter(r => r.replay_match).length;
     const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
-    const allExecuted = executed === REAL_88_PARADOX_REGISTRY.length && unknownCount === 0 && errorCount === 0;
+    const allUnsat = unsatCount === REAL_88_PARADOX_REGISTRY.length;
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
-      allExecuted && allReplayed ? 'VERIFIED' : (executed > 0 ? 'PARTIAL' : 'FAILED');
+      allUnsat && allReplayed ? 'VERIFIED' : (unsatCount > 0 ? 'PARTIAL' : 'FAILED');
 
     const rootHash = computeSha256(
-      results.map(r => `\( {r.operator_id}: \){r.actual_smt_assertion_hash}:\( {r.solver_result}: \){r.certificate_sha256}`).join('|')
+      results.map(r => `${r.operator_id}:${r.actual_smt_assertion_hash}:${r.solver_result}:${r.certificate_sha256}`).join('|')
     );
 
     return {
@@ -421,37 +410,19 @@ export class DFRLFormalVerifier {
       };
     }
 
-    const ctx = await this.getSharedContext();
-    if (!ctx) {
-      return {
-        test_name: 'DFRL Operator SMT Invariant Mutation Test',
-        target_operator_id: targetItem.code,
-        original_assertion: originalSmt,
-        original_assertion_hash: originalHash,
-        mutated_assertion: mutatedSmt,
-        mutated_assertion_hash: mutatedHash,
-        expected_original_result: 'unsat',
-        observed_original_result: 'error',
-        expected_mutated_result: 'sat',
-        observed_mutated_result: 'error',
-        mutation_type: 'PREMISE_PERTURBATION_REFUTATION_INVERSION',
-        mutation_detected: false,
-        passed: false,
-        details: 'Z3 shared context unavailable for mutation testing'
-      };
-    }
+    const { Context } = z3Mod;
 
     // Execute original
-    const solverOrig = new ctx.Solver();
+    const ctxOrig = new Context('mut_orig');
+    const solverOrig = new ctxOrig.Solver();
     await solverOrig.fromString(originalSmt);
     const origRes = await solverOrig.check();
-    try { solverOrig.reset(); } catch { /* ignore */ }
 
     // Execute mutated
-    const solverMut = new ctx.Solver();
+    const ctxMut = new Context('mut_pert');
+    const solverMut = new ctxMut.Solver();
     await solverMut.fromString(mutatedSmt);
     const mutRes = await solverMut.check();
-    try { solverMut.reset(); } catch { /* ignore */ }
 
     const mutationDetected = origRes === 'unsat' && mutRes === 'sat';
 
@@ -472,7 +443,7 @@ export class DFRLFormalVerifier {
       passed: mutationDetected,
       details: mutationDetected
         ? 'Mutation test passed: Inverting theorem refutation constraint successfully converted UNSAT theorem to SAT counter-model.'
-        : `Mutation test failed: orig=\( {origRes}, mut= \){mutRes}`
+        : `Mutation test failed: orig=${origRes}, mut=${mutRes}`
     };
   }
 
@@ -510,7 +481,7 @@ export class DFRLFormalVerifier {
       passed: failClosed,
       notes: failClosed
         ? 'Fail-closed behavior confirmed: Malformed SMT syntax produced ERROR and proved=false. Never converted to UNSAT.'
-        : `Fail-closed violated: Malformed SMT produced result \( {res.solver_result} with proved= \){res.proved}.`
+        : `Fail-closed violated: Malformed SMT produced result ${res.solver_result} with proved=${res.proved}.`
     };
   }
 
@@ -530,7 +501,7 @@ export class DFRLFormalVerifier {
     }
 
     const tamperedHash = computeSha256(
-      tamperedPayload.results.map((r: any) => `\( {r.operator_id}: \){r.actual_smt_assertion_hash}:\( {r.solver_result}: \){r.certificate_sha256}`).join('|')
+      tamperedPayload.results.map((r: any) => `${r.operator_id}:${r.actual_smt_assertion_hash}:${r.solver_result}:${r.certificate_sha256}`).join('|')
     );
 
     const tamperDetected = originalHash !== tamperedHash;

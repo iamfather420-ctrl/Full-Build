@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
 export type DependencyStatus = 'PRESENT' | 'MISSING' | 'INCOMPATIBLE' | 'NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT';
 export type ConfigStatus = 'PRESENT' | 'ABSENT' | 'INVALID_FORMAT' | 'NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT';
 export type EnvironmentMode = 'local' | 'sandbox' | 'production';

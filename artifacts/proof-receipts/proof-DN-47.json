@@ -1,0 +1,28 @@
+{
+  "proof_id": "PROOF-RECEIPT-DN-47",
+  "verification_id": "DN-47",
+  "claim": "Daisy Subsystem: Raft Consensus State Machine",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "node_id": "DN-47",
+    "registered": true,
+    "reachable": true
+  },
+  "execution_method": "npm run verify:nodes -> src/tests/daisy54NodeCoverage.ts",
+  "actual_result": "SUCCESS (evidence: 394851503299)",
+  "expected_result": "OUTPUT_ASSERTED_AND_EVIDENCE_GENERATED",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "559bcdd7d30916978f0c6840d7fce0992db07262247e62d0a0107adf8423b47a",
+  "source_hash": "2d48db9bd739062d6e3e69cf7877e26ab0d54c05d11df64e0525fad5383a081f",
+  "artifact_hash": "02fcb312c7608d399bbe8cb66a09210f816848db4be4a0834a02cb836415fa74",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:nodes",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

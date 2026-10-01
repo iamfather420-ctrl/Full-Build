@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-026",
+  "verification_id": "DH-P-026",
+  "claim": "Allais Paradox: Von Neumann-Morgenstern linear utility independence axiom is violated by systematic certainty preference reversal.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "BEHAVIORAL_ECONOMICS",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "Linear utility model cannot simultaneously satisfy u1 > u2 and a*u1 + (1-a)*u3 < a*u2 + (1-a)*u3 for a in (0, 1).",
+    "assumptions": [
+      "0 < a < 1",
+      "Linear expectation over lotteries"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "503a37aa8feb811213d0d06b0aecbacecc1860a8dbeae9b72d228ba22df73422",
+  "source_hash": "e66efb1efe93aa1f1de49e7b7d96af8849f6e6f54f222f20716898447b3ff6a1",
+  "contract_hash": "e2a8c219c5bad3202c1ca4ff8c1ebd7368575635631eac3a4c1df8ce4a2537d7",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

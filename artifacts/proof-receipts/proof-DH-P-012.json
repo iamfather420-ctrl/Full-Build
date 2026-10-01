@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-012",
+  "verification_id": "DH-P-012",
+  "claim": "Zeno's Arrow Paradox: Instantaneous velocity limit delta_t -> 0 yields non-zero displacement dx = v0 * dt over non-zero time interval.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "PHYSICS_CALCULUS",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "For non-zero velocity v0 > 0 and elapsed interval dt > 0, displacement dx = v0 * dt must be strictly positive.",
+    "assumptions": [
+      "v0 > 0.0",
+      "dt > 0.0"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "f04b8821ec180782a37b922b08664821201728f6e9d43e8cebeddeaedd1ca7ce",
+  "source_hash": "cbe50e588e4edda7dad83a372f13e9ca41fe5f0dbfd46deb220e11a35f6f2155",
+  "contract_hash": "8328887ff3b4c628a56383f1f25a8dd754f61dab70a981b3c1ab7500957d099c",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

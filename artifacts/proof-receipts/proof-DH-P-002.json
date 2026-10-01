@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-002",
+  "verification_id": "DH-P-002",
+  "claim": "Russell's Paradox (Naive Comprehension): Unrestricted comprehension schema { x | phi(x) } produces an inconsistent set R = { x | x not in x }.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "SET_THEORY",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "Bivalent valuation of self-membership R in R <=> not (R in R) is unsatisfiable.",
+    "assumptions": [
+      "Classical law of excluded middle",
+      "Bivalent truth assignment"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "91c410a807d6e503aaf813125e377dbd0073a47fd4e85d94957aef3ebbcd6af7",
+  "source_hash": "cbd6efcabf0608f6b097ed785f03e31946493b0f9a8095275f3354ff718682b1",
+  "contract_hash": "adbd1312fde352a580e08ed18ac283e91acb0503b612421b513ffd0974af6b90",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

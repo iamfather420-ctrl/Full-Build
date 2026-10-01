@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-PAYPAL-SANDBOX",
+  "verification_id": "PAYPAL-SANDBOX",
+  "claim": "PayPal Sandbox OAuth & Order Capture Connectivity",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "facet_id": "PAYPAL-SANDBOX"
+  },
+  "execution_method": "npm run verify:paypal -> scripts/verify_paypal_dual_env.ts",
+  "actual_result": "HTTP_200 (SUCCESS)",
+  "expected_result": "HTTP_200_BEARER_TOKEN_OR_LIVE_AUTHENTICATION_BOUNDARY",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "8a3ae157a9ff2685b48af887c537e3626cb93fc515b18690802a96eb96f92ef2",
+  "source_hash": "074015ec3cdb928ca0a0670d5ce37fbd8c0eed10057862595e4a0a8bb75cd5eb",
+  "artifact_hash": "49cdd3ffc91e429c5f09589ee9009db66d10a17402cc3abb5ffab0347263f160",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:paypal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-021",
+  "verification_id": "DH-P-021",
+  "claim": "Newcomb's Paradox: Under a perfect predictor, one-boxing dominates two-boxing in expected monetary value.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "DECISION_THEORY",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "With expected utility u_one = 1,000,000 and u_two = 1,000, asserting u_two >= u_one is contradictory.",
+    "assumptions": [
+      "Predictor accuracy p = 1.0",
+      "Box B contains 1,000,000 iff predicted 1-box, Box A contains 1,000"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "19dee960c9e745cd9bf8744ba8bfd315765a8395cd9d8cdbba17249cb37bb2a1",
+  "source_hash": "62101d27b53bd694fd00e5287b21566851fbb0fe901cb988c354a256f6462c99",
+  "contract_hash": "aad8593e6e91363d17e347c6f528ae29235e2ac04c11cbf789ed5e4d9c7933e4",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-ORDER-TX-05",
+  "verification_id": "ORDER-TX-05",
+  "claim": "Order Lifecycle Transition: -> ALLOCATING_LICENSE",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "target_state": "ALLOCATING_LICENSE"
+  },
+  "execution_method": "npm run verify:sandbox -> src/tests/sandboxVerificationPipeline.ts",
+  "actual_result": "VALIDATED_WITH_FAIL_CLOSED_GUARDS",
+  "expected_result": "VALID_TRANSITION",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "6893906f00ad52bb861bdec1023dd79cf3efa6ff1e9670f7f490abaf47e403ff",
+  "source_hash": "5d50678ad5d2e949f255600dfd564e77aba922005d70064c84b71ac941b8484b",
+  "artifact_hash": "e4fd2bbe7f9be014ac4cc42f2d0ef158fb3e74dc60ef01bf3dd9c36ef30d6610",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:sandbox",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

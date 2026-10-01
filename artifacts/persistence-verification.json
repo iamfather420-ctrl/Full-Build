@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-26T18:53:32.030Z",
+  "timestamp": "2026-10-01T19:17:09.350Z",
   "claim_scope": "LOCAL",
   "sqlite": {
     "status": "VERIFIED",
@@ -19,7 +19,7 @@
       {
         "step": "MIGRATION_AND_SCHEMA_CREATION",
         "passed": true,
-        "duration_ms": 0.03394699999989825,
+        "duration_ms": 0.018135000000256696,
         "details": {
           "table_count": 27,
           "required": 27
@@ -28,43 +28,43 @@
       {
         "step": "RECORD_INSERT",
         "passed": true,
-        "duration_ms": 0.09060300000055577,
+        "duration_ms": 0.03323400000044785,
         "details": {
           "tenant_id": "TENANT_ALPHA",
-          "id": "sol_test_1790448812030"
+          "id": "sol_test_1790882229350"
         }
       },
       {
         "step": "RECORD_SELECT",
         "passed": true,
-        "duration_ms": 0.06369499999891559,
+        "duration_ms": 0.01133299999855808,
         "details": {
-          "records_found": 1,
+          "records_found": 2,
           "record_matched": true
         }
       },
       {
         "step": "RECORD_UPDATE",
         "passed": true,
-        "duration_ms": 0.02251799999976356,
+        "duration_ms": 0.011661000000458444,
         "details": {
-          "target_id": "sol_test_1790448812030",
+          "target_id": "sol_test_1790882229350",
           "updated_status": "VERIFIED_ACTIVE"
         }
       },
       {
         "step": "TRANSACTION_ROLLBACK",
         "passed": true,
-        "duration_ms": 0.3585209999982908,
+        "duration_ms": 0.21473799999876064,
         "details": {
-          "rolled_back_id": "sol_rb_1790448812030",
+          "rolled_back_id": "sol_rb_1790882229350",
           "record_absent_after_rollback": true
         }
       },
       {
         "step": "RESTART_READBACK",
         "passed": true,
-        "duration_ms": 0.037677000000257976,
+        "duration_ms": 0.037212999999610474,
         "details": {
           "disk_file_exists": false,
           "readback_verified": true
@@ -73,7 +73,7 @@
       {
         "step": "TENANT_ISOLATION",
         "passed": true,
-        "duration_ms": 0.016467999999804306,
+        "duration_ms": 0.007055000000036671,
         "details": {
           "tenant_a": "TENANT_ALPHA",
           "tenant_b": "TENANT_BETA",
@@ -84,42 +84,41 @@
       {
         "step": "AUDIT_CHAIN_PERSISTENCE",
         "passed": true,
-        "duration_ms": 0.8383109999995213,
+        "duration_ms": 0.9613439999993716,
         "details": {
-          "audit_record_id": "audit_1790448812031_9",
+          "audit_record_id": "audit_1790882229351_19",
           "merkle_chain_valid": true,
-          "chain_blocks": 10
+          "chain_blocks": 20
         }
       },
       {
         "step": "EVIDENCE_PERSISTENCE",
         "passed": true,
-        "duration_ms": 0.18066499999986263,
+        "duration_ms": 0.04798999999911757,
         "details": {
-          "bundle_id": "ev_bundle_1790448812032",
+          "bundle_id": "ev_bundle_1790882229352",
           "verified": true
         }
       }
     ]
   },
   "neon": {
-    "configured": false,
-    "connected": false,
-    "status": "PROVIDER_REQUIRED",
-    "claim_scope": "LOCAL",
-    "notes": "NEON_DATABASE_URL not configured in environment. Local SQLite verified; Neon production persistence blocked.",
+    "configured": true,
+    "connected": true,
+    "status": "VERIFIED",
+    "claim_scope": "PRODUCTION",
+    "notes": "Successfully connected and verified against live Neon Serverless PostgreSQL instance.",
     "steps": [
       {
-        "step": "NEON_PREFLIGHT_CHECK",
-        "passed": false,
-        "duration_ms": 0,
+        "step": "NEON_CONNECTION_AND_QUERY",
+        "passed": true,
+        "duration_ms": 34.113696999998865,
         "details": {
-          "status": "PROVIDER_REQUIRED",
-          "message": "NEON_DATABASE_URL absent"
+          "status": "CONNECTED"
         }
       }
     ]
   },
   "all_local_passed": true,
-  "production_persistence_ready": false
+  "production_persistence_ready": true
 }

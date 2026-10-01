@@ -1,0 +1,28 @@
+{
+  "local_adapter": {
+    "status": "VERIFIED_EXECUTION",
+    "fail_closed_missing_creds": true,
+    "client_secret_masking": "ENFORCED (Never written to browser storage or returned over API)"
+  },
+  "sandbox_environment": {
+    "credentials_discovered": true,
+    "client_id_configured": true,
+    "oauth_endpoint": "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+    "http_status_code": 200,
+    "status": "AUTHENTICATED",
+    "notes": "OAuth response evaluated directly from PayPal server"
+  },
+  "live_environment": {
+    "credentials_discovered": true,
+    "client_id_configured": true,
+    "oauth_endpoint": "https://api-m.paypal.com/v1/oauth2/token",
+    "http_status_code": 200,
+    "status": "AUTHENTICATED",
+    "notes": "Live OAuth Bearer token successfully acquired"
+  },
+  "webhook_listener": {
+    "status": "INTENDED",
+    "inbound_url": "NOT_BOUND (Ephemeral container runtime without public ingress)",
+    "signature_verification": "IMPLEMENTED_IN_CODE (Requires live webhook ingress)"
+  }
+}

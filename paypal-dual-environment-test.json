@@ -1,7 +1,7 @@
 {
   "test_suite": "PAYPAL_DUAL_ENVIRONMENT_FORENSIC_TEST",
-  "execution_id": "exec_paypal_1790484597629",
-  "timestamp": "2026-09-27T04:49:57.629Z",
+  "execution_id": "exec_paypal_1790882168112",
+  "timestamp": "2026-10-01T19:16:08.112Z",
   "results": {
     "configuration": {
       "sandbox_client_id": "PRESENT",
@@ -16,29 +16,33 @@
       "live_client_secret": "PRESENT",
       "live_var_names_used": [
         "PAYPAL_LIVE_CLIENT_ID",
+        "PAYPAL_LIVE_CLIENT_SECRET",
         "PAYPAL_LIVE_LIVE_NT_SECRET"
       ],
-      "active_environment_configured": "SANDBOX"
+      "active_environment_configured": "Sandbox"
     },
     "authentication": {
-      "sandbox_auth": "FAIL",
-      "sandbox_status_code": 401,
-      "sandbox_duration_ms": 336,
-      "sandbox_token_received": false,
+      "sandbox_auth": "PASS",
+      "sandbox_status_code": 200,
+      "sandbox_duration_ms": 317,
+      "sandbox_token_received": true,
+      "sandbox_expires_in": 31715,
       "sandbox_environment": "SANDBOX",
       "live_auth": "PASS",
       "live_status_code": 200,
-      "live_duration_ms": 261,
+      "live_duration_ms": 211,
       "live_token_received": true,
       "live_expires_in": 32400,
       "live_environment": "LIVE"
     },
     "api_connectivity": {
-      "sandbox_api": "NOT_TESTED",
+      "sandbox_api": "PASS",
+      "sandbox_api_status_code": 200,
+      "sandbox_api_duration_ms": 244,
       "sandbox_endpoint_reached": "https://api-m.sandbox.paypal.com/v1/notifications/webhooks",
       "live_api": "PASS",
       "live_api_status_code": 200,
-      "live_api_duration_ms": 211,
+      "live_api_duration_ms": 172,
       "live_endpoint_reached": "https://api-m.paypal.com/v1/notifications/webhooks"
     },
     "environment_isolation": {
@@ -59,11 +63,11 @@
       "real_money_moved": "NO"
     },
     "final_status": {
-      "paypal_sandbox_ready": "NO",
+      "paypal_sandbox_ready": "YES",
       "paypal_live_authenticated": "YES",
       "paypal_live_api_reachable": "YES",
       "paypal_production_transaction_ready": "NOT_TESTED",
-      "classification": "FAIL"
+      "classification": "VERIFIED"
     },
     "stop_conditions_tripped": []
   },

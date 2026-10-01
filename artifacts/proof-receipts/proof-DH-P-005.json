@@ -1,0 +1,32 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-005",
+  "verification_id": "DH-P-005",
+  "claim": "Curry's Paradox: Self-referential implication sentence C <=> (C => Bot) derives arbitrary falsehood under unrestricted contraction.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "PROOF_THEORY",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "Sentence C <=> (C => Bot) is inconsistent with (not Bot).",
+    "assumptions": [
+      "Falsehood constant Bot is false"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "e4b0c2992d06a6fcd74398dc0742f0c124f0bcbcba6f32bbe486675585be2591",
+  "source_hash": "9ab1a2b32a36f4d0dbebe2625c98a9a254feb026f35a4056f1813e0812f4e89e",
+  "contract_hash": "5380e1c4a3a1730f0170a072d5c5585575652a71c25e83a8aa6774aaa775a222",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

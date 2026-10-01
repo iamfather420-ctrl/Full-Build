@@ -1,0 +1,32 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-007",
+  "verification_id": "DH-P-007",
+  "claim": "Cantor's Paradox (Universal Cardinal): A universal set U cannot exist because its power set cardinality strictly exceeds its own cardinality.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "SET_THEORY",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "card(P(U)) > card(U) contradicts card(P(U)) <= card(U).",
+    "assumptions": [
+      "Cantors theorem: card(P(X)) > card(X) for any set X"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "7dbe42056246aa820c84efadefaec568ba9062f3f5de805f0455992f7f89e5ce",
+  "source_hash": "84a0233617910f55919bcea12eb4d8b81b84300daacdfd4cf560caacb87feac4",
+  "contract_hash": "c4020f7fe7f6b5abb5066744b0989394e70caea8ca0b8ae0a9a6f4eed69d4b7e",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

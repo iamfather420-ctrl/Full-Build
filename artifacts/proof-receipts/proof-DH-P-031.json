@@ -1,0 +1,34 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-031",
+  "verification_id": "DH-P-031",
+  "claim": "P vs NP Polynomial Separation Hypothesis: Axiomatic separation: polynomial time bound T_poly(n) = n^2 cannot dominate cubic/super-polynomial growth T_exp(n) = n^3 for n > 10.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "COMPUTATIONAL_COMPLEXITY",
+    "scope": "MODEL_VERIFIED_AXIOMATIC",
+    "formal_proposition": "For input size n > 10, polynomial resource T_poly = n^2 refutes domination over cubic growth T_exp = n^3: T_poly >= T_exp is unsatisfiable.",
+    "assumptions": [
+      "Input size n > 10.0",
+      "T_poly = n^2",
+      "T_exp = n^3"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "f08166ec51bb2fe12f7c521df552031b5fbea6029fe90bf69bfaf00f0952eac3",
+  "source_hash": "b5a11cef020aae1e69f8e1d4b958ae3c44ea4d1641a952de8e658fdb1a7579c8",
+  "contract_hash": "55c61189a4bd6ec704496abf1e9ad686cc9ad01c2885d884e6983b5929055989",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

@@ -1,0 +1,9 @@
+{
+  "test_name": "DELIBERATE_PROOF_RECEIPT_TAMPER_INSPECTION",
+  "target_proof_id": "PROOF-RECEIPT-DFRL-P-001",
+  "original_sha256": "93fe91121a4cb3e868ff0ad637b83f983cf54c2b2c8693d0debe620851c52747",
+  "mutated_sha256": "57d0b297c6d794da56121d9673b0c4a722c91b761ef21c88eb5235717d10243a",
+  "tamper_alarm_triggered": true,
+  "integrity_guard_passed": true,
+  "timestamp": "2026-10-01T19:16:53.992Z"
+}

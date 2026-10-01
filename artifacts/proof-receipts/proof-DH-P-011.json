@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-011",
+  "verification_id": "DH-P-011",
+  "claim": "Zeno's Dichotomy (Runner at the Track): Infinite halving of residual distance monotonically decreases remaining distance toward 0.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "MATHEMATICAL_ANALYSIS",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "Refutation of stationary residue: dividing residual distance in half strictly decreases distance rem_next < rem_n.",
+    "assumptions": [
+      "Distance D > 0",
+      "Residual distance rem_n > 0"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "a3306ec10d424f882e807c4b5f3fdebbab00882c1776a94d66db80a7f89f1a93",
+  "source_hash": "b62d25c866762a1025a303cbef1cef5906adce6ecb0071311eaea9e6262e62cc",
+  "contract_hash": "b5fe33badde4fd6fc8a521c326a588ba0ff17492ea96cc786e4646908b87efa0",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

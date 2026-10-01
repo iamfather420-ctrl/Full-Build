@@ -1,0 +1,32 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-016",
+  "verification_id": "DH-P-016",
+  "claim": "FLP Impossibility (Fischer-Lynch-Paterson): An asynchronous system in bivalent state cannot deterministically commit to univalent decision 0.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "DISTRIBUTED_SYSTEMS",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "Bivalence asserts that neither decision 0 nor 1 has been committed, refuting immediate commitment dec_0.",
+    "assumptions": [
+      "System is in bivalent state: bivalent = true"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "471f73e065abe7f1b53e1b2bd2f9a3afd41863f3e9f5bb4c423a3883d684faa5",
+  "source_hash": "07181916ff1113f2839db43a9b26d899fe0313356ef1cebef6a8b6db3d844110",
+  "contract_hash": "a750fd5d1d413cf04d96539ba38eac523ad74c3636ed5427733ad82e9044550c",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

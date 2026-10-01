@@ -1,6 +1,10 @@
+import fs from 'fs';
+import path from 'path';
 import { SandboxVerificationPipeline } from '../src/tests/sandboxVerificationPipeline';
 
 async function main() {
+  SandboxVerificationPipeline.setNodePlatform({ fs, path });
+
   console.log('===========================================================');
   console.log(' PROJECT AGATE / dAIsy / SOLVEX');
   console.log(' EXTERNAL PROVIDER & SANDBOX ADVANCEMENT VERIFICATION');

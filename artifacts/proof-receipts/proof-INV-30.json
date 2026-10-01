@@ -1,0 +1,27 @@
+{
+  "proof_id": "PROOF-RECEIPT-INV-30",
+  "verification_id": "INV-30",
+  "claim": "Enterprise Invariant: Central Failure Diversion Preserves Evidence & Executes Rollback",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "test_number": 30,
+    "name": "Central Failure Diversion Preserves Evidence & Executes Rollback"
+  },
+  "execution_method": "npm run verify:enterprise -> scripts/verify_enterprise.ts",
+  "actual_result": "PASSED",
+  "expected_result": "PASSED",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "b03758ea01b03f42228aa171c19c6ecf9e4970b430b0a774bec65708cfdce9b1",
+  "source_hash": "4b24ef66a42e2cb04dd2b6cbfd137475059abc4c539260fde806f9e8964bfef0",
+  "artifact_hash": "1247a49d1228e8eba34bf657edf4983c37ee78aa1f21de81fedafd2f9a7c1a42",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:enterprise",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

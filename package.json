@@ -13,13 +13,16 @@
     "preflight": "tsx scripts/preflight.ts",
     "verify:enterprise": "tsx scripts/verify_enterprise.ts",
     "verify:dfrl": "tsx scripts/verify_dfrl.ts",
+    "verify:dh-formal": "tsx scripts/verify_dh_formal.ts",
+    "verify:120": "tsx scripts/verify_120_aggregation.ts",
     "verify:proofs": "tsx scripts/verify_dfrl.ts",
     "verify:nodes": "tsx scripts/verify_nodes.ts",
     "verify:paypal": "tsx scripts/verify_paypal_dual_env.ts",
     "verify:authoritative": "tsx scripts/verify_authoritative.ts",
     "verify:sandbox": "tsx scripts/verify_sandbox.ts",
-    "verify:120": "tsx scripts/verify_120_corpus.ts",
-    "verify:all": "tsx scripts/verify_120_corpus.ts"
+    "verify:proof-closure": "tsx scripts/full_build_verification_closure.ts",
+    "verify:ci": "tsx scripts/ci_proof_closure_check.ts",
+    "verify:all": "tsx scripts/verify_authoritative.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -40,13 +43,10 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.25.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",
     "@types/express": "^4.17.21"
-  },
-  "engines": {
-    "node": ">=20"
   }
 }

@@ -1,0 +1,897 @@
+{
+  "scan_timestamp": "2026-10-01T19:16:53.992Z",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "total_findings": 127,
+  "findings": [
+    {
+      "file": "src/App.tsx",
+      "token": "100%",
+      "line": 274,
+      "classification": "DYNAMIC_CONFIGURATION",
+      "reason": "Constant or state definition tied to verification gate"
+    },
+    {
+      "file": "src/brain/DaisyBrain.ts",
+      "token": "100%",
+      "line": 222,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "src/components/EnterpriseAuditRunner.tsx",
+      "token": "100%",
+      "line": 450,
+      "classification": "DYNAMIC_CONFIGURATION",
+      "reason": "Constant or state definition tied to verification gate"
+    },
+    {
+      "file": "src/components/MarketplaceView.tsx",
+      "token": "100%",
+      "line": 182,
+      "classification": "DYNAMIC_CONFIGURATION",
+      "reason": "Constant or state definition tied to verification gate"
+    },
+    {
+      "file": "src/components/ProofBundlesView.tsx",
+      "token": "100%",
+      "line": 28,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "src/tests/authoritativeVerificationPipeline.ts",
+      "token": "100%",
+      "line": 251,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 847,
+      "classification": "DYNAMIC_CONFIGURATION",
+      "reason": "Constant or state definition tied to verification gate"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "SOVEREIGN_OPERATIONAL_VERIFIED",
+      "line": 847,
+      "classification": "DYNAMIC_CONFIGURATION",
+      "reason": "Constant or state definition tied to verification gate"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "ZERO MOCKS",
+      "line": 847,
+      "classification": "DYNAMIC_CONFIGURATION",
+      "reason": "Constant or state definition tied to verification gate"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "REAL PRODUCTION DATA",
+      "line": 847,
+      "classification": "DYNAMIC_CONFIGURATION",
+      "reason": "Constant or state definition tied to verification gate"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 1170,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 1171,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 1172,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 1173,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 1175,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 1176,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/full_build_verification_closure.ts",
+      "token": "100%",
+      "line": 1301,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/verify_dfrl.ts",
+      "token": "100%",
+      "line": 37,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "scripts/verify_dh_formal.ts",
+      "token": "100%",
+      "line": 139,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/COMPLETE-VERIFICATION-REPORT.json",
+      "token": "100%",
+      "line": 702,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/COMPLETE-VERIFICATION-REPORT.json",
+      "token": "100%",
+      "line": 703,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/COMPLETE-VERIFICATION-REPORT.json",
+      "token": "100%",
+      "line": 704,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/COMPLETE-VERIFICATION-REPORT.json",
+      "token": "100%",
+      "line": 705,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/COMPLETE-VERIFICATION-REPORT.json",
+      "token": "100%",
+      "line": 707,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/COMPLETE-VERIFICATION-REPORT.json",
+      "token": "100%",
+      "line": 708,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/COMPLETE-VERIFICATION-REPORT.md",
+      "token": "100%",
+      "line": 31,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 8,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 15,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 22,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 29,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 36,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 43,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 50,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "SOVEREIGN_OPERATIONAL_VERIFIED",
+      "line": 57,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "ZERO MOCKS",
+      "line": 64,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "REAL PRODUCTION DATA",
+      "line": 71,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 78,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 85,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 92,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 99,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 106,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 113,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 120,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 127,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 134,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 141,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 148,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 155,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 162,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 169,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 176,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 183,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 190,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 197,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 204,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 211,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "SOVEREIGN_OPERATIONAL_VERIFIED",
+      "line": 218,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "ZERO MOCKS",
+      "line": 225,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "REAL PRODUCTION DATA",
+      "line": 232,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 239,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 246,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 253,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 260,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 267,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 274,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 281,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 288,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 295,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 302,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 309,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 316,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 323,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 330,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 337,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 344,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "SOVEREIGN_OPERATIONAL_VERIFIED",
+      "line": 351,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "ZERO MOCKS",
+      "line": 358,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "REAL PRODUCTION DATA",
+      "line": 365,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 372,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 379,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 386,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 393,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 400,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 407,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 414,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 421,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 428,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 435,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 442,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 449,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 456,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 463,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 470,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 477,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "SOVEREIGN_OPERATIONAL_VERIFIED",
+      "line": 484,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "ZERO MOCKS",
+      "line": 491,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "REAL PRODUCTION DATA",
+      "line": 498,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 505,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 512,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 519,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 526,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 533,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 540,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 547,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 554,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 561,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 568,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 575,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 582,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 589,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 596,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 603,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 610,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 617,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 624,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 631,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 638,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 645,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/claim-vs-proof-audit.json",
+      "token": "100%",
+      "line": 652,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/execution-gates.json",
+      "token": "100%",
+      "line": 101,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/final-proof-gate.json",
+      "token": "100%",
+      "line": 20,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/final-proof-gate.json",
+      "token": "100%",
+      "line": 21,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/final-proof-gate.json",
+      "token": "100%",
+      "line": 22,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/final-proof-gate.json",
+      "token": "100%",
+      "line": 23,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/final-proof-gate.json",
+      "token": "100%",
+      "line": 25,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/final-proof-gate.json",
+      "token": "100%",
+      "line": 26,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    },
+    {
+      "file": "artifacts/production-gate-evaluation.json",
+      "token": "100%",
+      "line": 101,
+      "classification": "HISTORICAL",
+      "reason": "Historical report or documentation commentary"
+    }
+  ],
+  "evaluation": "All static claims catalogued; runtime verification is derived strictly from real execution."
+}

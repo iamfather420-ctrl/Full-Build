@@ -1,0 +1,13 @@
+{
+  "solver_kernel": "Microsoft Research Z3 WebAssembly Kernel (z3-solver v5.2.0-wasm)",
+  "total_operators": 88,
+  "unsat_refutations_proved": 88,
+  "authored_models": 20,
+  "generated_models": 68,
+  "lean4_status": "CLAIM_ONLY (Lean4 toolchain not locally installed; formal verification completed in Z3 WASM)",
+  "coq_status": "CLAIM_ONLY (Coq Gallina toolchain not locally installed; formal verification completed in Z3 WASM)",
+  "smt_mutation_passed": true,
+  "failure_injection_passed": true,
+  "tamper_test_passed": true,
+  "proof_root_hash": "5eaab16aa2286aec0c48d73bdd76b9158f919b4460596b9cce94ef1a7a3073fd"
+}

@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-PERSIST-TBL-16",
+  "verification_id": "PERSIST-TBL-16",
+  "claim": "Persistence Relational Table: escrow_accounts",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "table_name": "escrow_accounts"
+  },
+  "execution_method": "npm run verify:authoritative -> src/tests/persistenceVerification.ts",
+  "actual_result": "VERIFIED_ACTIVE",
+  "expected_result": "TABLE_EXISTS_WITH_SCHEMA_AND_ACID_WRITES",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "3f32ebfa019d9b4ca1b2d29e2d38c95f8afb4b418114261317584099a0b6e59b",
+  "source_hash": "a5ef5e470b86427482eb23d4546737499aadbac63bc8c368f91dd76d01206532",
+  "artifact_hash": "c16f7875e072277af6bf07a7fcfb1dda563a7324b191c41fda40fc3536ec52a8",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npx tsx scripts/verify_authoritative.ts",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

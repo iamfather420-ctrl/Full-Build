@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-024",
+  "verification_id": "DH-P-024",
+  "claim": "Braess's Paradox: Selfish Wardrop routing can cause network expansion to strictly increase total equilibrium travel latency.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "GAME_THEORY / ROUTING",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "There exists a network where equilibrium latency with added edge exceeds latency without edge.",
+    "assumptions": [
+      "Selfish non-cooperative commuters",
+      "Congestion-dependent edge travel costs"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "sat",
+  "expected_result": "sat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "9860cb525a063a3cb9325c97bd6286d1e1ef48ed60d1492fe5cc5ec9843909c6",
+  "source_hash": "0adf803ee0199ed8a83f7361372c38de656a52e5d51ae0fd34cdbedff25c4f1e",
+  "contract_hash": "52b4e8b29da94b987cbf81adf9da7f78e44029e1f6ef8eaf2cbfe6a5b81c3f6d",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

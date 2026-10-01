@@ -1,0 +1,27 @@
+{
+  "proof_id": "PROOF-RECEIPT-PIPE-STAGE-14",
+  "verification_id": "PIPE-STAGE-14",
+  "claim": "Solution Pipeline Stage: Stage 14: Multi-Model Independent Oracle Attestation",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "stage_number": 14,
+    "problem_id": "DH-P-001"
+  },
+  "execution_method": "npm run verify:sandbox -> src/tests/sandboxVerificationPipeline.ts",
+  "actual_result": "PASSED",
+  "expected_result": "PASSED",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "543c573f96924371446eb3a18f9f67aad7fc2d4b74e5c4ad1c0dfbc60e1a5af6",
+  "source_hash": "b944cd955047fce37917383d0bddfa47b56434951ece541ff7e5de3369dc1406",
+  "artifact_hash": "e4fd2bbe7f9be014ac4cc42f2d0ef158fb3e74dc60ef01bf3dd9c36ef30d6610",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:sandbox",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

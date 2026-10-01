@@ -1,0 +1,34 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-013",
+  "verification_id": "DH-P-013",
+  "claim": "Ship of Theseus: Sequential replacement of components maintains structural invariant of non-negative valid parts.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "ONTOLOGY",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "For total parts orig > 0 and replaced count 0 <= repl <= orig, remaining original parts remain bounded in [0, orig].",
+    "assumptions": [
+      "orig > 0",
+      "repl >= 0",
+      "repl <= orig"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "d9bad54edb80b58020f319ccdca8d3ec45f739f9824c17ff17c21b93b8ec2830",
+  "source_hash": "07de1993dc5242c74c8b84510d16d6375e9294dcf9b70343058dff734a90be7b",
+  "contract_hash": "4bf78f3463b52e36eb904c8ef2348a3351dfb3fc57aa9a05df6a437966ad979c",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

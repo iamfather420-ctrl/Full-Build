@@ -1,0 +1,32 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-017",
+  "verification_id": "DH-P-017",
+  "claim": "Banach-Tarski Paradox: Finite decomposition into two identical volumes violates finite additivity of Lebesgue measure if all sets are measurable.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "MEASURE_THEORY",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "If measure V > 0 is additive on Banach-Tarski pieces, 2 * V = V is contradictory.",
+    "assumptions": [
+      "Volume V > 0.0"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "8bab1e0117e58d27c747abc03f232dfaeda3dc7942a78a0f92f8c410b3cb9fae",
+  "source_hash": "cf1f4cc94cdd027e7205cbd9e474f132c67b19e16601ca215040f6caee7d3ae4",
+  "contract_hash": "8e1a1fa81d59a2c509038505b1d70329a6820442475dff76108c5a28de5d92a8",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

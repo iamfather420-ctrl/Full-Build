@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-029",
+  "verification_id": "DH-P-029",
+  "claim": "Collatz Conjecture Convergence Bound: Bounded Collatz orbit from initial state 6 deterministically terminates at 1 in 8 steps.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "NUMBER_THEORY",
+    "scope": "MODEL_VERIFIED_BOUNDED",
+    "formal_proposition": "Evaluating transitions s0=6 -> s1=3 -> s2=10 -> s3=5 -> s4=16 -> s5=8 -> s6=4 -> s7=2 -> s8=1 refutes s8 != 1.",
+    "assumptions": [
+      "Initial value n = 6",
+      "Standard Collatz 3n+1 mapping"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "9bad354a64a9647d0e733c50bab84fc14d42b776493d147a93078dd9018e20bd",
+  "source_hash": "f26621d657cd0c371f64b1d82bd13983d9b69315a97dcbe946c49f10e9db09ea",
+  "contract_hash": "63f1834aecf52f7b30f7c77dea54a049995be1dfbb8c13e2a6fcf148751ec296",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

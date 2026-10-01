@@ -1,0 +1,27 @@
+{
+  "proof_id": "PROOF-RECEIPT-DFRL-P-078",
+  "verification_id": "DFRL-P-078",
+  "claim": "DFRL Operator: Sovereign DFRL Formal Paradox Operator #078",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "formal_invariant": "Formal invariant 078: Machine-checked SMT inductive reduction guarantees convergence without contradiction.",
+    "z3_smt_assertion": "(declare-const s_078 Int) (declare-const s_next_078 Int) (assert (> s_078 0)) (assert (= s_next_078 (- s_078 1))) (assert (not (and (< s_next_078 s_078) (>= s_next_078 0))))"
+  },
+  "execution_method": "npm run verify:dfrl -> src/proofs/DFRLFormalVerifier.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (UNSAT refutation)",
+  "evidence_hash": "511bbf4b112427374320126c1c5df25430391bd8ee169a4670b5b2879f419c65",
+  "source_hash": "3ba4803b28be1e17176e2a684c8d08e08b40ed111f27e690955692fb6931577b",
+  "artifact_hash": "9fd4172c2e41afb3844804f8b94a2a05f086fe86c56fd5a3a8da6763ddcd3012",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npx tsx scripts/verify_dfrl.ts --single DFRL-P-078",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

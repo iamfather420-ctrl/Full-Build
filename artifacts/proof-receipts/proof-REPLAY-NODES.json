@@ -1,0 +1,27 @@
+{
+  "proof_id": "PROOF-RECEIPT-REPLAY-NODES",
+  "verification_id": "REPLAY-NODES",
+  "claim": "Daisy 54 Nodes Cleanroom Replay",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "suite_id": "REPLAY-NODES",
+    "total_targets": 54
+  },
+  "execution_method": "npm run verify:dfrl -> scripts/verify_dfrl.ts",
+  "actual_result": "54/54 REPLAY_MATCH",
+  "expected_result": "54/54 REPLAY_MATCH",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "81adaf1f121c00a1eeced649d07c995d2af9e130c56696fca38a44d3575088b0",
+  "source_hash": "299a712f52e88dbfbdf7a1564e001a65ad1e9bf1be02de7cc40a337189ba1108",
+  "artifact_hash": "2882dc02c67b2d4052225d693eccee8164293c4ad174196b8699f65279a8f720",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dfrl",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

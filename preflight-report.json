@@ -1,6 +1,6 @@
 {
-  "timestamp": 1790448802089,
-  "commit_sha": "PROVENANCE_UNVERIFIED",
+  "timestamp": 1790882222939,
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
   "environment_mode": "local",
   "node_version": "v22.23.2",
   "platform": "linux",
@@ -68,14 +68,14 @@
       "status": "PRESENT",
       "format_valid": true,
       "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched PAYPAL_SANDBOX_ID)"
+      "notes": "Configured in runtime environment (matched PAYPAL_SANDBOX_CLIENT_ID)"
     },
     {
       "key": "PAYPAL_SANDBOX_CLIENT_SECRET",
       "status": "PRESENT",
       "format_valid": true,
       "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched PAYPAL_SANDBOX_KEY)"
+      "notes": "Configured in runtime environment (matched PAYPAL_SANDBOX_CLIENT_SECRET)"
     },
     {
       "key": "PAYPAL_LIVE_CLIENT_ID",
@@ -89,14 +89,14 @@
       "status": "PRESENT",
       "format_valid": true,
       "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched PAYPAL_LIVE_LIVE_NT_SECRET)"
+      "notes": "Configured in runtime environment (matched PAYPAL_LIVE_CLIENT_SECRET)"
     },
     {
       "key": "NEON_DATABASE_URL",
-      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
-      "format_valid": false,
+      "status": "PRESENT",
+      "format_valid": true,
       "environment_scope": "local",
-      "notes": "Not set in process.env"
+      "notes": "Configured in runtime environment (matched NEON_DATABASE_URL)"
     },
     {
       "key": "GEMINI_API_KEY",

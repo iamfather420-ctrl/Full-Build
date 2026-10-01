@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-PAYPAL-LOCAL",
+  "verification_id": "PAYPAL-LOCAL",
+  "claim": "PayPal Adapter Local Request Construction & Fail-Closed Guards",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "facet_id": "PAYPAL-LOCAL"
+  },
+  "execution_method": "npm run verify:paypal -> scripts/verify_paypal_dual_env.ts",
+  "actual_result": "EXTERNAL_PROVIDER_REQUIRED",
+  "expected_result": "EXTERNAL_PROVIDER_REQUIRED_ON_MISSING_CREDS",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "a095747d732f3bd9c1fda1c6458e4c9206b88b3a38e04cd7cf8bb115f545251f",
+  "source_hash": "074015ec3cdb928ca0a0670d5ce37fbd8c0eed10057862595e4a0a8bb75cd5eb",
+  "artifact_hash": "49cdd3ffc91e429c5f09589ee9009db66d10a17402cc3abb5ffab0347263f160",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:paypal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

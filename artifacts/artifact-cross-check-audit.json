@@ -1,0 +1,145 @@
+[
+  {
+    "artifact_path": "artifacts/DFRL-88-MACHINE-VERIFICATION-AUDIT.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "dc2f7d73d617202dc0bc22ba47cf74ae1979f014ac1b48e64935dbce449249af",
+    "size_bytes": 99975
+  },
+  {
+    "artifact_path": "artifacts/DFRL-88-MACHINE-VERIFICATION-AUDIT.md",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "6fd191f48979e8fe54874dfb7287cdf88a1ef962e4c26f2a118814e13fafa4cb",
+    "size_bytes": 15637
+  },
+  {
+    "artifact_path": "artifacts/dfrl-88-verification.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "cacece9fea6767754d253632cbfc0f2338c47eded1f3a26bfa8ac686ab0bfb0e",
+    "size_bytes": 155687
+  },
+  {
+    "artifact_path": "artifacts/daisy-54-node-execution.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "8f380f861449c26ffc71256be6e993cb80ff19f5c8861cf901c99f9261f7e5d8",
+    "size_bytes": 67334
+  },
+  {
+    "artifact_path": "artifacts/deterministic-replay.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "9af8ab261130a6d985e2ec574531c11c4ab90baf9f3dc32409874a746b6d97ac",
+    "size_bytes": 57951
+  },
+  {
+    "artifact_path": "artifacts/enterprise-verification-report.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "dc4d10982832c5e0df660b84155d71b1ab2f0dc8c398c3bda70a0eeebc5ef3c7",
+    "size_bytes": 7168
+  },
+  {
+    "artifact_path": "artifacts/execution-gates.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "e93fd4b4cfc7c7d62605ab03a9bd7d1a054e620178821b821857529c26cdab9f",
+    "size_bytes": 8743
+  },
+  {
+    "artifact_path": "artifacts/persistence-verification.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "d012b129efecc70f0d19e8d5533eb9ff5334dafee55265a820a35a8a536da21d",
+    "size_bytes": 3229
+  },
+  {
+    "artifact_path": "artifacts/paypal-dual-environment-test.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "25890026a3eb8d8f0727fc745f374b4ce7541e2a522bbe1fab3f370d62973a48",
+    "size_bytes": 2575
+  },
+  {
+    "artifact_path": "artifacts/smt-mutation-test.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "34ccd04b9f1cb29014cfb4115195a6bb019e5b03fcc238b2363ecc35ecd17c35",
+    "size_bytes": 1119
+  },
+  {
+    "artifact_path": "artifacts/z3-failure-injection-test.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "c896ff3469201a80f490a94dcb0811e30e08f3e1041d9f963438233a376228c5",
+    "size_bytes": 484
+  },
+  {
+    "artifact_path": "artifacts/artifact-tamper-test.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "48226e6d4e0b982bac6909bf25ebf05810a50afcd3674661a8bfb4f0305337c9",
+    "size_bytes": 374
+  },
+  {
+    "artifact_path": "artifacts/sandbox-provider-verification.json",
+    "exists": true,
+    "valid": true,
+    "current": true,
+    "generated_by_code": true,
+    "reproducible": true,
+    "commit_bound": "728625581c2f89210c752d03fda0a154812b2366",
+    "sha256": "0eb05698da3d9f6874a6f4bda9b6c91cbb6299ce5213c46f8914982e0d45c46e",
+    "size_bytes": 2038
+  }
+]

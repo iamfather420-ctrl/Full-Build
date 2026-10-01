@@ -1,0 +1,32 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-027",
+  "verification_id": "DH-P-027",
+  "claim": "Crocodile Paradox: Adversarial promise conditional on predicting own action produces an unresolvable boolean antinomy.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "CLASSICAL_DILEMMA",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "System returns_child <=> prediction_correct and prediction_correct <=> (not returns_child) is unsatisfiable.",
+    "assumptions": [
+      "Crocodile adheres strictly to stated agreement rule"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "708a69bffbf22d50a863e23b19e3c4be39c5d8f2fd8c9b8af5837d7f5a350c72",
+  "source_hash": "fc0e033b533c0001dc759847969f7c7c97953c4d749e428898a5ba7bb70be3a7",
+  "contract_hash": "d842f058c473f476295498f11539c0525b02314c25f4f01e0c66e49cab4f5d40",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

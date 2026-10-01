@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-PAYPAL-WEBHOOK",
+  "verification_id": "PAYPAL-WEBHOOK",
+  "claim": "PayPal Inbound Webhook Listener & Signature Verification",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "facet_id": "PAYPAL-WEBHOOK"
+  },
+  "execution_method": "npm run verify:paypal -> scripts/verify_paypal_dual_env.ts",
+  "actual_result": "NOT_CONNECTED_IN_EPHEMERAL_DEV_RUN",
+  "expected_result": "ASYNC_WEBHOOK_EVENT_VALIDATION",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "8935ef2071532a1d251044edcb3ad8f4493ebdb80d7ff3567faedca99cafc697",
+  "source_hash": "074015ec3cdb928ca0a0670d5ce37fbd8c0eed10057862595e4a0a8bb75cd5eb",
+  "artifact_hash": "49cdd3ffc91e429c5f09589ee9009db66d10a17402cc3abb5ffab0347263f160",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:paypal",
+  "replay_result": "REPLAY_HOLD",
+  "status": "INTENDED"
+}

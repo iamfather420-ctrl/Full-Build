@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-022",
+  "verification_id": "DH-P-022",
+  "claim": "Unexpected Hanging Paradox: Backward induction eliminates every day from being a surprise, refuting the existence of an unexpected day.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "EPISTEMIC_LOGIC",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "If backward induction eliminates surprise for all days (forall d. not is_surprise(d)), asserting is_surprise(d_exec) is contradictory.",
+    "assumptions": [
+      "Execution must occur on a weekday",
+      "Surprise requires execution day cannot be deduced previous night"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "d590d702d8623646fb9a9f666beac94d34375fb9351ef167cd525903e65510fa",
+  "source_hash": "2d1f3e0c9e629d8bd640ac07cdcb385e2c9b163c8f55f35966bff51bc1ba7aba",
+  "contract_hash": "299d044c50c44f69cc1d508452e1680b9805c82664b0b0d40f890eee747614e5",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

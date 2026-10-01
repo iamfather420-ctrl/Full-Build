@@ -1,0 +1,27 @@
+{
+  "proof_id": "PROOF-RECEIPT-GATE-02",
+  "verification_id": "GATE-02",
+  "claim": "Authoritative Gate: Secret & Configuration Preflight",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "gate_index": 2,
+    "gate_id": "GATE-02"
+  },
+  "execution_method": "npm run verify:authoritative -> scripts/verify_authoritative.ts",
+  "actual_result": "PASSED",
+  "expected_result": "PASSED",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "74abbd6e39a1785ccc57a7bffe4ca9cd34e67ce01715afc0b2dfad07973f8011",
+  "source_hash": "a2f173c9e49d826a550010c0d0328fe534b49b17209eddefc24363993ad4bd06",
+  "artifact_hash": "a822f4fc511a3dec9b2d6722567e33910aa6e48566c670366e41203095fa60ed",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:authoritative",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

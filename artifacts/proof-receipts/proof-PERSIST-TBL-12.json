@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-PERSIST-TBL-12",
+  "verification_id": "PERSIST-TBL-12",
+  "claim": "Persistence Relational Table: tamper_log",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "table_name": "tamper_log"
+  },
+  "execution_method": "npm run verify:authoritative -> src/tests/persistenceVerification.ts",
+  "actual_result": "VERIFIED_ACTIVE",
+  "expected_result": "TABLE_EXISTS_WITH_SCHEMA_AND_ACID_WRITES",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "9319721c3bdf8daa315c64dc32be803dade1b51fb6eec00b166d197cde94540a",
+  "source_hash": "a5ef5e470b86427482eb23d4546737499aadbac63bc8c368f91dd76d01206532",
+  "artifact_hash": "c16f7875e072277af6bf07a7fcfb1dda563a7324b191c41fda40fc3536ec52a8",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npx tsx scripts/verify_authoritative.ts",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

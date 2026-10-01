@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-003",
+  "verification_id": "DH-P-003",
+  "claim": "Barber Paradox: A barber who shaves all and only townspeople who do not shave themselves cannot self-consistently exist.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "FIRST_ORDER_LOGIC",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "First-order quantifier restriction forall x. Shaves(B, x) <=> not Shaves(x, x) has no model.",
+    "assumptions": [
+      "Town population is a non-empty domain",
+      "Barber B is an element of the town"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "3d06eb2fd83c203caa71d0d8a83377670daa4ab05c1315c7dcaff95b240d0d6f",
+  "source_hash": "7547177e540c9eaf3544c093657dbf66f58b6e891489cdedb8cce7d0e554b4a7",
+  "contract_hash": "f0be185d0f2a656cce487aaeda566eaa543a434a0fd3b36a6c0522afb6af3777",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

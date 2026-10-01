@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-032",
+  "verification_id": "DH-P-032",
+  "claim": "Goldbach Bounded Prime Decomposition: Even integer E = 14 admits additive decomposition into primes p1, p2 in {3, 7, 11}.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "ADDITIVE_NUMBER_THEORY",
+    "scope": "MODEL_VERIFIED_BOUNDED",
+    "formal_proposition": "For even integer E = 14, asserting that E cannot be written as 3 + 11 or 7 + 7 is contradictory.",
+    "assumptions": [
+      "E = 14",
+      "Prime set {3, 7, 11}"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "dd2a7f2bcca42897e78b50c7bfa7c85d1121fd79f84a3a625efd56f74f8a71a2",
+  "source_hash": "bbdca85925a68263fcde80ec63f32bb46ccde972f109f0b4917d873a52efa705",
+  "contract_hash": "307acaa014484e989327ef4b670bc3bfcfcdf01ecf27b6b0f4fff91627235946",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

@@ -1,0 +1,26 @@
+{
+  "proof_id": "PROOF-RECEIPT-SEC-TAMPER-01",
+  "verification_id": "SEC-TAMPER-01",
+  "claim": "Cryptographic Proof Artifact Modification Alarm",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "test_type": "SEC-TAMPER-01"
+  },
+  "execution_method": "npm run verify:dfrl -> scripts/verify_dfrl.ts",
+  "actual_result": "ALARM_TRIGGERED",
+  "expected_result": "ALARM_TRIGGERED",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "24cfd31cf63a93634992f5194da4b99dc5427551de6c0f1dcc1c8b10221d045f",
+  "source_hash": "299a712f52e88dbfbdf7a1564e001a65ad1e9bf1be02de7cc40a337189ba1108",
+  "artifact_hash": "adec4167d74164e28a73be40d0ae6f7092dcf212f42bbc9b694b895940ea0597",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dfrl",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

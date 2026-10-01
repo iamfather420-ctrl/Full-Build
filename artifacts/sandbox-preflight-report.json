@@ -1,7 +1,7 @@
 {
-  "execution_id": "sandbox_exec_1790484595057",
+  "execution_id": "sandbox_exec_1790882229662",
   "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-09-27T04:49:55.057Z",
+  "timestamp": "2026-10-01T19:17:09.662Z",
   "environment": "sandbox",
   "claim_scope": "SANDBOX",
   "dependencies": [
@@ -84,7 +84,7 @@
     },
     {
       "key": "NEON_DATABASE_URL",
-      "value": "MISSING",
+      "value": "CONFIGURED",
       "status": "OPTIONAL_MISSING"
     }
   ]

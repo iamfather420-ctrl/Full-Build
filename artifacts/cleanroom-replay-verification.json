@@ -1,0 +1,13 @@
+{
+  "replay_suite": "CLEANROOM_DETERMINISTIC_REPLAY_SUITE",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "dfrl_operators_replayed": 88,
+  "dfrl_operators_matched": 88,
+  "enterprise_invariants_replayed": 30,
+  "enterprise_invariants_matched": 30,
+  "daisy_nodes_replayed": 54,
+  "daisy_nodes_matched": 54,
+  "replay_status": "REPLAY_VERIFIED"
+}

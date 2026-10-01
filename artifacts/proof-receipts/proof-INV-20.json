@@ -1,0 +1,27 @@
+{
+  "proof_id": "PROOF-RECEIPT-INV-20",
+  "verification_id": "INV-20",
+  "claim": "Enterprise Invariant: Crystal Clear Box Redaction Preserves Verifiable Evidence",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "test_number": 20,
+    "name": "Crystal Clear Box Redaction Preserves Verifiable Evidence"
+  },
+  "execution_method": "npm run verify:enterprise -> scripts/verify_enterprise.ts",
+  "actual_result": "PASSED",
+  "expected_result": "PASSED",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "00e8817dbc385bd2596fabb131bf86ce1892f68e7cfcf92ac2a19cfe7c14d5ff",
+  "source_hash": "4b24ef66a42e2cb04dd2b6cbfd137475059abc4c539260fde806f9e8964bfef0",
+  "artifact_hash": "1247a49d1228e8eba34bf657edf4983c37ee78aa1f21de81fedafd2f9a7c1a42",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:enterprise",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

@@ -1,0 +1,33 @@
+{
+  "proof_id": "PROOF-RECEIPT-DH-P-023",
+  "verification_id": "DH-P-023",
+  "claim": "St. Petersburg Paradox: Diminishing marginal logarithmic utility converts infinite monetary expectation to finite expected utility.",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel fresh-context execution",
+    "Canonical formal contract assert and refutation/satisfaction check"
+  ],
+  "inputs": {
+    "domain": "EXPECTED_UTILITY",
+    "scope": "MODEL_VERIFIED",
+    "formal_proposition": "Logarithmic expected utility sum_{k=1}^inf (1/2^k)*log2(2^k) = 2.0 refutes expected utility exceeding 1000.0.",
+    "assumptions": [
+      "Payoff 2^k with probability 1/2^k",
+      "Utility u(x) = log2(x)"
+    ]
+  },
+  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
+  "actual_result": "unsat",
+  "expected_result": "unsat",
+  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
+  "evidence_hash": "624994f3990d387a32135f7d9f0eeafc010cde7808e6464a7d43e6fde49a2455",
+  "source_hash": "e36009dba0d8c17aec9ae8d9e4c8b0880adc0122679f6707feafff425be959b0",
+  "contract_hash": "941279608f035a7a4302c91cbe69a5831ec4021bb8ea4601879a047ec23a40e5",
+  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:dh-formal",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

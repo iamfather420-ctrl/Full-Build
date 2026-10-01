@@ -1,0 +1,27 @@
+{
+  "proof_id": "PROOF-RECEIPT-INV-01",
+  "verification_id": "INV-01",
+  "claim": "Enterprise Invariant: Authentication & RBAC Evaluation",
+  "preconditions": [
+    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
+    "Independent Z3 WASM kernel & SQLite Native persistence active",
+    "Fail-closed policy interlocks asserted"
+  ],
+  "inputs": {
+    "test_number": 1,
+    "name": "Authentication & RBAC Evaluation"
+  },
+  "execution_method": "npm run verify:enterprise -> scripts/verify_enterprise.ts",
+  "actual_result": "PASSED",
+  "expected_result": "PASSED",
+  "proof_method": "Deterministic Cryptographic Assertions with SHA-256 State Signatures",
+  "evidence_hash": "f9aee72fa27b34ce03065c68d216f6026460bbaf3fa7568e159498262fcc1850",
+  "source_hash": "4b24ef66a42e2cb04dd2b6cbfd137475059abc4c539260fde806f9e8964bfef0",
+  "artifact_hash": "1247a49d1228e8eba34bf657edf4983c37ee78aa1f21de81fedafd2f9a7c1a42",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "timestamp": "2026-10-01T19:16:53.992Z",
+  "replay_command": "npm run verify:enterprise",
+  "replay_result": "REPLAY_VERIFIED",
+  "status": "VERIFIED_EXECUTION"
+}

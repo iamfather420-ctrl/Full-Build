@@ -1,5 +1,10 @@
-import fs from 'fs';
-import path from 'path';
+export interface NodePlatformContext {
+  fs?: any;
+  path?: any;
+}
+
+let injectedPlatform: NodePlatformContext | null = null;
+
 import { computeSha256 } from '../database/DatabaseSchema';
 import { SqliteStore } from '../database/SqliteStore';
 import { DurableStore } from '../database/DurableStore';
@@ -73,6 +78,14 @@ export interface SandboxVerificationSummary {
 export class SandboxVerificationPipeline {
   private static instance: SandboxVerificationPipeline | null = null;
 
+  public static setNodePlatform(ctx: NodePlatformContext) {
+    injectedPlatform = ctx;
+  }
+
+  public static getNodePlatform(): NodePlatformContext {
+    return injectedPlatform || {};
+  }
+
   public static getInstance(): SandboxVerificationPipeline {
     if (!SandboxVerificationPipeline.instance) {
       SandboxVerificationPipeline.instance = new SandboxVerificationPipeline();
@@ -85,11 +98,21 @@ export class SandboxVerificationPipeline {
     const commitSha = '728625581c2f89210c752d03fda0a154812b2366';
     const executionId = `sandbox_exec_${Date.now()}`;
     const timestamp = new Date().toISOString();
-    const artifactsDir = path.resolve(process.cwd(), 'artifacts');
+    const platform = SandboxVerificationPipeline.getNodePlatform();
+    const rootDir = (platform.path && typeof process !== 'undefined' && process.cwd ? platform.path.resolve(process.cwd()) : '') || '';
+    const artifactsDir = (platform.path ? platform.path.resolve(rootDir, 'artifacts') : './artifacts') || './artifacts';
 
-    if (!fs.existsSync(artifactsDir)) {
-      fs.mkdirSync(artifactsDir, { recursive: true });
+    if (platform.fs && !platform.fs.existsSync(artifactsDir)) {
+      platform.fs.mkdirSync(artifactsDir, { recursive: true });
     }
+
+    const writeArtifact = (filename: string, content: string) => {
+      if (platform.fs && platform.path) {
+        try {
+          platform.fs.writeFileSync(platform.path.join(artifactsDir, filename), content, 'utf8');
+        } catch {}
+      }
+    };
 
     // -------------------------------------------------------------
     // STEP 1: BASELINE FREEZE MANIFEST
@@ -119,10 +142,9 @@ export class SandboxVerificationPipeline {
       },
       next_target_environment: 'sandbox'
     };
-    fs.writeFileSync(
-      path.join(artifactsDir, 'baseline-freeze-manifest.json'),
-      JSON.stringify(baselineManifest, null, 2),
-      'utf8'
+    writeArtifact(
+      'baseline-freeze-manifest.json',
+      JSON.stringify(baselineManifest, null, 2)
     );
 
     // -------------------------------------------------------------
@@ -165,10 +187,9 @@ export class SandboxVerificationPipeline {
         }
       ]
     };
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-preflight-report.json'),
-      JSON.stringify(sandboxPreflight, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-preflight-report.json',
+      JSON.stringify(sandboxPreflight, null, 2)
     );
     const sandboxPreflightMd = `# Project AGATE Sandbox Preflight Verification Report
 - **Execution ID:** \`${executionId}\`
@@ -186,10 +207,9 @@ export class SandboxVerificationPipeline {
 | \`PAYPAL_ENVIRONMENT\` | \`sandbox\` | CONFIGURED |
 | \`NEON_DATABASE_URL\` | \`${process.env.NEON_DATABASE_URL ? 'CONFIGURED' : 'MISSING'}\` | ${process.env.NEON_DATABASE_URL ? 'PRESENT' : 'NOT_REQUIRED'} |
 `;
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-preflight-report.md'),
-      sandboxPreflightMd,
-      'utf8'
+    writeArtifact(
+      'sandbox-preflight-report.md',
+      sandboxPreflightMd
     );
 
     // -------------------------------------------------------------
@@ -303,10 +323,9 @@ export class SandboxVerificationPipeline {
       }
     };
     const ppEvidenceHash = computeSha256(JSON.stringify(ppEvidence));
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-paypal-verification.json'),
-      JSON.stringify({ ...ppEvidence, evidence_hash: ppEvidenceHash }, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-paypal-verification.json',
+      JSON.stringify({ ...ppEvidence, evidence_hash: ppEvidenceHash }, null, 2)
     );
 
     // -------------------------------------------------------------
@@ -333,10 +352,9 @@ export class SandboxVerificationPipeline {
       fail_closed: Boolean(dn38Exec.evidence?.fail_closed)
     };
     const escrowEvidenceHash = computeSha256(JSON.stringify(escrowEvidence));
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-sovereign-escrow-verification.json'),
-      JSON.stringify({ ...escrowEvidence, evidence_hash: escrowEvidenceHash }, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-sovereign-escrow-verification.json',
+      JSON.stringify({ ...escrowEvidence, evidence_hash: escrowEvidenceHash }, null, 2)
     );
 
     // -------------------------------------------------------------
@@ -355,10 +373,9 @@ export class SandboxVerificationPipeline {
       notes: 'Neon serverless database is optional in sandbox tier; local SQLite multi-tenant store with Merkle audit chain acts as primary deterministic datastore.'
     };
     const neonEvidenceHash = computeSha256(JSON.stringify(neonEvidence));
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-neon-verification.json'),
-      JSON.stringify({ ...neonEvidence, evidence_hash: neonEvidenceHash }, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-neon-verification.json',
+      JSON.stringify({ ...neonEvidence, evidence_hash: neonEvidenceHash }, null, 2)
     );
 
     // -------------------------------------------------------------
@@ -417,10 +434,9 @@ export class SandboxVerificationPipeline {
       audit_record_hash: e2eAudit.record_hash
     };
     const e2eEvidenceHash = computeSha256(JSON.stringify(e2eEvidence));
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-end-to-end.json'),
-      JSON.stringify({ ...e2eEvidence, evidence_hash: e2eEvidenceHash }, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-end-to-end.json',
+      JSON.stringify({ ...e2eEvidence, evidence_hash: e2eEvidenceHash }, null, 2)
     );
 
     // -------------------------------------------------------------
@@ -441,10 +457,9 @@ export class SandboxVerificationPipeline {
         missingCredsFailClosed &&
         invalidCredsRejected401
     };
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-provider-verification.json'),
-      JSON.stringify(providerConsolidation, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-provider-verification.json',
+      JSON.stringify(providerConsolidation, null, 2)
     );
 
     // -------------------------------------------------------------
@@ -471,10 +486,9 @@ export class SandboxVerificationPipeline {
       production_scope: 'BLOCKED',
       production_blockers: productionBlockers
     };
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-production-boundary.json'),
-      JSON.stringify(prodBoundary, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-production-boundary.json',
+      JSON.stringify(prodBoundary, null, 2)
     );
 
     // -------------------------------------------------------------
@@ -530,10 +544,9 @@ export class SandboxVerificationPipeline {
         }
       ]
     };
-    fs.writeFileSync(
-      path.join(artifactsDir, 'sandbox-execution-gates.json'),
-      JSON.stringify(sandboxGates, null, 2),
-      'utf8'
+    writeArtifact(
+      'sandbox-execution-gates.json',
+      JSON.stringify(sandboxGates, null, 2)
     );
 
     return {

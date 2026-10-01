@@ -1,0 +1,31 @@
+{
+  "repository": "iamfather420-ctrl/Full-Build",
+  "branch": "main",
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "timestamp_utc": "2026-10-01T19:16:53.992Z",
+  "runtime": "Node.js v22.23.2 (linux x64)",
+  "node_version": "v22.23.2",
+  "os_environment": "linux x64",
+  "package_manager": "bun / npm",
+  "lockfile_hash": "c21c110b2aba6ff8bb097241f8ebf0b9eb12d256e29525615f74c07d9f15b4e9",
+  "package_json_hash": "1dbc49832181d4c95827bc24592c4aedd3524affb5d2f465d0960ef5333e4b43",
+  "source_tree_hash": "afc696004f0a89d85ea3b76fb52434f2bdbcf42cb9889236fe5889e8ada1ba64",
+  "src_tree_hash": "f47c1fad7be8343a2772da1bf05e49c2499090b3f1779a010cad1f62b4629b6f",
+  "scripts_tree_hash": "21d3ee7a78250fa8c6ebc6ec99a426f956f2f7616f183eb246b65728a8cd1cff",
+  "relevant_environment_variables": [
+    "GEMINI_API_KEY",
+    "NEON_DATABASE_URL",
+    "PAYPAL_ACTIVE_ENVIRONMENT",
+    "PAYPAL_CLIENT_ID",
+    "PAYPAL_CLIENT_SECRET",
+    "PAYPAL_ENVIRONMENT",
+    "PAYPAL_LIVE_CLIENT_ID",
+    "PAYPAL_LIVE_CLIENT_SECRET",
+    "PAYPAL_LIVE_LIVE_NT_SECRET",
+    "PAYPAL_SANDBOX_CLIENT_ID",
+    "PAYPAL_SANDBOX_CLIENT_SECRET",
+    "PAYPAL_SANDBOX_ID",
+    "PAYPAL_SANDBOX_KEY"
+  ],
+  "verification_standard": "AGATE_SOVEREIGN_TRUTH_BOUNDARY_V2"
+}
