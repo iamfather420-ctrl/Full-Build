@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-019",
-  "verification_id": "DH-P-019",
-  "claim": "Simpson's Paradox: A confounding variable can reverse marginal group success rates in aggregated data.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-019",
+  "name": "Simpson Paradox",
+  "domain": "STATISTICS",
+  "statement": "Trend appears in groups but reverses when groups are aggregated.",
+  "formal_proposition": "Subgroup success rate reversal upon aggregation: a1 > b1 and a2 > b2 while totalA < totalB is mathematically SATISFIABLE.",
+  "assumptions": [
+    "Positive sub-sample counts",
+    "Non-uniform group weight distribution"
   ],
-  "inputs": {
-    "domain": "STATISTICAL_INFERENCE",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "There exist real ratios satisfying a1/b1 < c1/d1 and a2/b2 < c2/d2, yet (a1+a2)/(b1+b2) > (c1+c2)/(d1+d2).",
-    "assumptions": [
-      "All counts are positive reals",
-      "Success counts are strictly less than trials"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "sat",
+  "axioms": [
+    "Weighted average arithmetic"
+  ],
+  "constraints": [
+    "Rates in (0, 1)"
+  ],
   "expected_result": "sat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "2b1740aa65b633ad6ce92aa88ceb1a70b991ec363b43829af5ab3151480fb51d",
-  "source_hash": "6af5b4cc0c4077693045f175474089f474f3d3b1097e4926fc62b16579c35be2",
-  "contract_hash": "5f29deb9b0cc29408e5ccdc360156a4b66ceafb7883855c173688dfbb6830d3b",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "sat",
+  "replay_result": "sat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "0c362edf28c66e138237c5b7c23653c31af3ac5a9d94e80eec789e956aefff9d",
+  "source_hash": "aad195fe57b670a87b3d24c45f1f919f4ca97e84ac65d9456ff412dda3d21d18",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "416d8274fd682f356bc77eb0c2d3f20abc6e006eb52b522bd62c99b394044e5b",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.315Z",
+  "duration_ms": 69.765
 }

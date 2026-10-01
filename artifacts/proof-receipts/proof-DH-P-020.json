@@ -1,33 +1,37 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-020",
-  "verification_id": "DH-P-020",
-  "claim": "Monty Hall Problem: Bayesian conditioning under host disclosure strictly increases winning probability upon switching to 2/3 vs staying 1/3.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-020",
+  "name": "Monty Hall Problem",
+  "domain": "PROBABILITY",
+  "statement": "Switching doors doubles win probability from 1/3 to 2/3.",
+  "formal_proposition": "Conditional probability update: P(win | stay) = 1/3 while P(win | switch) = 2/3. Refuting the intuitive claim that switching and staying have equal 1/2 probability.",
+  "assumptions": [
+    "Host reveals goat with probability 1",
+    "Host never opens chosen door"
   ],
-  "inputs": {
-    "domain": "PROBABILITY_THEORY",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Refutation of staying strategy superiority: p_stay = 1/3 and p_switch = 2/3 refutes p_stay >= p_switch.",
-    "assumptions": [
-      "Initial uniform prior p_door = 1/3",
-      "Host reveals goat behind unchosen door"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Law of Total Probability",
+    "Bayes Theorem"
+  ],
+  "constraints": [
+    "p_stay + p_switch = 1.0"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "0144ff0118f0f1182065234e318c0f6dce471173723f832993dfba9f99bcb32e",
-  "source_hash": "3af2abb98db3763fc8d880b3ccac64748d8f965aa3d0b2fe410fb59eea4a1ad9",
-  "contract_hash": "c78adbb90aea04f1e2397a6d780f6da9097e454a0a9e16e28cf3e477a189b248",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "93903a9ec447542a4f47c8432c648e7ddbd38bb30c3a9402f188c0a9c8b91288",
+  "source_hash": "89164839a3d2d48092d272014a9cc3a841d6da1c48d904b808e1210678e36986",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "ae7ad138566162ce524a8f5c742d74d8862e8efa0607d1057770f843f2ae1c7d",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.397Z",
+  "duration_ms": 57.776
 }

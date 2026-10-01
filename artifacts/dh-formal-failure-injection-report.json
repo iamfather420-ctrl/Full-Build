@@ -1,0 +1,10 @@
+{
+  "test_name": "Malformed SMT-LIB2 Syntax Injection Fail-Closed Boundary",
+  "injection_type": "MALFORMED_SMT",
+  "input_assertion": "(declare-const x Real) (assert (invalid_unrecognized_opcode x 42)) (check-sat)",
+  "observed_result": "error",
+  "verified_status": false,
+  "fail_closed_enforced": true,
+  "passed": true,
+  "details": "Malformed SMT-LIB2 input properly evaluated to error; never returned false unsat or sat."
+}

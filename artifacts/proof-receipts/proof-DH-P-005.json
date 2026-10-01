@@ -1,32 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-005",
-  "verification_id": "DH-P-005",
-  "claim": "Curry's Paradox: Self-referential implication sentence C <=> (C => Bot) derives arbitrary falsehood under unrestricted contraction.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-005",
+  "name": "Grelling-Nelson Paradox",
+  "domain": "SEMANTICS",
+  "statement": "Is \"heterological\" (a word not describing itself) heterological?",
+  "formal_proposition": "Semantic predicate Het(w) <=> not(Applies(w, w)) applied reflexively to Het yields Het <=> not(Het), refutable in bivalent semantics.",
+  "assumptions": [
+    "Words can be predicates over words",
+    "Reflexive application is permitted"
   ],
-  "inputs": {
-    "domain": "PROOF_THEORY",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Sentence C <=> (C => Bot) is inconsistent with (not Bot).",
-    "assumptions": [
-      "Falsehood constant Bot is false"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Universal predicate application"
+  ],
+  "constraints": [
+    "applies is a 2-place relation on words"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "e4b0c2992d06a6fcd74398dc0742f0c124f0bcbcba6f32bbe486675585be2591",
-  "source_hash": "9ab1a2b32a36f4d0dbebe2625c98a9a254feb026f35a4056f1813e0812f4e89e",
-  "contract_hash": "5380e1c4a3a1730f0170a072d5c5585575652a71c25e83a8aa6774aaa775a222",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "1444541927213fe0a47e50341b0b0993e83e9123a90f1472ae7ad7385ee74b57",
+  "source_hash": "aa86eb0d40e182a9e08fd7f994cd9f952ee9a37018d7ae3f400de05046708f97",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "710fceda8f0bf9b8e5f8989835404ba61f08687cb22b426803c9762df033181d",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.192Z",
+  "duration_ms": 97.869
 }

@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-003",
-  "verification_id": "DH-P-003",
-  "claim": "Barber Paradox: A barber who shaves all and only townspeople who do not shave themselves cannot self-consistently exist.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-003",
+  "name": "Barber Paradox",
+  "domain": "SET_THEORY",
+  "statement": "Barber shaves all and only those who do not shave themselves.",
+  "formal_proposition": "In a first-order relational structure, forall x (shaves(b, x) <=> not(shaves(x, x))) is first-order unsatisfiable.",
+  "assumptions": [
+    "Townspeople domain is non-empty",
+    "Barber is a member of the domain"
   ],
-  "inputs": {
-    "domain": "FIRST_ORDER_LOGIC",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "First-order quantifier restriction forall x. Shaves(B, x) <=> not Shaves(x, x) has no model.",
-    "assumptions": [
-      "Town population is a non-empty domain",
-      "Barber B is an element of the town"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "First-order universal instantiation"
+  ],
+  "constraints": [
+    "shaves is a 2-place relation"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "3d06eb2fd83c203caa71d0d8a83377670daa4ab05c1315c7dcaff95b240d0d6f",
-  "source_hash": "7547177e540c9eaf3544c093657dbf66f58b6e891489cdedb8cce7d0e554b4a7",
-  "contract_hash": "f0be185d0f2a656cce487aaeda566eaa543a434a0fd3b36a6c0522afb6af3777",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "da0866677fc71b8dc198f40cd92ce35b688144cb085c40944bbb7f6ea56032a7",
+  "source_hash": "206bed5787915d3ffbfe28049b46b86eb3fee239b77c3199404622653fd4b00a",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "5ce044335b4a1bf41c970d20c2b22a0fe6fa079e5ec5a7c97edecd74f3f7b7fd",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:55.914Z",
+  "duration_ms": 201.241
 }

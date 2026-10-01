@@ -1,13 +1,13 @@
 # Project AGATE Sovereign Core & Solvex B2B Platform
 ## Authoritative Verification & Evidence Report (GATE-00 through GATE-14)
 
-- **Execution ID:** `exec_pipeline_1790882222916`
-- **Commit SHA:** `728625581c2f89210c752d03fda0a154812b2366`
+- **Execution ID:** `exec_pipeline_1790883815879`
+- **Commit SHA:** `b992445d00e6f8e27bd0aeaf308ad2f17a64d142`
 - **Environment:** `LOCAL`
 - **Claim Scope Verdict:** `LOCAL_VERIFIED / MODEL_VERIFIED`
 - **Production Gate Verdict:** **`BLOCKED_MISSING_EXTERNAL_CREDENTIALS`**
-- **Completed At:** `2026-10-01T19:17:09.660Z`
-- **Execution Duration:** `6744.38 ms`
+- **Completed At:** `2026-10-01T19:43:44.672Z`
+- **Execution Duration:** `8793.35 ms`
 - **Gates Evaluated:** `13 / 15 Passed`
 
 ---
@@ -16,21 +16,21 @@
 
 | Gate | Name | Claim Scope | Status | Duration |
 |:---|:---|:---:|:---:|---:|
-| **GATE-00** | Repository Integrity & Baseline Provenance | `LOCAL` | `PASSED` | 9.23 ms |
+| **GATE-00** | Repository Integrity & Baseline Provenance | `LOCAL` | `PASSED` | 16.94 ms |
 | **GATE-01** | Dependency Preflight Layer | `LOCAL` | `PASSED` | 0.02 ms |
 | **GATE-02** | Secret & Configuration Preflight | `LOCAL` | `PASSED` | 0 ms |
 | **GATE-03** | Execution Environment Selection | `LOCAL` | `PASSED` | 0 ms |
-| **GATE-04** | Build & TypeScript Static Verification | `LOCAL` | `PASSED` | 2457.16 ms |
-| **GATE-05** | Unit & Enterprise Invariant Test Suite | `LOCAL` | `PASSED` | 1199.16 ms |
-| **GATE-06** | DFRL 88-Operator Z3 SMT Formal Verification | `MODEL` | `PASSED` | 2255.08 ms |
+| **GATE-04** | Build & TypeScript Static Verification | `LOCAL` | `PASSED` | 2462.89 ms |
+| **GATE-05** | Unit & Enterprise Invariant Test Suite | `LOCAL` | `PASSED` | 1171.69 ms |
+| **GATE-06** | DFRL 88-Operator Z3 SMT Formal Verification | `MODEL` | `PASSED` | 4028.43 ms |
 | **GATE-07** | Cleanroom Deterministic Replay Verification | `MODEL` | `PASSED` | 0 ms |
-| **GATE-08** | SMT Mutation, SHA-256 Tamper & Fail-Closed Tests | `LOCAL` | `PASSED` | 39.01 ms |
-| **GATE-09** | Daisy 54-Node Architecture CUJ Execution Coverage | `LOCAL` | `PASSED` | 456.19 ms |
-| **GATE-10** | Multi-Tenant Relational & Merkle Chain Persistence | `LOCAL` | `PASSED` | 35.53 ms |
-| **GATE-11** | External Provider Gateways (Neon, PayPal) | `LOCAL` | `CONFIGURED` | 270.29 ms |
-| **GATE-12** | End-to-End Lifecycle Execution | `LOCAL` | `PASSED` | 0.58 ms |
-| **GATE-13** | Evidence Generation & Artifact Packaging | `LOCAL` | `PASSED` | 2.77 ms |
-| **GATE-14** | Final Truth-Boundary Audit & Production Gate | `LOCAL` | `BLOCKED` | 0.12 ms |
+| **GATE-08** | SMT Mutation, SHA-256 Tamper & Fail-Closed Tests | `LOCAL` | `PASSED` | 83.82 ms |
+| **GATE-09** | Daisy 54-Node Architecture CUJ Execution Coverage | `LOCAL` | `PASSED` | 505.4 ms |
+| **GATE-10** | Multi-Tenant Relational & Merkle Chain Persistence | `LOCAL` | `PASSED` | 38.51 ms |
+| **GATE-11** | External Provider Gateways (Neon, PayPal) | `LOCAL` | `CONFIGURED` | 273.09 ms |
+| **GATE-12** | End-to-End Lifecycle Execution | `LOCAL` | `PASSED` | 0.64 ms |
+| **GATE-13** | Evidence Generation & Artifact Packaging | `LOCAL` | `PASSED` | 2.28 ms |
+| **GATE-14** | Final Truth-Boundary Audit & Production Gate | `LOCAL` | `BLOCKED` | 0.03 ms |
 
 ---
 

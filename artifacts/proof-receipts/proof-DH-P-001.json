@@ -1,34 +1,40 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-001",
-  "verification_id": "DH-P-001",
-  "claim": "Zeno's Achilles and the Tortoise: Achilles travelling faster than tortoise strictly overtakes tortoise in continuous metric space at t = x0 / (v_A - v_T).",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-001",
+  "name": "Achilles and the Tortoise",
+  "domain": "INFINITE_SERIES",
+  "statement": "Finite distance is traversed in finite steps using geometric series summation.",
+  "formal_proposition": "Linear kinematic intersection d_meet = v_A * t = d0 + v_T * t refutes the assertion that Achilles never catches the tortoise.",
+  "assumptions": [
+    "vA = 10.0",
+    "vT = 1.0",
+    "initial_separation d0 = 9.0",
+    "time t > 0"
   ],
-  "inputs": {
-    "domain": "MATHEMATICAL_ANALYSIS",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Refutation of perpetual separation: v_A > v_T > 0 and x0 > 0 implies Achilles position equals tortoise position at finite time t.",
-    "assumptions": [
-      "v_A > v_T",
-      "v_T > 0",
-      "x0 > 0"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Euclidean continuous spacetime",
+    "Constant velocity kinematics"
+  ],
+  "constraints": [
+    "t > 0",
+    "vA > vT"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "d419fd5478e76a295ab4b0655c20972db3bfef672347fb0475e85ae30c595ac9",
-  "source_hash": "24d24c6f60f967eecfe64ac3f9d8d06d62d2593f88489cb5e1912a9e3a4835a6",
-  "contract_hash": "fc49caf4a280453d299dacd4f200285446f45de2874cb4d4538814bbe9594c00",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "11cbbe898d8930c0779b004a2d47e84d71e022f858e2174b047422582686c0e0",
+  "source_hash": "62ffb54061fd714cedc3bcbb2edc2df66ef43a8623ce2261e5ca5768cb1eb5cd",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "ccc80eb9816446a7f7064055a14fc01957d34611d0c41acb539a16686dd81938",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:54.556Z",
+  "duration_ms": 1275.184
 }

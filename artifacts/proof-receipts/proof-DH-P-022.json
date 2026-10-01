@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-022",
-  "verification_id": "DH-P-022",
-  "claim": "Unexpected Hanging Paradox: Backward induction eliminates every day from being a surprise, refuting the existence of an unexpected day.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-022",
+  "name": "Banach-Tarski Paradox",
+  "domain": "MEASURE_THEORY",
+  "statement": "A solid ball can be decomposed into 5 non-measurable sets and reassembled into two.",
+  "formal_proposition": "Under finite additivity of Lebesgue measure, measurable decomposition of volume V preserves total volume V. Reassembly into 2V is refutable for measurable subsets.",
+  "assumptions": [
+    "Lebesgue measure finite additivity",
+    "Measurable decomposition hypothesis"
   ],
-  "inputs": {
-    "domain": "EPISTEMIC_LOGIC",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "If backward induction eliminates surprise for all days (forall d. not is_surprise(d)), asserting is_surprise(d_exec) is contradictory.",
-    "assumptions": [
-      "Execution must occur on a weekday",
-      "Surprise requires execution day cannot be deduced previous night"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Finite additivity of isometry-invariant measure"
+  ],
+  "constraints": [
+    "V > 0"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "d590d702d8623646fb9a9f666beac94d34375fb9351ef167cd525903e65510fa",
-  "source_hash": "2d1f3e0c9e629d8bd640ac07cdcb385e2c9b163c8f55f35966bff51bc1ba7aba",
-  "contract_hash": "299d044c50c44f69cc1d508452e1680b9805c82664b0b0d40f890eee747614e5",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_AXIOMATIC",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "cdeb57d2b4c688078255425810aa6257ebbfa4b69191e76141d68045c48c0575",
+  "source_hash": "d158fc747f4a8a02b1cfb188dc6863828a7ed0e0c3b1a230ce3273023001d29a",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "6ce11d16f80798a16e61da8eb3163d5ce06f54fe6df08703751b065f7088a4dc",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.540Z",
+  "duration_ms": 61.52
 }

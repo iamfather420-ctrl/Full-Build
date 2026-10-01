@@ -1,32 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-027",
-  "verification_id": "DH-P-027",
-  "claim": "Crocodile Paradox: Adversarial promise conditional on predicting own action produces an unresolvable boolean antinomy.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-027",
+  "name": "EPR Paradox",
+  "domain": "QUANTUM_MECHANICS",
+  "statement": "Entangled particles exhibit instantaneous correlations (\"spooky action at a distance\").",
+  "formal_proposition": "Bell CHSH theorem: Local hidden variable realism bounds correlation |S| <= 2. Quantum entangled state yields S = 2*sqrt(2) approx 2.828. Quantum correlation violating classical bound is refutable under local realism.",
+  "assumptions": [
+    "Local hidden variable realism",
+    "Measurement setting independence"
   ],
-  "inputs": {
-    "domain": "CLASSICAL_DILEMMA",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "System returns_child <=> prediction_correct and prediction_correct <=> (not returns_child) is unsatisfiable.",
-    "assumptions": [
-      "Crocodile adheres strictly to stated agreement rule"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "CHSH inequality bound <= 2.0"
+  ],
+  "constraints": [
+    "S_quantum = 2.8284"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "708a69bffbf22d50a863e23b19e3c4be39c5d8f2fd8c9b8af5837d7f5a350c72",
-  "source_hash": "fc0e033b533c0001dc759847969f7c7c97953c4d749e428898a5ba7bb70be3a7",
-  "contract_hash": "d842f058c473f476295498f11539c0525b02314c25f4f01e0c66e49cab4f5d40",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_BOUNDED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "2eb36164861517004876d93b0d5438fb84a50026d22e243b1a0e1b25fea6d421",
+  "source_hash": "92792d52bff0625d32f2c31954879f052ba5ead20d477dd4694485f599053fbc",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "3c9630fc04e14c27ab97439c59c62dbe6c5ee34933e67281465aa38e5345ed81",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.932Z",
+  "duration_ms": 54.739
 }

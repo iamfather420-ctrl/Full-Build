@@ -1,19 +1,11 @@
 {
-  "aggregation_id": "AGGREGATION-120-Z3-728625581c2f",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "solver_engine": "Microsoft Research Z3 WASM 5.2.0",
-  "summary": {
-    "total_formal_theorems": 120,
-    "dfrl_operators": 88,
-    "dh_paradox_contracts": 32,
-    "total_z3_executions": 120,
-    "expected_result_matches": 120,
-    "cleanroom_replays": 120,
-    "replay_matches": 120,
-    "unknown_count": 0,
-    "error_count": 0
-  },
+  "aggregation_name": "Z3_120_FORMAL_VERIFICATION_SUMMARY",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "timestamp": "2026-10-01T19:43:23.542Z",
+  "total_z3_executions": 120,
+  "expected_result_matches": 120,
+  "cleanroom_replays": 120,
+  "replay_matches": 120,
   "distribution": {
     "unsat": 118,
     "sat": 2,
@@ -26,7 +18,7 @@
       "executed": 88,
       "unsat_proved": 88,
       "replays_matched": 88,
-      "root_hash": "5eaab16aa2286aec0c48d73bdd76b9158f919b4460596b9cce94ef1a7a3073fd",
+      "root_hash": "95432815fc0205bf7fb918f2be836a9b9a884d1ee20eec289ad8bc7b23cbdbb5",
       "status": "VERIFIED"
     },
     "dh": {
@@ -36,10 +28,10 @@
       "replays_matched": 32,
       "sat_count": 2,
       "unsat_count": 30,
-      "root_hash": "08488c29ba294a9b4b6604433a5024a0a7f521fb48ef58166e32ad06d88f194b",
+      "root_hash": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
       "status": "VERIFIED"
     }
   },
-  "combined_root_sha256": "850d135c3a94dd0eea2bbe8d9ada44eb12b15abe8cb3c70a3967aff7f697e422",
+  "combined_root_sha256": "aebc02b4ac87edddcb35b60a09638ae92f58c139e1376fe0801ff4dffd6aeba3",
   "activation_gate": "PROVEN_120_FORMAL_CLOSURE"
 }

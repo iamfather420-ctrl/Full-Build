@@ -1,32 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-004",
-  "verification_id": "DH-P-004",
-  "claim": "Liar Paradox (Epimenides): Sentence asserting its own untruth creates an undefinable truth value in object languages.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-004",
+  "name": "Liar Paradox",
+  "domain": "SEMANTIC_LOGIC",
+  "statement": "Sentence asserting its own falsehood (\"This statement is false\").",
+  "formal_proposition": "A proposition asserting T <=> not(T) is unsatisfiable in classical bivalent truth systems.",
+  "assumptions": [
+    "Classical bivalence",
+    "Self-referential truth assignment"
   ],
-  "inputs": {
-    "domain": "SEMANTIC_LOGIC",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Truth valuation of self-referential sentence L <=> not L is unsatisfiable.",
-    "assumptions": [
-      "Tarskian truth predicate schema T(phi) <=> phi"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Tarski T-schema in unstratified language"
+  ],
+  "constraints": [
+    "truth_value in {true, false}"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "c8006d5939f4e5503762ee17540921f5a4c59533399db85cb6899c608b5d9bff",
-  "source_hash": "5c687d997b58701cc0f5f1336d41adc15fa43435dfede08054461cdda930b10f",
-  "contract_hash": "5a7bbd6675e054a7a558a1dd04040ff9f5fff9e2437c54b649dda1937a7e1666",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "d967d270daec400141778e8c311550bbbe32b4d13a4a8f84e22e3b90229a0da2",
+  "source_hash": "3cb8d768e956760a958e55859f2dd379e9ff2f85980e03838ef16360e4a62a02",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "e7b58970b208a2f3b262b03a5d0a83cee960a2469cdb905f2e4fbd3e0c25bec2",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.126Z",
+  "duration_ms": 53.832
 }

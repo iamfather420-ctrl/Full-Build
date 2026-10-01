@@ -1,34 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-031",
-  "verification_id": "DH-P-031",
-  "claim": "P vs NP Polynomial Separation Hypothesis: Axiomatic separation: polynomial time bound T_poly(n) = n^2 cannot dominate cubic/super-polynomial growth T_exp(n) = n^3 for n > 10.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-031",
+  "name": "Braess Paradox",
+  "domain": "NETWORK_FLOW",
+  "statement": "Adding a road to a congested traffic network can increase overall travel times.",
+  "formal_proposition": "In a congested network with non-cooperative routing, adding a shortcut edge creates a new user equilibrium with higher latency. This phenomenon is SATISFIABLE.",
+  "assumptions": [
+    "Wardrop user equilibrium",
+    "Selfish routing in directed network"
   ],
-  "inputs": {
-    "domain": "COMPUTATIONAL_COMPLEXITY",
-    "scope": "MODEL_VERIFIED_AXIOMATIC",
-    "formal_proposition": "For input size n > 10, polynomial resource T_poly = n^2 refutes domination over cubic growth T_exp = n^3: T_poly >= T_exp is unsatisfiable.",
-    "assumptions": [
-      "Input size n > 10.0",
-      "T_poly = n^2",
-      "T_exp = n^3"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
-  "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "f08166ec51bb2fe12f7c521df552031b5fbea6029fe90bf69bfaf00f0952eac3",
-  "source_hash": "b5a11cef020aae1e69f8e1d4b958ae3c44ea4d1641a952de8e658fdb1a7579c8",
-  "contract_hash": "55c61189a4bd6ec704496abf1e9ad686cc9ad01c2885d884e6983b5929055989",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "axioms": [
+    "Game-theoretic Nash equilibrium"
+  ],
+  "constraints": [
+    "latency_after > latency_before"
+  ],
+  "expected_result": "sat",
+  "actual_result": "sat",
+  "replay_result": "sat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "53977fafacb5eb31d35827d04b064e82c5ab2d2cf6f6fdf41ad6ec9c162b5c48",
+  "source_hash": "f00a9337c08219b63228fdc90cebc0562b6e0f2c809844b0d69c23c4e54f0895",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "56f717a79f90a168a3bc7a4fa30c6389796bcf6e71f38e62980d9942b9fb4c10",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:58.213Z",
+  "duration_ms": 58.323
 }

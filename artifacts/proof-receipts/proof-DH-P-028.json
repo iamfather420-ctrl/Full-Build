@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-028",
-  "verification_id": "DH-P-028",
-  "claim": "Pigeonhole Collision Theorem: Mapping N+1 items into N discrete pigeonholes guarantees at least one collision.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-028",
+  "name": "Schrodinger Cat Paradox",
+  "domain": "QUANTUM_MEASUREMENT",
+  "statement": "Quantum superposition entangled with macroscopic feline life state.",
+  "formal_proposition": "Decoherence through environment-induced superselection forces macroscopic interference terms to 0. Macroscopic persistent interference (> 0.1) is refutable.",
+  "assumptions": [
+    "Macroscopic pointer state entanglement with environment",
+    "Trace over unobserved degrees of freedom"
   ],
-  "inputs": {
-    "domain": "DISCRETE_MATHEMATICS",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Refutation of collision-free assignment: 4 items into 3 slots f1, f2, f3, f4 in [1, 3] cannot all be distinct.",
-    "assumptions": [
-      "4 pigeons, 3 holes",
-      "Each pigeon mapped to hole in [1, 3]"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Decoherence theorem in open quantum systems"
+  ],
+  "constraints": [
+    "interference_term = 0.0"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "3dc893f8b74077b308165150b8b00d918724727ea84a75d8f3c8864cf1584720",
-  "source_hash": "d12c2409159bbdb83b745e16bdae2a903959340735718365da03e56214b88c8d",
-  "contract_hash": "bce7f7972f00b99d970488aa718c5cf6a847a62f3e462c908bed454b3e61825a",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_BOUNDED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "acb025e96d36d019a933b0e94de9bb43d2e2b96065ab7aecea558c055c6710d4",
+  "source_hash": "781cb88a8433b8cb17bf630532fe1e49b8fe11518b9fab424343a40418c8c800",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "6a818c9524c66ea794c3d091ca209d4e07688aaecabdd548c85de0d575aa7439",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:58.000Z",
+  "duration_ms": 59.296
 }

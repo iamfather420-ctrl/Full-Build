@@ -1,32 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-017",
-  "verification_id": "DH-P-017",
-  "claim": "Banach-Tarski Paradox: Finite decomposition into two identical volumes violates finite additivity of Lebesgue measure if all sets are measurable.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-017",
+  "name": "Newcomb Problem",
+  "domain": "DECISION_THEORY",
+  "statement": "Superintelligent predictor: choose One Box ($1M) or Two Boxes ($1M + $1K).",
+  "formal_proposition": "Dominance principle dictates choosing two boxes while Expected Utility under perfect prediction dictates choosing one box. Simultaneous single-choice satisfaction is refutable.",
+  "assumptions": [
+    "Dominance principle: choose two boxes",
+    "Expected utility under perfect predictor: choose one box"
   ],
-  "inputs": {
-    "domain": "MEASURE_THEORY",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "If measure V > 0 is additive on Banach-Tarski pieces, 2 * V = V is contradictory.",
-    "assumptions": [
-      "Volume V > 0.0"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Exclusive decision choice between one and two boxes"
+  ],
+  "constraints": [
+    "choose_one_box in {true, false}"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "8bab1e0117e58d27c747abc03f232dfaeda3dc7942a78a0f92f8c410b3cb9fae",
-  "source_hash": "cf1f4cc94cdd027e7205cbd9e474f132c67b19e16601ca215040f6caee7d3ae4",
-  "contract_hash": "8e1a1fa81d59a2c509038505b1d70329a6820442475dff76108c5a28de5d92a8",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_BOUNDED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "0cb4feaf01b7a3874fdd803967f9dbd96ebdc507743fc1aeb3c045be9717fed1",
+  "source_hash": "14e45677e7688c6a43a142dfd20cc9ded61f1883911ee646e9f8aa265369cfe8",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "6371d0d0afab8eb5e62afab2029ed35e28130554b28e8b9ada1dca0937629aaf",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.160Z",
+  "duration_ms": 56.39
 }

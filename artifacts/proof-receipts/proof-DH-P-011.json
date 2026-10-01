@@ -1,33 +1,37 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-011",
-  "verification_id": "DH-P-011",
-  "claim": "Zeno's Dichotomy (Runner at the Track): Infinite halving of residual distance monotonically decreases remaining distance toward 0.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-011",
+  "name": "Sorites Paradox",
+  "domain": "VAGUENESS",
+  "statement": "Removing one grain from a heap leaves a heap; by induction one grain is a heap.",
+  "formal_proposition": "Crisp induction on bounded tolerance boundary (heap(n) => heap(n-1)) forces heap(1) from heap(5), refuting the negative boundary condition.",
+  "assumptions": [
+    "heap(5) is true",
+    "heap(1) is false",
+    "crisp single-grain tolerance"
   ],
-  "inputs": {
-    "domain": "MATHEMATICAL_ANALYSIS",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Refutation of stationary residue: dividing residual distance in half strictly decreases distance rem_next < rem_n.",
-    "assumptions": [
-      "Distance D > 0",
-      "Residual distance rem_n > 0"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Finite backward mathematical induction"
+  ],
+  "constraints": [
+    "1 <= n <= 5"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "a3306ec10d424f882e807c4b5f3fdebbab00882c1776a94d66db80a7f89f1a93",
-  "source_hash": "b62d25c866762a1025a303cbef1cef5906adce6ecb0071311eaea9e6262e62cc",
-  "contract_hash": "b5fe33badde4fd6fc8a521c326a588ba0ff17492ea96cc786e4646908b87efa0",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_BOUNDED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "e3d2c1102687b713ad86dcc06dddf53e58204829e52700297a4b2e643a49a0ed",
+  "source_hash": "501735fdfadbb659fe04ede9d44ace273754873dcaf7f590a399a04ce527e183",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "47d73c5ee4daf695c03070d1c97ea1416857f856e780ace95b9e2c5a6db1c0b9",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.709Z",
+  "duration_ms": 76.348
 }

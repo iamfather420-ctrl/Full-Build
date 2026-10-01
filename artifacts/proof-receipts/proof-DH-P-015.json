@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-015",
-  "verification_id": "DH-P-015",
-  "claim": "Two Generals Problem: Coordinated attack consensus cannot be guaranteed over an unreliable lossy network link.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-015",
+  "name": "Raven Paradox (Hempel)",
+  "domain": "EPISTEMOLOGY",
+  "statement": "Observing a green apple confirms \"All ravens are black\" via contrapositive.",
+  "formal_proposition": "Universal implication (forall x: Raven(x) => Black(x)) is logically equivalent to its contrapositive (forall x: not Black(x) => not Raven(x)). Non-equivalence is refutable.",
+  "assumptions": [
+    "Classical predicate logic",
+    "Material implication equivalence"
   ],
-  "inputs": {
-    "domain": "DISTRIBUTED_SYSTEMS",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "If message loss implies second general does not attack, simultaneous attack (g1 and g2) cannot hold under message loss.",
-    "assumptions": [
-      "Message loss occurs: msg_lost = true",
-      "General 2 only attacks upon received confirmation"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Contrapositive logical equivalence theorem"
+  ],
+  "constraints": [
+    "Entity domain is unrestricted"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "e3bb26b99a675eb2aee5c8ef1e587dccfe9d7d1346a74f927e10744c1bbd503e",
-  "source_hash": "e247e016dca004d022c7802486354f1156e60bf8af09273ef90e0346506496de",
-  "contract_hash": "d97d46880fdf3904292192723a960dd37fc63f5eb7062fc90fb94392779d424b",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "99185786a3125ffd76d24f39dd0c7679be2c6030ea15e5a71c0649213cbab416",
+  "source_hash": "182698982fcb83e4132b71f2e0e6638955e397d94b36b2cbd25a768e66ee5c3d",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "a583067f97ede4e82505a500e52eca1ef8e2d40512d972c31ca31a70648e1f3f",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.020Z",
+  "duration_ms": 56.437
 }

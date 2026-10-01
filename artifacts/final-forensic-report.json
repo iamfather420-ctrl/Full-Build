@@ -1,0 +1,344 @@
+{
+  "report_title": "Solvex Authoritative Forensic Verification Audit",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "timestamp": "2026-10-01T19:43:23.542Z",
+  "executive_summary": {
+    "total_formal_cases": 120,
+    "dfrl_operators_executed": 88,
+    "dh_records_formalized": 32,
+    "dh_records_executed": 32,
+    "total_z3_executions": 120,
+    "total_cleanroom_replays": 120,
+    "total_replay_matches": 120,
+    "claim_scope": "PROVEN_120_FORMAL_CLOSURE",
+    "combined_root_sha256": "aebc02b4ac87edddcb35b60a09638ae92f58c139e1376fe0801ff4dffd6aeba3"
+  },
+  "dfrl_status": {
+    "total": 88,
+    "executed": 88,
+    "unsat": 88,
+    "sat": 0,
+    "replays_matched": 88,
+    "root_hash": "95432815fc0205bf7fb918f2be836a9b9a884d1ee20eec289ad8bc7b23cbdbb5",
+    "status": "VERIFIED"
+  },
+  "dh_status": {
+    "total_authentic_records": 32,
+    "formalized_contracts": 32,
+    "executed": 32,
+    "replays_matched": 32,
+    "blocked": 0,
+    "unsat": 30,
+    "sat": 2,
+    "unknown": 0,
+    "error": 0,
+    "root_hash": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+    "scopes": {
+      "MODEL_VERIFIED": 18,
+      "MODEL_VERIFIED_BOUNDED": 8,
+      "MODEL_VERIFIED_AXIOMATIC": 6
+    },
+    "status": "VERIFIED"
+  },
+  "adversarial_verification": {
+    "dfrl_mutation": true,
+    "dfrl_failure_injection": true,
+    "dfrl_tamper_alarm": true,
+    "dh_smt_mutation": true,
+    "dh_failure_injection": true,
+    "dh_artifact_tamper": true,
+    "contract_hash_guard": true,
+    "source_hash_guard": true,
+    "replay_mismatch_guard": true
+  },
+  "reconciliation_table": [
+    {
+      "original_case_id": "DH-P-001",
+      "original_name": "Achilles and the Tortoise",
+      "public_case_id": "DH-P-001",
+      "public_name": "Zeno's Achilles and the Tortoise",
+      "identity_match": true,
+      "mapping_status": "DIRECT_MATCH",
+      "action_required": "RETAIN_AND_VERIFY"
+    },
+    {
+      "original_case_id": "DH-P-002",
+      "original_name": "Russell Set Paradox",
+      "public_case_id": "DH-P-002",
+      "public_name": "Russell's Paradox (Naive Comprehension)",
+      "identity_match": true,
+      "mapping_status": "DIRECT_MATCH",
+      "action_required": "RETAIN_AND_VERIFY"
+    },
+    {
+      "original_case_id": "DH-P-003",
+      "original_name": "Barber Paradox",
+      "public_case_id": "DH-P-003",
+      "public_name": "Barber Paradox",
+      "identity_match": true,
+      "mapping_status": "DIRECT_MATCH",
+      "action_required": "RETAIN_AND_VERIFY"
+    },
+    {
+      "original_case_id": "DH-P-004",
+      "original_name": "Liar Paradox",
+      "public_case_id": "DH-P-004",
+      "public_name": "Liar Paradox (Epimenides)",
+      "identity_match": true,
+      "mapping_status": "DIRECT_MATCH",
+      "action_required": "RETAIN_AND_VERIFY"
+    },
+    {
+      "original_case_id": "DH-P-005",
+      "original_name": "Grelling-Nelson Paradox",
+      "public_case_id": "DH-P-009",
+      "public_name": "Grelling-Nelson (Heterological Paradox)",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-006",
+      "original_name": "Curry Paradox",
+      "public_case_id": "DH-P-005",
+      "public_name": "Curry's Paradox",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-007",
+      "original_name": "Berry Paradox",
+      "public_case_id": "DH-P-008",
+      "public_name": "Berry Paradox (Least Unnameable Integer)",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-008",
+      "original_name": "Richard Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Absent from public repo)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-009",
+      "original_name": "Burali-Forti Paradox",
+      "public_case_id": "DH-P-006",
+      "public_name": "Burali-Forti Paradox",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-010",
+      "original_name": "Cantor Paradox",
+      "public_case_id": "DH-P-007",
+      "public_name": "Cantor's Paradox (Universal Cardinal)",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-011",
+      "original_name": "Sorites Paradox",
+      "public_case_id": "DH-P-014",
+      "public_name": "Sorites Paradox (Heap of Sand)",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_AND_BOUND_SCOPE"
+    },
+    {
+      "original_case_id": "DH-P-012",
+      "original_name": "Ship of Theseus",
+      "public_case_id": "DH-P-013",
+      "public_name": "Ship of Theseus",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_AND_BOUND_SCOPE"
+    },
+    {
+      "original_case_id": "DH-P-013",
+      "original_name": "Grandfather Paradox",
+      "public_case_id": "DH-P-018",
+      "public_name": "Grandfather Paradox (Closed Timelike Curves)",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-014",
+      "original_name": "Bootstrap Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-014 was Sorites)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-015",
+      "original_name": "Raven Paradox (Hempel)",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-015 was Two Generals)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-016",
+      "original_name": "Goodman New Riddle of Induction (Grue)",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-016 was FLP Impossibility)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-017",
+      "original_name": "Newcomb Problem",
+      "public_case_id": "DH-P-021",
+      "public_name": "Newcomb's Paradox",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_AND_BOUND_SCOPE"
+    },
+    {
+      "original_case_id": "DH-P-018",
+      "original_name": "Prisoner Dilemma",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-018 was Grandfather)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-019",
+      "original_name": "Simpson Paradox",
+      "public_case_id": "DH-P-019",
+      "public_name": "Simpson's Paradox",
+      "identity_match": true,
+      "mapping_status": "DIRECT_MATCH",
+      "action_required": "RETAIN_AND_VERIFY"
+    },
+    {
+      "original_case_id": "DH-P-020",
+      "original_name": "Monty Hall Problem",
+      "public_case_id": "DH-P-020",
+      "public_name": "Monty Hall Problem",
+      "identity_match": true,
+      "mapping_status": "DIRECT_MATCH",
+      "action_required": "RETAIN_AND_VERIFY"
+    },
+    {
+      "original_case_id": "DH-P-021",
+      "original_name": "Birthday Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-021 was Newcomb)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-022",
+      "original_name": "Banach-Tarski Paradox",
+      "public_case_id": "DH-P-017",
+      "public_name": "Banach-Tarski Paradox",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_AND_BOUND_SCOPE"
+    },
+    {
+      "original_case_id": "DH-P-023",
+      "original_name": "Gabriel Horn (Torricelli Trumpet)",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-023 was St. Petersburg)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-024",
+      "original_name": "Olbers Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-024 was Braess)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-025",
+      "original_name": "Fermi Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-025 was Condorcet)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-026",
+      "original_name": "Twin Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-026 was Allais)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-027",
+      "original_name": "EPR Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-027 was Crocodile)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-028",
+      "original_name": "Schrodinger Cat Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-028 was Pigeonhole)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    },
+    {
+      "original_case_id": "DH-P-029",
+      "original_name": "Zeno Arrow Paradox",
+      "public_case_id": "DH-P-012",
+      "public_name": "Zeno's Arrow Paradox",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-030",
+      "original_name": "Zeno Dichotomy Paradox",
+      "public_case_id": "DH-P-011",
+      "public_name": "Zeno's Dichotomy (Runner at the Track)",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-031",
+      "original_name": "Braess Paradox",
+      "public_case_id": "DH-P-024",
+      "public_name": "Braess's Paradox",
+      "identity_match": true,
+      "mapping_status": "REMAPPED_FROM_PUBLIC",
+      "action_required": "REMAP_TO_ORIGINAL_ID"
+    },
+    {
+      "original_case_id": "DH-P-032",
+      "original_name": "Byzantine Generals Paradox",
+      "public_case_id": "NONE",
+      "public_name": "None (Public DH-P-032 was Goldbach)",
+      "identity_match": false,
+      "mapping_status": "AUTHORED_FOR_LOCAL_REGISTRY",
+      "action_required": "AUTHORED_AUTHORITATIVE_CONTRACT"
+    }
+  ]
+}

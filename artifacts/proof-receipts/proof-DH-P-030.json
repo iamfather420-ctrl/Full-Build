@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-030",
-  "verification_id": "DH-P-030",
-  "claim": "Riemann Hypothesis Non-Trivial Zero Alignment: Axiomatic functional equation reflection symmetry sigma = 1 - sigma forces non-trivial real component sigma = 1/2.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-030",
+  "name": "Zeno Dichotomy Paradox",
+  "domain": "INFINITE_SERIES",
+  "statement": "Motion can never start because one must traverse infinite half-intervals first.",
+  "formal_proposition": "Sum of geometric intervals sum_{n=1}^inf (1/2^n) = 1 converges in finite time t0. Refuting that traversing infinite half-intervals diverges.",
+  "assumptions": [
+    "Geometric series ratio r = 1/2",
+    "Step duration scales as t0 / 2^n"
   ],
-  "inputs": {
-    "domain": "COMPLEX_ANALYSIS",
-    "scope": "MODEL_VERIFIED_AXIOMATIC",
-    "formal_proposition": "Reflection symmetry constraint sigma = 1 - sigma refutes deviation sigma != 0.5 on the critical line.",
-    "assumptions": [
-      "Non-trivial zero real part sigma in (0, 1)",
-      "Functional equation xi(s) = xi(1-s) symmetry"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Geometric series convergence theorem sum(1/2^n) = 1"
+  ],
+  "constraints": [
+    "t0 > 0.0"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "587286018803efa48e9bf046a85d9deec52563f5efcba323da1c3af0df19c038",
-  "source_hash": "40f45728f048978d8bdf9a92b0dd64362b8b7607dbb36f690ebd0b57571943ed",
-  "contract_hash": "a50fc0eaf817821c06c8935558391a30581cb66c674a931f45cf23279fb0bb77",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "c64b34e1c669d03a45e492dbc3abf3883fade37ceeeefc5cce92ec1817ece36a",
+  "source_hash": "c04e60aae049b2a3a5dce48a72f65bd71b9eaaaf15e876d959d4f73b2da8c362",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "62b6a46ab12bd9ec8b8bd02d86e7f8775b4028a83d2a229703f39543ee7792ad",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:58.141Z",
+  "duration_ms": 59.996
 }

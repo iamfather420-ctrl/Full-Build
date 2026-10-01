@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-014",
-  "verification_id": "DH-P-014",
-  "claim": "Sorites Paradox (Heap of Sand): Classical inductive premise that removing 1 grain preserves heapness leads to 0 grains being a heap.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-014",
+  "name": "Bootstrap Paradox",
+  "domain": "TEMPORAL_CAUSALITY",
+  "statement": "An object or information is sent back in time, creating uncaused existence.",
+  "formal_proposition": "Classical strict causal orders are irreflexive (not causes(x, x)). An uncaused ontological time-loop asserting causes(e, e) is refutable.",
+  "assumptions": [
+    "Causality is a strict partial order",
+    "Ontological loop event e causes itself"
   ],
-  "inputs": {
-    "domain": "FUZZY_LOGIC",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Premise H(10) with (not H(0)) and inductive step forall n. H(n) => H(n-1) is contradictory.",
-    "assumptions": [
-      "H(10) is true",
-      "H(0) is false by definition"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Irreflexivity and transitivity of strict causality"
+  ],
+  "constraints": [
+    "e is a valid event"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "f1a1d576d88ab67dfa208e480cf58435b9ad88243dbffb7b2d137aa06e606843",
-  "source_hash": "8bcc3f12eecf74ffde91d70b8c5c4d83a4990e73633fe12811d91047c2ccbfa4",
-  "contract_hash": "79b4316775adcc8d714cddbc0df474c917971a87093d810884232594ae9c6f1f",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_AXIOMATIC",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "bba56eda9a3e749e64cfa2168cf1985487684c50aee0f38a76104521c62c649f",
+  "source_hash": "472454c6b060b6c713813f23f0f12407bda66e5cf412ab9d2283da14bd069e23",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "b07c618b8cc80945beca1cb6a2f98e0a390631b51bd5c289c14f799af8d5420f",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.936Z",
+  "duration_ms": 72.775
 }

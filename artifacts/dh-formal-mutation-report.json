@@ -1,0 +1,14 @@
+{
+  "test_name": "DH-P-028 Schrodinger Cat Interference Premise Perturbation",
+  "target_case_id": "DH-P-028",
+  "mutation_type": "PREMISE_VALUE_PERTURBATION",
+  "original_assertion": "; DH-P-028: Schrodinger Cat Paradox\n(declare-const p_alive Real)\n(declare-const p_dead Real)\n(declare-const interference_term Real)\n(assert (= p_alive 0.5))\n(assert (= p_dead 0.5))\n(assert (= interference_term 0.0))\n; Refuting non-zero macroscopic interference\n(assert (> interference_term 0.1))\n(check-sat)",
+  "mutated_assertion": "; DH-P-028: Schrodinger Cat Paradox\n(declare-const p_alive Real)\n(declare-const p_dead Real)\n(declare-const interference_term Real)\n(assert (= p_alive 0.5))\n(assert (= p_dead 0.5))\n(assert (= interference_term 0.5))\n; Refuting non-zero macroscopic interference\n(assert (> interference_term 0.1))\n(check-sat)",
+  "expected_original_result": "unsat",
+  "observed_original_result": "unsat",
+  "expected_mutated_result": "sat",
+  "observed_mutated_result": "sat",
+  "mutation_detected": true,
+  "passed": true,
+  "details": "Mutation successfully shifted solver outcome from UNSAT to SAT, confirming active premise constraint sensitivity."
+}

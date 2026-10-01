@@ -8,7 +8,7 @@
       "name": "Authentication & RBAC Evaluation",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -28,7 +28,7 @@
       "name": "Multi-Tenant Cryptographic Partition Isolation",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 4,
       "details": {
         "status": "PASSED"
       }
@@ -38,7 +38,7 @@
       "name": "Audit Chain Cryptographic Hash Continuity",
       "category": "AUDIT",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 2,
       "details": {
         "status": "PASSED"
       }
@@ -48,7 +48,7 @@
       "name": "Anti-Tamper Sentinel Active Tamper Detection",
       "category": "AUDIT",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 5,
       "details": {
         "status": "PASSED"
       }
@@ -78,7 +78,7 @@
       "name": "Paradox Registry Integrity (Exact 32 Bootstrap Set)",
       "category": "PARADOX",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -98,7 +98,7 @@
       "name": "NOPOT Bounded Termination Formal Proof Verification",
       "category": "PROOFS",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -108,7 +108,7 @@
       "name": "Preserved Solution DH-S-001 Verification Integrity",
       "category": "SOLUTIONS",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -118,7 +118,7 @@
       "name": "Proof Bundle Builder Seal & Independent Oracle Attestation",
       "category": "PROOFS",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -128,7 +128,7 @@
       "name": "Cleanroom Replay Bitrot & Divergence Detection",
       "category": "PROOFS",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 2,
       "details": {
         "status": "PASSED"
       }
@@ -148,7 +148,7 @@
       "name": "Pipeline Fail-Closed Gate Halts and Quarantines on Error",
       "category": "PIPELINE",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -178,7 +178,7 @@
       "name": "PayPal DN-35 Server-Authoritative Fail-Closed Enforcement",
       "category": "PAYMENTS",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -198,7 +198,7 @@
       "name": "Crystal Clear Box Redaction Preserves Verifiable Evidence",
       "category": "AUDIT",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 8,
       "details": {
         "status": "PASSED"
       }
@@ -208,7 +208,7 @@
       "name": "Daisy Node Registry (54 Distinct Nodes)",
       "category": "NODES",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -228,7 +228,7 @@
       "name": "SqliteStore Multi-Tenant Persistence & 27 Tables Integrity",
       "category": "DATABASE",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 2,
       "details": {
         "status": "PASSED"
       }
@@ -258,7 +258,7 @@
       "name": "Fail-Closed: Unauthorized Runtime Deployment Blocked",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -278,7 +278,7 @@
       "name": "Fail-Closed: Missing PayPal Credentials Evaluated",
       "category": "ADAPTERS",
       "passed": true,
-      "duration_ms": 1194,
+      "duration_ms": 1135,
       "details": {
         "status": "PASSED"
       }
@@ -288,7 +288,7 @@
       "name": "Order Lifecycle State Machine Validates Transitions & Failures",
       "category": "MARKETPLACE",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -298,7 +298,7 @@
       "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
       "category": "REVERSIBILITY",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }

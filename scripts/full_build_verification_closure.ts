@@ -96,6 +96,7 @@ export async function runFullBuildVerificationClosure() {
     path
   });
   SandboxVerificationPipeline.setNodePlatform({ fs, path });
+  DHFormalVerifier.setPlatform({ execSync: cp.execSync, fs });
   setDiskDbChecker((p: string) => fs.existsSync(p));
 
   console.log('================================================================');

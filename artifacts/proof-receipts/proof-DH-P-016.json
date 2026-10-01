@@ -1,32 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-016",
-  "verification_id": "DH-P-016",
-  "claim": "FLP Impossibility (Fischer-Lynch-Paterson): An asynchronous system in bivalent state cannot deterministically commit to univalent decision 0.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-016",
+  "name": "Goodman New Riddle of Induction (Grue)",
+  "domain": "EPISTEMOLOGY",
+  "statement": "Predicate \"grue\" (green before t, blue after) equally supported by evidence.",
+  "formal_proposition": "Simultaneous projection of color predicates: At future time t_future, an object cannot be simultaneously green and blue under mutually exclusive color categories.",
+  "assumptions": [
+    "Green and Blue are disjoint color predicates",
+    "Grue definition shifts at time threshold t"
   ],
-  "inputs": {
-    "domain": "DISTRIBUTED_SYSTEMS",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Bivalence asserts that neither decision 0 nor 1 has been committed, refuting immediate commitment dec_0.",
-    "assumptions": [
-      "System is in bivalent state: bivalent = true"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Mutual exclusivity of fundamental color terms"
+  ],
+  "constraints": [
+    "is_green and is_blue cannot both be true"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "471f73e065abe7f1b53e1b2bd2f9a3afd41863f3e9f5bb4c423a3883d684faa5",
-  "source_hash": "07181916ff1113f2839db43a9b26d899fe0313356ef1cebef6a8b6db3d844110",
-  "contract_hash": "a750fd5d1d413cf04d96539ba38eac523ad74c3636ed5427733ad82e9044550c",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_AXIOMATIC",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "475cf3deb254afc74f21129f5934c6d7beab88f0684b16622957af988d1c1d74",
+  "source_hash": "8df37f38634bab21a6a67945f1677a1c0b5e20bca0a98bd04ca783c38912efff",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "7822e796621b8633566beee4ebccf5f90179d023ec83c1526cf85533098da073",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.090Z",
+  "duration_ms": 56.735
 }

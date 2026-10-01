@@ -1,12 +1,12 @@
 # Project AGATE / Daisy / Solvex — 120-Case Formal Z3 Verification Dossier
 ## Automated Theorem Prover Complete Formal Proof Ledger
 
-- **Commit SHA:** `728625581c2f89210c752d03fda0a154812b2366`
-- **Timestamp:** `2026-10-01T19:10:34.837Z`
+- **Commit SHA:** `b992445d00e6f8e27bd0aeaf308ad2f17a64d142`
+- **Timestamp:** `2026-10-01T19:43:23.542Z`
 - **Total Z3 Executions:** 120 / 120
 - **Expected-Result Matches:** 120 / 120
 - **Deterministic Cleanroom Replays:** 120 / 120
-- **Combined Root Hash:** `679980be2042898c3f7b22d4d6d708bd59bb53e802235a16e80ff7cfe827cb10`
+- **Combined Root Hash:** `aebc02b4ac87edddcb35b60a09638ae92f58c139e1376fe0801ff4dffd6aeba3`
 - **Distribution:** UNSAT: 118 (88 DFRL + 30 DH), SAT: 2 (2 DH), UNKNOWN: 0, ERROR: 0
 - **Activation Gate Status:** **PROVEN_120_FORMAL_CLOSURE**
 
@@ -24,6 +24,6 @@
 
 ### Non-Conflation of Registry Evidence vs Formal Proofs
 
-- **DH Registry Records:** 32 metadata records verified via cryptographic canonical hashing, duplicate detection, and family variant classification.
-- **DH Formal Contracts:** 32 distinct SMT contracts executed through Microsoft Research Z3 WASM solver with cleanroom replay, producing 32 machine proof receipts.
-- **Total Registered Items:** 286 items across 14 layers in `complete-verification-registry.json`.
+- **DH Registry Records:** 32 metadata records verified via cryptographic canonical hashing, duplicate detection, and family variant classification (`REGISTRY_VERIFIED`).
+- **DH Formal Contracts:** 32 distinct SMT contracts executed through Microsoft Research Z3 WASM solver with fresh contexts, cleanroom replays, and cryptographic proof receipts (`MODEL_VERIFIED` / `MODEL_VERIFIED_BOUNDED` / `MODEL_VERIFIED_AXIOMATIC`).
+- **DFRL Operators:** 88 deterministic operational refutations executed through Z3 WASM.

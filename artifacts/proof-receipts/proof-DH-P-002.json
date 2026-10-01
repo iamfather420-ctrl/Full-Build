@@ -1,33 +1,37 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-002",
-  "verification_id": "DH-P-002",
-  "claim": "Russell's Paradox (Naive Comprehension): Unrestricted comprehension schema { x | phi(x) } produces an inconsistent set R = { x | x not in x }.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-002",
+  "name": "Russell Set Paradox",
+  "domain": "SET_THEORY",
+  "statement": "Set of all sets that do not contain themselves creates ungrounded self-reference.",
+  "formal_proposition": "Unrestricted comprehension R = {x | x not in x} yields R in R <=> not(R in R), which is logically refutable.",
+  "assumptions": [
+    "Classical two-valued logic",
+    "Naive comprehension axiom schema"
   ],
-  "inputs": {
-    "domain": "SET_THEORY",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Bivalent valuation of self-membership R in R <=> not (R in R) is unsatisfiable.",
-    "assumptions": [
-      "Classical law of excluded middle",
-      "Bivalent truth assignment"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Law of Excluded Middle",
+    "Principle of Non-Contradiction"
+  ],
+  "constraints": [
+    "in_R is Boolean"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "91c410a807d6e503aaf813125e377dbd0073a47fd4e85d94957aef3ebbcd6af7",
-  "source_hash": "cbd6efcabf0608f6b097ed785f03e31946493b0f9a8095275f3354ff718682b1",
-  "contract_hash": "adbd1312fde352a580e08ed18ac283e91acb0503b612421b513ffd0974af6b90",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "e57b5a664e449ee019af13e219086b5392abe3bb6494c71e9887e6940b2b9aca",
+  "source_hash": "514467013564a7055458c7b96a2ab10ba39d7d3aafe14054dc4a0a1fc3bd95cf",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "eac4fda623bd2fd006f43802032c7c476aa792d72499c0d709bfb1c92345c0d0",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:55.846Z",
+  "duration_ms": 55.815
 }

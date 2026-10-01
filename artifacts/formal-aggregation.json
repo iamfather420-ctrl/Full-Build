@@ -1,0 +1,45 @@
+{
+  "aggregation_name": "Z3_120_FORMAL_AGGREGATION",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "timestamp": "2026-10-01T19:43:23.542Z",
+  "dfrl": {
+    "required": 88,
+    "actual_z3_executions": 88,
+    "replays": 88,
+    "replay_matches": 88,
+    "unsat_count": 88,
+    "sat_count": 0,
+    "unknown_count": 0,
+    "error_count": 0,
+    "root_hash": "95432815fc0205bf7fb918f2be836a9b9a884d1ee20eec289ad8bc7b23cbdbb5",
+    "status": "VERIFIED"
+  },
+  "dh": {
+    "required": 32,
+    "formalized": 32,
+    "actual_z3_executions": 32,
+    "replays": 32,
+    "replay_matches": 32,
+    "blocked": 0,
+    "unsat_count": 30,
+    "sat_count": 2,
+    "unknown_count": 0,
+    "error_count": 0,
+    "root_hash": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+    "status": "VERIFIED"
+  },
+  "total": {
+    "required": 120,
+    "actual_z3_executions": 120,
+    "replays": 120,
+    "replay_matches": 120,
+    "distribution": {
+      "unsat": 118,
+      "sat": 2,
+      "unknown": 0,
+      "error": 0
+    },
+    "combined_root_sha256": "aebc02b4ac87edddcb35b60a09638ae92f58c139e1376fe0801ff4dffd6aeba3",
+    "closure_verdict": "PROVEN_120_FORMAL_CLOSURE"
+  }
+}

@@ -1,33 +1,37 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-024",
-  "verification_id": "DH-P-024",
-  "claim": "Braess's Paradox: Selfish Wardrop routing can cause network expansion to strictly increase total equilibrium travel latency.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-024",
+  "name": "Olbers Paradox",
+  "domain": "ASTROPHYSICS",
+  "statement": "In an infinite static universe, the night sky should be uniformly bright.",
+  "formal_proposition": "In infinite static Euclidean space with uniform star number density, integrated flux diverges. Conjunction of infinite static universe with finite sky flux is refutable.",
+  "assumptions": [
+    "Static infinite Euclidean universe",
+    "Uniform stellar luminosity density"
   ],
-  "inputs": {
-    "domain": "GAME_THEORY / ROUTING",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "There exists a network where equilibrium latency with added edge exceeds latency without edge.",
-    "assumptions": [
-      "Selfish non-cooperative commuters",
-      "Congestion-dependent edge travel costs"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "sat",
-  "expected_result": "sat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "9860cb525a063a3cb9325c97bd6286d1e1ef48ed60d1492fe5cc5ec9843909c6",
-  "source_hash": "0adf803ee0199ed8a83f7361372c38de656a52e5d51ae0fd34cdbedff25c4f1e",
-  "contract_hash": "52b4e8b29da94b987cbf81adf9da7f78e44029e1f6ef8eaf2cbfe6a5b81c3f6d",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "axioms": [
+    "Inverse-square light propagation",
+    "Spherical shell volume scaling r^2"
+  ],
+  "constraints": [
+    "static_universe is true"
+  ],
+  "expected_result": "unsat",
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_AXIOMATIC",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "55cb367b04bdae2ad8aa26ec0599d243a221c5f854674132127b4015613cc3ae",
+  "source_hash": "8a402c1c6e1f2393ff2b36ba22bbe5be61d92c8e8aa9fadbfcbbbf62b72164c9",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "0de5226c0c6b70c05d31e125b063fac428747bfa5435fc3fcb4dffa3387e95a6",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.682Z",
+  "duration_ms": 57.242
 }

@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-012",
-  "verification_id": "DH-P-012",
-  "claim": "Zeno's Arrow Paradox: Instantaneous velocity limit delta_t -> 0 yields non-zero displacement dx = v0 * dt over non-zero time interval.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-012",
+  "name": "Ship of Theseus",
+  "domain": "ONTOLOGY",
+  "statement": "Gradual replacement of every part raises persistent identity ambiguity.",
+  "formal_proposition": "Identity transitivity requires that if continuous ship A = B and reconstructed ship A = C, then B = C. Asserting B != C refutes classical equivalence.",
+  "assumptions": [
+    "Continuous replacement preserves identity (A = B)",
+    "Original material reassembly preserves identity (A = C)"
   ],
-  "inputs": {
-    "domain": "PHYSICS_CALCULUS",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "For non-zero velocity v0 > 0 and elapsed interval dt > 0, displacement dx = v0 * dt must be strictly positive.",
-    "assumptions": [
-      "v0 > 0.0",
-      "dt > 0.0"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Equivalence relation axioms (transitivity, symmetry, reflexivity)"
+  ],
+  "constraints": [
+    "A, B, C are distinct token states"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "f04b8821ec180782a37b922b08664821201728f6e9d43e8cebeddeaedd1ca7ce",
-  "source_hash": "cbe50e588e4edda7dad83a372f13e9ca41fe5f0dbfd46deb220e11a35f6f2155",
-  "contract_hash": "8328887ff3b4c628a56383f1f25a8dd754f61dab70a981b3c1ab7500957d099c",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_AXIOMATIC",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "fcb9e2a3ecd72afe5db962dbd93e9efa69a8ba91ed0f0604b79465845c5835d4",
+  "source_hash": "6467ba837a71e9f7deb3e4e26fdc80159c9890ea3e83fcf4f531dc9f89e864aa",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "479ce133453f4c91f7d3fc3583f2d9f20c8db295801b2efc0d842a51bfb53979",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.797Z",
+  "duration_ms": 57.877
 }

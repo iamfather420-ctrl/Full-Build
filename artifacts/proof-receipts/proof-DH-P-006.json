@@ -1,33 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-006",
-  "verification_id": "DH-P-006",
-  "claim": "Burali-Forti Paradox: The collection of all ordinals cannot form an ordinal set without violating strict well-ordering irreflexivity.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-006",
+  "name": "Curry Paradox",
+  "domain": "PROOF_THEORY",
+  "statement": "Self-referential conditional implies arbitrary falsehood without negation.",
+  "formal_proposition": "Sentence C asserting C => F allows proving arbitrary falsehood F via contraction (modus ponens with self-premise).",
+  "assumptions": [
+    "Implication satisfies contraction",
+    "Self-referential conditional admits fixed points"
   ],
-  "inputs": {
-    "domain": "ORDINAL_ARITHMETIC",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Strict ordinal ordering lt(x, y) is irreflexive; if universal ordinal Omega satisfies lt(Omega, Omega), contradiction.",
-    "assumptions": [
-      "Strict partial order axioms for ordinals",
-      "Asymmetry and irreflexivity"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Classical or intuitionistic implication rules"
+  ],
+  "constraints": [
+    "arbitrary_falsehood = false"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "41aea060e527b6a8d525806041b25cc5a32cc79f4213394922b8dd2768ea6296",
-  "source_hash": "896cb655b8c36840da032b21bad2037d2373d53588e92808fb575ba22330598d",
-  "contract_hash": "f707f50bf0bc5eb71a4740fa8d212276ed8ccc9f16dd16adac82ac7da8b22f55",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "a173700761f6143292920de4c2e2d6540e8ca373c8fa7b6970f7c73c565c4503",
+  "source_hash": "45ae2b9b2eff82e57c1660aa2137e28130812ea2e40e511c974796c426b42a48",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "df09135955c6bad23f339368a9d37550a03a4d7e9adab6950e2e6c3b2d360846",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.302Z",
+  "duration_ms": 72.695
 }

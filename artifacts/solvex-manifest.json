@@ -1,8 +1,8 @@
 {
   "manifest_version": "1.0.0-PROD",
-  "execution_id": "exec_pipeline_1790882222916",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "timestamp": "2026-10-01T19:17:09.659Z",
+  "execution_id": "exec_pipeline_1790883815879",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "timestamp": "2026-10-01T19:43:44.672Z",
   "environment": "local",
   "claim_scope": "LOCAL_VERIFIED / MODEL_VERIFIED",
   "daisy_nodes": {
@@ -20,7 +20,7 @@
     "authored": 20,
     "generated": 68,
     "cleanroom_replays": 88,
-    "root_hash": "23b3aaab560e3a8ff24697b56f588713469001280a6b78ba237cce75aba5acfe"
+    "root_hash": "6fb82ddef2c7ee72fc6d6fa7fb8e0fb40af45d501fa8239f687900be200d4d2f"
   },
   "enterprise_invariants": {
     "total": 30,

@@ -1,33 +1,37 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-032",
-  "verification_id": "DH-P-032",
-  "claim": "Goldbach Bounded Prime Decomposition: Even integer E = 14 admits additive decomposition into primes p1, p2 in {3, 7, 11}.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-032",
+  "name": "Byzantine Generals Paradox",
+  "domain": "DISTRIBUTED_CONSENSUS",
+  "statement": "Reaching consensus across unreliable networks with traitorous nodes.",
+  "formal_proposition": "Lamport-Shostak-Pease Theorem: Synchronous Byzantine agreement with m traitorous nodes requires strictly > 3m nodes (n >= 3m + 1). For n=3 and m=1, reaching consensus is refutable.",
+  "assumptions": [
+    "Oral message model without digital signatures",
+    "m traitorous arbitrary Byzantine nodes"
   ],
-  "inputs": {
-    "domain": "ADDITIVE_NUMBER_THEORY",
-    "scope": "MODEL_VERIFIED_BOUNDED",
-    "formal_proposition": "For even integer E = 14, asserting that E cannot be written as 3 + 11 or 7 + 7 is contradictory.",
-    "assumptions": [
-      "E = 14",
-      "Prime set {3, 7, 11}"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Lamport lower bound theorem n >= 3m + 1"
+  ],
+  "constraints": [
+    "n = 3",
+    "m = 1"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "dd2a7f2bcca42897e78b50c7bfa7c85d1121fd79f84a3a625efd56f74f8a71a2",
-  "source_hash": "bbdca85925a68263fcde80ec63f32bb46ccde972f109f0b4917d873a52efa705",
-  "contract_hash": "307acaa014484e989327ef4b670bc3bfcfcdf01ecf27b6b0f4fff91627235946",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "29ecbd0fc23699ebf606ad5d9226f11cdd51767515053b32f2ca52e7fd5770c8",
+  "source_hash": "1f3e556ee182213af0907ca99979be9db5c46f7670f33258152b6611912106d9",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "a44d4a7dd8e22cc8aeb11f6f2d29989a60afdd61782a6974f76cb0075b775672",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:58.282Z",
+  "duration_ms": 69.371
 }

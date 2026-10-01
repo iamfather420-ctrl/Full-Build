@@ -1,33 +1,38 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-023",
-  "verification_id": "DH-P-023",
-  "claim": "St. Petersburg Paradox: Diminishing marginal logarithmic utility converts infinite monetary expectation to finite expected utility.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-023",
+  "name": "Gabriel Horn (Torricelli Trumpet)",
+  "domain": "CALCULUS",
+  "statement": "Surface of revolution has infinite surface area but finite volume (pi).",
+  "formal_proposition": "Volume integral V = pi * int_1^inf (1/x^2) dx = pi is finite, whereas surface area integral A >= 2pi * int_1^inf (1/x) dx diverges. Conjunction of finite volume with bounded surface area is refutable.",
+  "assumptions": [
+    "Solid of revolution for y = 1/x on [1, inf)",
+    "Standard Riemannian improper integrals"
   ],
-  "inputs": {
-    "domain": "EXPECTED_UTILITY",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Logarithmic expected utility sum_{k=1}^inf (1/2^k)*log2(2^k) = 2.0 refutes expected utility exceeding 1000.0.",
-    "assumptions": [
-      "Payoff 2^k with probability 1/2^k",
-      "Utility u(x) = log2(x)"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Convergence of p-integral for p=2",
+    "Divergence of harmonic integral for p=1"
+  ],
+  "constraints": [
+    "V = 3.14159265",
+    "A bounded by M"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "624994f3990d387a32135f7d9f0eeafc010cde7808e6464a7d43e6fde49a2455",
-  "source_hash": "e36009dba0d8c17aec9ae8d9e4c8b0880adc0122679f6707feafff425be959b0",
-  "contract_hash": "941279608f035a7a4302c91cbe69a5831ec4021bb8ea4601879a047ec23a40e5",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED_BOUNDED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "b9b7139c39910bd1ce09cd90f6c52b7eb4be64aa1277e0eebd7eb281ae9d8dbb",
+  "source_hash": "540f1b1521add3c99a8e50e5e17376add711b0643ab19dc79a32be3ec581dde1",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "eb9cda105bd68dd3de0d316b8c32ed550245fe1e43a3567b53fb8ae6d914d750",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:57.614Z",
+  "duration_ms": 55.036
 }

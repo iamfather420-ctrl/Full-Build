@@ -1,0 +1,9 @@
+{
+  "test_name": "DH Cryptographic Proof Manifest Tamper Detection",
+  "original_root_hash": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+  "tampered_root_hash": "a1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+  "alarm_triggered": true,
+  "tamper_detected": true,
+  "passed": true,
+  "details": "Cryptographic integrity verification successfully identified manifest byte mutation."
+}

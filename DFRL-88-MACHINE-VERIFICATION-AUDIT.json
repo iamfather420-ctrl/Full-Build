@@ -1,7 +1,7 @@
 {
-  "execution_id": "dfrl_exec_1790882226596",
-  "timestamp": "2026-10-01T19:17:06.596Z",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+  "execution_id": "dfrl_exec_1790883819737",
+  "timestamp": "2026-10-01T19:43:39.737Z",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
   "environment": "local",
   "claim_scope": "MODEL_VERIFIED",
   "solver_engine": "Microsoft Research Z3 WASM (z3-solver)",
@@ -17,7 +17,7 @@
   "generated_models_count": 68,
   "deterministic_replays_matched": 88,
   "overall_status": "VERIFIED",
-  "verification_root_sha256": "23b3aaab560e3a8ff24697b56f588713469001280a6b78ba237cce75aba5acfe",
+  "verification_root_sha256": "6fb82ddef2c7ee72fc6d6fa7fb8e0fb40af45d501fa8239f687900be200d4d2f",
   "results": [
     {
       "operator_id": "DFRL-P-001",
@@ -32,14 +32,14 @@
       "assertion_hash": "f7c6af64b19975687fe68b73aa14ccc2997dd95aa8c0ac8c1c1847282aef2073",
       "actual_smt_assertion_hash": "881361f678c593e8ae93ea0fe8440c21802b67942a4711bd0c0157d92ef1cced",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 7.159,
-      "duration_ms": 7.159,
-      "certificate_sha256": "f5815275504a2b2e7c1470076127d6579bf6ac109f17bead7a1b652fe2f4d373",
-      "timestamp": "2026-10-01T19:17:06.596Z"
+      "execution_duration_ms": 832.894,
+      "duration_ms": 832.894,
+      "certificate_sha256": "ca3324329fe2981d5804395ddfdf05187214a91e4a90cb9fe825d042a4bf0e7d",
+      "timestamp": "2026-10-01T19:43:39.737Z"
     },
     {
       "operator_id": "DFRL-P-002",
@@ -54,14 +54,14 @@
       "assertion_hash": "fc015824081a2274f21fcd8472808e4887e42381e8d97e59e68080d9e752309e",
       "actual_smt_assertion_hash": "66beb1174f89ae5ef15d1ef34910370bebede1b83b0805b5e5b49960f34e6d26",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 3.683,
-      "duration_ms": 3.683,
-      "certificate_sha256": "a2e2eca47e6dea72340153be6b4c247306e8a34a2d5bbe376a475f635c6f19db",
-      "timestamp": "2026-10-01T19:17:06.615Z"
+      "execution_duration_ms": 5.483,
+      "duration_ms": 5.483,
+      "certificate_sha256": "65227c77cc3de1aa14e54a97508346fb4fb12b77bdd7d5db8ad4708776c90953",
+      "timestamp": "2026-10-01T19:43:40.604Z"
     },
     {
       "operator_id": "DFRL-P-003",
@@ -76,14 +76,14 @@
       "assertion_hash": "8d802b1bea280885ee77266233496d5aa2cda708678178652951d26a5b4c1f4c",
       "actual_smt_assertion_hash": "6d280731162ce6a69cd69024658d4ab00e81ea04ab31f13d1c41ad9c44d233d5",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 17.161,
-      "duration_ms": 17.161,
-      "certificate_sha256": "a1b83eda66b75d8992aa898c81fc1060291ebe6175f680f7c7a266d4986f925b",
-      "timestamp": "2026-10-01T19:17:06.623Z"
+      "execution_duration_ms": 97.748,
+      "duration_ms": 97.748,
+      "certificate_sha256": "b3e37424527e18b96a6dcc6e534ee119e3c576f0c3e679de2dca399157fb9a8b",
+      "timestamp": "2026-10-01T19:43:40.615Z"
     },
     {
       "operator_id": "DFRL-P-004",
@@ -98,14 +98,14 @@
       "assertion_hash": "a333a38f1a67a186bba711e8de146944eb20efe8a4db70c0dfe51f31d12a63f5",
       "actual_smt_assertion_hash": "c873823cb6e2324432a832c033c7d840234ad766352808215f932aaca670455d",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 3.329,
-      "duration_ms": 3.329,
-      "certificate_sha256": "87780f620da2a1e67013a2ff18039a78ed281001a67faeb156d65149595a54d2",
-      "timestamp": "2026-10-01T19:17:06.656Z"
+      "execution_duration_ms": 4.028,
+      "duration_ms": 4.028,
+      "certificate_sha256": "2a214e328ce448a9cae50ababf3c52e052dffb7ab6348b430c6a85224e7c86d5",
+      "timestamp": "2026-10-01T19:43:40.737Z"
     },
     {
       "operator_id": "DFRL-P-005",
@@ -120,14 +120,14 @@
       "assertion_hash": "31113e43e8414ce1ab2234b6de31ec5cb3c7a390156acd67db6d005892e42bf0",
       "actual_smt_assertion_hash": "362d03700368a9f602977e0227fe2a70d9590c8567668b9f3d193a0a733c9032",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 5.367,
-      "duration_ms": 5.367,
-      "certificate_sha256": "0d43105a84617c1e8949f47d7371462b6eda845a1eb7ade3e78fb2559f050ce5",
-      "timestamp": "2026-10-01T19:17:06.664Z"
+      "execution_duration_ms": 22.227,
+      "duration_ms": 22.227,
+      "certificate_sha256": "460ede6c3f52871086f71026622719bb25a9793cdb6d0da5c644ea9c79f30198",
+      "timestamp": "2026-10-01T19:43:40.745Z"
     },
     {
       "operator_id": "DFRL-P-006",
@@ -142,14 +142,14 @@
       "assertion_hash": "7124dcc6d031c047e6ae13e354b96fc274332b962fd79e263c3896c4149e3c78",
       "actual_smt_assertion_hash": "41201ddd998d20d88aac414150ec574ed8f3ef5b2b426edbc8e64db6a4e6bad6",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 14.274,
-      "duration_ms": 14.274,
-      "certificate_sha256": "8a59215806699248dcc8cbda0a1f4f7144261f2f0384c1804a710a4d4d1170dc",
-      "timestamp": "2026-10-01T19:17:06.674Z"
+      "execution_duration_ms": 436.826,
+      "duration_ms": 436.826,
+      "certificate_sha256": "2e9a72725fc819254a4ffb2bbb7d8a3535b8b1f1bb4ef0f7fb1115c885a02e21",
+      "timestamp": "2026-10-01T19:43:40.773Z"
     },
     {
       "operator_id": "DFRL-P-007",
@@ -164,14 +164,14 @@
       "assertion_hash": "4e0eb1506df4f98f3dd30f3cbd9ab9c0f39bcd10bf24c39874c0c6d7fccfb4f5",
       "actual_smt_assertion_hash": "e8591cac829e2ff8796587250da808bc75e085c79f90aeb3a909eefe1176682b",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 61.04,
-      "duration_ms": 61.04,
-      "certificate_sha256": "dd6ea7147648e34231f976f1fed942d8d21fe708f5a7be4442a191930127aff3",
-      "timestamp": "2026-10-01T19:17:06.706Z"
+      "execution_duration_ms": 11.156,
+      "duration_ms": 11.156,
+      "certificate_sha256": "79a597d7dafa0077a74a00b74f9b044986ad87364a1dd201211c5f49f9df8b67",
+      "timestamp": "2026-10-01T19:43:41.227Z"
     },
     {
       "operator_id": "DFRL-P-008",
@@ -186,14 +186,14 @@
       "assertion_hash": "6301105f4a66590812e68559e6a89bb1b95531be9c88043b83d9c09f6ab41d72",
       "actual_smt_assertion_hash": "0c7a1996caa530eb383ae5fe7f6d02613f7ab770693d65db8503ca467e387a2e",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 20.238,
-      "duration_ms": 20.238,
-      "certificate_sha256": "dd37cbf7b0f0d56b91060e86c679d3e85b1e3d39793cd1c3cfe73a1d0cdb53c7",
-      "timestamp": "2026-10-01T19:17:06.779Z"
+      "execution_duration_ms": 28.154,
+      "duration_ms": 28.154,
+      "certificate_sha256": "c691d68182ecbf8ca242e82adf57753eda5339e667abe53e94c6dd6cf6a537fa",
+      "timestamp": "2026-10-01T19:43:41.251Z"
     },
     {
       "operator_id": "DFRL-P-009",
@@ -208,14 +208,14 @@
       "assertion_hash": "62236c27e25020f04f508358bcabbc94dcdf464dcde08521d1523ac7ba7515ec",
       "actual_smt_assertion_hash": "69a1e50c7f8d576989b427c8983f2adb1c6f8cbfaa938976328746b00eb9c693",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 3.583,
-      "duration_ms": 3.583,
-      "certificate_sha256": "dac5acde269f42660142d7775d714a6a3f6ae96f8d36319145f6c05e077b6cee",
-      "timestamp": "2026-10-01T19:17:06.820Z"
+      "execution_duration_ms": 3.862,
+      "duration_ms": 3.862,
+      "certificate_sha256": "9097c47437048594e322fb32c45be4052dc0e964cfba3938ab38299568853986",
+      "timestamp": "2026-10-01T19:43:41.303Z"
     },
     {
       "operator_id": "DFRL-P-010",
@@ -230,14 +230,14 @@
       "assertion_hash": "b9d4f08b3928cbe4b0b26dffe13b86b4694eee2886dd304c8d72496e2c13ebc4",
       "actual_smt_assertion_hash": "9cb2dea08f0c596ce02b814181dc024b193fb4a36c6e9fa42fd986fe69339dad",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 9.066,
-      "duration_ms": 9.066,
-      "certificate_sha256": "b8afdf9ca13d850d36ad483a61df6a50b2ea500cbb550a57f7c05ceb8111fd9c",
-      "timestamp": "2026-10-01T19:17:06.827Z"
+      "execution_duration_ms": 11.189,
+      "duration_ms": 11.189,
+      "certificate_sha256": "6a7937165dbf3206c6c3fc285febd6b6a421609658df4ac0ba79d8c357f7cea5",
+      "timestamp": "2026-10-01T19:43:41.312Z"
     },
     {
       "operator_id": "DFRL-P-011",
@@ -252,14 +252,14 @@
       "assertion_hash": "e1b0e679325ca1f269491a5b666342e7aba71943da362ff75cf2dc05b508f1f9",
       "actual_smt_assertion_hash": "8f014524e42e83d762d150a7714624f99c76756b796f6e5f72a2c9d0285ace1b",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 9.29,
-      "duration_ms": 9.29,
-      "certificate_sha256": "d9f0fd5a890c4c1db5fe7d50ea4fc9b6302acc23faf9a2480c462f8c943f8327",
-      "timestamp": "2026-10-01T19:17:06.847Z"
+      "execution_duration_ms": 13.958,
+      "duration_ms": 13.958,
+      "certificate_sha256": "f614f52453539ab72e1bac3402a418bf098d2543e8625225c87de775fb70665d",
+      "timestamp": "2026-10-01T19:43:41.337Z"
     },
     {
       "operator_id": "DFRL-P-012",
@@ -274,14 +274,14 @@
       "assertion_hash": "bb908199664bbe244179832b9880fdfdf0572ff3b53304a3449c23cb7d3d60f7",
       "actual_smt_assertion_hash": "5b061de3b9d6ce5f1fa7c1ed7450ed21fb105fe666fc1bbbc9515972ac0a9826",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 3.15,
-      "duration_ms": 3.15,
-      "certificate_sha256": "4706382126434be4043b7cac0ff33d6cc887e164badcb7ed127eb2474842a7d1",
-      "timestamp": "2026-10-01T19:17:06.866Z"
+      "execution_duration_ms": 4.185,
+      "duration_ms": 4.185,
+      "certificate_sha256": "17ffa286b9081ca53f6e33f74a7c32e00c96f4ef0d9d8d9915ab41ce41c3e518",
+      "timestamp": "2026-10-01T19:43:41.362Z"
     },
     {
       "operator_id": "DFRL-P-013",
@@ -296,14 +296,14 @@
       "assertion_hash": "9948619621241d73ee7870986ae617739dc4322bb63558bce071572122422fd4",
       "actual_smt_assertion_hash": "5e197dba6414d416e23fa5bc4f00fe074eaae0117ba8d09ba8bcba0f7e3a98ea",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 4.222,
-      "duration_ms": 4.222,
-      "certificate_sha256": "5f6518b7d47fe06d737bab35a1c689b09ff6f62b5db5f7bbf3639f71d092eb9b",
-      "timestamp": "2026-10-01T19:17:06.871Z"
+      "execution_duration_ms": 6.658,
+      "duration_ms": 6.658,
+      "certificate_sha256": "0e6f86dfab866469456052ef2329a8673615e6dd3ce9e38b870de387621e65ad",
+      "timestamp": "2026-10-01T19:43:41.371Z"
     },
     {
       "operator_id": "DFRL-P-014",
@@ -318,14 +318,14 @@
       "assertion_hash": "ae2d85108ea3866e95467788560c67f170b0a148fc8dc9b6c323c6fa4199a699",
       "actual_smt_assertion_hash": "421617998f784fc1890344d79fdb8785bf37fc086c5ba0f1d0e51ac4a951158a",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 6.303,
-      "duration_ms": 6.303,
-      "certificate_sha256": "f4d26f58e233963a7647c73ac22f851193e6702b84e160a16c57410fd9d8d952",
-      "timestamp": "2026-10-01T19:17:06.880Z"
+      "execution_duration_ms": 8.142,
+      "duration_ms": 8.142,
+      "certificate_sha256": "7132f423944bbfaf764861b14e05bb95a5b9c62235f8e664aa88f7feebe7f173",
+      "timestamp": "2026-10-01T19:43:41.384Z"
     },
     {
       "operator_id": "DFRL-P-015",
@@ -340,14 +340,14 @@
       "assertion_hash": "1d79dd7e445935056d9fbda3a6eec75682f9cb8d95c0e4539dae0f8226a012c4",
       "actual_smt_assertion_hash": "ad4a82d81b8332e4fe3551da9048fe803841abb2627e09124bf33f21c5893bba",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 10.673,
-      "duration_ms": 10.673,
-      "certificate_sha256": "3717b5e4c5e4374333e633b61c731759bb4772cbfc92e4cf35fbdfb55769b378",
-      "timestamp": "2026-10-01T19:17:06.892Z"
+      "execution_duration_ms": 28.378,
+      "duration_ms": 28.378,
+      "certificate_sha256": "42694705fa5b6bd02413951bb5ffc1967283332d21b1fb3477b1e4bf09275b79",
+      "timestamp": "2026-10-01T19:43:41.400Z"
     },
     {
       "operator_id": "DFRL-P-016",
@@ -362,14 +362,14 @@
       "assertion_hash": "5a9e529e674f09405e63168452b729dc58cf7fcaf4bb7bb4eb902f998313cc1e",
       "actual_smt_assertion_hash": "86a44fb8e0c20492bc7faea110733542842e0ebd46beda5886c436b784acaaa5",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 9.076,
-      "duration_ms": 9.076,
-      "certificate_sha256": "3ea5993c5449c9a13c83b2074a7df7687d2a1dc5b27d568ff547b758eae3de88",
-      "timestamp": "2026-10-01T19:17:06.916Z"
+      "execution_duration_ms": 11.397,
+      "duration_ms": 11.397,
+      "certificate_sha256": "58b9edd663c6ef59eb5d9f9c8ca593e8c681014e76f7bd2789ad7dadf0bb2dc3",
+      "timestamp": "2026-10-01T19:43:41.446Z"
     },
     {
       "operator_id": "DFRL-P-017",
@@ -384,14 +384,14 @@
       "assertion_hash": "347c7554bb5a92de4cd3ee36c75f806814d5c88833dd2e2449dcd39a97b0ce52",
       "actual_smt_assertion_hash": "9ba633365301705f4491ef4b5a06ba4dafda9baf58423731a1b58ffb06dd42ca",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 5.273,
-      "duration_ms": 5.273,
-      "certificate_sha256": "fb6b61509a2d83bd73aed6d53a99454973f12e56eaa5f54a0d25a04cf7905218",
-      "timestamp": "2026-10-01T19:17:06.934Z"
+      "execution_duration_ms": 7.067,
+      "duration_ms": 7.067,
+      "certificate_sha256": "e46ff7cff686dad663fe7491f6e04b0ecae9778bcd046bd586864121e0190a22",
+      "timestamp": "2026-10-01T19:43:41.469Z"
     },
     {
       "operator_id": "DFRL-P-018",
@@ -406,14 +406,14 @@
       "assertion_hash": "88f952e82a9817b28ea3eec1cfe87e6cd8c294de5fdfcb683e93a18dfee3f55f",
       "actual_smt_assertion_hash": "9b5a7778e4303728cf22a9c7dbf776154859f728292eb649a6b11fde7e9f5e14",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 4.359,
-      "duration_ms": 4.359,
-      "certificate_sha256": "a0f120310fe7b22afd963e3756ec1499bf85c0419ab58a47d424c0503cc1b775",
-      "timestamp": "2026-10-01T19:17:06.944Z"
+      "execution_duration_ms": 5.363,
+      "duration_ms": 5.363,
+      "certificate_sha256": "853ccc1f2c53bc09dfcc42f0e01500280d06cb59df92fd30a7dc22366e75130b",
+      "timestamp": "2026-10-01T19:43:41.482Z"
     },
     {
       "operator_id": "DFRL-P-019",
@@ -428,14 +428,14 @@
       "assertion_hash": "f57bf18153e96ed88ec7a5ab5b5c072376d593686e1ee3553bfc29f0e691c66f",
       "actual_smt_assertion_hash": "1a594f81f373b54bb0deffb370766a3a204ae82ef5b25a1ddce8985d8a09d379",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 4.445,
-      "duration_ms": 4.445,
-      "certificate_sha256": "58f547bd06700450c2e102a4c2edb628666eccc7fb8ba7c508be13436cc71ef4",
-      "timestamp": "2026-10-01T19:17:06.953Z"
+      "execution_duration_ms": 5.584,
+      "duration_ms": 5.584,
+      "certificate_sha256": "49faf140fd939587d9543f4a8f99b61d8cad426f6a2c765f437818e0cabe2974",
+      "timestamp": "2026-10-01T19:43:41.493Z"
     },
     {
       "operator_id": "DFRL-P-020",
@@ -450,14 +450,14 @@
       "assertion_hash": "a6ff6ff1db38ae841fadc50472512c2b90cc7efd696d16aab6d460d0850716b5",
       "actual_smt_assertion_hash": "bd1eb60e956e0a5cdfcf6698d5dbb6c9aeeff0bf6a142b4126c8e425d8bb6928",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 4.682,
-      "duration_ms": 4.682,
-      "certificate_sha256": "ae311770920228ec6167ecbd9bf019b646570696a0cc3cc6883ce61d8275a5eb",
-      "timestamp": "2026-10-01T19:17:06.962Z"
+      "execution_duration_ms": 8.101,
+      "duration_ms": 8.101,
+      "certificate_sha256": "f0d4082658529418932796516ddff7ac2c909c7a8c9a6e33414b85286bcc5c71",
+      "timestamp": "2026-10-01T19:43:41.505Z"
     },
     {
       "operator_id": "DFRL-P-021",
@@ -472,14 +472,14 @@
       "assertion_hash": "7abaa7e5769c05aad5e134f1253dfacd74e2f68993500e58d0f98616926b92b0",
       "actual_smt_assertion_hash": "1e06a26d423d13a174d6ce17d48bd8e36677d692cef845ae62dd74bbf43d11ab",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.381,
-      "duration_ms": 12.381,
-      "certificate_sha256": "42d2c1eede50684664c098b8ebc2ffb4747f83948d97798a78cd9aaca2076483",
-      "timestamp": "2026-10-01T19:17:06.972Z"
+      "execution_duration_ms": 18.859,
+      "duration_ms": 18.859,
+      "certificate_sha256": "7aa73e677204d97838b25026800391f1f33faa73caea9a5d579bfe2c35cbc9a3",
+      "timestamp": "2026-10-01T19:43:41.518Z"
     },
     {
       "operator_id": "DFRL-P-022",
@@ -494,14 +494,14 @@
       "assertion_hash": "7f2134b837505505e0294f1103806d9df069ab551fc31fca6a9eeedcffc40705",
       "actual_smt_assertion_hash": "7a8926d09c5083986caddafd7e524d389f7ad4f232fa40acf3cbd7b2926e521c",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.773,
-      "duration_ms": 12.773,
-      "certificate_sha256": "d184ba18828467e849c8090d50a273a5c70bbbb62ab4c83ace1afcff113d35f8",
-      "timestamp": "2026-10-01T19:17:06.998Z"
+      "execution_duration_ms": 15.718,
+      "duration_ms": 15.718,
+      "certificate_sha256": "c571d58985a559e8dbc8ca22d2bce96468c8a38ee7ba70cb94b591e09402df21",
+      "timestamp": "2026-10-01T19:43:41.554Z"
     },
     {
       "operator_id": "DFRL-P-023",
@@ -516,14 +516,14 @@
       "assertion_hash": "1a0ebfc512522ced6cadef4bb4bde5670f5c6b0ca9f327016fb6ed70bf644867",
       "actual_smt_assertion_hash": "3982e4aa1293a22064a07e2c780cecaf687ba2eaac3bd57abedf6adaa5acecd2",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.872,
-      "duration_ms": 12.872,
-      "certificate_sha256": "6795315ecb0fc109f0107c97008043aabccbb89dcfec3b5410765a840a128ad0",
-      "timestamp": "2026-10-01T19:17:07.024Z"
+      "execution_duration_ms": 16.41,
+      "duration_ms": 16.41,
+      "certificate_sha256": "5a4307f564b46f8623c1bce6a07622e5db3c149505095dc5b7d1f24853a6a938",
+      "timestamp": "2026-10-01T19:43:41.586Z"
     },
     {
       "operator_id": "DFRL-P-024",
@@ -538,14 +538,14 @@
       "assertion_hash": "be1fe73f4af93727a8297dd998511607f724fadee000bc8122a2c141829b865d",
       "actual_smt_assertion_hash": "35c27e5fed5b7ed914b37e270be3ceb8277c1dc97b7ee41dd0fcf9c67ab37d5f",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 14.314,
-      "duration_ms": 14.314,
-      "certificate_sha256": "383e1a097e9dba17af0c005c5742f33ac83af39d907ea81e3fca96ff2c84821a",
-      "timestamp": "2026-10-01T19:17:07.049Z"
+      "execution_duration_ms": 17.154,
+      "duration_ms": 17.154,
+      "certificate_sha256": "f71c722175d369449c5da6473ff3c5b26d015ea1c095d5ad8a0356b66abcec05",
+      "timestamp": "2026-10-01T19:43:41.618Z"
     },
     {
       "operator_id": "DFRL-P-025",
@@ -560,14 +560,14 @@
       "assertion_hash": "0e844bdb6d624a157c877d5cc365aff1eb5e6b673f4705db6575faf2542f4c72",
       "actual_smt_assertion_hash": "dc78b1f126e088ad2496716041ec72443c1cf30a7e67d62e99c07a870a76a2ba",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.446,
-      "duration_ms": 13.446,
-      "certificate_sha256": "0fc9e0b8006aec04da5217a37c505ad5b9a08ff1d7efd0b6742810413e00a7a2",
-      "timestamp": "2026-10-01T19:17:07.077Z"
+      "execution_duration_ms": 14.996,
+      "duration_ms": 14.996,
+      "certificate_sha256": "fa334a2bc6d1efdbfd5ad9048465c858e7a29434f8f70fb541c9474a945142fb",
+      "timestamp": "2026-10-01T19:43:41.654Z"
     },
     {
       "operator_id": "DFRL-P-026",
@@ -582,14 +582,14 @@
       "assertion_hash": "c09b23bd781b489c152363a39002400392f82087e18c22630271625a86263c36",
       "actual_smt_assertion_hash": "7f0fd10ba6cfb9da367daaf9de2b7fa98310158c0dafdcba0c5ccf409d0c431b",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.262,
-      "duration_ms": 13.262,
-      "certificate_sha256": "bd4c4b0d85c8b68ac66164097a463b0ebcc4276c2afc15c30f2f43ee9d17a5f0",
-      "timestamp": "2026-10-01T19:17:07.105Z"
+      "execution_duration_ms": 15.652,
+      "duration_ms": 15.652,
+      "certificate_sha256": "cb15fe45ee0f2b0a2fe57dede7503ea74e4e8b0286a750df64647391f5cbd47f",
+      "timestamp": "2026-10-01T19:43:41.686Z"
     },
     {
       "operator_id": "DFRL-P-027",
@@ -604,14 +604,14 @@
       "assertion_hash": "a929cdc2df5edb325b49c65539464ce6c03ed85e57ea8aaf3233ac46ae1d5abd",
       "actual_smt_assertion_hash": "622d38e1d9282e9cbe5fa8646640f43804579a67df75b01367cbad8f3cbf46dd",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 17.393,
-      "duration_ms": 17.393,
-      "certificate_sha256": "34c7de4c50fe83b08ede13d36f196bdd401daf32e8f73d167652791584040148",
-      "timestamp": "2026-10-01T19:17:07.132Z"
+      "execution_duration_ms": 15.169,
+      "duration_ms": 15.169,
+      "certificate_sha256": "0d7aa5da785f83b475d6cbecd5d30aefc0734cd8fbca6876c676b3c16221bfdd",
+      "timestamp": "2026-10-01T19:43:41.718Z"
     },
     {
       "operator_id": "DFRL-P-028",
@@ -626,14 +626,14 @@
       "assertion_hash": "208df669f1b5880642db6510d25c856ba008102839b75f3cf1398058b844f066",
       "actual_smt_assertion_hash": "b01049220ee77423b619aecd7e77f3cdbb19800998cac3bf7d0486fe5c223749",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 14.841,
-      "duration_ms": 14.841,
-      "certificate_sha256": "a7191bb36fb36fbdf98b8381992e8113cada9847a90add4386ccd859ec5ac3a7",
-      "timestamp": "2026-10-01T19:17:07.163Z"
+      "execution_duration_ms": 17.515,
+      "duration_ms": 17.515,
+      "certificate_sha256": "7e9b3cadf6914297636f4d42b3b7c7113d86140af801fad0792ea1531cc8cb17",
+      "timestamp": "2026-10-01T19:43:41.749Z"
     },
     {
       "operator_id": "DFRL-P-029",
@@ -648,14 +648,14 @@
       "assertion_hash": "c83c5b54c47833e997c72e924f5b2a1c197a2e87580b26060a286e0e292a69c3",
       "actual_smt_assertion_hash": "c08c846ba8e59b215b369589446f007440ea1969f4e1156fa7b794f98034755d",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.939,
-      "duration_ms": 12.939,
-      "certificate_sha256": "ce2d5ddd222d03b1fcdeddd2c8e9615179bb85a4e42115583388b2c701fae05c",
-      "timestamp": "2026-10-01T19:17:07.191Z"
+      "execution_duration_ms": 16.378,
+      "duration_ms": 16.378,
+      "certificate_sha256": "054b05c36845dedb8601242bf587ab5df18b7409491a3b5e5bf376845c22de2c",
+      "timestamp": "2026-10-01T19:43:41.785Z"
     },
     {
       "operator_id": "DFRL-P-030",
@@ -670,14 +670,14 @@
       "assertion_hash": "ef0b73e65041f6250ebdc83316874f1d7273cb86ce797811dee9e1ac03779b4d",
       "actual_smt_assertion_hash": "699712038a64ff28ba9f2ee3fcf7275fd261e5b4954d17ae932f6726418bf6ef",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 15.182,
-      "duration_ms": 15.182,
-      "certificate_sha256": "8f4970ecd9c26263db26eefcb1465c9f1df7edc4284acce383548f8a8b4ba713",
-      "timestamp": "2026-10-01T19:17:07.218Z"
+      "execution_duration_ms": 16.763,
+      "duration_ms": 16.763,
+      "certificate_sha256": "4b926a4492e3bde6cbbc6a4f878da09a1c0027f5005f3c3fd9afdd0e271f2843",
+      "timestamp": "2026-10-01T19:43:41.817Z"
     },
     {
       "operator_id": "DFRL-P-031",
@@ -692,14 +692,14 @@
       "assertion_hash": "f64e6ef2c263752e453f26eeb82f6a22cc0a5b262fad9dbe3e28771cf8dce724",
       "actual_smt_assertion_hash": "1f210e0b99d6c458c1a7d7a3b8bdde50613d25d01ea3fa74c9fd3c8052ceefa5",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.47,
-      "duration_ms": 12.47,
-      "certificate_sha256": "f2beae75f3784a5d084b4bd0a461f967e4da8015e6b18e0df1b3cc1e8c2291bf",
-      "timestamp": "2026-10-01T19:17:07.245Z"
+      "execution_duration_ms": 16.429,
+      "duration_ms": 16.429,
+      "certificate_sha256": "484935726117728ba8216d8a9aca9a5c0bf7e72b4b7a3577486993c9251c5484",
+      "timestamp": "2026-10-01T19:43:41.851Z"
     },
     {
       "operator_id": "DFRL-P-032",
@@ -714,14 +714,14 @@
       "assertion_hash": "9e800d674f7ac1c7b47018f1c2b2ed506894504665c6a20626490e700b2c0a48",
       "actual_smt_assertion_hash": "639dfc37df5b41a08ddcd0f3d242b932cd1c3c429f12fa443af103bb1f09728b",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.326,
-      "duration_ms": 13.326,
-      "certificate_sha256": "c9d8403b10341bfe5171bbc2c5eb391a366ea59ba556423102f599920043db17",
-      "timestamp": "2026-10-01T19:17:07.271Z"
+      "execution_duration_ms": 15.235,
+      "duration_ms": 15.235,
+      "certificate_sha256": "99d53310fa784d0dab5e7605b2780531f745285f2bbbf45502bc3e64c68cbae6",
+      "timestamp": "2026-10-01T19:43:41.883Z"
     },
     {
       "operator_id": "DFRL-P-033",
@@ -736,14 +736,14 @@
       "assertion_hash": "c6204c40ba9a9de56575649b144b34b6b2b325ef5578b95bc27ae7725ebfcf4e",
       "actual_smt_assertion_hash": "4b9ebb32bbce3b40a24af7d98265cf605f154c5be46f32dd002864f5fb3b2886",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.056,
-      "duration_ms": 13.056,
-      "certificate_sha256": "0563fce35e86207970e48e86879d1cef015112783d21058ebb5ecee315e3563a",
-      "timestamp": "2026-10-01T19:17:07.297Z"
+      "execution_duration_ms": 15.16,
+      "duration_ms": 15.16,
+      "certificate_sha256": "783e666b26c5a64bb6799ae2aeae80d799635567573526f774097c859ee0906a",
+      "timestamp": "2026-10-01T19:43:41.913Z"
     },
     {
       "operator_id": "DFRL-P-034",
@@ -758,14 +758,14 @@
       "assertion_hash": "bb8a5c81ca3909ad0d2a2db471df5ba7dd5829e5c6c69b7264fe660ae8a14fb2",
       "actual_smt_assertion_hash": "d174915882e68a07e45a5124774bff055b38bb07e29068e36d6674cebe4d15cf",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 64.167,
-      "duration_ms": 64.167,
-      "certificate_sha256": "3ac6071ce6af63315e127cb0e63bf22ed5fc01c4102237536c19892942ba12b6",
-      "timestamp": "2026-10-01T19:17:07.328Z"
+      "execution_duration_ms": 23.948,
+      "duration_ms": 23.948,
+      "certificate_sha256": "e97ddf6c8cad32bafe47a76cefb17712a2e7557aa4f80571fc0b81e054b2dbac",
+      "timestamp": "2026-10-01T19:43:41.945Z"
     },
     {
       "operator_id": "DFRL-P-035",
@@ -780,14 +780,14 @@
       "assertion_hash": "562c5a12c986f181754c13848de37b8761353ccdf6c7793a0c233f3ff87a5b37",
       "actual_smt_assertion_hash": "519291802dc1860b908bb6a507f4182a6f0b693625c2dc93750332e467b7ed3f",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 14.667,
-      "duration_ms": 14.667,
-      "certificate_sha256": "40b8c9be634eaded390186f57eaa874a34daf619b714dd45ee92862232c64213",
-      "timestamp": "2026-10-01T19:17:07.406Z"
+      "execution_duration_ms": 13.648,
+      "duration_ms": 13.648,
+      "certificate_sha256": "007c9899ddde4358ccf26ec762171791bb45f02c5eb6bdf31222aacfc63147ff",
+      "timestamp": "2026-10-01T19:43:41.984Z"
     },
     {
       "operator_id": "DFRL-P-036",
@@ -802,14 +802,14 @@
       "assertion_hash": "ff88a9a9d03bb96c4dc890486be6463fa5ce89a721359113e97e8c48c8e8b89a",
       "actual_smt_assertion_hash": "3185ab25a8919588a63c7754256a232538fa0c4fcd0f3efff819bfcac9743519",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.837,
-      "duration_ms": 12.837,
-      "certificate_sha256": "88482dbb24033d221deceadad4aa9f90c90ef56dd2958399416b827aa698b77c",
-      "timestamp": "2026-10-01T19:17:07.435Z"
+      "execution_duration_ms": 15.12,
+      "duration_ms": 15.12,
+      "certificate_sha256": "498f212b6bb1a64c4dba064ac1cca48faf8c261e3aba44bedb63d696cd3d8003",
+      "timestamp": "2026-10-01T19:43:42.013Z"
     },
     {
       "operator_id": "DFRL-P-037",
@@ -824,14 +824,14 @@
       "assertion_hash": "8700522abf72eb77026efd86977b1f81fa19c0998d2793c2e5617e8123ce441e",
       "actual_smt_assertion_hash": "eb29298f4c2d8d3a56506e451eb4c739c8e3345e026ae9ca761726d4ff27a465",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.167,
-      "duration_ms": 12.167,
-      "certificate_sha256": "4a426e4fe85294b9702f369e2c68d3b8f3ff33201f433260ac1d6392d82c3515",
-      "timestamp": "2026-10-01T19:17:07.467Z"
+      "execution_duration_ms": 15.921,
+      "duration_ms": 15.921,
+      "certificate_sha256": "38b41aca5cfe5ce2b370d56932b33c1ecf12de0cd02e8df558afc1a602a62a42",
+      "timestamp": "2026-10-01T19:43:42.046Z"
     },
     {
       "operator_id": "DFRL-P-038",
@@ -846,14 +846,14 @@
       "assertion_hash": "ed3442be6a80fbe842a3d58def261fca5f32da238c570bfa03bcc47c60a2ab34",
       "actual_smt_assertion_hash": "73d70579b096ebb8771017e7691e75f73825785af6dabf1acea64f794fa4837a",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.747,
-      "duration_ms": 13.747,
-      "certificate_sha256": "e0e4f6435ef4313582cd9d2ae100cab85970357009c167d84ae7a427fcfe22c0",
-      "timestamp": "2026-10-01T19:17:07.492Z"
+      "execution_duration_ms": 15.746,
+      "duration_ms": 15.746,
+      "certificate_sha256": "ff2aadf4aae2174e7cfdf7b3070bd75470d3e7a5703acb0ba946c6564022bbda",
+      "timestamp": "2026-10-01T19:43:42.082Z"
     },
     {
       "operator_id": "DFRL-P-039",
@@ -868,14 +868,14 @@
       "assertion_hash": "ee17ccb81e7adfb588366bcb84d278ca99164041b74bedaeb801ef7492d39fe9",
       "actual_smt_assertion_hash": "e42915dd77f1be7db37612ebcc1ff4e77a18f5103f68a416f4fc5d4023e76583",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.301,
-      "duration_ms": 12.301,
-      "certificate_sha256": "e7c485ae61de7aaddb566eda07ff244d76b3b7ed1867268f376baaebb58b02d0",
-      "timestamp": "2026-10-01T19:17:07.519Z"
+      "execution_duration_ms": 17.327,
+      "duration_ms": 17.327,
+      "certificate_sha256": "fb1ae1a3c6780d11fd43dc5c2d580989996c184eafa74fd43b385413d4c65b86",
+      "timestamp": "2026-10-01T19:43:42.115Z"
     },
     {
       "operator_id": "DFRL-P-040",
@@ -890,14 +890,14 @@
       "assertion_hash": "ae2f6505b5eb170aa6169ae6b3da17a8390a1477baad94610bbf9262a5c50a35",
       "actual_smt_assertion_hash": "d4cca7fe1654ab5c88ad89f826f1dc4d2c678bfeb9c41a5d13201eb4e25b1875",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.495,
-      "duration_ms": 12.495,
-      "certificate_sha256": "e00ff478e08a766123a0a24baeb79fccfc9af7de6dc039dd3fde281f980890c5",
-      "timestamp": "2026-10-01T19:17:07.545Z"
+      "execution_duration_ms": 15.901,
+      "duration_ms": 15.901,
+      "certificate_sha256": "88beaec49d762c4b07e5306079c518166f38de39ab00ed4f2fa10cfcb6b620d6",
+      "timestamp": "2026-10-01T19:43:42.150Z"
     },
     {
       "operator_id": "DFRL-P-041",
@@ -912,14 +912,14 @@
       "assertion_hash": "e4cd97a754f792c8e0a2837e8bf42b9aed283b6c87b06180714509e64b852035",
       "actual_smt_assertion_hash": "d5035308e35b79711d529674566c51f1ca0845b55ed5363d44a754ac304ef59e",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.528,
-      "duration_ms": 12.528,
-      "certificate_sha256": "76a12d97fd9a3324d574e671903ad58edb52bcd28c7ad7b05385edc8c0382dbc",
-      "timestamp": "2026-10-01T19:17:07.572Z"
+      "execution_duration_ms": 17.237,
+      "duration_ms": 17.237,
+      "certificate_sha256": "c275479d20a9b7554c9f6c9894a3c55a34e0aa1dd73bdbc018a1d95c5ed782f5",
+      "timestamp": "2026-10-01T19:43:42.182Z"
     },
     {
       "operator_id": "DFRL-P-042",
@@ -934,14 +934,14 @@
       "assertion_hash": "2206415f5dd4b56f02f3af61c30be261907c86908130bf060c55476ffe46c4d8",
       "actual_smt_assertion_hash": "d9259eff056cc361b3c50e366d99f38fb84fb0a4a3f5eef911f13aaf9c1396bd",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 15.548,
-      "duration_ms": 15.548,
-      "certificate_sha256": "5b69aa396f6948b0ff45f9a2a242ac0412542aeec80812bc2460f7208256e186",
-      "timestamp": "2026-10-01T19:17:07.598Z"
+      "execution_duration_ms": 15.625,
+      "duration_ms": 15.625,
+      "certificate_sha256": "f2a10afb7cfbc29d77a067ba5e5a45daffa217e6637ee26338cebe7ac01d0a1a",
+      "timestamp": "2026-10-01T19:43:42.216Z"
     },
     {
       "operator_id": "DFRL-P-043",
@@ -956,14 +956,14 @@
       "assertion_hash": "5fe27a2e5602eecfc8b8dc2079a7f950c5df93736ba78b350cc7ee17cf442532",
       "actual_smt_assertion_hash": "4197de33ec088c9e7ce246a54277b02c692e4455b745b4b89f2b1134dc3df009",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 17.354,
-      "duration_ms": 17.354,
-      "certificate_sha256": "a00ba1a9d5a58b001c0449121bb445774dd53985d0c2e07a034f00291a24d1ec",
-      "timestamp": "2026-10-01T19:17:07.627Z"
+      "execution_duration_ms": 16.319,
+      "duration_ms": 16.319,
+      "certificate_sha256": "17ed52f08d722d35c2ef88b8eddd45c37310c04b4f7a88b70d33f92ed0f02c3f",
+      "timestamp": "2026-10-01T19:43:42.248Z"
     },
     {
       "operator_id": "DFRL-P-044",
@@ -978,14 +978,14 @@
       "assertion_hash": "cc26089783bac5a0888d97e6e5038f1cd5919f93be7e921f41a2065b4ae47f4b",
       "actual_smt_assertion_hash": "5c3bd68775761aaab90d1179f5e7ab9e820ee099e8e53bc5b8d79545c4d72a7d",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.866,
-      "duration_ms": 11.866,
-      "certificate_sha256": "1c318aab8b9ab170dddb109b3d0ff26cd41c2e50e0d62c3c28b4eb97283481a8",
-      "timestamp": "2026-10-01T19:17:07.657Z"
+      "execution_duration_ms": 18.634,
+      "duration_ms": 18.634,
+      "certificate_sha256": "144f05bf9ee51d9ed4035d05b415ecd5c37e5b14d8c3e4d268c6ed682015b41a",
+      "timestamp": "2026-10-01T19:43:42.281Z"
     },
     {
       "operator_id": "DFRL-P-045",
@@ -1000,14 +1000,14 @@
       "assertion_hash": "131da5baf3e8c26b805a2fdcc02ef0c9aa9f9c84e737810c844107ba17e08e8b",
       "actual_smt_assertion_hash": "4c4564ae36eda1db81a76c95fb656c5c6fd38144fe63b231a1d8370ad31d4cfb",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.304,
-      "duration_ms": 12.304,
-      "certificate_sha256": "7746e49f22f482382cf4c56d6b082ac4b373961c5252fc4bb56a27b521ccaaeb",
-      "timestamp": "2026-10-01T19:17:07.681Z"
+      "execution_duration_ms": 16.089,
+      "duration_ms": 16.089,
+      "certificate_sha256": "4f9b99c4cfc1092316a218070ac2ab54de25f3b37463fccad85a3c82c32fd1c8",
+      "timestamp": "2026-10-01T19:43:42.315Z"
     },
     {
       "operator_id": "DFRL-P-046",
@@ -1022,14 +1022,14 @@
       "assertion_hash": "3e3deb8300e22e385bf79b56aca1ebb80f29a92123b55f54fd7e25e52ed06348",
       "actual_smt_assertion_hash": "dfa90ef540d08d2d67b728b441f9c94b8868177efe8f802e0ad19660393b189d",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.863,
-      "duration_ms": 12.863,
-      "certificate_sha256": "b96d19749662a3f4edf92b2dc65a45ad52cea534a67d299e3d9109e08c95acdc",
-      "timestamp": "2026-10-01T19:17:07.705Z"
+      "execution_duration_ms": 15.981,
+      "duration_ms": 15.981,
+      "certificate_sha256": "a569c5e0a2e1ae433e63e1e5ddc2276a9441c26696b95ab4ea6c43bfc3fb2cfd",
+      "timestamp": "2026-10-01T19:43:42.351Z"
     },
     {
       "operator_id": "DFRL-P-047",
@@ -1044,14 +1044,14 @@
       "assertion_hash": "af7c4071b632d1728a36b9244cc4a4caa1cf4925eced853b2bb31ed9ca64c233",
       "actual_smt_assertion_hash": "846ea83cc1ceae6433c78c182d0307ccf0f8e337dff3817784ed7f75dae0ff04",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.209,
-      "duration_ms": 12.209,
-      "certificate_sha256": "3fd209d0c8179ab23cda0dcff36a07a278ab7d69312693d1f2d434a44b8c5cb9",
-      "timestamp": "2026-10-01T19:17:07.730Z"
+      "execution_duration_ms": 15.425,
+      "duration_ms": 15.425,
+      "certificate_sha256": "263e98e57a0780e7791a9c6afad4a841993be5c879da90f24df2acccdce11b0d",
+      "timestamp": "2026-10-01T19:43:42.385Z"
     },
     {
       "operator_id": "DFRL-P-048",
@@ -1066,14 +1066,14 @@
       "assertion_hash": "dc38f8016b4394555d61cf9d6f6b5255d3c11695746e69045711daf94eee776f",
       "actual_smt_assertion_hash": "124266e866ee89d7cf6c2baf6845c2d1dde7b6673a26594498a5e15b02241b7c",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.314,
-      "duration_ms": 12.314,
-      "certificate_sha256": "c4f20fbf3dfe41ebe29e2ecda9f929c6985791f37456b9017f9b9c78393f0e12",
-      "timestamp": "2026-10-01T19:17:07.757Z"
+      "execution_duration_ms": 15.485,
+      "duration_ms": 15.485,
+      "certificate_sha256": "bbce0e07c34290ef8acdf85b7cb41b07cc4674035f314f3049d2d19f8cbc525a",
+      "timestamp": "2026-10-01T19:43:42.416Z"
     },
     {
       "operator_id": "DFRL-P-049",
@@ -1088,14 +1088,14 @@
       "assertion_hash": "4e4c4dad03af57d653867a4e8798ddaaef6a34e6361c9c11c471d046cb5dbde2",
       "actual_smt_assertion_hash": "b0aa17294d3d5378b772b71ae85d50c0bf2c00ae38980ab8899809d461b4e4c0",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.829,
-      "duration_ms": 11.829,
-      "certificate_sha256": "6c81f8b61405faf631dd0f0508cf202b2ae301ec8558c15b412ff016c35c1b3e",
-      "timestamp": "2026-10-01T19:17:07.780Z"
+      "execution_duration_ms": 15.261,
+      "duration_ms": 15.261,
+      "certificate_sha256": "2d976f9b3fb99aeb8228645eabefa4fed3e79f4b40f42eff622624df1018283b",
+      "timestamp": "2026-10-01T19:43:42.447Z"
     },
     {
       "operator_id": "DFRL-P-050",
@@ -1110,14 +1110,14 @@
       "assertion_hash": "cbdc9e1d540092652fb23fdea534ed2b5897a8810e6b48fb06ee2cc8cb4630e1",
       "actual_smt_assertion_hash": "6d55ef5621108a5304f301224d0e86e6f301d31d5772d34f6d1e7f53720f8a0f",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.433,
-      "duration_ms": 12.433,
-      "certificate_sha256": "ed6f968714d887cf594c42a0c098139c60b21e377ec00306c028f00956a78321",
-      "timestamp": "2026-10-01T19:17:07.804Z"
+      "execution_duration_ms": 15.945,
+      "duration_ms": 15.945,
+      "certificate_sha256": "fd367d2f8f06adfd85095a08ac32d3b5eda6a0b8d458f4cb3ade2efcac8d58bd",
+      "timestamp": "2026-10-01T19:43:42.480Z"
     },
     {
       "operator_id": "DFRL-P-051",
@@ -1132,14 +1132,14 @@
       "assertion_hash": "98cbd4d70883b79419a0ac4cb25fd02e0fa31e74b87eb8a68252d9fdbda22414",
       "actual_smt_assertion_hash": "0924834569a1ec641b61e20ebf8815ce62f40a389b1601ef134674ac6062ee90",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.727,
-      "duration_ms": 11.727,
-      "certificate_sha256": "7e2e9ecaedd298973d33ba5d8c0d7538cf6d6d1dda47288e702c115dfa4a5469",
-      "timestamp": "2026-10-01T19:17:07.829Z"
+      "execution_duration_ms": 15.079,
+      "duration_ms": 15.079,
+      "certificate_sha256": "53ab2264a8bfde57715046be029c6c49ca20d71651cf98601388e4ff6fb3e3cf",
+      "timestamp": "2026-10-01T19:43:42.513Z"
     },
     {
       "operator_id": "DFRL-P-052",
@@ -1154,14 +1154,14 @@
       "assertion_hash": "fe293b3102525e41286ec9eff22c08d52c9ebcb469b94390e0f91315227b5263",
       "actual_smt_assertion_hash": "e0fa03c730291b53d040bc80becf74f9d6e71b565b038e47ad4773f86f4e21ef",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.541,
-      "duration_ms": 11.541,
-      "certificate_sha256": "e579fd57959eb7a4bf2eaab5999264c4f69f04e69195fa2e17163cfd8cc04a76",
-      "timestamp": "2026-10-01T19:17:07.853Z"
+      "execution_duration_ms": 16.064,
+      "duration_ms": 16.064,
+      "certificate_sha256": "6d71318e8a116b715167ac93d99ea05b6d4c792d2da166fb243d7dc5473d6da5",
+      "timestamp": "2026-10-01T19:43:42.543Z"
     },
     {
       "operator_id": "DFRL-P-053",
@@ -1176,14 +1176,14 @@
       "assertion_hash": "389ae2ac3c2e87a371ac88e04eca0c9c49a0c2aa20e1ec58d78a5a038a23d8dc",
       "actual_smt_assertion_hash": "9b25300d31ef35d2c60d082aff3e2ed092c10029fbabb9c2925eaee3c97746e4",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.65,
-      "duration_ms": 11.65,
-      "certificate_sha256": "88b5bcb9e1fa0b5a9393b70821abb6f212e46fe7e93dfc32bb1924e7c65e9f76",
-      "timestamp": "2026-10-01T19:17:07.881Z"
+      "execution_duration_ms": 15.116,
+      "duration_ms": 15.116,
+      "certificate_sha256": "5e5c428e6f3593893b3a22be4c7acb339b2aebef430f55d40e6e3fc676433973",
+      "timestamp": "2026-10-01T19:43:42.575Z"
     },
     {
       "operator_id": "DFRL-P-054",
@@ -1198,14 +1198,14 @@
       "assertion_hash": "bbb52f8e33a6406618b673852e9869271cf2739c58930cd0ecdfa5722f9907ff",
       "actual_smt_assertion_hash": "ca30a7742ddf8eee3ecb1adf78870304ac7a4870edb28906dfc2510eae856ea3",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.975,
-      "duration_ms": 11.975,
-      "certificate_sha256": "a34a7bb6c76e674dd8db1ce1420a4930dbfabdd791ac0fcbd15051073a0d7d3c",
-      "timestamp": "2026-10-01T19:17:07.905Z"
+      "execution_duration_ms": 14.004,
+      "duration_ms": 14.004,
+      "certificate_sha256": "6ad7ee454032e90874bceac8e4f2deafac413d3d9b9453cb2af7fd53e53074e9",
+      "timestamp": "2026-10-01T19:43:42.606Z"
     },
     {
       "operator_id": "DFRL-P-055",
@@ -1220,14 +1220,14 @@
       "assertion_hash": "8d22bcd7cc915ce04c7dedf88fb3478a4c157cb73e7e97512adf3a1b4e1339c0",
       "actual_smt_assertion_hash": "8154b34035c6bd6982cc077a8ed8672ef90de3ba7b287a699e469c7105b0038b",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.911,
-      "duration_ms": 11.911,
-      "certificate_sha256": "d992efe5cc7d5e20097e7f22076aca2dd3f2356c768191f3122b27654d0c651e",
-      "timestamp": "2026-10-01T19:17:07.928Z"
+      "execution_duration_ms": 15.55,
+      "duration_ms": 15.55,
+      "certificate_sha256": "ddfedc248835d14aebd9cbebd963dd9095051967522bd72a044e734e6b0deac6",
+      "timestamp": "2026-10-01T19:43:42.636Z"
     },
     {
       "operator_id": "DFRL-P-056",
@@ -1242,14 +1242,14 @@
       "assertion_hash": "808009cc52e2d7d3f0b14705f6db7bcd2bb10649c4654b6079203efe1a46a638",
       "actual_smt_assertion_hash": "3e6341f86b44402b7d8994391fa2396dc566dd865fd65961bdd7844886ec505a",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.608,
-      "duration_ms": 12.608,
-      "certificate_sha256": "8bc4d9e8b16cab1078b71e44b52a1af3eabce7485a134b6ca218b18c74b23e9f",
-      "timestamp": "2026-10-01T19:17:07.953Z"
+      "execution_duration_ms": 15.988,
+      "duration_ms": 15.988,
+      "certificate_sha256": "e4360af9d42340d74588f7f93e8b6de2b924a69e97649f38248e72cf5fcfd02f",
+      "timestamp": "2026-10-01T19:43:42.673Z"
     },
     {
       "operator_id": "DFRL-P-057",
@@ -1264,14 +1264,14 @@
       "assertion_hash": "d0118c0db53255c3a156567c0f1ed68be3fd8afd09b3443954f03f2038abc6c4",
       "actual_smt_assertion_hash": "d9741db31f4eb60a1b7c50b0a5667249c9689ebe7621686ba34f0582f770bb9f",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.052,
-      "duration_ms": 12.052,
-      "certificate_sha256": "67fe52ae1097e75e5cf7f5f434441ccdb5b3e8921012773112aab0417f4c617c",
-      "timestamp": "2026-10-01T19:17:07.978Z"
+      "execution_duration_ms": 14.808,
+      "duration_ms": 14.808,
+      "certificate_sha256": "30ecc64670608db695d6424f7de8b6a57a2f116ab4480e701cb7082719922e15",
+      "timestamp": "2026-10-01T19:43:42.706Z"
     },
     {
       "operator_id": "DFRL-P-058",
@@ -1286,14 +1286,14 @@
       "assertion_hash": "83f5695e5a259b3801de29a86363d978e19081496f7d74e7035848f776c50e9f",
       "actual_smt_assertion_hash": "fffe9dfb722fd123a40d18a2fd6a3eae62e4c3775f7bf8e73130b4ebbc17ffd1",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 19.311,
-      "duration_ms": 19.311,
-      "certificate_sha256": "d2cc2b6aad78edb74783b1248aaa9895744d2bc8f5997eb0599cff82a42e0883",
-      "timestamp": "2026-10-01T19:17:08.003Z"
+      "execution_duration_ms": 15.533,
+      "duration_ms": 15.533,
+      "certificate_sha256": "43ee305992da7b15acc4ded1f761ba884f77c8836f16d927a54875a789e17d67",
+      "timestamp": "2026-10-01T19:43:42.736Z"
     },
     {
       "operator_id": "DFRL-P-059",
@@ -1308,14 +1308,14 @@
       "assertion_hash": "9d16f78434ceb9c79763618a7d9e9b55f16b39e667eeafc0ef116f0669f34dc9",
       "actual_smt_assertion_hash": "415e04d75473f9226618b8400354292fe3048dc03f81c6e74dc87cec95dee6f0",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.303,
-      "duration_ms": 13.303,
-      "certificate_sha256": "ff35a982d30fd0711ff2f39c87a6e5de9c28c4a6962201bcc829c66d951ba92a",
-      "timestamp": "2026-10-01T19:17:08.035Z"
+      "execution_duration_ms": 15.434,
+      "duration_ms": 15.434,
+      "certificate_sha256": "6c7b8a60e48aed817830628a4ef5bbc089f16b9ea3f49ae059fa11ff4d0a8775",
+      "timestamp": "2026-10-01T19:43:42.767Z"
     },
     {
       "operator_id": "DFRL-P-060",
@@ -1330,14 +1330,14 @@
       "assertion_hash": "4e1eded7a50715254f4d01bbdfdad2e4f21318cc301cf9a01694a7853d891a7d",
       "actual_smt_assertion_hash": "2fa22fe8abfaebb7a940a16af47e06a6f2defaad4e7bc026d57e84a37fdb4cb9",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.502,
-      "duration_ms": 12.502,
-      "certificate_sha256": "0433f534783ca0d7e40248b24129a9fb01c8d23b5dcca55a6d67d61f402a2669",
-      "timestamp": "2026-10-01T19:17:08.062Z"
+      "execution_duration_ms": 16.921,
+      "duration_ms": 16.921,
+      "certificate_sha256": "20b0ac1903fe1219f0cfb0d24a479b68be0dc88c0283ea994cc09c99f67ec6aa",
+      "timestamp": "2026-10-01T19:43:42.805Z"
     },
     {
       "operator_id": "DFRL-P-061",
@@ -1352,14 +1352,14 @@
       "assertion_hash": "3c33c0a55b5f1f2dc10b35951d51e7ca741432585aed4ae4a6eb3233429ba137",
       "actual_smt_assertion_hash": "a0f7a9c10749165c78288c59c37cf4af8263b2deec2935eece2beb38fe112dde",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.599,
-      "duration_ms": 13.599,
-      "certificate_sha256": "f5a9d1427164d5812b6ae9cd70c60eac54e722c690eaeebda23dba029b893a2b",
-      "timestamp": "2026-10-01T19:17:08.088Z"
+      "execution_duration_ms": 15.549,
+      "duration_ms": 15.549,
+      "certificate_sha256": "97bfa8949b2990a68dcffcd6bfe04def44fe00063a47f9b5f7d4b36634ab745e",
+      "timestamp": "2026-10-01T19:43:42.837Z"
     },
     {
       "operator_id": "DFRL-P-062",
@@ -1374,14 +1374,14 @@
       "assertion_hash": "4d19ee3de939786f69ba863687968176574b180865d55cc4af7d8468a1b8ed10",
       "actual_smt_assertion_hash": "4d930a0270662ffebbe4240b214b4f13be308ade419d59522103ee88f6417540",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 14.3,
-      "duration_ms": 14.3,
-      "certificate_sha256": "7e29e7b2c40eea45fc9ceb5bd3d2ba2093a3b8ab4aaa866ae53b4485545a5638",
-      "timestamp": "2026-10-01T19:17:08.116Z"
+      "execution_duration_ms": 14.933,
+      "duration_ms": 14.933,
+      "certificate_sha256": "abc962a594f5eead46d2b8ee5f1aba829a20c4d8626194a4ba9e391eec2ad3d8",
+      "timestamp": "2026-10-01T19:43:42.869Z"
     },
     {
       "operator_id": "DFRL-P-063",
@@ -1396,14 +1396,14 @@
       "assertion_hash": "e018e4c5a6ba5f2ce707b6e8bc9e92fe1fc0bc7813fc2b0d17f11be485807c5a",
       "actual_smt_assertion_hash": "7bde850e6ca36132a16b41b92a3af3236d0ed40ff5d2cbb841354d15ecdddc6c",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.5,
-      "duration_ms": 13.5,
-      "certificate_sha256": "20d070d9f23cad9d07fea10c803c6aa606504b27300fcf04e43984fcf2174d23",
-      "timestamp": "2026-10-01T19:17:08.143Z"
+      "execution_duration_ms": 15.234,
+      "duration_ms": 15.234,
+      "certificate_sha256": "4cbb1ce38cef4d52333e461692c8f292acd06c7dd6bf0ce5ddb6532d67ee8098",
+      "timestamp": "2026-10-01T19:43:42.900Z"
     },
     {
       "operator_id": "DFRL-P-064",
@@ -1418,14 +1418,14 @@
       "assertion_hash": "0b8b54343826116c01fbb9bbd165d5d742a24902456dc8363476e0dd20c32fe7",
       "actual_smt_assertion_hash": "d47114c744e3229e55feb1dc58a45d07cea7d7aef0bf9888c5606d6b5136ab88",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.372,
-      "duration_ms": 12.372,
-      "certificate_sha256": "dce1dfc470725b007cc3bbeb6ec3b761ecc1f90a4df036e0a33576a43a4887ad",
-      "timestamp": "2026-10-01T19:17:08.169Z"
+      "execution_duration_ms": 14.659,
+      "duration_ms": 14.659,
+      "certificate_sha256": "0f5fe75c425c6b0d369fdd7bc657010ad89c02ac47f519e75a4374614aca9a5b",
+      "timestamp": "2026-10-01T19:43:42.932Z"
     },
     {
       "operator_id": "DFRL-P-065",
@@ -1440,14 +1440,14 @@
       "assertion_hash": "07fa697b891e139f9c3668fff0fb78b19dd32dc5732e6b01907a088103b2cb51",
       "actual_smt_assertion_hash": "f16a0fc8320ed99ebb9e48cadff95b211312dac0e908c848e1510591425faa47",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.428,
-      "duration_ms": 13.428,
-      "certificate_sha256": "cf8fecc327ecb3f37009d38fcd01e9ad300c383c0a848c71cdb0e0029fa02b3c",
-      "timestamp": "2026-10-01T19:17:08.203Z"
+      "execution_duration_ms": 14.811,
+      "duration_ms": 14.811,
+      "certificate_sha256": "2e986b69180d3f310abbfe6acb9ae308b17345f8cae99a4d20d5dd964ba70ff8",
+      "timestamp": "2026-10-01T19:43:42.962Z"
     },
     {
       "operator_id": "DFRL-P-066",
@@ -1462,14 +1462,14 @@
       "assertion_hash": "607f532a37257a847d5bdf496de44f26640a4f78d8143c859a6f7724fd2e6318",
       "actual_smt_assertion_hash": "13f8a20cfcf2a18b65004aead6d8dc2152351ad889a63abdd5b0eab2b0f38bf9",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.259,
-      "duration_ms": 13.259,
-      "certificate_sha256": "f5ecd619c905e2933377fae8d942dac1db4eeafbaedb8bbfec2faa9aaf037a76",
-      "timestamp": "2026-10-01T19:17:08.228Z"
+      "execution_duration_ms": 16.027,
+      "duration_ms": 16.027,
+      "certificate_sha256": "0565d25ae890e6d0a6bc3e55880d23f755e8ce666e0a31c7280c1fa11f5cf1f2",
+      "timestamp": "2026-10-01T19:43:42.999Z"
     },
     {
       "operator_id": "DFRL-P-067",
@@ -1484,14 +1484,14 @@
       "assertion_hash": "fda77ad2cd61433bca10fa6d37f2b65701abf7a691dc9a602b6d973e09a7776b",
       "actual_smt_assertion_hash": "ab02d2bc26bbdb305cfc9d0ed005e9eb382be6dd38efbbcbfe33c1703b872aee",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.523,
-      "duration_ms": 13.523,
-      "certificate_sha256": "63e06ee267298afbf912f153385685a798fb16381a8e8510e8cdd31b19be4600",
-      "timestamp": "2026-10-01T19:17:08.255Z"
+      "execution_duration_ms": 16.168,
+      "duration_ms": 16.168,
+      "certificate_sha256": "347c11d2b4d6a4f7a8c6674be2cc1d9ca50f243f9b302bf82f1ff7f1bdd56cac",
+      "timestamp": "2026-10-01T19:43:43.030Z"
     },
     {
       "operator_id": "DFRL-P-068",
@@ -1506,14 +1506,14 @@
       "assertion_hash": "17831b5aca3e38f97397862f3c9153f9eda008bc013fa229f0504eb06ede8bb7",
       "actual_smt_assertion_hash": "78920cb45dac25d7bbd5825eb74312d63b3742f70fdffa195c3a7e9cad35f513",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.267,
-      "duration_ms": 13.267,
-      "certificate_sha256": "2a1ca761c97c307c89d8858c8dd80d4e1f7275c8bcab1a2d3458d8ffc66b6b61",
-      "timestamp": "2026-10-01T19:17:08.284Z"
+      "execution_duration_ms": 14.983,
+      "duration_ms": 14.983,
+      "certificate_sha256": "be23bd83f1e2b03e68a8f96020698aa15ab1f85c970e18a8fe5b944e590b4a96",
+      "timestamp": "2026-10-01T19:43:43.063Z"
     },
     {
       "operator_id": "DFRL-P-069",
@@ -1528,14 +1528,14 @@
       "assertion_hash": "81844de200bc72fc1c84e80808101c1556864d18346d669b0fd84c1421ea2c67",
       "actual_smt_assertion_hash": "fd0875142d9c8b3ecbf209ec3f8ad7ecadef28dd8ecc831ee2d60c7cc82aebdc",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.78,
-      "duration_ms": 12.78,
-      "certificate_sha256": "419b65300deaee43df9dd02aedd86dcb9c7fee1f97beb7d9b9305087e98c190e",
-      "timestamp": "2026-10-01T19:17:08.310Z"
+      "execution_duration_ms": 15.437,
+      "duration_ms": 15.437,
+      "certificate_sha256": "7c7be0b550cbad5da3c2bb1466ee2e9f8919c5d091745d3fbea369a5d800a814",
+      "timestamp": "2026-10-01T19:43:43.094Z"
     },
     {
       "operator_id": "DFRL-P-070",
@@ -1550,14 +1550,14 @@
       "assertion_hash": "bc77671c9bf593864ec57dd86b7f964f7963e0f2d9841157a814e81c9e765707",
       "actual_smt_assertion_hash": "7cb994aede95c8e084da1d945d97aabdefdaa820b9656b5ba3f552b252c7d920",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.809,
-      "duration_ms": 13.809,
-      "certificate_sha256": "4f78522213db980624aa95e3ce22ce4f7d5e9145a8b96e46625865067b1cbfeb",
-      "timestamp": "2026-10-01T19:17:08.336Z"
+      "execution_duration_ms": 15.17,
+      "duration_ms": 15.17,
+      "certificate_sha256": "512acc8b9b5802379e1d07c7d18567893db073f08771b3bb2046b48fb667628b",
+      "timestamp": "2026-10-01T19:43:43.125Z"
     },
     {
       "operator_id": "DFRL-P-071",
@@ -1572,14 +1572,14 @@
       "assertion_hash": "244e45701f205e28bd158bb87a302fbf4adab296ae81c9e66d2ccff5e1fec4b7",
       "actual_smt_assertion_hash": "45ebca1ef150b344ea82abe33361d0026de1e07f31353330a088ea19ad02877d",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.121,
-      "duration_ms": 12.121,
-      "certificate_sha256": "fcde111583caf42d951acf9f7b5d6a998412cd2cf61b60ff27cacca9d4c41182",
-      "timestamp": "2026-10-01T19:17:08.364Z"
+      "execution_duration_ms": 24.899,
+      "duration_ms": 24.899,
+      "certificate_sha256": "d112b4264de8ec875457609019c0e8d746a69d80f1641564deb58e88edccb887",
+      "timestamp": "2026-10-01T19:43:43.156Z"
     },
     {
       "operator_id": "DFRL-P-072",
@@ -1594,14 +1594,14 @@
       "assertion_hash": "ef8b270293f4941d03c0201215af1342abdd87b84fda9b9339997272bfd0f296",
       "actual_smt_assertion_hash": "dad8ada78b8305f44773e7deab3940abd868ce396e4841937dee2c53a6fb6ef0",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 18.94,
-      "duration_ms": 18.94,
-      "certificate_sha256": "9b0d04d73da5e0401f2b13f9d38b6f6536b5eb41faa66de225ee29d4b1e4b864",
-      "timestamp": "2026-10-01T19:17:08.389Z"
+      "execution_duration_ms": 16.248,
+      "duration_ms": 16.248,
+      "certificate_sha256": "26917b12d4eb45531e3745afbe3b86e3eaa3c41ff121410197771a9753fa7927",
+      "timestamp": "2026-10-01T19:43:43.196Z"
     },
     {
       "operator_id": "DFRL-P-073",
@@ -1616,14 +1616,14 @@
       "assertion_hash": "33a932af24b7565270746bfc37594508f6fd4408d400c0d5d1698ffff541bbc6",
       "actual_smt_assertion_hash": "b1d1036b26f623549352ed5a7de2caaae00a6d5c177a7f6c32c85a925fbdcb03",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.416,
-      "duration_ms": 13.416,
-      "certificate_sha256": "d2e1f0390c0408fa87db3e5d3191d447b95b5302df655663a939e6038f234517",
-      "timestamp": "2026-10-01T19:17:08.421Z"
+      "execution_duration_ms": 15.314,
+      "duration_ms": 15.314,
+      "certificate_sha256": "99df2addfb8d29785f3da36e4785b31a8fdf356ae153c862a27800736e75eceb",
+      "timestamp": "2026-10-01T19:43:43.234Z"
     },
     {
       "operator_id": "DFRL-P-074",
@@ -1638,14 +1638,14 @@
       "assertion_hash": "869606925abd3e47efcb4cd0f1e4a098e4509abc0a47dd7de9be3a783b8bf842",
       "actual_smt_assertion_hash": "5c10733cf5f1e84c9ead159ee294c8616d8cfa731b2a218bf2141d42ac7659dc",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 14.037,
-      "duration_ms": 14.037,
-      "certificate_sha256": "885f410f41f13e62e6bd15ab087f085688741409e8a590a417a156828474e225",
-      "timestamp": "2026-10-01T19:17:08.448Z"
+      "execution_duration_ms": 15.173,
+      "duration_ms": 15.173,
+      "certificate_sha256": "ba3098fc46e7936b31be053e53287664c0d812356df59f70a467ecc06a9bc151",
+      "timestamp": "2026-10-01T19:43:43.265Z"
     },
     {
       "operator_id": "DFRL-P-075",
@@ -1660,14 +1660,14 @@
       "assertion_hash": "b1d79ac03ba5f980aea128e375bc9562be02db09373cf3afc2c253de791f21f3",
       "actual_smt_assertion_hash": "f0713bf72c431ab6417a4572f5896b38f6259d06592c3d9cdb3371d566134c2a",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.669,
-      "duration_ms": 13.669,
-      "certificate_sha256": "497778aed618c087818804e25fe54ed6d032926bbe42e85baf62227267c95751",
-      "timestamp": "2026-10-01T19:17:08.475Z"
+      "execution_duration_ms": 15.905,
+      "duration_ms": 15.905,
+      "certificate_sha256": "1be4ca5d15fe6bfc804b468fcb468a3688ff7c71cd85d920febf91cdf64d42db",
+      "timestamp": "2026-10-01T19:43:43.297Z"
     },
     {
       "operator_id": "DFRL-P-076",
@@ -1682,14 +1682,14 @@
       "assertion_hash": "409a18a912b00db5d0ca31b84a3ef5e36e18630b26efb6f18c213d47d9d11327",
       "actual_smt_assertion_hash": "6a647398816a54e1a6443f8abff8a1dfd8ecbb69e0a6a5e53f94e5cca63a7d97",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 11.153,
-      "duration_ms": 11.153,
-      "certificate_sha256": "312fc6a617e30f5ee1ccf5fcbb754bc31c0815d75f68c807d4180a9e3fe62dca",
-      "timestamp": "2026-10-01T19:17:08.502Z"
+      "execution_duration_ms": 15.041,
+      "duration_ms": 15.041,
+      "certificate_sha256": "a7d928b1958d1b90d4d7e3b709518e735a207328e2b3bc3c25862c0a5fbb066d",
+      "timestamp": "2026-10-01T19:43:43.328Z"
     },
     {
       "operator_id": "DFRL-P-077",
@@ -1704,14 +1704,14 @@
       "assertion_hash": "bbc789186ca5ded7e139107f5782042fba83edc3a6802a6f6127a68981641e8e",
       "actual_smt_assertion_hash": "505006a6295cf25738985bb66756c14f5a05e8346dd489042e1ebdd2fc6f9979",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.001,
-      "duration_ms": 12.001,
-      "certificate_sha256": "419d2f08a875df613ba5021c1a75c7b3d0efc3a326879a319d7f82eee4abd6be",
-      "timestamp": "2026-10-01T19:17:08.526Z"
+      "execution_duration_ms": 17.735,
+      "duration_ms": 17.735,
+      "certificate_sha256": "dd9988c0091ce38314602b264b5a2edd4aa2a7e435a16b0e27ad597f541f6807",
+      "timestamp": "2026-10-01T19:43:43.359Z"
     },
     {
       "operator_id": "DFRL-P-078",
@@ -1726,14 +1726,14 @@
       "assertion_hash": "373f70822eabf63f40288ad5fd1b85aaedf2c0bb41525395bd90a34ea760c403",
       "actual_smt_assertion_hash": "e3a7d9e0a1ed1924e219544e3f42f1eef2319c682cbcdc97a801d6814deabe47",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.379,
-      "duration_ms": 13.379,
-      "certificate_sha256": "8474235f30f045a68ee38a884829c9880548933554a09b1b898a870314febb22",
-      "timestamp": "2026-10-01T19:17:08.551Z"
+      "execution_duration_ms": 20.48,
+      "duration_ms": 20.48,
+      "certificate_sha256": "5b5e1931ab1f72f314b6c1b5095965f58bff9cf590c8df5d874b51269fcd103f",
+      "timestamp": "2026-10-01T19:43:43.394Z"
     },
     {
       "operator_id": "DFRL-P-079",
@@ -1748,14 +1748,14 @@
       "assertion_hash": "ca762cd352f341628a331d55b37af374b76ac7c3e6db0ec800451a305565a6ed",
       "actual_smt_assertion_hash": "c2c3e4d870e124cb2ebd000103d472f9ac9f97a07636292e336a5681063da9e3",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.214,
-      "duration_ms": 13.214,
-      "certificate_sha256": "ecac625e36bce80bd64075a379a1ab2ffffdcb302425bf4ab7b8e08b08805cfd",
-      "timestamp": "2026-10-01T19:17:08.578Z"
+      "execution_duration_ms": 15.263,
+      "duration_ms": 15.263,
+      "certificate_sha256": "82ba43ede87eb5b920eff8a44645d9d1831886bf476752bc87777afc5ca89123",
+      "timestamp": "2026-10-01T19:43:43.430Z"
     },
     {
       "operator_id": "DFRL-P-080",
@@ -1770,14 +1770,14 @@
       "assertion_hash": "45457152a2df45ce677ab6669d35e721d250e2094f67d4e0f2a49fd2c0bc9c9b",
       "actual_smt_assertion_hash": "5d9699651f4efc496d5d27fa015c7bb0f9a92df5f756536f62de075da7e7fa9d",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.106,
-      "duration_ms": 13.106,
-      "certificate_sha256": "3335b42d253e2b5905962169bfb650d0446d62f4b047e01bac1423e26a273ea1",
-      "timestamp": "2026-10-01T19:17:08.605Z"
+      "execution_duration_ms": 16.733,
+      "duration_ms": 16.733,
+      "certificate_sha256": "1f64c21cb216079da1822f5448976dd1869eaa47b56b43dd95c6b2916b33fba3",
+      "timestamp": "2026-10-01T19:43:43.466Z"
     },
     {
       "operator_id": "DFRL-P-081",
@@ -1792,14 +1792,14 @@
       "assertion_hash": "641635d3c4810b776f8ccac20e7f44c3cb35738c09fce68e06cbbd8ccc14d5e0",
       "actual_smt_assertion_hash": "a76b940115145ccfb1a006bed0e2f0f3c1d8fb2670620e4b03124783cb85b3f2",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.178,
-      "duration_ms": 12.178,
-      "certificate_sha256": "ac4bb847ab5eaec0d957e0147d958b7fb419f3a214a82fd4245691742c1a6012",
-      "timestamp": "2026-10-01T19:17:08.632Z"
+      "execution_duration_ms": 20.057,
+      "duration_ms": 20.057,
+      "certificate_sha256": "1be29ee9cd495d79572a4cce9a999a8572a8a8a10d93332efea6c938f2f66ebe",
+      "timestamp": "2026-10-01T19:43:43.499Z"
     },
     {
       "operator_id": "DFRL-P-082",
@@ -1814,14 +1814,14 @@
       "assertion_hash": "1e766aad0794d5cdd192e7eb10282645a1ca6e62bb8009fd1c83860d28a466b9",
       "actual_smt_assertion_hash": "2eaaf134a349026708a35d06fe2871769c58052910f1d1d625312db5b9c2c281",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.221,
-      "duration_ms": 13.221,
-      "certificate_sha256": "df78b5e915021156c7be578e5d59ffd30f0aec274b3628539a5cb971e53b8deb",
-      "timestamp": "2026-10-01T19:17:08.664Z"
+      "execution_duration_ms": 15.671,
+      "duration_ms": 15.671,
+      "certificate_sha256": "857ebbf53a52f9a63c4916a4a3565d54f418c491dd893eb470aa1d8a747b3b42",
+      "timestamp": "2026-10-01T19:43:43.538Z"
     },
     {
       "operator_id": "DFRL-P-083",
@@ -1836,14 +1836,14 @@
       "assertion_hash": "cfc08e6be46ecef7d741e9083129659282bef246464eff951559c3525e8e169c",
       "actual_smt_assertion_hash": "ad3877e766a94a7c1cc559a286a989316d56351d3b29a725abfa866fe0b66745",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.603,
-      "duration_ms": 12.603,
-      "certificate_sha256": "db9977a2894978c36d0532f9c90b3d902c44c11a447fb6f8bba256d54c92561a",
-      "timestamp": "2026-10-01T19:17:08.689Z"
+      "execution_duration_ms": 16.153,
+      "duration_ms": 16.153,
+      "certificate_sha256": "23469185a13e979a7fb3e6d8bdde74cf0d18def3e9a9e75718afaa5cdcf67363",
+      "timestamp": "2026-10-01T19:43:43.569Z"
     },
     {
       "operator_id": "DFRL-P-084",
@@ -1858,14 +1858,14 @@
       "assertion_hash": "d707630bf338a1286be612e2a2ea6ef28bd47f5b75006af29ac50617f1d7181e",
       "actual_smt_assertion_hash": "9163deccb0eee62d47bd4467cad026a1b0072603df192ce33ac7f49fa83cecb5",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.201,
-      "duration_ms": 13.201,
-      "certificate_sha256": "4152d3311bba23307222c0a89168f957325019509d109de47b96a50163de995f",
-      "timestamp": "2026-10-01T19:17:08.715Z"
+      "execution_duration_ms": 17.188,
+      "duration_ms": 17.188,
+      "certificate_sha256": "19b937cfdfb8d7a61e12d64040cfc866f611475878f2a818d44399063eb0a1ef",
+      "timestamp": "2026-10-01T19:43:43.600Z"
     },
     {
       "operator_id": "DFRL-P-085",
@@ -1880,14 +1880,14 @@
       "assertion_hash": "c1efd7a890c7027e35a571982ee3160279ee972e55392cf6097636e31545c7cb",
       "actual_smt_assertion_hash": "d7657e34aa397a0bd8382a42b75e5da298e9af05a09183ef817b4c1ef5a81207",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.496,
-      "duration_ms": 12.496,
-      "certificate_sha256": "a122fc86b3c7e46f3e4788981d8ab30ed48e5d386a796b51966b3f487fc994ad",
-      "timestamp": "2026-10-01T19:17:08.742Z"
+      "execution_duration_ms": 18.115,
+      "duration_ms": 18.115,
+      "certificate_sha256": "8769adb35575c174d6aed27981092a8c21a8fd5b945d86fd0cddb8e09f379800",
+      "timestamp": "2026-10-01T19:43:43.633Z"
     },
     {
       "operator_id": "DFRL-P-086",
@@ -1902,14 +1902,14 @@
       "assertion_hash": "7bfd09464d32120a4c2c16f4fec838668e064434d65b24eaa2ce94c87b7488c5",
       "actual_smt_assertion_hash": "795afd739e932935e049a836f26752c5c5f18e86831180d910eda9108022bc6f",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.492,
-      "duration_ms": 12.492,
-      "certificate_sha256": "d6c134adfd042bc35236a457e7801cee766532ce104c8725350b6a2a22ec26ae",
-      "timestamp": "2026-10-01T19:17:08.770Z"
+      "execution_duration_ms": 15.463,
+      "duration_ms": 15.463,
+      "certificate_sha256": "e353a3cbdaba2a78d50f6c2d09829efa91689c8ba1b30b2944dbfd44d9f79756",
+      "timestamp": "2026-10-01T19:43:43.670Z"
     },
     {
       "operator_id": "DFRL-P-087",
@@ -1924,14 +1924,14 @@
       "assertion_hash": "77ca98875ac6d5c93cf2d173e36ae212ed15f41110f54b94f3acabe068c7f3f1",
       "actual_smt_assertion_hash": "09bd861fd0f79599f6bebdab7288b6a6d41748d9b0a06a067a561c4bf7cc0c62",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 12.181,
-      "duration_ms": 12.181,
-      "certificate_sha256": "96cea6c0697009aa66a7a411e43efad602d982fff433c80ce091fe1d3c3d5041",
-      "timestamp": "2026-10-01T19:17:08.796Z"
+      "execution_duration_ms": 15.727,
+      "duration_ms": 15.727,
+      "certificate_sha256": "6a0c2865ab378e8cbd7decf08ee50eed2b8ed3d7c894d26cd006ad6b42e0a517",
+      "timestamp": "2026-10-01T19:43:43.701Z"
     },
     {
       "operator_id": "DFRL-P-088",
@@ -1946,14 +1946,14 @@
       "assertion_hash": "13dfe0dfc85ea495f4721b3dd4fbc3bf4874c3e87f58b098b489b1dd19970c73",
       "actual_smt_assertion_hash": "7f2a8e5e15ee4981314c7193bd64a96cb369ffa7e6334415060cee120c7f1931",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "dfrl_exec_1790882226596",
+      "execution_id": "dfrl_exec_1790883819737",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 13.188,
-      "duration_ms": 13.188,
-      "certificate_sha256": "e8e963de8f77c721eabb9584cf487605b8ed7ccf54a5db77d0aac42c9204e2b3",
-      "timestamp": "2026-10-01T19:17:08.821Z"
+      "execution_duration_ms": 15.246,
+      "duration_ms": 15.246,
+      "certificate_sha256": "f870bab41d35d03bbd0b4758361a971c93fc2930d91f66c87147a4660c0161c8",
+      "timestamp": "2026-10-01T19:43:43.732Z"
     }
   ],
   "mutation_test": {
@@ -1987,9 +1987,9 @@
   },
   "tamper_test": {
     "test_name": "Artifact Tamper Sentinel Monitor",
-    "original_hash": "23b3aaab560e3a8ff24697b56f588713469001280a6b78ba237cce75aba5acfe",
+    "original_hash": "6fb82ddef2c7ee72fc6d6fa7fb8e0fb40af45d501fa8239f687900be200d4d2f",
     "tampered_payload_snippet": "Modifying operator 0 solver_result to sat",
-    "tampered_hash": "d43fc9e9f1b136cef451815cf8fa4217fd70dcbf3bf2ed5ad959646a4206b6d5",
+    "tampered_hash": "b4eb697c3cb51c5ff755d9e8b3bfd2b1d5188e10d111a327d8d3acab062aa495",
     "tamper_detected": true,
     "passed": true,
     "alarm_triggered": true

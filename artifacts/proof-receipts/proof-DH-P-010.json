@@ -1,32 +1,38 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-010",
-  "verification_id": "DH-P-010",
-  "claim": "Yablo's Paradox: Infinite sequence of strictly subsequent negations without direct self-reference yields inconsistency.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-010",
+  "name": "Cantor Paradox",
+  "domain": "SET_THEORY",
+  "statement": "Power set of universal set must have strictly greater cardinality than universal set.",
+  "formal_proposition": "For universal set U, |P(U)| <= |U|. Cantor theorem proves |U| < |P(U)|. The conjunction is refutable.",
+  "assumptions": [
+    "U contains all sets",
+    "Power set operation is valid on U"
   ],
-  "inputs": {
-    "domain": "MODAL_LOGIC",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "System s0 <=> (not s1 and not s2) with s1 <=> not s2 cannot consistently assert s0.",
-    "assumptions": [
-      "Discrete sequential evaluation"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Cantor theorem: |X| < |P(X)|",
+    "Subsets of universal set belong to universal set"
+  ],
+  "constraints": [
+    "cardU > 0",
+    "cardPU > cardU"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "8d89964e6ce6fd90a37516498c7be027fc2ec226a167b2e7bc3151bb23d7deb7",
-  "source_hash": "14734795c1ef847590536e978d81e686710409f17d4a749041db854d4e0191ce",
-  "contract_hash": "bc9eafb317f0a45a22448f9463ffd58c58a044f01c6f7162a795a8dfc10f1c05",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "ad95adfc61c8efd12eb2599722350369e75eb9030936eb5b8fb8cf942e358fda",
+  "source_hash": "c48e00114c6398e597f07401c0319cdb19f1bd0ed81220a40398e2882d095e19",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "8a73b3cdfb48960568b44cea0572dbff0ed4ba12d566effcad1319fa39cf88ed",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.644Z",
+  "duration_ms": 54.253
 }

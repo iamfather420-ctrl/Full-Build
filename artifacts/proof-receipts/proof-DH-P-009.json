@@ -1,32 +1,36 @@
 {
   "proof_id": "PROOF-RECEIPT-DH-P-009",
-  "verification_id": "DH-P-009",
-  "claim": "Grelling-Nelson (Heterological Paradox): The predicate \"heterological\" (not applying to itself) cannot self-consistently be applied to itself.",
-  "preconditions": [
-    "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
-    "Independent Z3 WASM kernel fresh-context execution",
-    "Canonical formal contract assert and refutation/satisfaction check"
+  "case_id": "DH-P-009",
+  "name": "Burali-Forti Paradox",
+  "domain": "SET_THEORY",
+  "statement": "The ordinal number of all ordinals must be greater than itself.",
+  "formal_proposition": "Strict well-ordering on ordinals is irreflexive (not alpha < alpha). Supposing the class of all ordinals is a set with ordinal Omega forces Omega < Omega, refuting sethood.",
+  "assumptions": [
+    "Ordinals are well-ordered by strict membership",
+    "Every set of ordinals has an upper bound ordinal"
   ],
-  "inputs": {
-    "domain": "SEMANTICS",
-    "scope": "MODEL_VERIFIED",
-    "formal_proposition": "Self-application predicate H(H) <=> not H(H) is unsatisfiable.",
-    "assumptions": [
-      "Semantic self-attribution rule H(w) <=> not w(w)"
-    ]
-  },
-  "execution_method": "npm run verify:dh-formal -> src/data/dhParadoxFormalRegistry.ts",
-  "actual_result": "unsat",
+  "axioms": [
+    "Irreflexivity of strict ordinal order"
+  ],
+  "constraints": [
+    "Omega_ord is an ordinal"
+  ],
   "expected_result": "unsat",
-  "proof_method": "Automated Theorem Proving via Microsoft Research Z3 WebAssembly Kernel (Fresh Context Execution + Cleanroom Replay)",
-  "evidence_hash": "5b5fdf366dd425ca1f9539d2c26eee723bdc02d57650594f716257a24871d33e",
-  "source_hash": "31b6a218104d4f48fc12b4b2920ce5e2df01c783b5dad2be12baa634166005dc",
-  "contract_hash": "283a51ea5b890d45c290caad61bf1a90b60c0c6abea775f85b679e3ae885f13e",
-  "artifact_hash": "f3afce58b164ebc0dc2af8ff8f7ba13b7d1f0a366c56337b6aa489f6ffce49e5",
-  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-  "runtime": "Node.js v22.23.2 (linux x64)",
-  "timestamp": "2026-10-01T19:16:53.992Z",
-  "replay_command": "npm run verify:dh-formal",
-  "replay_result": "REPLAY_VERIFIED",
-  "status": "VERIFIED_EXECUTION"
+  "actual_result": "unsat",
+  "replay_result": "unsat",
+  "replay_match": true,
+  "verified": true,
+  "scope": "MODEL_VERIFIED",
+  "solver": "z3-wasm",
+  "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+  "execution_id": "dh_suite_1790883774548_x1etdi",
+  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "contract_hash": "bf95417e8343f7ed9d7b733661681784e90d2f826c3fe6ce225c70dc4b57cdf6",
+  "source_hash": "c5859bd73e5a876d04146868cbb1fd38d668ab4bd867ecc500193cbea4c3eaf4",
+  "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
+  "evidence_hash": "71e86449ad0f5a871601f451c4360ebae26c2a799f6d50b2dbafabe8709b8391",
+  "evidence_integrity": "PASS",
+  "source_integrity": "PASS",
+  "timestamp": "2026-10-01T19:42:56.578Z",
+  "duration_ms": 54.521
 }
