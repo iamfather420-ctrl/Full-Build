@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-29T09:38:22.303Z",
+  "timestamp": "2026-10-02T11:55:50.535Z",
   "environment": "LOCAL",
-  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "source_revision": "CLONED_GIT_COMMIT",
   "repository": "https://github.com/iamfather420-ctrl/full-build",
   "integration_mode": "PROVENANCE_RECORDED_COMPATIBLE_LINEAGE",
-  "upstream_commit": "6833b6f87f7fc2a82a096fada16ad8997a37d9f4",
+  "upstream_commit": "22f660ebf562180edb44865330365e1d75005926",
   "imported_registry_entries": 32,
   "expected_entries": 32,
   "missing_codes": [],

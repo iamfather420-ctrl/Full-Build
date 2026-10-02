@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-29T09:38:24.645Z",
+  "timestamp": "2026-10-02T11:55:33.746Z",
   "environment": "UNKNOWN",
   "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
   "status": "PASSED",
@@ -7,7 +7,7 @@
     "anonymous_acceptance": {
       "status": 401,
       "error": "Authentication is required",
-      "timestamp": 1790674704667
+      "timestamp": 1790942133751
     },
     "cross_tenant_denial": {
       "authorized": false,

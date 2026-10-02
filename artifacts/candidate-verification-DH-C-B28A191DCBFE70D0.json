@@ -109,7 +109,7 @@
   "stages_completed": 19,
   "stages_total": 21,
   "implementation_hash": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
-  "evidence_bundle_hash": "591e332f75c6985db62c0783a7ff0bd67b515ffe209ac1bc56c9cd28679c08aa",
+  "evidence_bundle_hash": "a50ba002639ed57055b2fc9ed24e18d67a8522433c872a06f30a2568ec1e67bc",
   "formal_proof_status": "CANDIDATE_SPECIFIC_UNSAT_EXECUTED",
   "machine_check_status": "unsat",
   "hermetic_test_status": "PASSED",
@@ -155,14 +155,14 @@
         "assertion_hash": "69d4cd79d88b3cfbf5da4d5a2eab31a577022656eb9410d356c9425ba94d6dfb",
         "actual_smt_assertion_hash": "f425aeff1404e99410743f36c61776214592f1979472be1d2f1ad69ea702ab11",
         "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-        "execution_id": "candidate-proof-1790674700858",
+        "execution_id": "candidate-proof-1790942130765",
         "solver_result": "unsat",
         "proved": true,
         "claim_scope": "MODEL_VERIFIED",
-        "execution_duration_ms": 376.287,
-        "duration_ms": 376.287,
-        "certificate_sha256": "e2cb373116bf8d96cfe99d0519dcf3c18de38967689b13e3e1e6016617121a6c",
-        "timestamp": "2026-09-29T09:38:20.860Z"
+        "execution_duration_ms": 348.519,
+        "duration_ms": 348.519,
+        "certificate_sha256": "29795e6e7b19c04855525922cba11ae11d5e168eb491b1bf33df8ce468d048f0",
+        "timestamp": "2026-10-02T11:55:30.767Z"
       },
       "smt": "(set-logic QF_LRA)\n(declare-const d Real)\n(declare-const e Real)\n(declare-const out Real)\n(assert (> d 0.0))\n(assert (> e 0.0))\n(assert (= out (ite (<= d e) 0.0 (/ d 2.0))))\n(assert (not (and (>= out 0.0) (<= out d) (or (and (<= d e) (= out 0.0)) (and (> d e) (= out (/ d 2.0)))))))\n(check-sat)",
       "passed": true
@@ -294,7 +294,7 @@
       "attestation_hash": "fb9e013c1d1096710cb27af61376464f00e14eb9f98a9a08773332e8f07d040d"
     },
     "cleanroom_replay": {
-      "replay_id": "cleanroom-1790674701241",
+      "replay_id": "cleanroom-1790942131120",
       "expected_hash": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8",
       "observed_hash": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8",
       "status": "MATCH",
@@ -368,10 +368,10 @@
       "final_price_cents": 891,
       "calculation_hash": "4a04876d0c755be762efe36c7657e5b2a9acbdf15e96aceeb1c137895f6f2e90"
     },
-    "checkpoint_id": "chk_5eaafa8aad9e2ee7f0",
-    "audit_record_hash": "c3fa7298b9d748e6aa82ae8117d4d6cee2a3e6c2e5244c28f56ba1dce6021572",
+    "checkpoint_id": "chk_da332684ca9c50e7ad",
+    "audit_record_hash": "a9fe1751addf883db7763cadff75f8e85695f531293b4104cab3398bb32428d9",
     "tenant_isolation_verified": true,
-    "verification_timestamp": "2026-09-29T09:38:21.267Z",
+    "verification_timestamp": "2026-10-02T11:55:31.125Z",
     "verification_authority": "LOCAL_INDEPENDENT_VERIFICATION_HARNESS",
     "evidence_hashes": {
       "implementation": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-29T09:39:04.199Z",
+  "timestamp": "2026-10-02T11:55:34.801Z",
   "environment": "UNKNOWN",
   "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
   "candidate_id": "DH-C-B28A191DCBFE70D0",
@@ -163,7 +163,18 @@
     },
     "PRODUCTION_DEPLOYMENT": {
       "status": "BLOCKED",
-      "evidence": "Production environment and managed secrets/database are not configured.",
+      "evidence": {
+        "environment_validation": {
+          "valid": false,
+          "environment": "MISSING",
+          "blockers": [
+            "SOLVEX_ENVIRONMENT or SOLVEX_ENV must explicitly declare local, sandbox, or production"
+          ]
+        },
+        "secret_preflight_passed": false,
+        "local_sqlite_is_authoritative": false,
+        "managed_database_configured": false
+      },
       "test": "npm run verify:production",
       "remaining_requirement": "Managed deployment with production IDP, database, secret management, monitoring, backups, and provider configuration."
     },
@@ -186,7 +197,7 @@
         "local_fail_closed_diversion": {
           "fail_closed_enforced": true,
           "rollback_status": "ROLLED_BACK",
-          "failure_id": "fail_1790674705623_89ss",
+          "failure_id": "fail_1790942134463_70tl",
           "evidence_hash": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558"
         },
         "audit_chain_valid_after_test": true,
@@ -202,7 +213,7 @@
         "anonymous_acceptance": {
           "status": 401,
           "error": "Authentication is required",
-          "timestamp": 1790674704667
+          "timestamp": 1790942133751
         },
         "cross_tenant_denial": {
           "authorized": false,

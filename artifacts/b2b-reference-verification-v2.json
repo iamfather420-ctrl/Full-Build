@@ -3,12 +3,12 @@
   "synthetic_data_only": true,
   "customer_claims": "NONE",
   "candidate_id": "DH-C-B28A191DCBFE70D0",
-  "reference_case_id": "b2bref_76b59e5168231346a407942e",
+  "reference_case_id": "b2bref_24a797ca85d5172891709c6a",
   "negative_cases": [
     {
       "status": 401,
       "error": "Authentication is required",
-      "timestamp": 1790674701740
+      "timestamp": 1790942131523
     },
     {
       "name": "missing acceptance criteria",

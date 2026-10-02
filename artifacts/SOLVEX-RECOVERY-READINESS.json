@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-29T09:38:25.568Z",
+  "timestamp": "2026-10-02T11:55:34.447Z",
   "environment": "UNKNOWN",
   "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
   "status": "PARTIAL",
@@ -8,7 +8,7 @@
     "local_fail_closed_diversion": {
       "fail_closed_enforced": true,
       "rollback_status": "ROLLED_BACK",
-      "failure_id": "fail_1790674705623_89ss",
+      "failure_id": "fail_1790942134463_70tl",
       "evidence_hash": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558"
     },
     "audit_chain_valid_after_test": true,

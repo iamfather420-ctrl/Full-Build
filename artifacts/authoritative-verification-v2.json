@@ -2,10 +2,10 @@
   "report": {
     "pipeline_name": "SOLVEX Truth-Boundary Verification",
     "version": "2.0.0",
-    "execution_id": "verification_1790674699319",
+    "execution_id": "verification_1790942129440",
     "commit_sha": "SOURCE_SNAPSHOT_UNVERSIONED",
     "environment": "local",
-    "completed_at": "2026-09-29T09:38:19.319Z",
+    "completed_at": "2026-10-02T11:55:29.440Z",
     "gates_total": 4,
     "gates_passed": 3,
     "production_gate_verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
@@ -16,7 +16,7 @@
       "No verified marketplace solution exists; all generated intake is candidate-only."
     ],
     "claim_scope_verdict": "LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; COMMERCIAL_PRODUCTION_BLOCKED",
-    "artifacts_directory": "/home/ubuntu/solvex-platform/artifacts",
+    "artifacts_directory": "/tmp/SolveX-grok-integration/artifacts",
     "gates": [
       {
         "gate_index": 0,
@@ -24,7 +24,7 @@
         "name": "Security and tenant-isolation regressions",
         "claim_scope": "LOCAL",
         "status": "PASSED",
-        "duration_ms": 85,
+        "duration_ms": 22,
         "details": {
           "total": 9,
           "passed": 9
@@ -36,7 +36,7 @@
         "name": "DFRL model verification",
         "claim_scope": "MODEL",
         "status": "PASSED",
-        "duration_ms": 3051,
+        "duration_ms": 2736,
         "details": {
           "executed": 88,
           "unsat": 88,
@@ -49,9 +49,9 @@
         "name": "Marketplace publication inventory",
         "claim_scope": "LOCAL",
         "status": "PASSED",
-        "duration_ms": 3051,
+        "duration_ms": 2736,
         "details": {
-          "total_solution_records": 4,
+          "total_solution_records": 3,
           "independently_verified": 0,
           "marketplace_published": 0,
           "policy": "No proof-bound verified solution exists in this execution."
@@ -63,7 +63,7 @@
         "name": "Commercial production boundary",
         "claim_scope": "PRODUCTION",
         "status": "BLOCKED",
-        "duration_ms": 3051,
+        "duration_ms": 2737,
         "details": {
           "blockers": [
             "No live PayPal operation was performed.",
@@ -106,7 +106,7 @@
         "name": "SQLite repository persists and tenant-scopes records",
         "category": "PERSISTENCE",
         "passed": true,
-        "duration_ms": 3,
+        "duration_ms": 2,
         "details": {
           "status": "PASSED"
         }
@@ -116,7 +116,7 @@
         "name": "Daisy static intake creates a PARTIAL candidate, never VERIFIED",
         "category": "DAISY",
         "passed": true,
-        "duration_ms": 43,
+        "duration_ms": 5,
         "details": {
           "status": "PASSED"
         }
@@ -166,7 +166,7 @@
         "name": "Audit chain detects payload tampering",
         "category": "AUDIT",
         "passed": true,
-        "duration_ms": 33,
+        "duration_ms": 9,
         "details": {
           "status": "PASSED"
         }
@@ -176,6 +176,6 @@
   "dfrl_summary": {
     "executed": 88,
     "status": "VERIFIED",
-    "root": "020a4c50b30b0a6625eb55f104219b5d664175b3b4605c467b691cc833a9fd60"
+    "root": "92574dced6863d910abba50537c4cf73f4da3bb472365f1b91bd75853ebc3fd1"
   }
 }

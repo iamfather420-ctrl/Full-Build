@@ -8,10 +8,10 @@ const missing = expected.filter(code => !codes.has(code));
 const report = {
   timestamp: new Date().toISOString(),
   environment: 'LOCAL',
-  source_revision: 'SOURCE_SNAPSHOT_UNVERSIONED',
+  source_revision: 'CLONED_GIT_COMMIT',
   repository: GITHUB_FULL_BUILD_INTEGRATION.repository,
   integration_mode: GITHUB_FULL_BUILD_INTEGRATION.integration_mode,
-  upstream_commit: '6833b6f87f7fc2a82a096fada16ad8997a37d9f4',
+  upstream_commit: '22f660ebf562180edb44865330365e1d75005926',
   imported_registry_entries: DH_BOOTSTRAP_PARADOXES.length,
   expected_entries: 32,
   missing_codes: missing,
