@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "source_repository": "https://github.com/iamfather420-ctrl/full-build",
+  "source_commit": "22f660ebf562180edb44865330365e1d75005926",
+  "source_branch": "main",
+  "source_scope": "PUBLIC_REPOSITORY",
+  "tracked_file_count": 1350,
+  "source_tree_sha256": "04c14785d39326be53a012aa5d21502cdf18ec243a3cfae86e49bd0666ee345a",
+  "import_decision": "REVIEWED_NO_RUNTIME_OVERWRITE",
+  "compatible_imports": [],
+  "excluded_categories": [
+    "repository agent instructions",
+    "secrets and credentials",
+    "generated deployment artifacts",
+    "Android/native project",
+    "unrelated provider/payment integrations",
+    "alternate app shell and routing",
+    "verification scripts with unavailable dependencies"
+  ],
+  "reason": "The current SolveX branch already contains stronger fail-closed authorization, payment, persistence, B2B acceptance, and evidence gates. The latest full-build snapshot does not provide a self-contained additive module that can be imported without replacing or bypassing those controls.",
+  "claim_scope": "PROVENANCE_AND_COMPATIBILITY_REVIEW_ONLY",
+  "external_evidence": "NOT_PERFORMED"
+}
