@@ -19,29 +19,23 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Fetch source repositories
+      - name: Fetch CLEAN-WEB source
         shell: bash
         run: |
           set -euo pipefail
-          git remote add web-build https://github.com/iamfather420-ctrl/web-build.git
           git remote add clean-web https://github.com/Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED.git
-          git fetch web-build main
           git fetch clean-web main
 
-      - name: Integrate source trees
+      - name: Integrate CLEAN-WEB source tree
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "Full-Build Unification"
           git config user.email "actions@github.com"
 
-          mkdir -p .integration-source/web-build .integration-source/clean-web
-
-          git archive web-build/main | tar -x -C .integration-source/web-build
+          mkdir -p .integration-source/clean-web
           git archive clean-web/main | tar -x -C .integration-source/clean-web
 
-          # Never import credentials, dependency trees, build output, archives, caches,
-          # or other generated/vendor material into the canonical application.
           EXCLUDES=(
             --exclude='.git'
             --exclude='node_modules'
@@ -60,34 +54,33 @@ jobs:
             --exclude='*.class'
           )
 
-          # Preserve Full-Build as the canonical root. Add source material without
-          # replacing existing canonical files on path collisions.
-          rsync -a --ignore-existing "${EXCLUDES[@]}" .integration-source/web-build/ ./
+          # Full-Build stays canonical on path collisions; non-conflicting
+          # CLEAN-WEB source/configuration is added at its original path.
           rsync -a --ignore-existing "${EXCLUDES[@]}" .integration-source/clean-web/ ./
 
-          # Keep provenance manifests so every imported tree can be traced.
           mkdir -p docs/integration
           cat > docs/integration/SOURCE-UNIFICATION.md <<'EOF'
           # Full-Build source unification
 
           Canonical repository: iamfather420-ctrl/Full-Build
 
-          Imported source repositories:
-          - iamfather420-ctrl/web-build
+          Integrated source:
           - Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED
 
-          Policy:
-          - Full-Build remains canonical when the same path exists in multiple trees.
-          - Non-conflicting source files are imported into their original paths.
-          - Dependency/vendor/build/archive artifacts are excluded.
-          - GitHub Actions secrets already configured on Full-Build are not copied or exposed.
-          - This file is provenance only; it does not claim functional verification.
+          Source pending:
+          - web-build could not be fetched because the previously configured
+            iamfather420-ctrl/web-build repository URL returns GitHub 404.
+            No substitute repository was invented.
 
-          After integration, run the canonical Full-Build verification suite before declaring
-          any capability VERIFIED IMPLEMENTATION.
+          Policy:
+          - Full-Build remains canonical when the same path exists.
+          - Non-conflicting source files are imported at original paths.
+          - Dependency/vendor/build/archive artifacts are excluded.
+          - GitHub Actions secrets are not copied or exposed.
+          - Functional verification remains a separate step.
           EOF
 
           rm -rf .integration-source
           git add -A
-          git diff --cached --quiet || git commit -m "merge: reconcile imported sources"
+          git commit -m "merge: reconcile imported sources" || true
           git push origin HEAD:integration/full-unification-2026-10-02
