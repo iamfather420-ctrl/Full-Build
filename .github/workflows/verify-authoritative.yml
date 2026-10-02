@@ -10,6 +10,14 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      SOLVEX_ENV: production
+      PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
+      PAYPAL_SANDBOX_CLIENT_SECRET: ${{ secrets.PAYPAL_SANDBOX_CLIENT_SECRET }}
+      PAYPAL_LIVE_CLIENT_ID: ${{ secrets.PAYPAL_LIVE_CLIENT_ID }}
+      PAYPAL_LIVE_CLIENT_SECRET: ${{ secrets.PAYPAL_LIVE_CLIENT_SECRET }}
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     timeout-minutes: 30
 
     steps:
@@ -39,7 +47,6 @@ jobs:
           echo "Starting authoritative verification against commit $(git rev-parse HEAD)"
           npm run verify:120
         env:
-          SOLVEX_ENV: local
           CI: true
 
       - name: Print final accounting summary
