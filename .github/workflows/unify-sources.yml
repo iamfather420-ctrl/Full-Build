@@ -18,22 +18,76 @@ jobs:
           ref: integration/full-unification-2026-10-02
           fetch-depth: 0
           persist-credentials: true
-      - name: Merge source histories
+
+      - name: Fetch source repositories
+        shell: bash
+        run: |
+          set -euo pipefail
+          git remote add web-build https://github.com/iamfather420-ctrl/web-build.git
+          git remote add clean-web https://github.com/Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED.git
+          git fetch web-build main
+          git fetch clean-web main
+
+      - name: Integrate source trees
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "Full-Build Unification"
           git config user.email "actions@github.com"
-          git remote add web-build https://github.com/iamfather420-ctrl/web-build.git
-          git remote add clean-web https://github.com/Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED.git
-          git fetch web-build main
-          git fetch clean-web main
-          git merge --no-edit --allow-unrelated-histories -X ours web-build/main || {
-            git add -A
-            git commit -m "merge: reconcile imported sources from web-build"
-          }
-          git merge --no-edit --allow-unrelated-histories -X ours clean-web/main || {
-            git add -A
-            git commit -m "merge: reconcile imported sources from CLEAN-WEB-CONSOLIDATED"
-          }
+
+          mkdir -p .integration-source/web-build .integration-source/clean-web
+
+          git archive web-build/main | tar -x -C .integration-source/web-build
+          git archive clean-web/main | tar -x -C .integration-source/clean-web
+
+          # Never import credentials, dependency trees, build output, archives, caches,
+          # or other generated/vendor material into the canonical application.
+          EXCLUDES=(
+            --exclude='.git'
+            --exclude='node_modules'
+            --exclude='.next'
+            --exclude='dist'
+            --exclude='build'
+            --exclude='.gradle'
+            --exclude='coverage'
+            --exclude='.cache'
+            --exclude='*.zip'
+            --exclude='*.tar'
+            --exclude='*.tgz'
+            --exclude='*.apk'
+            --exclude='*.aab'
+            --exclude='*.jar'
+            --exclude='*.class'
+          )
+
+          # Preserve Full-Build as the canonical root. Add source material without
+          # replacing existing canonical files on path collisions.
+          rsync -a --ignore-existing "${EXCLUDES[@]}" .integration-source/web-build/ ./
+          rsync -a --ignore-existing "${EXCLUDES[@]}" .integration-source/clean-web/ ./
+
+          # Keep provenance manifests so every imported tree can be traced.
+          mkdir -p docs/integration
+          cat > docs/integration/SOURCE-UNIFICATION.md <<'EOF'
+          # Full-Build source unification
+
+          Canonical repository: iamfather420-ctrl/Full-Build
+
+          Imported source repositories:
+          - iamfather420-ctrl/web-build
+          - Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED
+
+          Policy:
+          - Full-Build remains canonical when the same path exists in multiple trees.
+          - Non-conflicting source files are imported into their original paths.
+          - Dependency/vendor/build/archive artifacts are excluded.
+          - GitHub Actions secrets already configured on Full-Build are not copied or exposed.
+          - This file is provenance only; it does not claim functional verification.
+
+          After integration, run the canonical Full-Build verification suite before declaring
+          any capability VERIFIED IMPLEMENTATION.
+          EOF
+
+          rm -rf .integration-source
+          git add -A
+          git diff --cached --quiet || git commit -m "merge: reconcile imported sources"
           git push origin HEAD:integration/full-unification-2026-10-02
