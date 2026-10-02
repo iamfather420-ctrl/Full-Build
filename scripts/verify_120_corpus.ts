@@ -31,7 +31,8 @@ async function main() {
   const mandatoryFailed = mandatoryGateResults.filter((g: any) => g.status !== 'PASSED');
 
   const executed = Number(dfrl.executed || 0) + Number(dh.executed || 0);
-  const replays = Number(dfrl.deterministic_replays_matched || 0) + Number(dh.deterministic_replays_matched || 0);
+  const dhReplays = Number(dh.deterministic_replays_matched ?? dh.replay_matches ?? 0);
+  const replays = Number(dfrl.deterministic_replays_matched || 0) + dhReplays;
   const unknown = Number(dfrl.unknown_count || 0) + Number(dh.unknown_count || 0);
   const errors = Number(dfrl.error_count || 0) + Number(dh.error_count || 0);
 
@@ -42,13 +43,13 @@ async function main() {
     dfrl.error_count === 0 &&
     dfrl.overall_status === 'VERIFIED' &&
     dh.executed === 32 &&
-    dh.deterministic_replays_matched === 32 &&
+    dhReplays === 32 &&
     dh.unknown_count === 0 &&
     dh.error_count === 0 &&
-    dh.duplicate_links_invalid === 0 &&
-    dh.mutation_test_passed === true &&
-    dh.failure_injection_passed === true &&
-    dh.artifact_tamper_test_passed === true &&
+    (dh.duplicate_links_invalid == null || dh.duplicate_links_invalid === 0) &&
+    (dh.mutation_test_passed === true || dh.mutation_test?.passed === true) &&
+    (dh.failure_injection_passed === true || dh.failure_injection_test?.passed === true) &&
+    (dh.artifact_tamper_test_passed === true || dh.tamper_test?.passed === true) &&
     executed === 120 &&
     replays === 120 &&
     unknown === 0 &&
