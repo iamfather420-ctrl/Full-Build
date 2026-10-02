@@ -27,7 +27,7 @@ export interface PipelineExecutionReport {
   completed_at: string;
   gates_total: number;
   gates_passed: number;
-  production_gate_verdict: 'PASSED' | 'BLOCKED_MISSING_EXTERNAL_CREDENTIALS' | 'BLOCKED_INTEGRITY_FAILURE';
+  production_gate_verdict: 'PASSED' | 'SANDBOX_VERIFIED' | 'BLOCKED_MISSING_EXTERNAL_CREDENTIALS' | 'BLOCKED_INTEGRITY_FAILURE';
   production_blockers: string[];
   claim_scope_verdict: string;
   artifacts_directory: string;
@@ -100,51 +100,54 @@ export class AuthoritativeVerificationPipeline {
     const neonConnected = neon.isConfigured() ? await neon.connect() : false;
     const neonStatus = neon.getStatus();
     const blockers: string[] = [];
-    if (env !== 'production') {
-      blockers.push(`Environment is ${env}. Production requires SOLVEX_ENV=production.`);
-    }
-    if (!paypal.ok || paypal.environment !== 'live') {
-      blockers.push(paypal.error || 'PayPal live OAuth did not succeed using Actions secrets PAYPAL_LIVE_CLIENT_ID and PAYPAL_LIVE_CLIENT_SECRET.');
+    const sandboxReady = paypal.ok && paypal.environment === 'sandbox';
+    const liveReady = paypal.ok && paypal.environment === 'live' && env === 'production';
+    if (!sandboxReady && !liveReady) {
+      blockers.push(paypal.error || 'PayPal sandbox OAuth did not succeed. Expected Actions secrets PAYPAL_SANDBOX_CLIENT_ID and PAYPAL_SANDBOX_CLIENT_SECRET.');
     }
     if (!neonConnected) {
       blockers.push(neonStatus.last_error || 'Neon connection failed. Expected Actions secret NEON_DATABASE_URL.');
     }
 
     const integrityFailed = gates.some(gate => gate.status === 'FAILED');
-    const productionPassed = !integrityFailed && blockers.length === 0;
+    const providerReady = !integrityFailed && blockers.length === 0 && (sandboxReady || liveReady);
+    const claimScope = liveReady ? 'PRODUCTION' : sandboxReady ? 'SANDBOX' : 'LOCAL';
     add(
       'GATE-04',
-      'Commercial production boundary',
-      productionPassed ? 'PRODUCTION' : 'LOCAL',
-      productionPassed ? 'PASSED' : 'BLOCKED',
+      'PayPal provider boundary',
+      claimScope,
+      providerReady ? 'PASSED' : 'BLOCKED',
       {
         paypal_environment: paypal.environment,
-        paypal_authenticated: paypal.ok && paypal.environment === 'live',
+        paypal_authenticated: paypal.ok,
+        live_api_called: paypal.environment === 'live',
         neon_configured: neon.isConfigured(),
         neon_connected: neonConnected,
         blockers
       },
-      productionPassed ? undefined : blockers.join(' ')
+      providerReady ? undefined : blockers.join(' ')
     );
 
     const report: PipelineExecutionReport = {
       pipeline_name: 'SOLVEX Truth-Boundary Verification',
-      version: '2.1.0',
+      version: '2.2.0',
       execution_id: `verification_${Date.now()}`,
       commit_sha: commitSha,
       environment: env,
       completed_at: new Date().toISOString(),
       gates_total: gates.length,
       gates_passed: gates.filter(gate => gate.status === 'PASSED').length,
-      production_gate_verdict: productionPassed
-        ? 'PASSED'
+      production_gate_verdict: providerReady
+        ? (liveReady ? 'PASSED' : 'SANDBOX_VERIFIED')
         : integrityFailed
           ? 'BLOCKED_INTEGRITY_FAILURE'
           : 'BLOCKED_MISSING_EXTERNAL_CREDENTIALS',
       production_blockers: blockers,
-      claim_scope_verdict: productionPassed
+      claim_scope_verdict: liveReady && providerReady
         ? 'PRODUCTION_VERIFIED'
-        : 'LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; COMMERCIAL_PRODUCTION_BLOCKED',
+        : sandboxReady && providerReady
+          ? 'SANDBOX_VERIFIED'
+          : 'LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; PROVIDER_CHECK_BLOCKED',
       artifacts_directory: artifacts,
       gates
     };

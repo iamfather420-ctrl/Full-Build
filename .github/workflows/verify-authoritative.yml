@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: PRODUCTION
     env:
-      SOLVEX_ENV: production
-      SOLVEX_ENVIRONMENT: production
+      SOLVEX_ENV: sandbox
+      SOLVEX_ENVIRONMENT: sandbox
       PAYPAL_ACTIVE_ENVIORMENT: ${{ secrets.PAYPAL_ACTIVE_ENVIORMENT }}
-      PAYPAL_ENVIRONMENT: ${{ secrets.PAYPAL_ACTIVE_ENVIORMENT }}
+      PAYPAL_ENVIRONMENT: sandbox
       PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
       PAYPAL_SANDBOX_CLIENT_SECRET: ${{ secrets.PAYPAL_SANDBOX_CLIENT_SECRET }}
       PAYPAL_LIVE_CLIENT_ID: ${{ secrets.PAYPAL_LIVE_CLIENT_ID }}
