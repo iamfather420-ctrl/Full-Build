@@ -37,28 +37,61 @@ export class PayPalAdapter {
     return PayPalAdapter.instance;
   }
 
-  public getEffectiveCredentials(): PayPalCredentials | null {
-    const requested = (
+  private active: PayPalCredentials | null = null;
+
+  private clean(value?: string): string {
+    return (value || '').replace(/^\uFEFF/, '').trim().replace(/^['"]+|['"]+$/g, '');
+  }
+
+  private selectedEnvironment(): 'live' | 'sandbox' | null {
+    const requested = this.clean(
       process.env.PAYPAL_ENVIRONMENT
       || process.env.PAYPAL_ACTIVE_ENVIORMENT
       || process.env.PAYPAL_ACTIVE_ENVIRONMENT
-      || ''
-    ).trim().toLowerCase();
-    const environment = requested === 'live' || requested === 'production'
-      ? 'live'
-      : requested === 'sandbox'
-        ? 'sandbox'
-        : (process.env.SOLVEX_ENV || '').trim().toLowerCase() === 'production'
-          ? 'live'
-          : null;
+    ).toLowerCase();
+    if (requested === 'live' || requested === 'production') return 'live';
+    if (requested === 'sandbox') return 'sandbox';
+    if (this.clean(process.env.SOLVEX_ENV).toLowerCase() === 'production') return 'live';
+    return null;
+  }
+
+  private candidates(environment: 'live' | 'sandbox'): PayPalCredentials[] {
+    const pairs = environment === 'live'
+      ? [
+          [process.env.PAYPAL_LIVE_CLIENT_ID, process.env.PAYPAL_LIVE_CLIENT_SECRET],
+          [process.env.PAYPAL_LIVE_CLIENT_ID, process.env.PAYPAL_LIVE_LIVE_NT_SECRET],
+          [process.env.PAYPAL_LIVE_CLIENT_ID, process.env.PAYPAL_LIVE_SECRET],
+          [process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET],
+          [process.env.PAYPAL_SANDBOX_CLIENT_ID, process.env.PAYPAL_SANDBOX_CLIENT_SECRET],
+          [process.env.PAYPAL_SANDBOX_ID, process.env.PAYPAL_SANDBOX_KEY]
+        ]
+      : [
+          [process.env.PAYPAL_SANDBOX_CLIENT_ID, process.env.PAYPAL_SANDBOX_CLIENT_SECRET],
+          [process.env.PAYPAL_SANDBOX_ID, process.env.PAYPAL_SANDBOX_KEY],
+          [process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_CLIENT_SECRET]
+        ];
+    const seen = new Set<string>();
+    const credentials: PayPalCredentials[] = [];
+    for (const [id, secret] of pairs) {
+      const clientId = this.clean(id);
+      const clientSecret = this.clean(secret);
+      if (!clientId || !clientSecret) continue;
+      const key = `${environment}:${clientId}:${clientSecret}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      credentials.push({ clientId, clientSecret, environment });
+    }
+    return credentials;
+  }
+
+  public getEffectiveCredentials(): PayPalCredentials | null {
+    const environment = this.selectedEnvironment();
     if (!environment) return null;
-    const clientId = environment === 'live' ? process.env.PAYPAL_LIVE_CLIENT_ID : process.env.PAYPAL_SANDBOX_CLIENT_ID;
-    const clientSecret = environment === 'live' ? (process.env.PAYPAL_LIVE_CLIENT_SECRET || process.env.PAYPAL_LIVE_SECRET) : (process.env.PAYPAL_SANDBOX_CLIENT_SECRET || process.env.PAYPAL_SANDBOX_SECRET);
-    // Generic variables are sandbox-only for backwards-compatible local development; live never falls back.
-    const compatibleId = environment === 'sandbox' ? process.env.PAYPAL_CLIENT_ID : undefined;
-    const compatibleSecret = environment === 'sandbox' ? process.env.PAYPAL_CLIENT_SECRET : undefined;
-    if (!(clientId || compatibleId) || !(clientSecret || compatibleSecret)) return null;
-    return { clientId: (clientId || compatibleId)!.trim(), clientSecret: (clientSecret || compatibleSecret)!.trim(), environment };
+    const available = this.candidates(environment);
+    if (this.active?.environment === environment && available.some(item => item.clientId === this.active!.clientId && item.clientSecret === this.active!.clientSecret)) {
+      return this.active;
+    }
+    return available[0] || null;
   }
 
   public hasActiveCredentials(): boolean { return Boolean(this.getEffectiveCredentials()); }
@@ -75,10 +108,20 @@ export class PayPalAdapter {
 
   /** Safe credential check. Obtains an OAuth token and does not create or capture an order. */
   public async verifyCredentials(): Promise<{ ok: boolean; environment: 'live' | 'sandbox' | 'none'; error?: string }> {
-    const credentials = this.getEffectiveCredentials();
-    if (!credentials) return { ok: false, environment: 'none', error: 'PayPal credentials are not configured in the server environment.' };
-    const auth = await this.oauth(credentials);
-    return auth.token ? { ok: true, environment: credentials.environment } : { ok: false, environment: credentials.environment, error: auth.error };
+    const environment = this.selectedEnvironment();
+    if (!environment) return { ok: false, environment: 'none', error: 'PayPal credentials are not configured in the server environment.' };
+    const candidates = this.candidates(environment);
+    if (!candidates.length) return { ok: false, environment, error: 'PayPal credentials are not configured in the server environment.' };
+    let lastError = 'Client Authentication failed';
+    for (const credentials of candidates) {
+      const auth = await this.oauth(credentials);
+      if (auth.token) {
+        this.active = credentials;
+        return { ok: true, environment: credentials.environment };
+      }
+      lastError = auth.error || lastError;
+    }
+    return { ok: false, environment, error: lastError };
   }
 
   private scope(credentials?: PayPalCredentials): 'LOCAL' | 'SANDBOX' | 'PRODUCTION' {

@@ -51,10 +51,26 @@ export async function runEnterpriseVerification(): Promise<EnterpriseVerificatio
     if (result.success) throw new Error('Unverified or mismatched solution published');
   });
   await test('PayPal checkout fails closed without server credentials', 'PAYMENTS', async () => {
-    const savedEnv = process.env.PAYPAL_ENVIRONMENT; delete process.env.PAYPAL_ENVIRONMENT;
-    const result = await PayPalAdapter.getInstance().createCheckout('missing_order', 'TENANT_ALPHA', 'idempotency-key-123');
-    if (savedEnv) process.env.PAYPAL_ENVIRONMENT = savedEnv;
-    if (result.status !== 'EXTERNAL_PROVIDER_REQUIRED') throw new Error(`Unexpected gateway status ${result.status}`);
+    const keys = [
+      'PAYPAL_ENVIRONMENT', 'PAYPAL_ACTIVE_ENVIORMENT', 'PAYPAL_ACTIVE_ENVIRONMENT',
+      'PAYPAL_LIVE_CLIENT_ID', 'PAYPAL_LIVE_CLIENT_SECRET', 'PAYPAL_LIVE_SECRET', 'PAYPAL_LIVE_LIVE_NT_SECRET',
+      'PAYPAL_SANDBOX_CLIENT_ID', 'PAYPAL_SANDBOX_CLIENT_SECRET', 'PAYPAL_SANDBOX_ID', 'PAYPAL_SANDBOX_KEY', 'PAYPAL_SANDBOX_SECRET',
+      'PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'
+    ];
+    const saved = new Map<string, string | undefined>();
+    for (const key of keys) {
+      saved.set(key, process.env[key]);
+      delete process.env[key];
+    }
+    try {
+      const result = await PayPalAdapter.getInstance().createCheckout('missing_order', 'TENANT_ALPHA', 'idempotency-key-123');
+      if (result.status !== 'EXTERNAL_PROVIDER_REQUIRED') throw new Error(`Unexpected gateway status ${result.status}`);
+    } finally {
+      for (const [key, value] of saved) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
   });
   await test('Sensitive API routes reject unauthenticated callers', 'API', async () => {
     const api = SovereignApiRouter.getInstance();
