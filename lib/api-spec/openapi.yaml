@@ -1,0 +1,2055 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: SolveX Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: Auth
+    description: Browser and mobile authentication endpoints.
+  - name: auth
+  - name: products
+  - name: orders
+  - name: vault
+  - name: library
+  - name: problems
+  - name: solutions
+  - name: escrow
+  - name: crawler
+  - name: notifications
+  - name: earnings
+  - name: offers
+  - name: owner
+  - name: openai
+    description: OpenAI AI chat and audio operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ── Auth (Replit OIDC) ────────────────────────────────────────────────
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the currently authenticated user
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Auth status resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserEnvelope'
+  /login:
+    get:
+      tags: [Auth]
+      operationId: beginBrowserLogin
+      summary: Start the browser OIDC login flow
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the OIDC authorization endpoint.
+  /callback:
+    get:
+      tags: [Auth]
+      operationId: handleBrowserLoginCallback
+      summary: Complete the browser OIDC login flow
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: iss
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uri
+      responses:
+        '302':
+          description: Redirect to the returnTo path on success.
+  /logout:
+    get:
+      tags: [Auth]
+      operationId: logoutBrowserSession
+      summary: Clear the session and begin OIDC logout
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '302':
+          description: Redirect to the OIDC provider logout URL.
+  /mobile-auth/token-exchange:
+    post:
+      tags: [Auth]
+      operationId: exchangeMobileAuthorizationCode
+      summary: Exchange a mobile OIDC code for a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileTokenExchangeRequest'
+      responses:
+        '200':
+          description: Session created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileTokenExchangeSuccess'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Token did not contain usable claims.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Token exchange failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /mobile-auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logoutMobileSession
+      summary: Delete a mobile session token
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+      responses:
+        '200':
+          description: Logout processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutSuccess'
+
+  # ── Legacy auth ───────────────────────────────────────────────────────
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user (legacy)
+      responses:
+        "200":
+          description: Current user or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # ── Products (Crypto Marketplace) ─────────────────────────────────────
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List all paradox products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [fundamental, ai, operational]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [price_asc, price_desc, name]
+      responses:
+        "200":
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/stats:
+    get:
+      operationId: getProductStats
+      tags: [products]
+      summary: Get marketplace stats
+      responses:
+        "200":
+          description: Marketplace stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductStats"
+
+  # ── Orders ────────────────────────────────────────────────────────────
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a new crypto order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResult"
+
+  /orders/mine:
+    get:
+      operationId: getMyOrders
+      tags: [orders]
+      summary: Get current user's orders
+      responses:
+        "200":
+          description: Orders list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /orders/all:
+    get:
+      operationId: getAllOrders
+      tags: [orders]
+      summary: Get all orders (admin only)
+      responses:
+        "200":
+          description: All orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get order by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/{id}/confirm:
+    post:
+      operationId: confirmOrder
+      tags: [orders]
+      summary: Confirm payment (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmOrderInput"
+      responses:
+        "200":
+          description: Confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  # ── Vault ─────────────────────────────────────────────────────────────
+  /vault/config:
+    get:
+      operationId: getVaultConfig
+      tags: [vault]
+      summary: Get vault hold period config
+      responses:
+        "200":
+          description: Vault config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultConfig"
+
+  /vault/entries:
+    get:
+      operationId: getVaultEntries
+      tags: [vault]
+      summary: Get all vault entries (admin only)
+      responses:
+        "200":
+          description: Vault entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VaultEntry"
+
+  /vault/available-funds:
+    get:
+      operationId: getAvailableFunds
+      tags: [vault]
+      summary: Get available funds for withdrawal (admin only)
+      responses:
+        "200":
+          description: Available funds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailableFunds"
+
+  /vault/withdraw:
+    post:
+      operationId: withdrawVault
+      tags: [vault]
+      summary: Withdraw available vault funds (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawInput"
+      responses:
+        "200":
+          description: Withdrawal result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawResult"
+
+  /vault/process:
+    post:
+      operationId: processVaultHolds
+      tags: [vault]
+      summary: Process expired vault holds and deliver solutions (admin only)
+      responses:
+        "200":
+          description: Processing result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessResult"
+
+  # ── Library ───────────────────────────────────────────────────────────
+  /library:
+    get:
+      operationId: getMyLibrary
+      tags: [library]
+      summary: Get current user's purchased solutions
+      responses:
+        "200":
+          description: User's library
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserPurchase"
+
+  /library/{productId}/check:
+    get:
+      operationId: checkPurchased
+      tags: [library]
+      summary: Check if user has purchased a product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Purchase status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseCheck"
+
+  # ── Problems ──────────────────────────────────────────────────────────
+  /problems:
+    get:
+      operationId: listProblems
+      tags: [problems]
+      summary: List problems with optional filters
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Problems list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Problem"
+    post:
+      operationId: createProblem
+      tags: [problems]
+      summary: Post a new problem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProblemInput"
+      responses:
+        "201":
+          description: Problem created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /problems/stats:
+    get:
+      operationId: getProblemStats
+      tags: [problems]
+      summary: Get problem marketplace stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemStats"
+
+  /problems/mine:
+    get:
+      operationId: getMyProblems
+      tags: [problems]
+      summary: Get current user's posted problems
+      responses:
+        "200":
+          description: User's problems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Problem"
+
+  /problems/{id}:
+    get:
+      operationId: getProblem
+      tags: [problems]
+      summary: Get problem by ID with solutions and escrow
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Problem detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+  /problems/{id}/status:
+    patch:
+      operationId: updateProblemStatus
+      tags: [problems]
+      summary: Update problem status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProblemStatusUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  # ── Solutions ─────────────────────────────────────────────────────────
+  /solutions:
+    post:
+      operationId: submitSolution
+      tags: [solutions]
+      summary: Submit a solution (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SolutionInput"
+      responses:
+        "201":
+          description: Solution submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+
+  /solutions/problem/{problemId}:
+    get:
+      operationId: getSolutionsByProblem
+      tags: [solutions]
+      summary: Get solutions for a problem
+      parameters:
+        - name: problemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Solutions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Solution"
+
+  /solutions/{id}/verify:
+    post:
+      operationId: verifySolution
+      tags: [solutions]
+      summary: AI-verify a solution (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResult"
+
+  # ── Escrow ────────────────────────────────────────────────────────────
+  /escrow:
+    post:
+      operationId: createEscrow
+      tags: [escrow]
+      summary: Create escrow for a problem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EscrowInput"
+      responses:
+        "201":
+          description: Escrow created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Escrow"
+
+  /escrow/payment-intent:
+    post:
+      operationId: createPaymentIntent
+      tags: [escrow]
+      summary: Create Stripe payment intent for escrow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentIntentInput"
+      responses:
+        "200":
+          description: Payment intent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentIntentResult"
+
+  /escrow/problem/{problemId}:
+    get:
+      operationId: getEscrowByProblem
+      tags: [escrow]
+      summary: Get escrow for a problem
+      parameters:
+        - name: problemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Escrow
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Escrow"
+
+  # ── Crawler ───────────────────────────────────────────────────────────
+  /crawler/run:
+    post:
+      operationId: runCrawler
+      tags: [crawler]
+      summary: Run AI crawler (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrawlerInput"
+      responses:
+        "200":
+          description: Crawler results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrawlerResult"
+
+  /crawler/crawled:
+    get:
+      operationId: listCrawledProblems
+      tags: [crawler]
+      summary: List crawled problems (admin only)
+      parameters:
+        - name: platform
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Crawled problems
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CrawledProblem"
+
+  /crawler/import:
+    post:
+      operationId: importCrawledProblem
+      tags: [crawler]
+      summary: Import a crawled problem (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportInput"
+      responses:
+        "200":
+          description: Imported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  # ── Notifications ─────────────────────────────────────────────────────
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List user notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/unread-count:
+    get:
+      operationId: getUnreadNotificationCount
+      tags: [notifications]
+      summary: Get unread notification count
+      responses:
+        "200":
+          description: Count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnreadCount"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Marked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  /notifications/mark-all-read:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Marked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  # ── Earnings ──────────────────────────────────────────────────────────
+  /earnings:
+    get:
+      operationId: listEarnings
+      tags: [earnings]
+      summary: List solver earnings (admin only)
+      responses:
+        "200":
+          description: Earnings list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Earning"
+
+  /earnings/stats:
+    get:
+      operationId: getEarningStats
+      tags: [earnings]
+      summary: Get earnings stats (admin only)
+      responses:
+        "200":
+          description: Earnings stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EarningStats"
+
+  # ── Offers ────────────────────────────────────────────────────────────
+  /offers:
+    post:
+      operationId: createOffer
+      tags: [offers]
+      summary: Make an offer on a problem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferInput"
+      responses:
+        "201":
+          description: Offer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Offer"
+
+  /offers/mine:
+    get:
+      operationId: getMyOffers
+      tags: [offers]
+      summary: Get user's offers
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [sent, received]
+            default: received
+      responses:
+        "200":
+          description: Offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Offer"
+
+  /offers/problem/{problemId}:
+    get:
+      operationId: getOffersByProblem
+      tags: [offers]
+      summary: Get offers for a problem
+      parameters:
+        - name: problemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Offer"
+
+  /offers/{id}/counter:
+    post:
+      operationId: counterOffer
+      tags: [offers]
+      summary: Counter an offer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CounterOfferInput"
+      responses:
+        "200":
+          description: Counter offer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Offer"
+
+  /offers/{id}/accept:
+    post:
+      operationId: acceptOffer
+      tags: [offers]
+      summary: Accept an offer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  /offers/{id}/reject:
+    post:
+      operationId: rejectOffer
+      tags: [offers]
+      summary: Reject an offer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  # ── Owner Dashboard ───────────────────────────────────────────────────
+  /owner/settings:
+    get:
+      operationId: getOwnerSettings
+      tags: [owner]
+      summary: Get owner settings (admin only)
+      responses:
+        "200":
+          description: Owner settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnerSettings"
+
+  /owner/audit-log:
+    get:
+      operationId: getAuditLog
+      tags: [owner]
+      summary: Get audit log (admin only)
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: eventType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLogEntry"
+
+  /owner/system-stats:
+    get:
+      operationId: getSystemStats
+      tags: [owner]
+      summary: Get system statistics (admin only)
+      responses:
+        "200":
+          description: System stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStats"
+
+  /owner/payment-notifications:
+    get:
+      operationId: getPaymentNotifications
+      tags: [owner]
+      summary: Get payment notifications (admin only)
+      responses:
+        "200":
+          description: Payment notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentNotification"
+
+  /owner/withdraw:
+    post:
+      operationId: initiateOwnerWithdrawal
+      tags: [owner]
+      summary: Initiate owner withdrawal (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnerWithdrawInput"
+      responses:
+        "200":
+          description: Withdrawal result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnerWithdrawResult"
+
+  /owner/seed-products:
+    post:
+      operationId: seedProducts
+      tags: [owner]
+      summary: Seed paradox products (admin only)
+      responses:
+        "200":
+          description: Seeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResult"
+
+  /openai/conversations:
+    get:
+      operationId: listOpenaiConversations
+      tags: [openai]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiConversation"
+    post:
+      operationId: createOpenaiConversation
+      tags: [openai]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenaiConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversation"
+  /openai/conversations/{id}:
+    get:
+      operationId: getOpenaiConversation
+      tags: [openai]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+    delete:
+      operationId: deleteOpenaiConversation
+      tags: [openai]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenaiError"
+  /openai/conversations/{id}/messages:
+    get:
+      operationId: listOpenaiMessages
+      tags: [openai]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenaiMessage"
+    post:
+      operationId: sendOpenaiMessage
+      tags: [openai]
+      summary: Send a text message and receive a streaming text response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenaiMessageInput"
+      responses:
+        "200":
+          description: SSE stream of assistant text chunks
+          content:
+            text/event-stream: {}
+  /openai/conversations/{id}/voice-messages:
+    post:
+      operationId: sendOpenaiVoiceMessage
+      tags: [openai]
+      summary: Send audio and receive a streaming voice response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpenaiVoiceMessageInput"
+      responses:
+        "200":
+          description: SSE stream of transcript and audio chunks
+          content:
+            text/event-stream: {}
+
+components:
+  parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      description: Opaque session token — `Bearer <sid>`.
+      schema:
+        type: string
+    SessionCookie:
+      name: sid
+      in: cookie
+      required: false
+      description: Browser session cookie.
+      schema:
+        type: string
+
+  schemas:
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl]
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, 'null']
+          format: email
+        firstName:
+          type: [string, 'null']
+        lastName:
+          type: [string, 'null']
+        profileImageUrl:
+          type: [string, 'null']
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: '#/components/schemas/AuthUser'
+            - type: 'null'
+    MobileTokenExchangeRequest:
+      type: object
+      required: [code, code_verifier, redirect_uri, state]
+      properties:
+        code:
+          type: string
+          minLength: 1
+        code_verifier:
+          type: string
+          minLength: 1
+        redirect_uri:
+          type: string
+          minLength: 1
+          format: uri
+        state:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+    MobileTokenExchangeSuccess:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    LogoutSuccess:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          const: true
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    SuccessResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+
+    Product:
+      type: object
+      required: [id, name, category, description, priceEth, priceUsdc, priceBtc]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [fundamental, ai, operational]
+        description:
+          type: string
+        solution:
+          type: ["string", "null"]
+        impact:
+          type: ["string", "null"]
+        priceEth:
+          type: string
+        priceUsdc:
+          type: string
+        priceBtc:
+          type: string
+        salesCount:
+          type: integer
+        createdAt:
+          type: string
+
+    ProductStats:
+      type: object
+      required: [totalProducts, totalSales, totalRevenue]
+      properties:
+        totalProducts:
+          type: integer
+        totalSales:
+          type: integer
+        totalRevenue:
+          type: string
+        byCategory:
+          type: object
+
+    OrderInput:
+      type: object
+      required: [productId, paymentMethod]
+      properties:
+        productId:
+          type: string
+        paymentMethod:
+          type: string
+          enum: [eth, usdc, btc]
+
+    OrderResult:
+      type: object
+      required: [orderId, walletAddress, amount, paymentMethod]
+      properties:
+        orderId:
+          type: string
+        walletAddress:
+          type: string
+        amount:
+          type: string
+        paymentMethod:
+          type: string
+        holdUntil:
+          type: string
+
+    Order:
+      type: object
+      required: [id, userId, productId, status, paymentMethod, amount, walletAddress]
+      properties:
+        id:
+          type: string
+        userId:
+          type: integer
+        productId:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, delivered, failed]
+        paymentMethod:
+          type: string
+        amount:
+          type: string
+        walletAddress:
+          type: string
+        transactionHash:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        confirmedAt:
+          type: ["string", "null"]
+        deliveredAt:
+          type: ["string", "null"]
+
+    ConfirmOrderInput:
+      type: object
+      required: [transactionHash]
+      properties:
+        transactionHash:
+          type: string
+
+    VaultConfig:
+      type: object
+      required: [id, holdPeriodHours]
+      properties:
+        id:
+          type: integer
+        holdPeriodHours:
+          type: integer
+
+    VaultEntry:
+      type: object
+      required: [id, orderId, userId, amount, paymentMethod, status, holdUntil]
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        userId:
+          type: integer
+        amount:
+          type: string
+        paymentMethod:
+          type: string
+        status:
+          type: string
+          enum: [pending, held, available, withdrawn]
+        holdUntil:
+          type: string
+        withdrawnAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    AvailableFunds:
+      type: object
+      required: [total, count]
+      properties:
+        total:
+          type: string
+        count:
+          type: integer
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/VaultEntry"
+
+    WithdrawInput:
+      type: object
+      required: [entryIds, withdrawalAddress]
+      properties:
+        entryIds:
+          type: array
+          items:
+            type: string
+        withdrawalAddress:
+          type: string
+
+    WithdrawResult:
+      type: object
+      required: [success, count]
+      properties:
+        success:
+          type: boolean
+        count:
+          type: integer
+        totalAmount:
+          type: string
+
+    ProcessResult:
+      type: object
+      required: [success, processed]
+      properties:
+        success:
+          type: boolean
+        processed:
+          type: integer
+
+    UserPurchase:
+      type: object
+      required: [id, userId, productId, orderId, purchasedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: integer
+        productId:
+          type: string
+        orderId:
+          type: string
+        unlockedAt:
+          type: ["string", "null"]
+        purchasedAt:
+          type: string
+        product:
+          $ref: "#/components/schemas/Product"
+
+    PurchaseCheck:
+      type: object
+      required: [purchased]
+      properties:
+        purchased:
+          type: boolean
+
+    Problem:
+      type: object
+      required: [id, title, description, category, status, paymentOffer]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+        source:
+          type: string
+        sourceUrl:
+          type: ["string", "null"]
+        paymentOffer:
+          type: string
+        currency:
+          type: string
+        deadline:
+          type: ["string", "null"]
+        clientId:
+          type: ["integer", "null"]
+        tags:
+          type: ["string", "null"]
+        viewCount:
+          type: integer
+        isVerified:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ProblemInput:
+      type: object
+      required: [title, description, category, paymentOffer]
+      properties:
+        title:
+          type: string
+          minLength: 10
+        description:
+          type: string
+          minLength: 20
+        category:
+          type: string
+        paymentOffer:
+          type: number
+          minimum: 1
+        deadline:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    ProblemStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [closed, refunded]
+
+    ProblemStats:
+      type: object
+      required: [total, open, solved, totalValue]
+      properties:
+        total:
+          type: integer
+        open:
+          type: integer
+        solved:
+          type: integer
+        inProgress:
+          type: integer
+        totalValue:
+          type: string
+        byCategory:
+          type: object
+
+    ProblemDetail:
+      type: object
+      required: [problem]
+      properties:
+        problem:
+          $ref: "#/components/schemas/Problem"
+        solutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Solution"
+        escrow:
+          $ref: "#/components/schemas/Escrow"
+
+    Solution:
+      type: object
+      required: [id, problemId, solverId, content, status]
+      properties:
+        id:
+          type: integer
+        problemId:
+          type: integer
+        solverId:
+          type: integer
+        content:
+          type: string
+        status:
+          type: string
+          enum: [pending, verifying, approved, rejected]
+        verificationScore:
+          type: ["string", "null"]
+        verificationNotes:
+          type: ["string", "null"]
+        verifiedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    SolutionInput:
+      type: object
+      required: [problemId, content]
+      properties:
+        problemId:
+          type: integer
+        content:
+          type: string
+          minLength: 20
+
+    VerificationResult:
+      type: object
+      required: [approved, score]
+      properties:
+        approved:
+          type: boolean
+        score:
+          type: number
+        notes:
+          type: string
+
+    Escrow:
+      type: object
+      required: [id, problemId, clientId, amount, status]
+      properties:
+        id:
+          type: integer
+        problemId:
+          type: integer
+        clientId:
+          type: integer
+        amount:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending, held, released, refunded, failed]
+        stripePaymentIntentId:
+          type: ["string", "null"]
+        releasedAt:
+          type: ["string", "null"]
+        refundedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    EscrowInput:
+      type: object
+      required: [problemId, amount]
+      properties:
+        problemId:
+          type: integer
+        amount:
+          type: number
+
+    PaymentIntentInput:
+      type: object
+      required: [problemId, amount]
+      properties:
+        problemId:
+          type: integer
+        amount:
+          type: number
+
+    PaymentIntentResult:
+      type: object
+      required: [clientSecret, paymentIntentId]
+      properties:
+        clientSecret:
+          type: string
+        paymentIntentId:
+          type: string
+
+    CrawlerInput:
+      type: object
+      properties:
+        platforms:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+        limit:
+          type: integer
+          default: 10
+
+    CrawlerResult:
+      type: object
+      required: [found]
+      properties:
+        found:
+          type: integer
+        problems:
+          type: array
+          items:
+            $ref: "#/components/schemas/CrawledProblem"
+
+    CrawledProblem:
+      type: object
+      required: [id, title, description, platform]
+      properties:
+        id:
+          type: integer
+        externalId:
+          type: string
+        platform:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        sourceUrl:
+          type: string
+        suggestedCategory:
+          type: string
+        suggestedPayment:
+          type: ["string", "null"]
+        isImported:
+          type: boolean
+        aiSummary:
+          type: ["string", "null"]
+        upvotes:
+          type: ["integer", "null"]
+        crawledAt:
+          type: string
+
+    ImportInput:
+      type: object
+      required: [crawledId, paymentOffer]
+      properties:
+        crawledId:
+          type: integer
+        paymentOffer:
+          type: number
+
+    Notification:
+      type: object
+      required: [id, userId, type, title, message, isRead, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        problemId:
+          type: ["integer", "null"]
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+
+    UnreadCount:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+
+    Earning:
+      type: object
+      required: [id, solverId, problemId, solutionId, amount, status]
+      properties:
+        id:
+          type: integer
+        solverId:
+          type: integer
+        problemId:
+          type: integer
+        solutionId:
+          type: integer
+        amount:
+          type: string
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [pending, paid]
+        paidAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    EarningStats:
+      type: object
+      required: [totalEarned, pending, paid, count]
+      properties:
+        totalEarned:
+          type: string
+        pending:
+          type: string
+        paid:
+          type: string
+        count:
+          type: integer
+
+    Offer:
+      type: object
+      required: [id, problemId, fromUserId, toUserId, amount, status]
+      properties:
+        id:
+          type: integer
+        problemId:
+          type: integer
+        fromUserId:
+          type: integer
+        toUserId:
+          type: integer
+        amount:
+          type: string
+        currency:
+          type: string
+        message:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, accepted, rejected, countered]
+        counterOfferId:
+          type: ["integer", "null"]
+        expiresAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    OfferInput:
+      type: object
+      required: [problemId, amount]
+      properties:
+        problemId:
+          type: integer
+        amount:
+          type: number
+        message:
+          type: string
+        expiresAt:
+          type: string
+
+    CounterOfferInput:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: number
+        message:
+          type: string
+
+    OwnerSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+        withdrawalAddress:
+          type: ["string", "null"]
+        totalWithdrawn:
+          type: string
+        systemStatus:
+          type: string
+          enum: [active, maintenance, paused]
+        enableAutoDelivery:
+          type: boolean
+
+    AuditLogEntry:
+      type: object
+      required: [id, eventType, status, createdAt]
+      properties:
+        id:
+          type: string
+        eventType:
+          type: string
+        userId:
+          type: ["integer", "null"]
+        orderId:
+          type: ["string", "null"]
+        details:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+
+    SystemStats:
+      type: object
+      properties:
+        totalOrders:
+          type: integer
+        totalRevenue:
+          type: string
+        vaultBalance:
+          type: string
+        activeSubscriptions:
+          type: integer
+        totalProblems:
+          type: integer
+        solvedProblems:
+          type: integer
+        totalEarnings:
+          type: string
+
+    PaymentNotification:
+      type: object
+      required: [id, orderId, notificationType, message, isRead, createdAt]
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        notificationType:
+          type: string
+        message:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+
+    OwnerWithdrawInput:
+      type: object
+      required: [entryIds, withdrawalAddress]
+      properties:
+        entryIds:
+          type: array
+          items:
+            type: string
+        withdrawalAddress:
+          type: string
+
+    OwnerWithdrawResult:
+      type: object
+      required: [success, totalAmount, entryCount]
+      properties:
+        success:
+          type: boolean
+        totalAmount:
+          type: string
+        entryCount:
+          type: integer
+
+    OpenaiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, createdAt]
+    OpenaiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, conversationId, role, content, createdAt]
+    OpenaiConversationInput:
+      type: object
+      properties:
+        title:
+          type: string
+      required: [title]
+    OpenaiMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+    OpenaiVoiceMessageInput:
+      type: object
+      properties:
+        audio:
+          type: string
+      required: [audio]
+    OpenaiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpenaiMessage"
+      required: [id, title, createdAt, messages]
+    OpenaiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]

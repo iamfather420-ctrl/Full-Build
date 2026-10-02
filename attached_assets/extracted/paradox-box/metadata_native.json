@@ -1,0 +1,6 @@
+{
+  "name": "SolveX Paradox B2B Solutions",
+  "description": "Institutional B2B security & sovereign paradox exchange. 100% parity Zero-Knowledge sandbox verification, dual-signature cryptographic escrow, and audit-proof sovereign executive resolutions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

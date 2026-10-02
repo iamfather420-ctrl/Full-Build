@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sovereign-kernel
+  namespace: daisy-prod
+  labels:
+    app: sovereign-kernel
+    tier: control-plane
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: sovereign-kernel
+  template:
+    metadata:
+      labels:
+        app: sovereign-kernel
+    spec:
+      containers:
+        - name: sovereign-kernel
+          image: ghcr.io/solvex/sovereign-kernel:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: GRID_NODE_COUNT
+              value: "54"
+            - name: COMPLIANCE_STRICT_MODE
+              value: "true"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sovereign-kernel
+  namespace: daisy-prod
+  labels:
+    app: sovereign-kernel
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: sovereign-kernel
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sovereign-kernel-hpa
+  namespace: daisy-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sovereign-kernel
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+---
+apiVersion: customize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+images:
+  - name: sovereign-kernel
+    newName: ghcr.io/solvex/sovereign-kernel
+    newTag: latest

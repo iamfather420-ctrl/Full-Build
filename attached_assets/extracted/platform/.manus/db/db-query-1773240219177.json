@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `offers` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`problemId` int NOT NULL,\n\t`fromUserId` int NOT NULL,\n\t`toUserId` int NOT NULL,\n\t`amount` decimal(10,2) NOT NULL,\n\t`currency` varchar(8) NOT NULL DEFAULT 'USD',\n\t`message` text,\n\t`status` enum('pending','accepted','rejected','countered') NOT NULL DEFAULT 'pending',\n\t`counterOfferId` int,\n\t`expiresAt` timestamp,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `offers_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3tYgEB142wAMdC9.root --database 29LvBDoTz542P8sj6aKJB3 --execute CREATE TABLE `offers` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`problemId` int NOT NULL,\n\t`fromUserId` int NOT NULL,\n\t`toUserId` int NOT NULL,\n\t`amount` decimal(10,2) NOT NULL,\n\t`currency` varchar(8) NOT NULL DEFAULT 'USD',\n\t`message` text,\n\t`status` enum('pending','accepted','rejected','countered') NOT NULL DEFAULT 'pending',\n\t`counterOfferId` int,\n\t`expiresAt` timestamp,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `offers_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 529
+}

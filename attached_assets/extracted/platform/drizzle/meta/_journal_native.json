@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1773238384974,
+      "tag": "0000_smooth_black_widow",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1773238540926,
+      "tag": "0001_opposite_chamber",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1773240209439,
+      "tag": "0002_ambiguous_thunderbolts",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paradox-solver
+  namespace: daisy-prod
+  labels:
+    app: paradox-solver
+    tier: compute-plane
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: paradox-solver
+  template:
+    metadata:
+      labels:
+        app: paradox-solver
+    spec:
+      containers:
+        - name: paradox-solver
+          image: ghcr.io/solvex/paradox-solver:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50051
+              name: grpc
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "256Mi"
+            limits:
+              cpu: "2000m"
+              memory: "1024Mi"
+          livenessProbe:
+            exec:
+              command: ["/usr/local/bin/grpc_health_probe", "-addr=:50051"]
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            exec:
+              command: ["/usr/local/bin/grpc_health_probe", "-addr=:50051"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: PARADOX_MODE
+              value: "DETERMINISTIC_LOOKUP"
+            - name: PROPRIETARY_OPERATORS_COUNT
+              value: "58"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paradox-solver
+  namespace: daisy-prod
+  labels:
+    app: paradox-solver
+spec:
+  type: ClusterIP
+  ports:
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+      name: grpc
+  selector:
+    app: paradox-solver
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: paradox-solver-hpa
+  namespace: daisy-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: paradox-solver
+  minReplicas: 4
+  maxReplicas: 12
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: customize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+images:
+  - name: paradox-solver
+    newName: ghcr.io/solvex/paradox-solver
+    newTag: latest

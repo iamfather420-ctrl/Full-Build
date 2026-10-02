@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DAISY Core - MMTAI Nexus</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- JSZip for Client-side ZIP file parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <!-- Hidden File Input for ZIP imports -->
+    <input type="file" id="zipFileInput" accept=".zip" style="display: none;" onchange="handleZipFileSelect(event)">
+
+    <!-- Transparent Background Canvas for Drawing Core Vector Tethers -->
+    <canvas id="tetherCanvas"></canvas>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Core Hero Header -->
+        <header class="hero-header">
+            <div class="brand-info">
+                <div class="logo-wrapper">
+                    <!-- Embedded Vector SVG Cyberpunk Daisy Logo -->
+                    <svg viewBox="0 0 100 100" class="daisy-svg">
+                        <circle cx="50" cy="50" r="14" class="daisy-core" />
+                        <path d="M 50 15 C 47 30, 53 30, 50 15 Z" class="petal cyan" />
+                        <path d="M 50 85 C 47 70, 53 70, 50 85 Z" class="petal cyan" />
+                        <path d="M 15 50 C 30 47, 30 53, 15 50 Z" class="petal cyan" />
+                        <path d="M 85 50 C 70 47, 70 53, 85 50 Z" class="petal cyan" />
+                        <path d="M 25 25 C 38 38, 35 42, 25 25 Z" class="petal green" />
+                        <path d="M 75 75 C 62 62, 65 58, 75 75 Z" class="petal green" />
+                        <path d="M 75 25 C 62 38, 58 35, 75 25 Z" class="petal green" />
+                        <path d="M 25 75 C 38 62, 42 65, 25 75 Z" class="petal green" />
+                    </svg>
+                </div>
+                <div class="text-info">
+                    <h1>DAISY CORE ENGINE</h1>
+                    <div class="status-indicator">
+                        <span class="pulse-sphere green"></span>
+                        <span class="protocol-text">MMTAI PROTOCOL V3 : ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span id="utcBridge">UTC Bridge: SYNCING...</span>
+            </div>
+        </header>
+
+        <!-- Omnipresent Persistent Context Widget / System Overlay Capsule -->
+        <section class="omni-widget-panel">
+            <div class="widget-header">
+                <div class="title-with-icon">
+                    <span class="icon-bolt">&#9889;</span>
+                    <h2>DAISY PERSISTENT ANCHOR CLUSTER</h2>
+                </div>
+                <span class="badge" id="connectedNodesCount">0 CONNECTED NODES</span>
+            </div>
+            <div class="widget-nodes-grid" id="widgetNodesGrid">
+                <!-- Dynamic Node Spheres updated from Android -->
+            </div>
+        </section>
+
+        <!-- Cyberpunk Navigation Tabs -->
+        <nav class="cyber-tabs">
+            <button class="tab-btn active" data-tab="TETHERS" onclick="switchTab('TETHERS')">TETHER NODES</button>
+            <button class="tab-btn" data-tab="INGRESS" onclick="switchTab('INGRESS')">INGRESS SANDBOX</button>
+            <button class="tab-btn" data-tab="CONSENSUS" onclick="switchTab('CONSENSUS')">CONSENSUS GRID</button>
+            <button class="tab-btn" data-tab="TELEMETRY" onclick="switchTab('TELEMETRY')">TELEMETRY</button>
+        </nav>
+
+        <!-- Main Workspace Switchboard -->
+        <main class="workspace-viewport">
+            
+            <!-- TAB 1: TETHER NODES -->
+            <div id="tab-TETHERS" class="tab-content active">
+                <div class="content-header">
+                    <h3>ACTIVE MMTAI TETHERS</h3>
+                    <button class="btn btn-cyan" onclick="openModal('addNodeModal')">
+                        <span class="btn-icon">&#128279;</span> BIND NEW ELEMENT
+                    </button>
+                </div>
+                <div class="nodes-list" id="nodesContainer">
+                    <!-- Dynamic Tether Node Cards -->
+                </div>
+            </div>
+
+            <!-- TAB 2: INGRESS FILE SANDBOX -->
+            <div id="tab-INGRESS" class="tab-content">
+                <div class="content-header">
+                    <h3>SANDBOX FILES [INGRESS]</h3>
+                    <div class="button-group">
+                        <button class="btn btn-outlined" onclick="triggerZipDrop()">
+                            <span class="btn-icon">&#128196;</span> DROP ZIP
+                        </button>
+                        <button class="btn btn-cyan" onclick="openModal('addFileModal')">
+                            <span class="btn-icon">&#60;&#47;&#62;</span> ADD FILE
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Large File Drag and Drop Zone -->
+                <div class="drop-zone" onclick="triggerDragDropSimulation()">
+                    <span class="drop-icon">&#128194;</span>
+                    <h4>DRAG & DROP ZIP OR CODE FILES HERE</h4>
+                    <p class="subtitle">Or click to simulate instant drop of "RemoteController.kt"</p>
+                </div>
+
+                <div class="files-list" id="filesContainer">
+                    <!-- Dynamic Sandbox Files -->
+                </div>
+            </div>
+
+            <!-- TAB 3: CONSENSUS ENGINE GRID -->
+            <div id="tab-CONSENSUS" class="tab-content">
+                <div class="content-header">
+                    <h3>KNOWLEDGE ENGINE COMMAND CENTER</h3>
+                </div>
+
+                <div class="form-group text-input-field">
+                    <label for="promptInput">High-Level Prompt / Requirements Objective</label>
+                    <textarea id="promptInput" rows="3" placeholder="Enter objective for the cluster..."></textarea>
+                </div>
+
+                <div class="cluster-actions">
+                    <button class="btn btn-outlined" onclick="triggerScanGaps()">
+                        <span class="btn-icon">&#128269;</span> SCAN CODE GAPS
+                    </button>
+                    <button class="btn btn-green" onclick="triggerMapReduce()">
+                        <span class="btn-icon">&#9889;</span> MAP REDUCE CLUSTER
+                    </button>
+                </div>
+
+                <!-- Autonomous Knowledge Discovery Board -->
+                <div class="discovery-board-container" id="discoveryBoard" style="display: none;">
+                    <h4>AUTONOMOUS KNOWLEDGE DISCOVERY BOARD</h4>
+                    <div class="links-grid" id="discoveryLinksContainer">
+                        <!-- Dynamic Gaps and API Reference schemas -->
+                    </div>
+                </div>
+
+                <!-- Multi-Agent Consensus Column -->
+                <div class="consensus-matrix-card">
+                    <h4>MULTI-AGENT CONSENSUS & CODE ARBITRATOR</h4>
+                    <p class="desc">Validate and match compiled schemas between data structures and visual views.</p>
+                    <button class="btn btn-cyan full-width" onclick="triggerConsensusCheck()">
+                        <span class="btn-icon">&#9881;</span> RUN CONSENSUS INTEGRITY CHECK
+                    </button>
+
+                    <div class="consensus-queue-wrapper" id="consensusQueueContainer" style="display: none;">
+                        <h5>ACTIVE CONSENSUS MATRIX TASK QUEUE</h5>
+                        <div class="consensus-tasks-list" id="consensusTasksContainer">
+                            <!-- Dynamic Consensus Tasks list -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: TELEMETRY -->
+            <div id="tab-TELEMETRY" class="tab-content">
+                <div class="content-header">
+                    <h3>LIVE SYSTEM ANCHOR TELEMETRY</h3>
+                    <button class="icon-btn-delete" onclick="triggerClearLogs()" title="Clear telemetry history">&#128465;</button>
+                </div>
+                <div class="telemetry-terminal">
+                    <div class="terminal-body" id="logsContainer">
+                        <!-- Dynamic live running logging events -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Voice Co-Pilot Floating Control Panel -->
+        <footer class="copilot-panel">
+            <div class="copilot-left">
+                <div class="copilot-mic-capsule" id="copilotMic">
+                    <span class="mic-icon">&#127908;</span>
+                </div>
+                <div class="copilot-speech-text">
+                    <h5>DAISY CO-PILOT SYSTEM SPEECH</h5>
+                    <p id="copilotUtterance">Co-Pilot Idle. Awaiting commands.</p>
+                </div>
+            </div>
+            <!-- Audio Waveform Visualization Canvas -->
+            <div class="copilot-wave-container">
+                <canvas id="waveCanvas"></canvas>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL 1: BIND NEW ELEMENT -->
+    <div class="modal" id="addNodeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>BIND NEW ANCHOR TETHER</h4>
+                <span class="close-modal" onclick="closeModal('addNodeModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tether Session Name</label>
+                    <input type="text" id="nodeName" value="Google AI Studio Node Alpha">
+                </div>
+                <div class="form-group">
+                    <label>Target DOM Selector Element Node</label>
+                    <input type="text" id="nodeElement" value="textarea.prompt-textarea">
+                </div>
+                <div class="form-group">
+                    <label>Sandbox Target Bucket Association</label>
+                    <input type="text" id="nodeBucket" value="SOURCE">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outlined" onclick="closeModal('addNodeModal')">CANCEL</button>
+                <button class="btn btn-cyan" onclick="submitBindElement()">CREATE BINDING</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: INGEST NEW CODE FILE -->
+    <div class="modal" id="addFileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>INGEST NEW CODE FILE</h4>
+                <span class="close-modal" onclick="closeModal('addFileModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>File Name (e.g. Config.json, PaymentService.kt)</label>
+                    <input type="text" id="fileName" placeholder="Config.json">
+                </div>
+                <div class="form-group">
+                    <label>File Source Content Code</label>
+                    <textarea id="fileContent" rows="6" placeholder="class PaymentService { ... }"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outlined" onclick="closeModal('addFileModal')">CANCEL</button>
+                <button class="btn btn-cyan" onclick="submitAddFile()">INGEST NOW</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

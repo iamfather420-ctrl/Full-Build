@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jit-obfuscator
+  namespace: daisy-prod
+  labels:
+    app: jit-obfuscator
+    tier: build-plane
+spec:
+  replicas: 2
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jit-obfuscator
+  template:
+    metadata:
+      labels:
+        app: jit-obfuscator
+    spec:
+      containers:
+        - name: jit-obfuscator
+          image: ghcr.io/solvex/jit-obfuscator:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+              name: http
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2048Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: ANTI_TAMPER_STRICT
+              value: "true"
+            - name: COMPRESSION_LEVEL
+              value: "UPX_BEST"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jit-obfuscator
+  namespace: daisy-prod
+  labels:
+    app: jit-obfuscator
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+      name: http
+  selector:
+    app: jit-obfuscator
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jit-obfuscator-hpa
+  namespace: daisy-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jit-obfuscator
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+apiVersion: customize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+images:
+  - name: jit-obfuscator
+    newName: ghcr.io/solvex/jit-obfuscator
+    newTag: latest
