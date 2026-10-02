@@ -116,6 +116,7 @@ async function main() {
       passed: gatesReport.gates_passed,
       failed: gatesReport.failed_count + gatesReport.blocked_count + gatesReport.external_provider_required_count
     },
+    gate_exceptions: gatesReport.gates.filter(g => g.status !== 'PASSED').map(g => ({ gate_number: g.gate_number, gate_id: g.gate_id, status: g.status, name: g.name, details: g.details })),
     verification_root_sha256: combinedRootSha256,
     source_commit_sha: commitSha,
     generated_at: new Date().toISOString()
