@@ -1,15 +1,17 @@
 name: Unify source repositories into Full-Build
 
 on:
-  push:
+  pull_request:
     branches:
-      - integration/full-unification-2026-10-02
+      - main
+    types: [opened, synchronize]
 
 permissions:
   contents: write
 
 jobs:
   unify:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'integration/full-unification-2026-10-02'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Full-Build integration branch
@@ -17,6 +19,7 @@ jobs:
         with:
           ref: integration/full-unification-2026-10-02
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Merge web-build and CLEAN-WEB-CONSOLIDATED histories
         shell: bash
@@ -30,16 +33,16 @@ jobs:
           git fetch web-build main
           git fetch clean-web main
 
-          git merge --no-edit --allow-unrelated-histories -X ours web-build/main || {
+          if ! git merge --no-edit --allow-unrelated-histories -X ours web-build/main; then
             git status --short
             git add -A
             git commit -m "merge: reconcile web-build into Full-Build" || true
-          }
+          fi
 
-          git merge --no-edit --allow-unrelated-histories -X ours clean-web/main || {
+          if ! git merge --no-edit --allow-unrelated-histories -X ours clean-web/main; then
             git status --short
             git add -A
             git commit -m "merge: reconcile CLEAN-WEB-CONSOLIDATED into Full-Build" || true
-          }
+          fi
 
           git push origin HEAD:integration/full-unification-2026-10-02
