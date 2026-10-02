@@ -81,6 +81,50 @@ async function main() {
   console.log(`Activation Gate Verdict:   ${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}`);
   console.log('================================================================');
 
+  // Execute the authoritative 46-gate truth-boundary suite before allowing brain activation.
+  const gatesReport = await System46Gates.getInstance().evaluateAll46Gates();
+  fs.writeFileSync(
+    path.join(process.cwd(), 'artifacts', 'system-46-gates.json'),
+    JSON.stringify(gatesReport, null, 2),
+    'utf8'
+  );
+
+  const brainActive =
+    passed120 &&
+    gatesReport.failed_count === 0 &&
+    gatesReport.blocked_count === 0 &&
+    gatesReport.external_provider_required_count === 0;
+
+  const activationGate = {
+    schema_version: '1.0.0',
+    status: brainActive ? 'ACTIVE' : 'BLOCKED',
+    reason: brainActive
+      ? '120/120 formal corpus verified and all 46 system gates passed with no external-provider or blocked gates.'
+      : 'Activation blocked until 120/120 formal verification and all 46 system gates have no failed, blocked, or external-provider-required gates.',
+    corpus: {
+      total_required: 120,
+      dfrl_required: 88,
+      dh_required: 32,
+      executed: totalZ3Executions,
+      deterministic_replays: totalReplayMatches,
+      unknown: totalUnknown,
+      errors: totalError
+    },
+    mandatory_gates: {
+      total: 46,
+      passed: gatesReport.gates_passed,
+      failed: gatesReport.failed_count + gatesReport.blocked_count + gatesReport.external_provider_required_count
+    },
+    verification_root_sha256: combinedRootSha256,
+    source_commit_sha: commitSha,
+    generated_at: new Date().toISOString()
+  };
+  fs.writeFileSync(
+    path.join(process.cwd(), 'artifacts', 'daisy-brain-activation-gate.json'),
+    JSON.stringify(activationGate, null, 2),
+    'utf8'
+  );
+
   const artifactsDir = path.resolve(process.cwd(), 'artifacts');
   if (!fs.existsSync(artifactsDir)) {
     fs.mkdirSync(artifactsDir, { recursive: true });
