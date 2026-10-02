@@ -1,0 +1,11 @@
+# Ensure Unix line endings on checkout for scripts to prevent eval/sh execution errors in Linux runners (e.g. GitHub Actions)
+gradlew text eol=lf
+termux-build.sh text eol=lf
+
+# Force Windows line endings for batch files
+*.bat text eol=crlf
+
+# Ensure binary files are not treated as text to prevent corruption (especially on Windows / GitHub Actions checkout)
+*.jar binary
+*.png binary
+*.keystore binary

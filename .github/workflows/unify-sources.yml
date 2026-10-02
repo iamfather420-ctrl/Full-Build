@@ -18,22 +18,70 @@ jobs:
           ref: integration/full-unification-2026-10-02
           fetch-depth: 0
           persist-credentials: true
-      - name: Merge source histories
+
+      - name: Fetch CLEAN-WEB source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git remote add clean-web https://github.com/Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED.git
+          git fetch clean-web main
+
+      - name: Integrate CLEAN-WEB source tree
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "Full-Build Unification"
           git config user.email "actions@github.com"
-          git remote add web-build https://github.com/iamfather420-ctrl/web-build.git
-          git remote add clean-web https://github.com/Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED.git
-          git fetch web-build main
-          git fetch clean-web main
-          git merge --no-edit --allow-unrelated-histories -X ours web-build/main || {
-            git add -A
-            git commit -m "merge: reconcile imported sources from web-build"
-          }
-          git merge --no-edit --allow-unrelated-histories -X ours clean-web/main || {
-            git add -A
-            git commit -m "merge: reconcile imported sources from CLEAN-WEB-CONSOLIDATED"
-          }
+
+          mkdir -p .integration-source/clean-web
+          git archive clean-web/main | tar -x -C .integration-source/clean-web
+
+          EXCLUDES=(
+            --exclude='.git'
+            --exclude='.github/workflows'
+            --exclude='node_modules'
+            --exclude='.next'
+            --exclude='dist'
+            --exclude='build'
+            --exclude='.gradle'
+            --exclude='coverage'
+            --exclude='.cache'
+            --exclude='*.zip'
+            --exclude='*.tar'
+            --exclude='*.tgz'
+            --exclude='*.apk'
+            --exclude='*.aab'
+            --exclude='*.jar'
+            --exclude='*.class'
+          )
+
+          # Full-Build stays canonical on path collisions; non-conflicting
+          # CLEAN-WEB source/configuration is added at its original path.
+          rsync -a --ignore-existing "${EXCLUDES[@]}" .integration-source/clean-web/ ./
+
+          mkdir -p docs/integration
+          cat > docs/integration/SOURCE-UNIFICATION.md <<'EOF'
+          # Full-Build source unification
+
+          Canonical repository: iamfather420-ctrl/Full-Build
+
+          Integrated source:
+          - Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED
+
+          Source pending:
+          - web-build could not be fetched because the previously configured
+            iamfather420-ctrl/web-build repository URL returns GitHub 404.
+            No substitute repository was invented.
+
+          Policy:
+          - Full-Build remains canonical when the same path exists.
+          - Non-conflicting source files are imported at original paths.
+          - Dependency/vendor/build/archive artifacts are excluded.
+          - GitHub Actions secrets are not copied or exposed.
+          - Functional verification remains a separate step.
+          EOF
+
+          rm -rf .integration-source
+          git add -A
+          git commit -m "merge: reconcile imported sources" || true
           git push origin HEAD:integration/full-unification-2026-10-02

@@ -1,0 +1,6 @@
+{
+  "name": "Autonomous Unified API Site",
+  "description": "Sovereign autonomous unified AI and multi-provider payment API gateway dashboard, with 54-node grid telemetry and JIT build pipelines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

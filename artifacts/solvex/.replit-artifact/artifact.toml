@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "SolveX Platform"
+version = "1.0.0"
+id = "artifacts/solvex"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22264
+
+[services.development]
+run = "pnpm --filter @workspace/solvex run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/solvex", "run", "build" ]
+publicDir = "artifacts/solvex/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22264"
+BASE_PATH = "/"
