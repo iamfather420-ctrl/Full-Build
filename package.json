@@ -16,6 +16,7 @@
     "verify:proofs": "tsx scripts/verify_dfrl.ts",
     "verify:nodes": "tsx scripts/verify_nodes.ts",
     "verify:authoritative": "tsx scripts/verify_authoritative.ts",
+    "verify:120": "tsx scripts/verify_120_corpus.ts",
     "verify:sandbox": "tsx scripts/verify_sandbox.ts",
     "verify:api": "tsx scripts/verify_api_security.ts",
     "run:daisy": "tsx scripts/run_daisy_candidate.ts",
