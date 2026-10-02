@@ -1,0 +1,36 @@
+name: Unify source repositories into Full-Build
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  unify:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'integration/full-unification-2026-10-02'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: integration/full-unification-2026-10-02
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge source histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Full-Build Unification"
+          git config user.email "actions@github.com"
+          git remote add web-build https://github.com/iamfather420-ctrl/web-build.git
+          git remote add clean-web https://github.com/Solvex-Paradox-Box/CLEAN-WEB-CONSOLIDATED.git
+          git fetch web-build main
+          git fetch clean-web main
+          git merge --no-edit --allow-unrelated-histories -X ours web-build/main
+          git merge --no-edit --allow-unrelated-histories -X ours clean-web/main
+          git push origin HEAD:integration/full-unification-2026-10-02
