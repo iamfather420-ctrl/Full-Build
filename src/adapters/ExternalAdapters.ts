@@ -11,52 +11,28 @@ export interface ExternalAdapterInfo {
   notes: string;
 }
 
+/** Runtime inventory reports only integrations that are permitted by the payment policy. */
 export class ExternalAdapterRegistry {
   public static getInventory(): ExternalAdapterInfo[] {
-    const paypalAdapter = PayPalAdapter.getInstance();
-    const hasPayPal = paypalAdapter.hasActiveCredentials();
-    const hasNeon = Boolean(typeof process !== 'undefined' && process.env?.NEON_DATABASE_URL);
-
+    const paypal = PayPalAdapter.getInstance().getMaskedCredentialsInfo();
+    const hasNeon = Boolean(process.env.NEON_DATABASE_URL);
     return [
       {
-        adapter_id: 'DN-34',
-        name: 'Neon Serverless PostgreSQL',
-        category: 'DATABASE',
-        status: hasNeon ? 'AVAILABLE' : 'EXTERNAL_PROVIDER_REQUIRED',
-        required_env_vars: ['NEON_DATABASE_URL'],
-        provided_env_vars: hasNeon ? ['NEON_DATABASE_URL'] : [],
-        live_connected: hasNeon,
-        notes: 'When credentials not configured, local SQLite with 27-table schema and DurableStore WAL operates as zero-compromise deterministic fallback.'
+        adapter_id: 'DN-34', name: 'Neon Serverless PostgreSQL', category: 'DATABASE',
+        status: hasNeon ? 'AVAILABLE' : 'EXTERNAL_PROVIDER_REQUIRED', required_env_vars: ['NEON_DATABASE_URL'],
+        provided_env_vars: hasNeon ? ['NEON_DATABASE_URL'] : [], live_connected: false,
+        notes: hasNeon ? 'Configuration detected; connection/migrations/RLS require separate deployment verification.' : 'Not configured. The local file-backed SQLite store is used only for local/sandbox execution.'
       },
       {
-        adapter_id: 'DN-35',
-        name: 'PayPal Enterprise Gateway',
-        category: 'PAYMENTS',
-        status: hasPayPal ? 'AVAILABLE' : 'EXTERNAL_PROVIDER_REQUIRED',
-        required_env_vars: ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'],
-        provided_env_vars: hasPayPal ? ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'] : [],
-        live_connected: hasPayPal,
-        notes: 'Server-authoritative payment capture. Enforces fail-closed: refuses to fabricate synthetic payment receipts.'
+        adapter_id: 'DN-35', name: 'PayPal PYUSD Commercial Gateway', category: 'PAYMENTS',
+        status: paypal.configured ? 'AVAILABLE' : 'EXTERNAL_PROVIDER_REQUIRED',
+        required_env_vars: ['PAYPAL_ENVIRONMENT', 'PAYPAL_<ENV>_CLIENT_ID', 'PAYPAL_<ENV>_SECRET', 'PAYPAL_WEBHOOK_ID'],
+        provided_env_vars: paypal.configured ? ['PAYPAL_ENVIRONMENT'] : [], live_connected: false,
+        notes: 'PayPal Orders v2 is server-only. SOLVEX requires provider-verified capture evidence and explicit PYUSD evidence before order activation.'
       },
       {
-        adapter_id: 'DN-36',
-        name: 'Fiat Settlement Policy Guard (Stripe Prohibited)',
-        category: 'POLICY_INTERLOCK',
-        status: 'AVAILABLE',
-        required_env_vars: [],
-        provided_env_vars: [],
-        live_connected: true,
-        notes: 'Stripe prohibited per Sovereign Security Directive. Fiat payments and escrow settle exclusively via PayPal DN-35.'
-      },
-      {
-        adapter_id: 'DN-37',
-        name: 'Coinbase Commerce',
-        category: 'PAYMENTS',
-        status: 'EXTERNAL_PROVIDER_REQUIRED',
-        required_env_vars: ['COINBASE_API_KEY'],
-        provided_env_vars: [],
-        live_connected: false,
-        notes: 'Crypto commerce webhook handler.'
+        adapter_id: 'DN-36', name: 'Payment-Rail Policy Guard', category: 'POLICY_INTERLOCK', status: 'AVAILABLE', required_env_vars: [], provided_env_vars: [], live_connected: true,
+        notes: 'SOLVEX does not implement any non-PayPal payment rail, exchange, or custody integration. PayPal PYUSD is the only permitted commercial path.'
       }
     ];
   }

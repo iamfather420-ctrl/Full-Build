@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-10-02T12:08:20.783Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "PASSED",
+  "evidence": {
+    "anonymous_acceptance": {
+      "status": 401,
+      "error": "Authentication is required",
+      "timestamp": 1790942900788
+    },
+    "cross_tenant_denial": {
+      "authorized": false,
+      "reason": "Cross-tenant access denied"
+    },
+    "mixed_credential_denial": {
+      "valid": false,
+      "environment": "production",
+      "blockers": [
+        "Sandbox and production PayPal credential sets cannot be mixed"
+      ]
+    },
+    "secret_value_scan": true,
+    "browser_authority": "SERVER_ONLY"
+  },
+  "test": "Authentication bypass, tenant escape, mixed credentials, anonymous acceptance, and secret pattern checks.",
+  "remaining_requirement": "Independent production security review, IDP integration, secret manager configuration, and deployed RLS verification.",
+  "truth_classification": "PARTIAL"
+}

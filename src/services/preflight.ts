@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 export type DependencyStatus = 'PRESENT' | 'MISSING' | 'INCOMPATIBLE' | 'NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT';
 export type ConfigStatus = 'PRESENT' | 'ABSENT' | 'INVALID_FORMAT' | 'NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT';
 export type EnvironmentMode = 'local' | 'sandbox' | 'production';
@@ -192,20 +195,9 @@ export class PreflightService {
     const checkVar = (
       key: string,
       requiredInProduction: boolean,
-      validator?: (val: string) => boolean,
-      aliases?: string[]
+      validator?: (val: string) => boolean
     ): ConfigurationCheckItem => {
-      const allKeys = [key, ...(aliases || [])];
-      let val: string | undefined;
-      let matchedKey = key;
-      for (const k of allKeys) {
-        const v = typeof process !== 'undefined' && process.env ? process.env[k] : undefined;
-        if (v && v.trim().length > 0) {
-          val = v;
-          matchedKey = k;
-          break;
-        }
-      }
+      const val = typeof process !== 'undefined' && process.env ? process.env[key] : undefined;
       const isPresent = Boolean(val && val.trim().length > 0);
 
       let status: ConfigStatus = 'ABSENT';
@@ -223,17 +215,16 @@ export class PreflightService {
         status,
         format_valid: formatValid,
         environment_scope: env,
-        notes: isPresent ? `Configured in runtime environment (matched ${matchedKey})` : 'Not set in process.env'
+        notes: isPresent ? 'Configured in runtime environment' : 'Not set in process.env'
       };
     };
 
-    // 1. PayPal Sandbox / Default Credentials
-    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_ID', 'PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_KEY', 'PAYPAL_CLIENT_SECRET']));
+    // 1. PayPal server-only deployment configuration (live credentials never fall back).
+    items.push(checkVar('PAYPAL_ENVIRONMENT', true, (v) => v === 'sandbox' || v === 'live'));
+    items.push(checkVar('PAYPAL_WEBHOOK_ID', true, (v) => v.length >= 8));
 
-    // 2. PayPal Live Credentials (Required in Production)
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8, ['PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_LIVE_NT_SECRET', 'PAYPAL_CLIENT_SECRET']));
+    // 2. Authentication signing key
+    items.push(checkVar('SOLVEX_AUTH_SECRET', true, (v) => v.length >= 32));
 
     // 3. NEON_DATABASE_URL
     items.push(checkVar('NEON_DATABASE_URL', false, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));

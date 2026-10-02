@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-10-02T12:08:19.455Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "BLOCKED",
+  "candidate_id": "DH-C-B28A191DCBFE70D0",
+  "evidence": {
+    "reference_framework": "IMPLEMENTED",
+    "evaluator_workflow": "IMPLEMENTED_TESTED",
+    "customer_acceptance": "MISSING",
+    "independent_evidence": "MISSING",
+    "synthetic_evidence_excluded": true
+  },
+  "test": "B2B acceptance and independent evidence are separate server-side gates.",
+  "remaining_requirement": "B2B acceptance evidence is missing; Independent B2B evidence is missing",
+  "truth_classification": "BLOCKED"
+}

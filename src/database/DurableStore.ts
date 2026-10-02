@@ -20,83 +20,78 @@ export interface DurableState {
   checkpoints: Record<string, CheckpointEntity>;
 }
 
+/** Server-side state cache backed by a durable SQLite snapshot and audit records. */
 export class DurableStore {
   private static instance: DurableStore | null = null;
+  private readonly sqlite: SqliteStore;
   private state: DurableState;
-  private readonly STORAGE_KEY = 'SOLVEX_SOVEREIGN_DURABLE_STATE';
+  private readonly snapshotId = '__solvex_durable_state_v2__';
 
   private constructor() {
+    if (typeof window !== 'undefined') {
+      throw new Error('DurableStore is server-only and cannot be initialized in a browser bundle');
+    }
+    this.sqlite = SqliteStore.getInstance();
     this.state = {
-      tenants: {},
-      problems: {},
-      solutions: {},
-      offers: {},
-      proof_bundles: {},
-      audit_chain: [],
-      checkpoints: {}
+      tenants: {}, problems: {}, solutions: {}, offers: {}, proof_bundles: {}, audit_chain: [], checkpoints: {}
     };
     this.load();
     this.bootstrapRootData();
+    this.persist();
   }
 
   public static getInstance(): DurableStore {
-    if (!DurableStore.instance) {
-      DurableStore.instance = new DurableStore();
-    }
+    if (!DurableStore.instance) DurableStore.instance = new DurableStore();
     return DurableStore.instance;
   }
 
+  /**
+   * Legacy callers mutate this cache. Every production mutation must follow with persist(),
+   * while critical flows use SqliteStore transactions for their primary records.
+   */
   public getState(): DurableState {
     return this.state;
   }
 
-  private bootstrapRootData(): void {
-    if (Object.keys(this.state.tenants).length === 0) {
-      this.state.tenants['TENANT_ENTERPRISE_DEMO'] = {
-        id: 'TENANT_ENTERPRISE_DEMO',
-        name: 'Enterprise Showcase Tenant',
-        tier: 'ENTERPRISE',
-        isolated_storage_key: computeSha256('KEY_TENANT_ENTERPRISE_DEMO'),
-        created_at: Date.now(),
-        status: 'ACTIVE'
-      };
-      this.state.tenants['TENANT_SOVEREIGN_ROOT'] = {
-        id: 'TENANT_SOVEREIGN_ROOT',
-        name: 'Sovereign Protocol Core',
-        tier: 'ENTERPRISE',
-        isolated_storage_key: computeSha256('KEY_TENANT_SOVEREIGN_ROOT'),
-        created_at: Date.now(),
-        status: 'ACTIVE'
-      };
-    }
-    if (this.state.audit_chain.length === 0) {
-      this.appendAudit(
-        'TENANT_SOVEREIGN_ROOT',
-        'GENESIS_SENTINEL',
-        'SYSTEM_INITIALIZE',
-        'SYSTEM',
-        'SOLVEX_GENESIS',
-        { status: 'GENESIS_SEEDED', version: '1.0.0-PROD' }
-      );
+  private load(): void {
+    const snapshot = this.sqlite.findRecordById<any>('execution_runs', this.snapshotId);
+    if (!snapshot?.state) return;
+    const candidate = snapshot.state as DurableState;
+    if (candidate.tenants && candidate.problems && candidate.solutions && candidate.offers && candidate.proof_bundles && candidate.audit_chain && candidate.checkpoints) {
+      this.state = candidate;
     }
   }
 
-  public appendAudit(
-    tenantId: string,
-    actor: string,
-    action: string,
-    targetEntity: string,
-    targetId: string,
-    payload: any
-  ): AuditRecordEntity {
+  private bootstrapRootData(): void {
+    if (Object.keys(this.state.tenants).length === 0) {
+      for (const [id, name] of [
+        ['TENANT_ENTERPRISE_DEMO', 'Enterprise Showcase Tenant'],
+        ['TENANT_SOVEREIGN_ROOT', 'Sovereign Protocol Core']
+      ] as const) {
+        this.state.tenants[id] = {
+          id,
+          name,
+          tier: 'ENTERPRISE',
+          isolated_storage_key: computeSha256(`KEY_${id}`),
+          created_at: Date.now(),
+          status: 'ACTIVE'
+        };
+        this.sqlite.insertRecord('tenants', { ...this.state.tenants[id], tenant_id: 'SYSTEM' });
+      }
+    }
+    if (this.state.audit_chain.length === 0) {
+      this.appendAudit('TENANT_SOVEREIGN_ROOT', 'GENESIS_SENTINEL', 'SYSTEM_INITIALIZE', 'SYSTEM', 'SOLVEX_GENESIS', {
+        status: 'GENESIS_SEEDED', version: '2.0.0', scope: 'LOCAL_DURABLE'
+      });
+    }
+  }
+
+  public appendAudit(tenantId: string, actor: string, action: string, targetEntity: string, targetId: string, payload: any): AuditRecordEntity {
     const timestamp = Date.now();
     const indexNum = this.state.audit_chain.length;
     const previousHash = indexNum > 0 ? this.state.audit_chain[indexNum - 1].record_hash : '0'.repeat(64);
     const payloadHash = computeSha256(JSON.stringify(payload));
-    const recordHash = computeSha256(
-      `${indexNum}:${timestamp}:${tenantId}:${actor}:${action}:${targetEntity}:${targetId}:${previousHash}:${payloadHash}`
-    );
-
+    const recordHash = computeSha256(`${indexNum}:${timestamp}:${tenantId}:${actor}:${action}:${targetEntity}:${targetId}:${previousHash}:${payloadHash}`);
     const record: AuditRecordEntity = {
       id: `audit_${timestamp}_${indexNum}`,
       tenant_id: tenantId,
@@ -112,144 +107,68 @@ export class DurableStore {
       record_hash: recordHash
     };
 
+    this.sqlite.insertRecord('audit_records', {
+      ...record,
+      status: 'SEALED',
+      integrity_scope: 'LOCAL_SHA256_CHAIN'
+    });
     this.state.audit_chain.push(record);
-
-    try {
-      const sqlite = SqliteStore.getInstance();
-      sqlite.insertRecord('audit_records', {
-        id: record.id,
-        tenant_id: record.tenant_id,
-        index_num: record.index_num,
-        timestamp: record.timestamp,
-        actor: record.actor,
-        action: record.action,
-        target_entity: record.target_entity,
-        target_id: record.target_id,
-        payload_hash: record.payload_hash,
-        previous_hash: record.previous_hash,
-        record_hash: record.record_hash,
-        signature: 'ED25519_HARDENED_SENTINEL',
-        status: 'SEALED'
-      });
-    } catch {}
-
     this.persist();
     return record;
   }
 
   public verifyChain(): { valid: boolean; total_records: number; reason?: string } {
-    const chain = this.state.audit_chain;
-    if (chain.length === 0) return { valid: true, total_records: 0 };
-
-    for (let i = 0; i < chain.length; i++) {
-      const rec = chain[i];
-      if (i > 0) {
-        if (rec.previous_hash !== chain[i - 1].record_hash) {
-          return {
-            valid: false,
-            total_records: chain.length,
-            reason: `Broken link at index ${i}: previous_hash does not match prior record_hash`
-          };
-        }
-      } else {
-        if (rec.previous_hash !== '0'.repeat(64)) {
-          return {
-            valid: false,
-            total_records: chain.length,
-            reason: `Genesis block at index 0 invalid previous_hash: ${rec.previous_hash}`
-          };
-        }
-      }
-
-      const expectedPayloadHash = computeSha256(JSON.stringify(rec.payload));
-      if (rec.payload_hash !== expectedPayloadHash) {
-        return {
-          valid: false,
-          total_records: chain.length,
-          reason: `Payload tamper detected at index ${i}: payload_hash mismatch`
-        };
-      }
-
-      const expectedRecordHash = computeSha256(
-        `${rec.index_num}:${rec.timestamp}:${rec.tenant_id}:${rec.actor}:${rec.action}:${rec.target_entity}:${rec.target_id}:${rec.previous_hash}:${rec.payload_hash}`
-      );
-      if (rec.record_hash !== expectedRecordHash) {
-        return {
-          valid: false,
-          total_records: chain.length,
-          reason: `Block hash mismatch at index ${i}: calculated does not match stored record_hash`
-        };
-      }
+    for (let i = 0; i < this.state.audit_chain.length; i++) {
+      const rec = this.state.audit_chain[i];
+      const expectedPrevious = i === 0 ? '0'.repeat(64) : this.state.audit_chain[i - 1].record_hash;
+      if (rec.previous_hash !== expectedPrevious) return { valid: false, total_records: this.state.audit_chain.length, reason: `Broken chain link at index ${i}` };
+      if (rec.payload_hash !== computeSha256(JSON.stringify(rec.payload))) return { valid: false, total_records: this.state.audit_chain.length, reason: `Payload hash mismatch at index ${i}` };
+      const expected = computeSha256(`${rec.index_num}:${rec.timestamp}:${rec.tenant_id}:${rec.actor}:${rec.action}:${rec.target_entity}:${rec.target_id}:${rec.previous_hash}:${rec.payload_hash}`);
+      if (rec.record_hash !== expected) return { valid: false, total_records: this.state.audit_chain.length, reason: `Record hash mismatch at index ${i}` };
     }
-    return { valid: true, total_records: chain.length };
+    return { valid: true, total_records: this.state.audit_chain.length };
   }
 
-  public createCheckpoint(
-    tenantId: string,
-    targetMutation: string,
-    classification: 'ATOMIC_DATABASE_RESTORE' | 'IRREVERSIBLE_EXTERNAL_ACTION' = 'ATOMIC_DATABASE_RESTORE'
-  ): CheckpointEntity {
-    const id = `chk_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  public createCheckpoint(tenantId: string, targetMutation: string, classification: 'ATOMIC_DATABASE_RESTORE' | 'IRREVERSIBLE_EXTERNAL_ACTION' = 'ATOMIC_DATABASE_RESTORE'): CheckpointEntity {
+    const id = `chk_${computeSha256(`${tenantId}:${targetMutation}:${Date.now()}`).slice(0, 18)}`;
     const checkpoint: CheckpointEntity = {
       id,
       checkpoint_id: id,
       tenant_id: tenantId,
       target_mutation: targetMutation,
       classification,
-      snapshot_state: JSON.parse(JSON.stringify({
-        problems: this.state.problems,
-        solutions: this.state.solutions,
-        offers: this.state.offers,
-        tenants: this.state.tenants
-      })),
+      // Checkpoints must not recursively snapshot the checkpoint registry itself.
+      // Retain the current registry entry on rollback while keeping snapshots bounded.
+      snapshot_state: JSON.parse(JSON.stringify({ ...this.state, checkpoints: {} })),
       timestamp: Date.now()
     };
     this.state.checkpoints[id] = checkpoint;
+    this.sqlite.insertRecord('checkpoints', { ...checkpoint, status: 'SEALED' });
     this.persist();
     return checkpoint;
   }
 
   public rollbackToCheckpoint(checkpointId: string, reason: string): { success: boolean; error?: string } {
-    const chk = this.state.checkpoints[checkpointId];
-    if (!chk) {
-      return { success: false, error: `Checkpoint ${checkpointId} not found` };
+    const checkpoint = this.state.checkpoints[checkpointId];
+    if (!checkpoint) return { success: false, error: `Checkpoint ${checkpointId} not found` };
+    if (checkpoint.classification === 'IRREVERSIBLE_EXTERNAL_ACTION') {
+      return { success: false, error: `Cannot rollback an IRREVERSIBLE_EXTERNAL_ACTION: ${reason}` };
     }
-    if (chk.classification === 'IRREVERSIBLE_EXTERNAL_ACTION') {
-      return {
-        success: false,
-        error: `Cannot rollback checkpoint marked IRREVERSIBLE_EXTERNAL_ACTION. Reversibility guarantee rejected: ${reason}`
-      };
-    }
-    if (chk.snapshot_state) {
-      this.state.problems = JSON.parse(JSON.stringify(chk.snapshot_state.problems || {}));
-      this.state.solutions = JSON.parse(JSON.stringify(chk.snapshot_state.solutions || {}));
-      this.state.offers = JSON.parse(JSON.stringify(chk.snapshot_state.offers || {}));
-      this.state.tenants = JSON.parse(JSON.stringify(chk.snapshot_state.tenants || {}));
-      this.persist();
-      return { success: true };
-    }
-    return { success: false, error: 'Snapshot state missing from checkpoint' };
-  }
-
-  private load(): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        const raw = window.localStorage.getItem(this.STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed) {
-            this.state = { ...this.state, ...parsed };
-          }
-        }
-      } catch {}
-    }
+    if (!checkpoint.snapshot_state) return { success: false, error: 'Checkpoint snapshot is absent' };
+    const preservedCheckpoints = this.state.checkpoints;
+    this.state = JSON.parse(JSON.stringify(checkpoint.snapshot_state));
+    this.state.checkpoints = preservedCheckpoints;
+    this.appendAudit(checkpoint.tenant_id, 'ROLLBACK_GOVERNOR', 'ROLLBACK_EXECUTED', 'CHECKPOINT', checkpointId, { reason });
+    return { success: true };
   }
 
   public persist(): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
-      } catch {}
-    }
+    this.sqlite.insertRecord('execution_runs', {
+      id: this.snapshotId,
+      tenant_id: 'SYSTEM',
+      state: this.state,
+      status: 'DURABLE_SNAPSHOT',
+      version: '2.0.0'
+    });
   }
 }

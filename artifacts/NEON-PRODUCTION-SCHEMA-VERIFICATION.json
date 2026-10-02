@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-09-29T05:37:49Z",
+  "project_id": "flat-unit-34950816",
+  "project_name": "SolveX",
+  "branch_id": "br-soft-dawn-b4wkrjox",
+  "branch_name": "production",
+  "branch_state": "ready",
+  "database": "neondb",
+  "tables_verified": 27,
+  "indexes_verified": 47,
+  "representative_constraints_verified": {
+    "tenants": ["PRIMARY KEY", "UNIQUE isolated_storage_key", "tier CHECK"],
+    "orders": ["FOREIGN KEY tenant_id", "FOREIGN KEY offer_id", "FOREIGN KEY solution_id", "FOREIGN KEY proof_bundle_id", "FOREIGN KEY payment_id", "INDEX tenant_id"],
+    "payments": ["FOREIGN KEY tenant_id", "UNIQUE idempotency_key", "INDEX primary key"]
+  },
+  "rls_policy_count": 0,
+  "rls_status": "NOT_CONFIGURED",
+  "data_volume": "EMPTY_OR_UNPOPULATED_AT_INSPECTION",
+  "read_only": true,
+  "mutations_performed": false,
+  "remaining_external_change": "Apply reviewed RLS policies and verify application service-role/request-role behavior before declaring tenant isolation production-ready."
+}

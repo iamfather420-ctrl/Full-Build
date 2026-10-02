@@ -1,0 +1,19 @@
+{
+  "integration_source": "https://github.com/iamfather420-ctrl/full-build",
+  "source_commit": "22f660ebf562180edb44865330365e1d75005926",
+  "source_scope": "PUBLIC_REPOSITORY",
+  "integration_decision": "REVIEWED_NO_RUNTIME_OVERWRITE",
+  "retained_hardened_modules": [
+    "src/b2b/B2BReferenceCaseService.ts",
+    "src/services/EnvironmentConfig.ts",
+    "src/services/preflight.ts",
+    "src/payments/PayPalAdapter.ts",
+    "src/api/ApiRouter.ts",
+    "src/api/SystemStatus.ts"
+  ],
+  "compatible_upstream_assets": [],
+  "conflict_policy": "The current tree remains authoritative where it contains stronger fail-closed, B2B, or evidence-boundary controls. Upstream assets are provenance inputs only until independently reviewed.",
+  "upstream_file_count": 1350,
+  "upstream_tree_sha256": "04c14785d39326be53a012aa5d21502cdf18ec243a3cfae86e49bd0666ee345a",
+  "external_claims": "NONE"
+}

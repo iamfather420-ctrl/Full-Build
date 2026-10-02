@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-10-02T12:08:21.707Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "PARTIAL",
+  "evidence": {
+    "local_checkpoint_created": true,
+    "local_fail_closed_diversion": {
+      "fail_closed_enforced": true,
+      "rollback_status": "ROLLED_BACK",
+      "failure_id": "fail_1790942901725_6zni",
+      "evidence_hash": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558"
+    },
+    "audit_chain_valid_after_test": true,
+    "backup_restore_test": "NOT_PERFORMED",
+    "production_restore_test": "NOT_PERFORMED"
+  },
+  "test": "Local checkpoint/diversion/rollback path executed with synthetic data only.",
+  "remaining_requirement": "Managed database backup, restore rehearsal, migration rollback, configuration recovery, and incident recovery evidence in the production environment.",
+  "truth_classification": "PARTIAL"
+}

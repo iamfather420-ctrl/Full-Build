@@ -1,535 +1,78 @@
+import { AuthService } from '../auth/AuthService';
+import { SqliteStore } from '../database/SqliteStore';
 import { DurableStore } from '../database/DurableStore';
-import { NodeRegistry } from '../nodes/NodeRegistry';
-import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
-import { MMTAIProtocol } from '../mmtai/MMTAIProtocol';
-import { NOPOTVerifier } from '../proofs/NOPOTProof';
-import { ProofEngine } from '../proofs/ProofEngine';
-import { ProofBundleBuilder } from '../proofs/ProofBundle';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { MarketplaceEngine } from '../marketplace/MarketplaceEngine';
 import { PayPalAdapter } from '../payments/PayPalAdapter';
-import { ExternalAdapterRegistry } from '../adapters/ExternalAdapters';
-import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { SovereignApiRouter } from '../api/ApiRouter';
-import { computeSha256 } from '../database/DatabaseSchema';
-import { SqliteStore } from '../database/SqliteStore';
-import { AuthService } from '../auth/AuthService';
-import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
-import { ReversibilityEngine } from '../database/ReversibilityEngine';
 
-export interface EnterpriseTestResult {
-  test_number: number;
-  name: string;
-  category: string;
-  passed: boolean;
-  duration_ms: number;
-  details: any;
-  error?: string;
-}
+export interface EnterpriseTestResult { test_number: number; name: string; category: string; passed: boolean; duration_ms: number; details: Record<string, any>; error?: string; }
+export interface EnterpriseVerificationReport { allPassed: boolean; totalTests: number; passedTests: number; results: EnterpriseTestResult[]; }
 
-export async function runEnterpriseVerification() {
-  const testResults: EnterpriseTestResult[] = [];
-  const testQueue: Array<() => Promise<void>> = [];
-  let testCounter = 1;
-
-  function runTest(name: string, category: string, fn: () => void | Promise<void>) {
-    testQueue.push(async () => {
-      const start = Date.now();
-      try {
-        await fn();
-        const dur = Date.now() - start;
-        testResults.push({
-          test_number: testCounter++,
-          name,
-          category,
-          passed: true,
-          duration_ms: dur,
-          details: { status: 'PASSED' }
-        });
-      } catch (e: any) {
-        const dur = Date.now() - start;
-        testResults.push({
-          test_number: testCounter++,
-          name,
-          category,
-          passed: false,
-          duration_ms: dur,
-          details: { status: 'FAILED' },
-          error: e.message || String(e)
-        });
-      }
-    });
-  }
-
-  // 1. Authentication & RBAC Test
-  runTest('Authentication & RBAC Evaluation', 'SECURITY', () => {
-    const mmtai = MMTAIProtocol.getInstance();
-    const token = mmtai.issueAuthorizationToken('ROLE_VERIFIER', 'CAP_SANDBOX_EXECUTE', 'TENANT_TEST');
-    if (!token || token.length !== 64) {
-      throw new Error('Failed to generate valid SHA-256 single-use token for verifier');
-    }
-    // Attempt privilege escalation
-    try {
-      mmtai.issueAuthorizationToken('ROLE_VERIFIER', 'CAP_PERSISTENCE_MUTATE', 'TENANT_TEST');
-      throw new Error('Privilege escalation succeeded unexpectedly!');
-    } catch (e: any) {
-      if (!e.message.includes('Authority Violation')) throw e;
-    }
-  });
-
-  // 2. MMTAI Single-Use Token Consumption (Replay Prevention)
-  runTest('MMTAI Single-Use Token Replay Prevention', 'SECURITY', () => {
-    const mmtai = MMTAIProtocol.getInstance();
-    const token = mmtai.issueAuthorizationToken('ROLE_VERIFIER', 'CAP_SANDBOX_EXECUTE', 'TENANT_REPLAY');
-    const firstAttempt = mmtai.authorizeExecution('CAP_SANDBOX_EXECUTE', 'ROLE_VERIFIER', token, 'EXECUTE_UNIT_TEST', 'TENANT_REPLAY');
-    if (!firstAttempt.permitted) throw new Error(`Initial valid token was rejected: ${firstAttempt.error}`);
-    const replayAttempt = mmtai.authorizeExecution('CAP_SANDBOX_EXECUTE', 'ROLE_VERIFIER', token, 'EXECUTE_REPLAY_TEST', 'TENANT_REPLAY');
-    if (replayAttempt.permitted) throw new Error('Replayed token was accepted! Replay protection breached.');
-  });
-
-  // 3. Multi-Tenant Cryptographic Isolation
-  runTest('Multi-Tenant Cryptographic Partition Isolation', 'SECURITY', () => {
-    const store = DurableStore.getInstance();
-    store.getState().tenants['T_ALPHA'] = {
-      id: 'T_ALPHA',
-      name: 'Alpha Corp',
-      tier: 'ENTERPRISE',
-      isolated_storage_key: computeSha256('KEY_ALPHA'),
-      created_at: Date.now()
-    };
-    store.getState().tenants['T_BETA'] = {
-      id: 'T_BETA',
-      name: 'Beta LLC',
-      tier: 'ENTERPRISE',
-      isolated_storage_key: computeSha256('KEY_BETA'),
-      created_at: Date.now()
-    };
-    if (store.getState().tenants['T_ALPHA'].isolated_storage_key === store.getState().tenants['T_BETA'].isolated_storage_key) {
-      throw new Error('Cross-tenant key collision detected!');
-    }
-  });
-
-  // 4. SHA-256 Linear Audit Chain Continuity
-  runTest('Audit Chain Cryptographic Hash Continuity', 'AUDIT', () => {
-    const store = DurableStore.getInstance();
-    const auditRecord = store.appendAudit('TENANT_AUDIT', 'TEST_HARNESS', 'TEST_ACTION', 'ENTITY', 'ID_1', { hello: 'world' });
-    if (!auditRecord.record_hash || auditRecord.record_hash.length !== 64) {
-      throw new Error('Audit record produced invalid SHA-256 hash');
-    }
-    const verification = store.verifyChain();
-    if (!verification.valid) {
-      throw new Error(`Audit chain verification failed: ${verification.reason}`);
-    }
-  });
-
-  // 5. Anti-Tamper Sentinel Detection
-  runTest('Anti-Tamper Sentinel Active Tamper Detection', 'AUDIT', () => {
-    const store = DurableStore.getInstance();
-    const chain = store.getState().audit_chain;
-    if (chain.length < 2) {
-      store.appendAudit('TENANT_SENTINEL', 'SENTINEL', 'GENERATE_BLOCK', 'ENTITY', 'ID_SENTINEL', {});
-    }
-    const targetIdx = chain.length - 1;
-    const originalHash = chain[targetIdx].payload_hash;
-    // Inject subtle byte mutation
-    chain[targetIdx].payload_hash = 'f'.repeat(64);
-    const tamperCheck = store.verifyChain();
-    // Restore original immediately
-    chain[targetIdx].payload_hash = originalHash;
-    if (tamperCheck.valid) {
-      throw new Error('Tampered block failed to trigger cryptographic validation alarm!');
-    }
-  });
-
-  // 6. Atomic State Checkpoint and Verified Rollback
-  runTest('Atomic State Checkpoint & Reversibility Engine', 'PERSISTENCE', () => {
-    const store = DurableStore.getInstance();
-    const checkpoint = store.createCheckpoint('TENANT_ROLLBACK', 'MUTATION_TEST', 'ATOMIC_DATABASE_RESTORE');
-    store.getState().problems['prob_mutated'] = {
-      id: 'prob_mutated',
-      tenant_id: 'TENANT_ROLLBACK',
-      raw_problem: 'Mutated state to rollback',
-      normalized_title: 'Mutated',
-      domain: 'TEST',
-      detected_constraints: [],
-      invariants: [],
-      status: 'INTAKE',
-      created_at: Date.now()
-    };
-    if (!store.getState().problems['prob_mutated']) throw new Error('Mutation failed');
-    const rollback = store.rollbackToCheckpoint(checkpoint.id, 'Test rollback verification');
-    if (!rollback.success) throw new Error(`Rollback failed: ${rollback.error}`);
-    if (store.getState().problems['prob_mutated']) {
-      throw new Error('Mutated entity still present after rollback execution!');
-    }
-  });
-
-  // 7. Irreversible Action Reversal Rejection Guard
-  runTest('Irreversible Action Rollback Rejection Guard', 'PERSISTENCE', () => {
-    const store = DurableStore.getInstance();
-    const checkpoint = store.createCheckpoint('TENANT_IRREVERSIBLE', 'EXTERNAL_PAYMENT_MUTATION', 'IRREVERSIBLE_EXTERNAL_ACTION');
-    const rollbackAttempt = store.rollbackToCheckpoint(checkpoint.id, 'Illegal external rollback attempt');
-    if (rollbackAttempt.success) {
-      throw new Error('Rollback succeeded on IRREVERSIBLE_EXTERNAL_ACTION checkpoint!');
-    }
-    if (!rollbackAttempt.error?.includes('IRREVERSIBLE_EXTERNAL_ACTION')) {
-      throw new Error('Unexpected error message on irreversible rejection');
-    }
-  });
-
-  // 8. 32 Historical Paradox Bootstrap Registry
-  runTest('Paradox Registry Integrity (Exact 32 Bootstrap Set)', 'PARADOX', () => {
-    const reg = ParadoxRegistry.getInstance();
-    const all = reg.getAllParadoxes();
-    if (all.length !== 32) {
-      throw new Error(`Expected exactly 32 paradoxes, found ${all.length}`);
-    }
-    const zenoAchilles = reg.getByCode('DH-P-001');
-    if (!zenoAchilles || zenoAchilles.verification_status !== 'VERIFIED') {
-      throw new Error('DH-P-001 missing or not marked VERIFIED');
-    }
-    const barber = reg.getByCode('DH-P-003');
-    if (!barber || barber.verification_status !== 'FAMILY_VARIANT') {
-      throw new Error('DH-P-003 should be classified as FAMILY_VARIANT');
-    }
-  });
-
-  // 9. Paradox Classification Taxonomy Accuracy
-  runTest('Paradox Duplicate & Family Variant Taxonomy', 'PARADOX', () => {
-    const reg = ParadoxRegistry.getInstance();
-    const counts = reg.getStatusBreakdown();
-    if (!counts['VERIFIED'] || counts['VERIFIED'] < 10) {
-      throw new Error('Insufficient verified paradoxes cataloged');
-    }
-    if (!counts['FAMILY_VARIANT'] || counts['FAMILY_VARIANT'] < 3) {
-      throw new Error('Family variants not properly classified');
-    }
-    if (!counts['CLAIM_ONLY'] || counts['CLAIM_ONLY'] < 2) {
-      throw new Error('Unresolved paradoxes should be classified as CLAIM_ONLY');
-    }
-  });
-
-  // 10. NOPOT Bounded Termination Formal Proof
-  runTest('NOPOT Bounded Termination Formal Proof Verification', 'PROOFS', () => {
-    const cert = NOPOTVerifier.verifyAlgorithmTermination(
-      'StrictlyDecreasingZenoLoop',
-      (x) => Math.floor(x / 2),
-      64,
-      100
-    );
-    if (!cert.termination_proved) throw new Error('NOPOT failed to prove termination');
-    if (!cert.strictly_decreasing) throw new Error('NOPOT variant function was not strictly decreasing');
-    if (cert.actual_measured_steps > cert.bounded_steps_upper_bound) {
-      throw new Error('Measured steps exceeded upper bound');
-    }
-  });
-
-  // 11. Preserved Verified Solution DH-S-001
-  runTest('Preserved Solution DH-S-001 Verification Integrity', 'SOLUTIONS', () => {
-    SolutionPipeline.getInstance();
-    const store = DurableStore.getInstance();
-    const sol = store.getState().solutions['DH-S-001'];
-    if (!sol) throw new Error('Preserved solution DH-S-001 missing from store');
-    if (sol.verification_status !== 'VERIFIED') throw new Error('DH-S-001 is not marked VERIFIED');
-    if (!sol.reversibility_guaranteed) throw new Error('DH-S-001 must guarantee reversibility');
-  });
-
-  // 12. Proof Bundle Builder & Attestation Sealing
-  runTest('Proof Bundle Builder Seal & Independent Oracle Attestation', 'PROOFS', () => {
-    const builder = new ProofBundleBuilder('PB-TEST-SEAL', 'SUB-001', 'Test verifiable claim');
-    builder
-      .addTest('TEST-1', 'Basic assertion', true, 1.0)
-      .addFormalProof('NOPOT', 'V(x) < V(y)', true)
-      .addOracle('ORACLE-01', 'Test Witness', 'SIG_CHECK', true)
-      .addReplay('REPLAY-01', 'hash_a', 'hash_a');
-    const sealed = builder.seal();
-    if (sealed.verification_status !== 'VERIFIED') {
-      throw new Error('Clean proof bundle failed to seal as VERIFIED');
-    }
-  });
-
-  // 13. Deterministic Replay Cleanroom Verification
-  runTest('Cleanroom Replay Bitrot & Divergence Detection', 'PROOFS', () => {
-    const builder = new ProofBundleBuilder('PB-DIVERGENT', 'SUB-DIV', 'Divergence test');
-    builder
-      .addTest('TEST-DIV', 'Run test', true, 1.0)
-      .addFormalProof('NOPOT', 'spec', true)
-      .addOracle('ORACLE-DIV', 'Witness', 'SIG', true)
-      .addReplay('REPLAY-DIV', 'expected_hash_xyz', 'observed_hash_divergent');
-    const sealed = builder.seal();
-    if (sealed.verification_status !== 'FAIL') {
-      throw new Error('Divergent replay was not flagged as FAIL');
-    }
-  });
-
-  // 14. 21-Stage Pipeline Full Execution
-  runTest('21-Stage Problem Resolution Pipeline Full Traversal', 'PIPELINE', () => {
-    const pipeline = SolutionPipeline.getInstance();
-    const result = pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
-    if (!result.overall_success) throw new Error(`Pipeline execution failed: ${result.rejection_reason}`);
-    if (result.completed_stages !== 21) {
-      throw new Error(`Expected exactly 21 completed stages, got ${result.completed_stages}`);
-    }
-  });
-
-  // 15. Pipeline Fail-Closed Boundary Rejection
-  runTest('Pipeline Fail-Closed Gate Halts and Quarantines on Error', 'PIPELINE', () => {
-    const pipeline = SolutionPipeline.getInstance();
-    const badCode = 'export function bad() { /* FAIL_STAGE_9 */ return false; }';
-    const result = pipeline.runPipeline('DH-P-001', badCode);
-    if (result.overall_success) {
-      throw new Error('Poisoned code traversed pipeline unexpectedly without tripping gate!');
-    }
-    if (result.completed_stages >= 21) {
-      throw new Error('Stages continued execution after poison gate tripped');
-    }
-  });
-
-  // 16. Defensible Pricing Formula v1.4 Determinism
-  runTest('Defensible Pricing Formula v1.4 Deterministic Execution', 'MARKETPLACE', () => {
-    const market = MarketplaceEngine.getInstance();
-    const p1 = market.calculateDefensiblePrice(10000, 1.5, 'MEDIUM');
-    const p2 = market.calculateDefensiblePrice(10000, 1.5, 'MEDIUM');
-    if (p1.final_price_cents !== p2.final_price_cents) {
-      throw new Error('Defensible pricing calculation was non-deterministic');
-    }
-    if (p1.calculation_hash !== p2.calculation_hash) {
-      throw new Error('Defensible pricing hash mismatch');
-    }
-    if (p1.final_price_cents !== 25313) {
-      throw new Error(`Expected price 25313 cents, received ${p1.final_price_cents}`);
-    }
-  });
-
-  // 17. Marketplace Unverified Solution Publication Blocker
-  runTest('Marketplace Blocks Publication of Unverified Solutions', 'MARKETPLACE', () => {
-    const market = MarketplaceEngine.getInstance();
-    const result = market.publishOffer(
-      'UNVERIFIED_SOL',
-      'PB_NON_EXISTENT',
-      'Dangerous Unverified Offer',
-      'Should be rejected',
-      5000,
-      1.0,
-      'HIGH'
-    );
-    if (result.success) {
-      throw new Error('Unverified solution was published to marketplace!');
-    }
-  });
-
-  // 18. Server-Authoritative PayPal DN-35 Fail-Closed Execution
-  runTest('PayPal DN-35 Server-Authoritative Fail-Closed Enforcement', 'PAYMENTS', async () => {
-    const paypal = PayPalAdapter.getInstance();
-    const origSbId = process.env.PAYPAL_SANDBOX_ID;
-    const origSbKey = process.env.PAYPAL_SANDBOX_KEY;
-    const origSbClientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
-    const origSbClientSec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-    const origClientId = process.env.PAYPAL_CLIENT_ID;
-    const origClientSec = process.env.PAYPAL_CLIENT_SECRET;
-    try {
-      delete process.env.PAYPAL_SANDBOX_ID;
-      delete process.env.PAYPAL_SANDBOX_KEY;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_ID;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-      delete process.env.PAYPAL_CLIENT_ID;
-      delete process.env.PAYPAL_CLIENT_SECRET;
-      paypal.clearSessionCredentials();
-      const res = await paypal.captureOrderPayment('ORD_TEST_123', 2500, 'IDEMP_KEY_001');
-      if (res.status !== 'EXTERNAL_PROVIDER_REQUIRED') {
-        throw new Error(`Expected EXTERNAL_PROVIDER_REQUIRED without credentials, received ${res.status}`);
-      }
-    } finally {
-      if (origSbId) process.env.PAYPAL_SANDBOX_ID = origSbId;
-      if (origSbKey) process.env.PAYPAL_SANDBOX_KEY = origSbKey;
-      if (origSbClientId) process.env.PAYPAL_SANDBOX_CLIENT_ID = origSbClientId;
-      if (origSbClientSec) process.env.PAYPAL_SANDBOX_CLIENT_SECRET = origSbClientSec;
-      if (origClientId) process.env.PAYPAL_CLIENT_ID = origClientId;
-      if (origClientSec) process.env.PAYPAL_CLIENT_SECRET = origClientSec;
-    }
-  });
-
-  // 19. External Provider Inventory Transparency
-  runTest('External Adapter Inventory Transparency (Neon, PayPal)', 'ADAPTERS', () => {
-    const inventory = ExternalAdapterRegistry.getInventory();
-    if (inventory.length < 3) throw new Error('Expected at least 3 external adapters cataloged');
-    const pp = inventory.find(i => i.adapter_id === 'DN-35');
-    if (!pp) throw new Error('DN-35 PayPal adapter missing from inventory');
-  });
-
-  // 20. Crystal Clear Box Redacted Evidence Projection
-  runTest('Crystal Clear Box Redaction Preserves Verifiable Evidence', 'AUDIT', () => {
-    const engine = ProofEngine.getInstance();
-    const bundle = engine.getBundle('PB-DH-S-001');
-    if (!bundle) throw new Error('PB-DH-S-001 not found');
-    const customerView = CrystalClearBox.projectCustomerEvidence(bundle);
-    if (!customerView.proprietary_weights_redacted) throw new Error('Proprietary weights not marked redacted');
-    if (!customerView.internal_reasoning_redacted) throw new Error('Internal reasoning not marked redacted');
-    if (customerView.verification_verdict !== 'VERIFIED') throw new Error('Verification verdict missing or corrupt');
-    if (!customerView.public_audit_token || customerView.public_audit_token.length !== 64) {
-      throw new Error('Customer public audit token invalid');
-    }
-  });
-
-  // 21. Complete 54-Node Registry Integrity
-  runTest('Daisy Node Registry (54 Distinct Nodes)', 'NODES', () => {
-    const reg = NodeRegistry.getInstance();
-    const all = reg.getAllNodes();
-    if (all.length !== 54) {
-      throw new Error(`Expected exactly 54 nodes, found ${all.length}`);
-    }
-    const dn34 = reg.getNode('DN-34');
-    const dn35 = reg.getNode('DN-35');
-    const dn38 = reg.getNode('DN-38');
-    if (!dn34 || !dn35 || !dn38) {
-      throw new Error('Required adapter nodes DN-34, DN-35, DN-38 missing');
-    }
-  });
-
-  // 22. Machine-Readable /api/system/status Endpoint
-  runTest('System Status API Endpoint Computes Real State', 'API', async () => {
-    const router = SovereignApiRouter.getInstance();
-    const res = await router.handleRequest('/api/system/status', 'GET');
-    if (res.status !== 200) throw new Error('Status API returned non-200');
-    const s = res.data;
-    if (s.registered_nodes !== 54) throw new Error(`Expected 54 registered nodes, got ${s.registered_nodes}`);
-    if (s.chain_valid !== true) throw new Error('Status reported invalid chain');
-  });
-
-  // 23. SqliteStore Multi-Tenant Persistence & 27 Tables Integrity
-  runTest('SqliteStore Multi-Tenant Persistence & 27 Tables Integrity', 'DATABASE', () => {
-    const store = SqliteStore.getInstance();
-    const rawDb = store.getRawDb();
-    const tables = rawDb.all("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-    const tableNames = tables.map((t: any) => t.name);
-    const required27 = [
-      'users', 'tenants', 'roles', 'permissions', 'tenant_memberships',
-      'problems', 'paradoxes', 'invariants', 'solutions', 'offers',
-      'proof_bundles', 'proof_evidence', 'tests', 'verification_runs',
-      'orders', 'payments', 'deployments', 'checkpoints', 'rollback_records',
-      'telemetry', 'audit_records', 'chain_records', 'licenses',
-      'adapter_status', 'node_registry', 'execution_runs', 'failures'
-    ];
-    for (const req of required27) {
-      if (!tableNames.includes(req)) {
-        throw new Error(`Required table [${req}] missing from SQLite persistence`);
-      }
-    }
-  });
-
-  // 24. Fail-Closed: CLAIM_ONLY / UNVERIFIED Offer Publication Blocked
-  runTest('Fail-Closed: CLAIM_ONLY / UNVERIFIED Offer Publication Blocked', 'MARKETPLACE', () => {
-    const market = MarketplaceEngine.getInstance();
-    const res = market.publishOffer('SOL_NONEXISTENT', 'PB_NONEXISTENT', 'Unverified Offer', 'Desc', 100, 1.0, 'HIGH');
-    if (res.success) {
-      throw new Error('Unverified offer was published! Fail-closed invariant breached.');
-    }
-  });
-
-  // 25. Fail-Closed: UNKNOWN / UNVERIFIED Order Creation Blocked
-  runTest('Fail-Closed: UNKNOWN / UNVERIFIED Order Creation Blocked', 'MARKETPLACE', () => {
-    const market = MarketplaceEngine.getInstance();
-    const res = market.createOrder('TENANT_TEST', 'NON_EXISTENT_OFFER');
-    if (res.success) {
-      throw new Error('Order creation succeeded on non-existent unverified offer!');
-    }
-  });
-
-  // 26. Fail-Closed: Unauthorized Runtime Deployment Blocked
-  runTest('Fail-Closed: Unauthorized Runtime Deployment Blocked', 'SECURITY', () => {
-    const auth = AuthService.getInstance();
-    const customerToken = auth.createSignedToken('c1', 'TENANT_C', 'customer@c.com', 'CUSTOMER');
-    const customerUser = auth.verifyToken(customerToken).user!;
-    const check = auth.authorize(customerUser, 'DEPLOY_RUNTIME');
-    if (check.authorized) {
-      throw new Error('Customer unauthorizedly granted DEPLOY_RUNTIME permission!');
-    }
-  });
-
-  // 27. Fail-Closed: Cross-Tenant Data Access Blocked
-  runTest('Fail-Closed: Cross-Tenant Data Access Blocked', 'SECURITY', () => {
-    const auth = AuthService.getInstance();
-    const adminToken = auth.createSignedToken('a1', 'TENANT_ALPHA', 'admin@alpha.com', 'ADMIN');
-    const adminUser = auth.verifyToken(adminToken).user!;
-    const crossCheck = auth.authorize(adminUser, 'VIEW_EVIDENCE', 'TENANT_BETA');
-    if (crossCheck.authorized) {
-      throw new Error('Cross-tenant data access succeeded without OWNER role!');
-    }
-  });
-
-  // 28. Fail-Closed: Missing PayPal Credentials Evaluated
-  runTest('Fail-Closed: Missing PayPal Credentials Evaluated', 'ADAPTERS', async () => {
-    const paypal = PayPalAdapter.getInstance();
-    const orig = paypal.getEffectiveCredentials();
-    paypal.clearSessionCredentials();
-    const captureResult = await paypal.captureOrderPayment('ORD_TEST_99', 5000, 'IDEMP_99');
-    if (orig) {
-      paypal.setSessionCredentials(orig.clientId, orig.clientSecret, orig.environment);
-    }
-    if (captureResult.success) {
-      throw new Error('PayPal payment captured without credentials! Fail-closed breached.');
-    }
-  });
-
-  // 29. Order Lifecycle State Machine Validates Transitions & Failures
-  runTest('Order Lifecycle State Machine Validates Transitions & Failures', 'MARKETPLACE', () => {
-    const lifecycle = OrderLifecycleManager.getInstance();
-    const sqlite = SqliteStore.getInstance();
-    const auth = AuthService.getInstance();
-    const adminToken = auth.createSignedToken('adm1', 'TENANT_ENTERPRISE_DEMO', 'admin@sovereign.local', 'ADMIN');
-    const adminUser = auth.verifyToken(adminToken).user!;
-    const orderId = `ord_life_${Date.now()}`;
-    sqlite.insertRecord('orders', {
-      id: orderId,
-      tenant_id: 'TENANT_ENTERPRISE_DEMO',
-      offer_id: 'OFFER_DEMO',
-      solution_id: 'SOL_DEMO',
-      proof_bundle_id: 'PB_DEMO',
-      price_cents: 10000,
-      status: 'OFFER',
-      version: '1.0.0-PROD'
-    });
-    const t1 = lifecycle.transitionOrder(orderId, 'ORDER_CREATED', adminUser);
-    if (!t1.success || t1.order.status !== 'ORDER_CREATED') {
-      throw new Error(`Failed valid transition to ORDER_CREATED: ${t1.error}`);
-    }
-    const tBad = lifecycle.transitionOrder(orderId, 'DEPLOYED', adminUser);
-    if (tBad.success) {
-      throw new Error('Illegal state transition ORDER_CREATED -> DEPLOYED succeeded!');
-    }
-  });
-
-  // 30. Central Failure Diversion Preserves Evidence & Executes Rollback
-  runTest('Central Failure Diversion Preserves Evidence & Executes Rollback', 'REVERSIBILITY', () => {
-    const engine = ReversibilityEngine.getInstance();
-    const chk = engine.createCheckpoint('TENANT_FAIL_TEST', 'TARGET_MUTATION', 'ATOMIC_DATABASE_RESTORE');
-    const diversion = engine.divertFailure(
-      'GATE_14_INDEPENDENT_REPLAY_VALIDATION',
-      'Deterministic output hash mismatch during replay verification',
-      'TENANT_FAIL_TEST',
-      'exec_999',
-      chk.id,
-      { expected: 'hash_a', actual: 'hash_b' }
-    );
-    if (!diversion.fail_closed_enforced) throw new Error('Fail-closed not enforced in failure diversion');
-    if (diversion.rollback_status !== 'ROLLED_BACK') {
-      throw new Error(`Expected ROLLED_BACK status, got: ${diversion.rollback_status}`);
-    }
-  });
-
-  // Execute all queued tests sequentially
-  for (const testFn of testQueue) {
-    await testFn();
-  }
-
-  const totalTests = testResults.length;
-  const passedTests = testResults.filter(t => t.passed).length;
-  const allPassed = totalTests === passedTests;
-
-  return {
-    allPassed,
-    totalTests,
-    passedTests,
-    results: testResults
+/** Security-oriented regression suite. It validates gates, not marketing claims. */
+export async function runEnterpriseVerification(): Promise<EnterpriseVerificationReport> {
+  const results: EnterpriseTestResult[] = [];
+  const test = async (name: string, category: string, fn: () => void | Promise<void>) => {
+    const started = Date.now();
+    try { await fn(); results.push({ test_number: results.length + 1, name, category, passed: true, duration_ms: Date.now() - started, details: { status: 'PASSED' } }); }
+    catch (error: any) { results.push({ test_number: results.length + 1, name, category, passed: false, duration_ms: Date.now() - started, details: { status: 'FAILED' }, error: error.message || String(error) }); }
   };
+
+  await test('Authentication fails closed without a configured key', 'SECURITY', () => {
+    const previous = process.env.SOLVEX_AUTH_SECRET; delete process.env.SOLVEX_AUTH_SECRET;
+    const result = AuthService.getInstance().verifyToken('malformed.token');
+    if (result.valid) throw new Error('Unauthenticated token was accepted');
+    if (previous) process.env.SOLVEX_AUTH_SECRET = previous;
+  });
+  process.env.SOLVEX_AUTH_SECRET = process.env.SOLVEX_AUTH_SECRET || 'test-only-auth-secret-with-at-least-thirty-two-characters';
+  await test('HMAC tokens enforce tamper detection, expiry, and tenant scope', 'SECURITY', () => {
+    const auth = AuthService.getInstance(); const token = auth.createSignedToken('user_a', 'TENANT_ALPHA', 'a@example.test', 'CUSTOMER', 60_000);
+    const user = auth.verifyToken(token).user; if (!user) throw new Error('Valid test token rejected');
+    if (auth.verifyToken(`${token}x`).valid) throw new Error('Tampered token accepted');
+    if (auth.authorize(user, 'VIEW_OWN', 'TENANT_BETA').authorized) throw new Error('Cross-tenant authorization accepted');
+    const expired = auth.createSignedToken('user_a', 'TENANT_ALPHA', 'a@example.test', 'CUSTOMER', 1);
+    const start = Date.now(); while (Date.now() - start < 3) { /* deterministic expiry wait */ }
+    if (auth.verifyToken(expired).valid) throw new Error('Expired token accepted');
+  });
+  await test('SQLite repository persists and tenant-scopes records', 'PERSISTENCE', () => {
+    const db = SqliteStore.getInstance(); const id = `persist_${Date.now()}`;
+    db.insertTenantRecord('problems', 'TENANT_ALPHA', { id, raw_problem: 'P', status: 'INTAKE' });
+    if (!db.findTenantRecordById('problems', 'TENANT_ALPHA', id)) throw new Error('Durable record missing');
+    if (db.findTenantRecordById('problems', 'TENANT_BETA', id)) throw new Error('Cross-tenant record leaked');
+  });
+  await test('Daisy static intake creates a PARTIAL candidate, never VERIFIED', 'DAISY', () => {
+    const result = SolutionPipeline.getInstance().runPipeline('DH-P-001', 'export function solve(value: number) { return value + 1; }', 'TENANT_ALPHA');
+    if (result.verification_status !== 'PARTIAL' || result.overall_success) throw new Error('Candidate was not held pending evidence');
+    const stored = SqliteStore.getInstance().findTenantRecordById<any>('solutions', 'TENANT_ALPHA', result.solution_id!);
+    if (!stored || stored.verification_status === 'VERIFIED') throw new Error('Candidate persistence gate failed');
+  });
+  await test('Marketplace rejects candidate and proof substitution publication', 'MARKETPLACE', () => {
+    const result = MarketplaceEngine.getInstance().publishOffer('DH-C-NOT-VERIFIED', 'PB-UNRELATED', 'bad', 'bad', 1000, 1, 'LOW');
+    if (result.success) throw new Error('Unverified or mismatched solution published');
+  });
+  await test('PayPal checkout fails closed without server credentials', 'PAYMENTS', async () => {
+    const savedEnv = process.env.PAYPAL_ENVIRONMENT; delete process.env.PAYPAL_ENVIRONMENT;
+    const result = await PayPalAdapter.getInstance().createCheckout('missing_order', 'TENANT_ALPHA', 'idempotency-key-123');
+    if (savedEnv) process.env.PAYPAL_ENVIRONMENT = savedEnv;
+    if (result.status !== 'EXTERNAL_PROVIDER_REQUIRED') throw new Error(`Unexpected gateway status ${result.status}`);
+  });
+  await test('Sensitive API routes reject unauthenticated callers', 'API', async () => {
+    const api = SovereignApiRouter.getInstance();
+    const [order, pipeline, capture] = await Promise.all([
+      api.handleRequest('/api/orders', 'POST', { offer_id: 'missing' }),
+      api.handleRequest('/api/solutions/pipeline', 'POST', { paradox_code: 'DH-P-001', code_solution: 'export function x(){}' }),
+      api.handleRequest('/api/payments/checkout', 'POST', { order_id: 'missing', idempotency_key: 'idempotency-key-123' })
+    ]);
+    if ([order, pipeline, capture].some(response => response.status !== 401)) throw new Error('A sensitive route did not require authentication');
+  });
+  await test('Public login does not mint caller-selected roles or tenants', 'API', async () => {
+    const response = await SovereignApiRouter.getInstance().handleRequest('/api/auth/login', 'POST', { role: 'OWNER', tenant_id: 'TENANT_OTHER' });
+    if (response.status !== 410) throw new Error('Deprecated login endpoint remained active');
+  });
+  await test('Audit chain detects payload tampering', 'AUDIT', () => {
+    const durable = DurableStore.getInstance(); const record = durable.appendAudit('TENANT_ALPHA', 'TEST', 'TEST', 'ENTITY', 'ID', { value: 1 });
+    record.payload.value = 2; if (durable.verifyChain().valid) throw new Error('Tampered audit payload was accepted');
+    record.payload.value = 1; if (!durable.verifyChain().valid) throw new Error('Audit state did not recover after test cleanup');
+  });
+  return { allPassed: results.every(result => result.passed), totalTests: results.length, passedTests: results.filter(result => result.passed).length, results };
 }

@@ -108,8 +108,6 @@ export class DFRLFormalVerifier {
   private static instance: DFRLFormalVerifier | null = null;
   private z3InitPromise: Promise<any> | null = null;
   private solverVersion: string = 'Microsoft Research Z3 WASM 5.2.0';
-  private primaryContext: any = null;
-  private cleanroomContext: any = null;
 
   public static getInstance(): DFRLFormalVerifier {
     if (!DFRLFormalVerifier.instance) {
@@ -131,20 +129,6 @@ export class DFRLFormalVerifier {
       })();
     }
     return this.z3InitPromise;
-  }
-
-  private getPrimaryContext(z3Mod: any): any {
-    if (!this.primaryContext) {
-      this.primaryContext = new z3Mod.Context('dfrl_primary_context');
-    }
-    return this.primaryContext;
-  }
-
-  private getCleanroomContext(z3Mod: any): any {
-    if (!this.cleanroomContext) {
-      this.cleanroomContext = new z3Mod.Context('dfrl_cleanroom_context');
-    }
-    return this.cleanroomContext;
   }
 
   /**
@@ -192,7 +176,8 @@ export class DFRLFormalVerifier {
     let execError: string | undefined = undefined;
 
     try {
-      const ctx = this.getPrimaryContext(z3Mod);
+      const { Context } = z3Mod;
+      const ctx = new Context(`ctx_${item.code.replace(/[^a-zA-Z0-9]/g, '_')}`);
       const solver = new ctx.Solver();
 
       // EXECUTE THE ACTUAL OPERATOR SMT ASSERTION DIRECTLY
@@ -270,8 +255,9 @@ export class DFRLFormalVerifier {
 
     let replayResult = 'unknown';
     try {
-      // Independent cleanroom context
-      const replayCtx = this.getCleanroomContext(z3Mod);
+      const { Context } = z3Mod;
+      // Independent fresh context
+      const replayCtx = new Context(`cleanroom_replay_${item.code.replace(/[^a-zA-Z0-9]/g, '_')}`);
       const replaySolver = new replayCtx.Solver();
       await replaySolver.fromString(item.z3_smt_assertion);
       const res = await replaySolver.check();

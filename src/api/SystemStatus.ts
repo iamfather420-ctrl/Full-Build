@@ -1,23 +1,20 @@
-import { NodeRegistry } from '../nodes/NodeRegistry';
 import { DurableStore } from '../database/DurableStore';
 import { ExternalAdapterRegistry } from '../adapters/ExternalAdapters';
+import { B2BReferenceCaseService } from '../b2b/B2BReferenceCaseService';
 
 export class SystemStatusService {
   public static computeStatus(): any {
-    const nodeReg = NodeRegistry.getInstance();
-    const durable = DurableStore.getInstance();
-    const chainVerification = durable.verifyChain();
-    const adapters = ExternalAdapterRegistry.getInventory();
-    const paypal = adapters.find(a => a.adapter_id === 'DN-35');
-
+    const chain = DurableStore.getInstance().verifyChain();
+    const paypal = ExternalAdapterRegistry.getInventory().find(adapter => adapter.adapter_id === 'DN-35');
+    const b2b = B2BReferenceCaseService.getInstance().getReadiness('DH-C-B28A191DCBFE70D0');
     return {
-      product: 'Project AGATE Sovereign Core & SOLVEX Sovereign Platform',
-      engine: 'dAIsy haMINJA Core Engine',
-      version: '1.0.0-PROD',
-      registered_nodes: nodeReg.getAllNodes().length,
-      chain_valid: chainVerification.valid,
-      audit_records_count: chainVerification.total_records,
-      payment_provider_status: paypal ? paypal.status : 'EXTERNAL_PROVIDER_REQUIRED',
+      product: 'SOLVEX B2B Platform',
+      version: '2.0.0',
+      durable_audit_chain_valid: chain.valid,
+      audit_records_count: chain.total_records,
+      payment_provider_status: paypal?.status || 'EXTERNAL_PROVIDER_REQUIRED',
+      verification_boundary: 'Candidate generation, marketplace verification, and payment verification are independent gates.',
+      b2b_readiness: b2b,
       fail_closed_active: true,
       timestamp: Date.now()
     };

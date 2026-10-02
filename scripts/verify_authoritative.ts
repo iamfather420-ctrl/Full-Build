@@ -1,17 +1,6 @@
-import cp from 'child_process';
-import fs from 'fs';
-import path from 'path';
 import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
-import { setDiskDbChecker } from '../src/tests/persistenceVerification';
 
 async function main() {
-  AuthoritativeVerificationPipeline.setNodePlatform({
-    execSync: cp.execSync,
-    fs,
-    path
-  });
-  setDiskDbChecker((p: string) => fs.existsSync(p));
-
   console.log('===========================================================');
   console.log(' PROJECT AGATE SOVEREIGN CORE / SOLVEX PLATFORM');
   console.log(' AUTHORITATIVE 14-GATE VERIFICATION PIPELINE');

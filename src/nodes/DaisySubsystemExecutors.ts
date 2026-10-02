@@ -534,10 +534,10 @@ export class DaisySubsystemExecutors {
           solution_id: 'SOL_DEMO',
           proof_bundle_id: 'PB_DEMO',
           price_cents: 1000,
-          status: 'OFFER',
+          status: 'ORDER_CREATED',
           version: '1.0.0-PROD'
         });
-        const t1 = lifecycle.transitionOrder(orderId, 'ORDER_CREATED', usr);
+        const t1 = lifecycle.transitionOrder(orderId, 'FAILED', usr, { evidence_hash: computeSha256(`lifecycle-failure-path:${orderId}`) });
         const tBad = lifecycle.transitionOrder(orderId, 'DEPLOYED', usr);
         const validTransitions = t1.success && !tBad.success;
         return {
@@ -663,25 +663,22 @@ export class DaisySubsystemExecutors {
         const pp = PayPalAdapter.getInstance();
         const creds = pp.getEffectiveCredentials();
         const info = pp.getMaskedCredentialsInfo();
-        let authTest: any = { valid: false };
-        if (creds) {
-          authTest = await pp.testLiveCredentials(creds.clientId, creds.clientSecret, creds.environment);
-        }
-        const isAuth = Boolean(authTest.valid || authTest.authenticated);
         return {
           node_id: 'DN-35',
           name: 'PayPal Enterprise Payment Gateway',
           category: 'PAYMENTS',
           executed: true,
           claim_scope: creds ? (creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX') : 'LOCAL',
-          status: creds ? (isAuth ? 'SUCCESS' : 'FAIL_CLOSED') : 'PROVIDER_REQUIRED',
+          status: creds ? 'FAIL_CLOSED' : 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: {
             configured: pp.hasActiveCredentials(),
             environment: info.environment,
-            client_id_prefix: info.masked_client_id,
-            authenticated: isAuth,
-            fail_closed_enforced: true
+            pyusd_only_policy: info.pyusd_only_policy,
+            webhook_configured: info.webhook_configured,
+            authenticated: false,
+            fail_closed_enforced: true,
+            note: 'No provider operation is performed by node coverage; provider verification is a separate authorized flow.'
           }
         };
       }
@@ -708,66 +705,51 @@ export class DaisySubsystemExecutors {
         };
       }
 
-      // 37. DN-37: Coinbase Commerce Gateway
+      // 37. DN-37: Non-PayPal Rail Blocklist
       case 'DN-37': {
-        const hasKey = Boolean(typeof process !== 'undefined' && process.env?.COINBASE_API_KEY);
         return {
           node_id: 'DN-37',
-          name: 'Coinbase Commerce Gateway',
-          category: 'ADAPTERS',
+          name: 'Non-PayPal Rail Blocklist',
+          category: 'SECURITY',
           executed: true,
-          claim_scope: hasKey ? 'PRODUCTION' : 'LOCAL',
-          status: hasKey ? 'SUCCESS' : 'PROVIDER_REQUIRED',
+          claim_scope: 'LOCAL',
+          status: 'PROHIBITED_BLOCKED',
           duration_ms: performance.now() - start,
-          evidence: { configured: hasKey, fail_closed: true }
+          evidence: { non_paypal_rails_enabled: false, fail_closed: true, policy: 'PAYPAL_PYUSD_ONLY' }
         };
       }
 
-      // 38. DN-38: Sovereign Settlement Escrow Program
+      // 38. DN-38: PYUSD Evidence Requirement
       case 'DN-38': {
-        const testDeposit = {
-          escrow_id: `escrow_sov_${Date.now()}`,
-          buyer_id: 'BUYER_SOVEREIGN',
-          seller_id: 'SELLER_SOVEREIGN',
-          amount_cents: 10000,
-          currency: 'USD',
-          timelock_block: 1000,
-          status: 'LOCKED',
-          settlement_engine: 'SOVEREIGN_CRYPTOGRAPHIC_ESCROW'
-        };
-        const escrowHash = computeSha256(JSON.stringify(testDeposit));
         return {
           node_id: 'DN-38',
-          name: 'Sovereign Settlement Escrow Program',
-          category: 'SETTLEMENT',
+          name: 'PYUSD Evidence Requirement',
+          category: 'PAYMENTS',
           executed: true,
           claim_scope: 'LOCAL',
-          status: 'SUCCESS',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: {
-            escrow_id: testDeposit.escrow_id,
-            settlement_engine: testDeposit.settlement_engine,
-            escrow_hash: escrowHash,
-            timelock_enforced: true,
-            multisig_verified: true,
+            provider_capture_verified: false,
+            pyusd_asset_evidence_verified: false,
+            production_verified: false,
+            gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
             fail_closed: true
           }
         };
       }
 
-      // 39. DN-39: Ethereum EVM Escrow Bridge
+      // 39. DN-39: External Custody Exclusion Guard
       case 'DN-39': {
-        const rpc = typeof process !== 'undefined' ? process.env?.ETH_RPC_URL : undefined;
-        const hasEth = Boolean(rpc);
         return {
           node_id: 'DN-39',
-          name: 'Ethereum EVM Escrow Bridge',
-          category: 'ADAPTERS',
+          name: 'External Custody Exclusion Guard',
+          category: 'SECURITY',
           executed: true,
-          claim_scope: hasEth ? 'PRODUCTION' : 'LOCAL',
-          status: hasEth ? 'SUCCESS' : 'PROVIDER_REQUIRED',
+          claim_scope: 'LOCAL',
+          status: 'PROHIBITED_BLOCKED',
           duration_ms: performance.now() - start,
-          evidence: { configured: hasEth, fail_closed: true }
+          evidence: { external_custody_enabled: false, fail_closed: true, policy: 'PAYPAL_PYUSD_ONLY' }
         };
       }
 

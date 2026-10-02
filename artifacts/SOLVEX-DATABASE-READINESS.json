@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-02T12:08:19.014Z",
+  "environment": "UNKNOWN",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "status": "BLOCKED",
+  "backend": "SQLITE_LOCAL",
+  "evidence": {
+    "local_schema_table_count": 27,
+    "local_tenant_scoping": true,
+    "local_transaction_api": true,
+    "managed_connectivity": false,
+    "managed_schema_version": "UNKNOWN",
+    "managed_rls": "UNKNOWN",
+    "managed_indexes": "UNKNOWN",
+    "restart_readback": true
+  },
+  "test": "Local durable schema and transaction interfaces inspected; managed production connectivity is not attempted without explicit production configuration.",
+  "remaining_requirement": "Provision and connect the managed production database, apply migrations, verify schema/indexes/RLS/transactions, and prove restart readback.",
+  "truth_classification": "BLOCKED"
+}

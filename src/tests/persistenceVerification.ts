@@ -1,22 +1,9 @@
+import fs from 'fs';
+import path from 'path';
 import { SqliteStore } from '../database/SqliteStore';
 import { NeonStore } from '../database/NeonPersistence';
 import { DurableStore } from '../database/DurableStore';
 import { computeSha256 } from '../database/DatabaseSchema';
-
-let diskDbChecker: ((path: string) => boolean) | null = null;
-
-export function setDiskDbChecker(fn: (path: string) => boolean) {
-  diskDbChecker = fn;
-}
-
-async function checkDiskDbExists(dbPath: string): Promise<boolean> {
-  if (diskDbChecker) {
-    try {
-      return diskDbChecker(dbPath);
-    } catch {}
-  }
-  return false;
-}
 
 export interface SinglePersistenceTestResult {
   step: string;
@@ -207,10 +194,9 @@ export async function runPersistenceVerification(): Promise<PersistenceVerificat
   try {
     // Re-instantiate sqlite database reader from disk file
     const dbPath = './.sovereign_data/sovereign.sqlite';
-    const diskExists = await checkDiskDbExists(dbPath);
-    if (diskExists) {
+    if (fs.existsSync(dbPath)) {
       // @ts-ignore
-      const nodeSqlite = typeof require === 'function' ? require('node:sqlite') : null;
+      const nodeSqlite = require('node:sqlite');
       if (nodeSqlite && nodeSqlite.DatabaseSync) {
         const freshDb = new nodeSqlite.DatabaseSync(dbPath);
         const rows = freshDb.prepare('SELECT id, status FROM solutions WHERE id = ?').all(testSolutionId);
@@ -225,7 +211,7 @@ export async function runPersistenceVerification(): Promise<PersistenceVerificat
       step: 'RESTART_READBACK',
       passed: restartReadbackOk,
       duration_ms: performance.now() - t5,
-      details: { disk_file_exists: diskExists, readback_verified: restartReadbackOk }
+      details: { disk_file_exists: fs.existsSync(dbPath), readback_verified: restartReadbackOk }
     });
   } catch (err: any) {
     sqliteSteps.push({
@@ -307,7 +293,7 @@ export async function runPersistenceVerification(): Promise<PersistenceVerificat
       test_id: 'PERSIST_EVIDENCE_TEST',
       hash: computeSha256(testSolutionId)
     };
-    sqlite.insertTenantRecord('proof_evidence', 'TENANT_ALPHA', {
+    sqlite.insertTenantRecord('evidence_bundles', 'TENANT_ALPHA', {
       id: testBundle.bundle_id,
       bundle_id: testBundle.bundle_id,
       solution_id: testSolutionId,
@@ -315,7 +301,7 @@ export async function runPersistenceVerification(): Promise<PersistenceVerificat
       hash: testBundle.hash,
       status: 'VERIFIED'
     });
-    const readback = sqlite.findTenantRecords('proof_evidence', 'TENANT_ALPHA');
+    const readback = sqlite.findTenantRecords('evidence_bundles', 'TENANT_ALPHA');
     evidenceOk = readback.some(b => b.bundle_id === testBundle.bundle_id && b.hash === testBundle.hash);
     sqliteSteps.push({
       step: 'EVIDENCE_PERSISTENCE',

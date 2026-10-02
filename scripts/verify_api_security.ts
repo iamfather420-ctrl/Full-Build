@@ -23,7 +23,6 @@ async function main() {
   const publication = await expect('candidate publication is blocked', 400, api.handleRequest('/api/offers/publish', 'POST', { solution_id: candidate.data.solution_id, proof_bundle_id: 'PB-NOT-BOUND', title: 'blocked', description: 'blocked', cost_basis: 1000, complexity: 1, risk_class: 'LOW' }, ownerHeaders));
   if (!String(publication.error).includes('Publication blocked')) throw new Error('Publication failure did not communicate a fail-closed reason');
   await expect('payment checkout denies missing provider credentials', 400, api.handleRequest('/api/payments/checkout', 'POST', { order_id: 'unknown', idempotency_key: 'checkout-idempotency-123' }, verifierHeaders));
-
   const failed = cases.filter(test => !test.passed);
   const report = { execution_classification: 'CODE_EXECUTED', cases, all_passed: failed.length === 0, failures: failed };
   fs.mkdirSync(path.resolve(process.cwd(), 'artifacts'), { recursive: true });
@@ -31,5 +30,4 @@ async function main() {
   console.log(JSON.stringify(report, null, 2));
   if (failed.length) process.exit(1);
 }
-
 main().catch(error => { console.error(error); process.exit(1); });

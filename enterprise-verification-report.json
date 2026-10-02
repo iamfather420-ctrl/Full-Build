@@ -8,7 +8,7 @@
       "name": "Authentication & RBAC Evaluation",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
@@ -28,7 +28,7 @@
       "name": "Multi-Tenant Cryptographic Partition Isolation",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 4,
+      "duration_ms": 2,
       "details": {
         "status": "PASSED"
       }
@@ -48,7 +48,7 @@
       "name": "Anti-Tamper Sentinel Active Tamper Detection",
       "category": "AUDIT",
       "passed": true,
-      "duration_ms": 5,
+      "duration_ms": 4,
       "details": {
         "status": "PASSED"
       }
@@ -108,7 +108,7 @@
       "name": "Preserved Solution DH-S-001 Verification Integrity",
       "category": "SOLUTIONS",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
@@ -128,7 +128,7 @@
       "name": "Cleanroom Replay Bitrot & Divergence Detection",
       "category": "PROOFS",
       "passed": true,
-      "duration_ms": 2,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -148,7 +148,7 @@
       "name": "Pipeline Fail-Closed Gate Halts and Quarantines on Error",
       "category": "PIPELINE",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
@@ -158,7 +158,7 @@
       "name": "Defensible Pricing Formula v1.4 Deterministic Execution",
       "category": "MARKETPLACE",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -185,7 +185,7 @@
     },
     {
       "test_number": 19,
-      "name": "External Adapter Inventory Transparency (Neon, PayPal)",
+      "name": "External Adapter Inventory Transparency (Neon, PayPal, Solana)",
       "category": "ADAPTERS",
       "passed": true,
       "duration_ms": 0,
@@ -198,7 +198,7 @@
       "name": "Crystal Clear Box Redaction Preserves Verifiable Evidence",
       "category": "AUDIT",
       "passed": true,
-      "duration_ms": 8,
+      "duration_ms": 4,
       "details": {
         "status": "PASSED"
       }
@@ -218,7 +218,7 @@
       "name": "System Status API Endpoint Computes Real State",
       "category": "API",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 4,
       "details": {
         "status": "PASSED"
       }
@@ -228,7 +228,7 @@
       "name": "SqliteStore Multi-Tenant Persistence & 27 Tables Integrity",
       "category": "DATABASE",
       "passed": true,
-      "duration_ms": 2,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
@@ -248,7 +248,7 @@
       "name": "Fail-Closed: UNKNOWN / UNVERIFIED Order Creation Blocked",
       "category": "MARKETPLACE",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
@@ -268,17 +268,17 @@
       "name": "Fail-Closed: Cross-Tenant Data Access Blocked",
       "category": "SECURITY",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }
     },
     {
       "test_number": 28,
-      "name": "Fail-Closed: Missing PayPal Credentials Evaluated",
+      "name": "Fail-Closed: Missing PayPal & Solana Credentials Evaluated",
       "category": "ADAPTERS",
       "passed": true,
-      "duration_ms": 1135,
+      "duration_ms": 0,
       "details": {
         "status": "PASSED"
       }
@@ -288,7 +288,7 @@
       "name": "Order Lifecycle State Machine Validates Transitions & Failures",
       "category": "MARKETPLACE",
       "passed": true,
-      "duration_ms": 1,
+      "duration_ms": 6,
       "details": {
         "status": "PASSED"
       }
@@ -298,7 +298,7 @@
       "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
       "category": "REVERSIBILITY",
       "passed": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "details": {
         "status": "PASSED"
       }

@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-10-02T12:08:18.484Z",
+  "environment": "LOCAL",
+  "source_revision": "CLONED_GIT_COMMIT",
+  "repository": "https://github.com/iamfather420-ctrl/full-build",
+  "integration_mode": "PROVENANCE_RECORDED_COMPATIBLE_LINEAGE",
+  "upstream_commit": "22f660ebf562180edb44865330365e1d75005926",
+  "imported_registry_entries": 32,
+  "expected_entries": 32,
+  "missing_codes": [],
+  "passed": true,
+  "claim_scope": "PROVENANCE_AND_SCHEMA_COMPATIBILITY_ONLY",
+  "external_verification": "NOT_PERFORMED"
+}

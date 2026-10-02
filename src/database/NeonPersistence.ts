@@ -22,7 +22,10 @@ export class NeonStore {
   private lastError: string | null = null;
 
   private constructor() {
-    this.databaseUrl = (typeof process !== 'undefined' && process.env?.NEON_DATABASE_URL) || null;
+    if (typeof process !== 'undefined') {
+      const configured = process.env?.SOLVEX_DATABASE_URL || process.env?.NEON_DATABASE_URL || (process.env?.SOLVEX_ENVIRONMENT === 'production' && /^postgres(?:ql)?:\/\//.test(process.env?.DATABASE_URL || '') ? process.env?.DATABASE_URL : undefined);
+      this.databaseUrl = configured || null;
+    }
   }
 
   public static getInstance(): NeonStore {

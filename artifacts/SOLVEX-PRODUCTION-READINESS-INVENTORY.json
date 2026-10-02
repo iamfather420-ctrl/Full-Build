@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-09-26T07:26:00Z",
+  "environment_observed": "local",
+  "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
+  "entrypoints": {
+    "http_server": "server.ts",
+    "client_entry": "src/main.tsx",
+    "api_router": "src/api/ApiRouter.ts",
+    "package_commands": "package.json"
+  },
+  "boundaries": {
+    "frontend": ["src/App.tsx", "src/components/"],
+    "backend": ["server.ts", "src/api/", "src/auth/", "src/database/", "src/payments/", "src/marketplace/", "src/b2b/"],
+    "server_only_controls": ["AuthService", "DurableStore", "SqliteStore", "PayPalAdapter", "B2BReferenceCaseService"]
+  },
+  "authentication": ["src/auth/AuthService.ts", "server-issued HMAC token verification", "public role-selecting login retired"],
+  "persistence": ["src/database/SqliteStore.ts", "src/database/DurableStore.ts", "src/database/NeonPersistence.ts"],
+  "payment": ["src/payments/PayPalAdapter.ts", "server-side OAuth/Orders v2/capture/webhook verification", "explicit PYUSD receipt gate"],
+  "marketplace": ["src/marketplace/MarketplaceEngine.ts", "verified solution/proof/implementation hash binding"],
+  "b2b_evidence": ["src/b2b/B2BReferenceCaseService.ts", "server-authoritative reference/evaluation/acceptance workflow"],
+  "tenant_isolation": ["SqliteStore tenant-scoped reads/writes", "AuthService tenant authorization", "DurableStore tenant audit records"],
+  "audit_chain": ["src/database/DurableStore.ts", "SHA-256 chained audit records", "tamper verification"],
+  "candidate_verification": ["scripts/verify_candidate.ts", "src/proofs/DFRLFormalVerifier.ts", "src/proofs/ProofEngine.ts"],
+  "deployment_configuration": [".env.example", "src/services/preflight.ts", "scripts/preflight.ts"],
+  "verification_commands": ["verify:secrets", "verify:production", "verify:commercial", "verify:payment", "verify:webhooks", "verify:security", "verify:b2b", "verify:marketplace", "verify:recovery", "verify:all"],
+  "environment_separation": {
+    "supported": ["local", "sandbox", "production"],
+    "external_operations": "must declare environment and provider",
+    "production_credential_mixing": "blocked by preflight",
+    "local_fallback": "SQLite local only; never a production readiness claim"
+  },
+  "known_duplicates_or_conflicts": [
+    {"area": "database", "items": ["SqliteStore", "NeonPersistence"], "resolution": "SQLite is local evidence only; Neon requires explicit production configuration and remains provider-required"},
+    {"area": "proof", "items": ["Z3FormalProofEngine", "DFRLFormalVerifier"], "resolution": "candidate-specific proof uses actual DFRLFormalVerifier Z3 WASM path; generic model results retain MODEL_VERIFIED scope"},
+    {"area": "auth", "items": ["bootstrap createSignedToken", "external production IDP"], "resolution": "bootstrap issuer is server/test-only; public login is retired; production IDP remains required"}
+  ],
+  "current_truth": {
+    "technical_verification": "VERIFIED_IMPLEMENTATION",
+    "b2b_reference_framework": "IMPLEMENTED",
+    "customer_acceptance": "MISSING",
+    "independent_b2b_evidence": "MISSING",
+    "paypal": "NOT_CONFIGURED",
+    "pyusd": "NOT_OBSERVED",
+    "marketplace": "BLOCKED",
+    "production": "BLOCKED"
+  }
+}

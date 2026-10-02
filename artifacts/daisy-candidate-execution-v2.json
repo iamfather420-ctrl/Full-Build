@@ -1,0 +1,145 @@
+{
+  "execution_classification": "CODE_EXECUTED",
+  "origin_classification": "EXISTING_REGISTRY",
+  "input_registry_reference": "DH-P-001",
+  "candidate_result": {
+    "overall_success": false,
+    "completed_stages": 7,
+    "total_stages": 21,
+    "paradox_code": "DH-P-001",
+    "stage_traces": [
+      {
+        "stage": 1,
+        "name": "Ingestion & source normalization",
+        "status": "PASSED",
+        "duration_ms": 0
+      },
+      {
+        "stage": 2,
+        "name": "Paradox domain classification",
+        "status": "PASSED",
+        "duration_ms": 0
+      },
+      {
+        "stage": 3,
+        "name": "Invariant specification extraction",
+        "status": "PASSED",
+        "duration_ms": 0
+      },
+      {
+        "stage": 4,
+        "name": "Structural self-reference guard",
+        "status": "PASSED",
+        "duration_ms": 0
+      },
+      {
+        "stage": 5,
+        "name": "Boundary mapping",
+        "status": "PASSED",
+        "duration_ms": 0
+      },
+      {
+        "stage": 6,
+        "name": "Sandbox authorization check",
+        "status": "PASSED",
+        "duration_ms": 0
+      },
+      {
+        "stage": 7,
+        "name": "Static TypeScript compilation",
+        "status": "PASSED",
+        "duration_ms": 0
+      },
+      {
+        "stage": 8,
+        "name": "Memory safety inspection",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 9,
+        "name": "Non-termination inspection",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 10,
+        "name": "Ranking-function inspection",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 11,
+        "name": "Candidate-specific SMT proof",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 12,
+        "name": "Proof certificate generation",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 13,
+        "name": "Hermetic test execution",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 14,
+        "name": "Independent oracle attestation",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 15,
+        "name": "Cleanroom replay",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 16,
+        "name": "Pricing calculation",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 17,
+        "name": "Customer evidence projection",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 18,
+        "name": "Audit ledger append",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 19,
+        "name": "Tenant partition verification",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 20,
+        "name": "Checkpoint creation",
+        "status": "HOLD",
+        "duration_ms": 0
+      },
+      {
+        "stage": 21,
+        "name": "Marketplace eligibility decision",
+        "status": "HOLD",
+        "duration_ms": 0
+      }
+    ],
+    "solution_id": "DH-C-B28A191DCBFE70D0",
+    "rejection_reason": "Candidate retained as PARTIAL: no authorized sandbox execution, candidate-specific proof, independent verifier, replay, or evidence bundle exists.",
+    "verification_status": "PARTIAL",
+    "execution_classification": "CODE_EXECUTED"
+  },
+  "marketplace_action": "NOT_ATTEMPTED",
+  "publication_reason": "Candidate remains PARTIAL pending authorized sandbox execution, candidate-specific proof, independent verification, and evidence binding."
+}

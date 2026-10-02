@@ -33,10 +33,10 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     'DN-17', 'DN-18'
   ];
 
-  // External gateways: DN-34 (Neon), DN-35 (PayPal)
-  const gatewayIds = ['DN-34', 'DN-35'];
+  // 3 external gateways
+  const gatewayIds = ['DN-34', 'DN-35', 'DN-38'];
 
-  // 34 expanded internal subsystems (including DN-19 through DN-33, DN-36, DN-37, DN-38 Sovereign Escrow, DN-39 through DN-54)
+  // 33 expanded internal subsystems (including DN-19 through DN-33, DN-36, DN-37, DN-39 through DN-54)
   const baselineResults = rawResults.results.filter(r => baseline18Ids.includes(r.node_id));
   const gatewayResults = rawResults.results.filter(r => gatewayIds.includes(r.node_id));
   const expandedResults = rawResults.results.filter(r => !baseline18Ids.includes(r.node_id) && !gatewayIds.includes(r.node_id));
@@ -49,9 +49,9 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
   const allExecuted = rawResults.results.every(r => r.executed === true);
   const noUnexpectedFailures = rawResults.results.every(r =>
     r.status === 'SUCCESS' ||
+    r.status === 'FAIL_CLOSED' ||
     r.status === 'PROVIDER_REQUIRED' ||
-    r.status === 'PROHIBITED_BLOCKED' ||
-    r.status === 'FAIL_CLOSED'
+    r.status === 'PROHIBITED_BLOCKED'
   );
 
   return {

@@ -1,90 +1,49 @@
 import { ProofBundleEntity } from '../database/DatabaseSchema';
-import { ProofBundleBuilder } from './ProofBundle';
-import { NOPOTVerifier } from './NOPOTProof';
 import { DurableStore } from '../database/DurableStore';
+import { SqliteStore } from '../database/SqliteStore';
 
+/** Proof storage accepts only independently established VERIFIED bundles. */
 export class ProofEngine {
   private static instance: ProofEngine | null = null;
-  private bundles: Map<string, ProofBundleEntity> = new Map();
+  private readonly bundles = new Map<string, ProofBundleEntity>();
 
   private constructor() {
-    this.bootstrapDHS001();
+    const persisted = SqliteStore.getInstance().findAllRecords<ProofBundleEntity>('proof_bundles', 1000);
+    for (const bundle of persisted) this.bundles.set(bundle.proof_id, bundle);
   }
 
   public static getInstance(): ProofEngine {
-    if (!ProofEngine.instance) {
-      ProofEngine.instance = new ProofEngine();
-    }
+    if (!ProofEngine.instance) ProofEngine.instance = new ProofEngine();
     return ProofEngine.instance;
   }
 
-  private bootstrapDHS001(): void {
-    const cert = NOPOTVerifier.verifyAlgorithmTermination(
-      'AchillesZenoConvergenceSum',
-      (remaining) => remaining - 1,
-      10,
-      100
-    );
+  public getBundle(proofId: string): ProofBundleEntity | undefined { return this.bundles.get(proofId); }
+  public getAllBundles(): ProofBundleEntity[] { return [...this.bundles.values()]; }
 
-    const builder = new ProofBundleBuilder(
-      'PB-DH-S-001',
-      'DH-S-001',
-      'Bounded Zeno Geometric Convergence Algorithm reaches zero distance in exactly bounded O(log(1/epsilon)) steps.'
-    );
-
-    builder
-      .setImplementation('export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }')
-      .addTest('TEST-ZENO-01', 'Convergence to epsilon within 64 iterations', true, 1.2)
-      .addTest('TEST-ZENO-02', 'Zero division guard invariant check', true, 0.4)
-      .addTest('TEST-ZENO-03', 'Deterministic float reproducibility across runs', true, 0.8)
-      .addFormalProof('NOPOT', cert.variant_function, cert.termination_proved)
-      .addLean4Proof('src/proofs/lean/ZenoAchilles.lean')
-      .addLean4Proof('src/proofs/lean/NOPOTTermination.lean')
-      .addOracle('ORACLE-LEAN4-WITNESS', 'Lean4 Community Kernel Attestor', 'DETERMINISTIC_CHECK', true)
-      .addOracle('ORACLE-NOPOT-WITNESS', 'NOPOT Variant Decreasing Order Verifier', 'MATH_INSPECTION', true)
-      .addReplay('REPLAY-CLEANROOM-01', 'd8787c88ae821901', 'd8787c88ae821901')
-      .addEvidence('Log: 64 iterations executed without divergence.')
-      .addEvidence('Log: Binary footprint 128 bytes, 0 heap allocations.')
-      .addSourceReference('Aristotle Physics VI:9')
-      .addLimitation('Applies only to continuous metrics with standard real topology.');
-
-    const sealed = builder.seal();
-    this.bundles.set(sealed.proof_id, sealed);
-
-    const store = DurableStore.getInstance();
-    store.getState().proof_bundles[sealed.proof_id] = sealed;
-    store.persist();
-  }
-
-  public getBundle(proofId: string): ProofBundleEntity | undefined {
-    return this.bundles.get(proofId);
-  }
-
-  public getAllBundles(): ProofBundleEntity[] {
-    return Array.from(this.bundles.values());
-  }
-
-  public registerBundle(bundle: ProofBundleEntity): void {
-    this.bundles.set(bundle.proof_id, bundle);
-    const store = DurableStore.getInstance();
-    store.getState().proof_bundles[bundle.proof_id] = bundle;
-    store.persist();
+  public registerBundle(bundle: ProofBundleEntity, tenantId: string): void {
+    const integrity = this.verifyBundleIntegrity(bundle);
+    if (bundle.verification_status !== 'VERIFIED' || !integrity.verified) {
+      throw new Error(`Refusing proof bundle registration: ${integrity.reasons.join('; ') || 'bundle is not independently VERIFIED'}`);
+    }
+    SqliteStore.getInstance().transaction(() => {
+      SqliteStore.getInstance().insertRecord('proof_bundles', { ...bundle, id: bundle.proof_id, tenant_id: tenantId, status: 'VERIFIED' });
+      this.bundles.set(bundle.proof_id, bundle);
+      const durable = DurableStore.getInstance();
+      durable.getState().proof_bundles[bundle.proof_id] = bundle;
+      durable.appendAudit(tenantId, bundle.verifier_identity, 'PROOF_BUNDLE_REGISTERED', 'PROOF_BUNDLE', bundle.proof_id, { subject_id: bundle.subject_id, implementation_hash: bundle.implementation_hash, claim_hash: bundle.claim_hash });
+      durable.persist();
+    });
   }
 
   public verifyBundleIntegrity(bundle: ProofBundleEntity): { verified: boolean; reasons: string[] } {
     const reasons: string[] = [];
-    if (!bundle.tests || bundle.tests.length === 0) reasons.push('Zero empirical tests provided');
-    if (bundle.tests.some(t => !t.passed)) reasons.push('One or more empirical tests failed');
-    if (!bundle.formal_proofs || bundle.formal_proofs.length === 0) reasons.push('Zero machine-checked formal proofs');
-    if (bundle.formal_proofs.some(f => !f.checked)) reasons.push('One or more formal proof terms failed verification');
-    if (!bundle.independent_oracles || bundle.independent_oracles.length === 0) reasons.push('Missing independent oracle attestation');
-    if (bundle.independent_oracles.some(o => !o.verified)) reasons.push('One or more oracle attestations rejected');
-    if (!bundle.replay_results || bundle.replay_results.length === 0) reasons.push('Missing deterministic replay runs');
-    if (bundle.replay_results.some(r => r.status !== 'MATCH')) reasons.push('Replay trace divergence observed');
-
-    return {
-      verified: reasons.length === 0,
-      reasons
-    };
+    if (bundle.verification_status !== 'VERIFIED') reasons.push('Bundle status is not VERIFIED');
+    if (!bundle.subject_id || !bundle.claim_hash || !bundle.implementation_hash) reasons.push('Missing subject, claim, or implementation binding');
+    if (!bundle.tests?.length || bundle.tests.some(t => !t.passed || !t.receipt_hash)) reasons.push('Missing executed empirical test receipts');
+    if (!bundle.formal_proofs?.length || bundle.formal_proofs.some(p => !p.checked || !p.proof_term_hash)) reasons.push('Missing machine-checked formal proof receipt');
+    if (!bundle.independent_oracles?.length || bundle.independent_oracles.some(o => !o.verified || !o.attestation_hash)) reasons.push('Missing independent verifier attestation');
+    if (!bundle.replay_results?.length || bundle.replay_results.some(r => r.status !== 'MATCH')) reasons.push('Missing matched deterministic replay');
+    if (!bundle.environment_hash || !bundle.dependency_hash || !bundle.verifier_identity || bundle.verifier_identity === 'UNVERIFIED_BUILDER_INPUT') reasons.push('Missing independent execution provenance');
+    return { verified: reasons.length === 0, reasons };
   }
 }

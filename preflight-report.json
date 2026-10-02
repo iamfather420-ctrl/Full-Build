@@ -1,8 +1,8 @@
 {
-  "timestamp": 1790883816102,
-  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "timestamp": 1790405524400,
+  "commit_sha": "UNKNOWN",
   "environment_mode": "local",
-  "node_version": "v22.23.2",
+  "node_version": "v22.13.0",
   "platform": "linux",
   "arch": "x64",
   "dependencies": [
@@ -10,7 +10,7 @@
       "name": "node",
       "category": "RUNTIME",
       "status": "PRESENT",
-      "version": "v22.23.2",
+      "version": "v22.13.0",
       "tested_import_path": "process.version",
       "notes": "Node.js LTS runtime"
     },
@@ -64,46 +64,46 @@
   ],
   "configurations": [
     {
-      "key": "PAYPAL_SANDBOX_CLIENT_ID",
-      "status": "PRESENT",
-      "format_valid": true,
+      "key": "PAYPAL_CLIENT_ID",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
       "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched PAYPAL_SANDBOX_CLIENT_ID)"
+      "notes": "Not set in process.env"
     },
     {
-      "key": "PAYPAL_SANDBOX_CLIENT_SECRET",
-      "status": "PRESENT",
-      "format_valid": true,
+      "key": "PAYPAL_CLIENT_SECRET",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
       "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched PAYPAL_SANDBOX_CLIENT_SECRET)"
-    },
-    {
-      "key": "PAYPAL_LIVE_CLIENT_ID",
-      "status": "PRESENT",
-      "format_valid": true,
-      "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched PAYPAL_LIVE_CLIENT_ID)"
-    },
-    {
-      "key": "PAYPAL_LIVE_CLIENT_SECRET",
-      "status": "PRESENT",
-      "format_valid": true,
-      "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched PAYPAL_LIVE_CLIENT_SECRET)"
+      "notes": "Not set in process.env"
     },
     {
       "key": "NEON_DATABASE_URL",
-      "status": "PRESENT",
-      "format_valid": true,
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
       "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched NEON_DATABASE_URL)"
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "SOLANA_RPC_URL",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
+    },
+    {
+      "key": "SOLANA_PROGRAM_ID",
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
+      "environment_scope": "local",
+      "notes": "Not set in process.env"
     },
     {
       "key": "GEMINI_API_KEY",
-      "status": "PRESENT",
-      "format_valid": true,
+      "status": "NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT",
+      "format_valid": false,
       "environment_scope": "local",
-      "notes": "Configured in runtime environment (matched GEMINI_API_KEY)"
+      "notes": "Not set in process.env"
     }
   ],
   "blockers": [],
