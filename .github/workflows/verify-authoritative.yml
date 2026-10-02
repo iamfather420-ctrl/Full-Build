@@ -115,7 +115,7 @@ jobs:
             const dh = require("./artifacts/dh-bootstrap-32-verification.json");
             const ok = dfrl.executed === 88 && dfrl.deterministic_replays_matched === 88 &&
                        dfrl.unknown_count === 0 && dfrl.error_count === 0 &&
-                       dh.executed === 32 && dh.deterministic_replays_matched === 32 &&
+                       dh.executed === 32 && dh.replay_matches === 32 &&
                        dh.unknown_count === 0 && dh.error_count === 0;
             if (!ok) {
               console.error("120-case gate FAILED");
