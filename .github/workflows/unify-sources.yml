@@ -38,6 +38,7 @@ jobs:
 
           EXCLUDES=(
             --exclude='.git'
+            --exclude='.github/workflows'
             --exclude='node_modules'
             --exclude='.next'
             --exclude='dist'
