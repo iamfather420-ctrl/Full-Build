@@ -4,6 +4,7 @@ import cp from 'child_process';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { computeSha256 } from '../src/database/DatabaseSchema';
+import { System46Gates } from '../src/proofs/System46Gates';
 
 async function main() {
   console.log('================================================================');
