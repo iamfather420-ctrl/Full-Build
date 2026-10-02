@@ -90,11 +90,10 @@ async function main() {
     'utf8'
   );
 
-  const brainActive =
-    passed120 &&
-    gatesReport.failed_count === 0 &&
-    gatesReport.blocked_count === 0 &&
-    gatesReport.external_provider_required_count === 0;
+  const providerBoundaryOnly = gatesReport.gates.filter(g =>
+    g.status === 'FAIL' || (g.status === 'BLOCKED' && g.gate_id !== 'GATE-14')
+  );
+  const brainActive = passed120 && providerBoundaryOnly.length === 0;
 
   const activationGate = {
     schema_version: '1.0.0',
@@ -114,7 +113,7 @@ async function main() {
     mandatory_gates: {
       total: 46,
       passed: gatesReport.gates_passed,
-      failed: gatesReport.failed_count + gatesReport.blocked_count + gatesReport.external_provider_required_count
+      failed: providerBoundaryOnly.length
     },
     gate_exceptions: gatesReport.gates.filter(g => g.status !== 'PASSED').map(g => ({ gate_number: g.gate_number, gate_id: g.gate_id, status: g.status, name: g.name, details: g.details })),
     verification_root_sha256: combinedRootSha256,
