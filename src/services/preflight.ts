@@ -61,7 +61,7 @@ export class PreflightService {
     items.push({
       name: 'node',
       category: 'RUNTIME',
-      status: nodeVer.startsWith('v2') || nodeVer.startsWith('v18') ? 'PRESENT' : 'INCOMPATIBLE',
+      status: /^v(18|20|22)\./.test(nodeVer) ? 'PRESENT' : 'INCOMPATIBLE',
       version: nodeVer,
       tested_import_path: 'process.version',
       notes: 'Node.js LTS runtime'
@@ -236,9 +236,12 @@ export class PreflightService {
     items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_LIVE_NT_SECRET', 'PAYPAL_CLIENT_SECRET']));
 
     // 3. NEON_DATABASE_URL
-    items.push(checkVar('NEON_DATABASE_URL', false, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
+    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
 
-    // 4. GEMINI_API_KEY
+    // 4. PayPal active environment must explicitly select live in production
+    items.push(checkVar('PAYPAL_ACTIVE_ENVIRONMENT', true, (v) => v.toLowerCase() === 'live' || v.toLowerCase() === 'production'));
+
+    // 5. GEMINI_API_KEY
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
 
     return items;
