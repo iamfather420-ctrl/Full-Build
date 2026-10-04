@@ -256,7 +256,8 @@ export class SovereignApiRouter {
         const { client_id, client_secret, environment = 'sandbox' } = payload || {};
         if (!client_id || !client_secret) return { status: 400, error: 'client_id and client_secret required', timestamp };
         const paypal = PayPalAdapter.getInstance();
-        paypal.setSessionCredentials(client_id, client_secret, environment);
+        const configured = paypal.setSessionCredentials(client_id, client_secret, environment);
+        if (!configured) return { status: 403, error: 'Production PayPal credentials are deployment-authoritative and cannot be overridden at runtime.', timestamp };
         return { status: 200, data: { success: true, message: 'PayPal credentials updated in active session.' }, timestamp };
       }
 
