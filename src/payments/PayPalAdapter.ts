@@ -1,5 +1,6 @@
 import { computeSha256 } from '../database/DatabaseSchema';
 import { SqliteStore } from '../database/SqliteStore';
+import { NeonStore } from '../database/NeonPersistence';
 
 export interface PayPalCredentials {
   clientId: string;
@@ -22,7 +23,7 @@ export type PayPalGatewayState =
 
 export interface PaymentCaptureResult {
   success: boolean;
-  status: 'COMPLETED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'AUTHENTICATION_FAILED' | 'PAYPAL_API_ERROR' | 'IDEMPOTENCY_CONFLICT';
+  status: 'COMPLETED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'AUTHENTICATION_FAILED' | 'PAYPAL_API_ERROR' | 'IDEMPOTENCY_CONFLICT' | 'PERSISTENCE_FAILURE';
   claim_scope: 'SANDBOX' | 'PRODUCTION' | 'LOCAL';
   gateway_state: PayPalGatewayState;
   payment?: {
@@ -287,6 +288,8 @@ export class PayPalAdapter {
     const creds = this.getEffectiveCredentials();
     const receiptHash = computeSha256(`PAYPAL_RECEIPT:${orderId}:${amountCents}:${idempotencyKey}`);
     const sqlite = SqliteStore.getInstance();
+    const neon = NeonStore.getInstance();
+    const production = creds?.environment === 'live';
 
     if (!creds || !creds.clientId || !creds.clientSecret) {
       const paymentRecord = {
@@ -332,6 +335,62 @@ export class PayPalAdapter {
 
     const host = creds.environment === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
     const amountFormatted = (amountCents / 100).toFixed(2);
+
+    // Production money movement is fail-closed on durable persistence.
+    // We must establish the Neon evidence record before creating/capturing a live PayPal order.
+    const paymentId = `pay_${Date.now()}_${idempotencyKey}`;
+    if (production) {
+      if (!neon.isConfigured()) {
+        return {
+          success: false,
+          status: 'PERSISTENCE_FAILURE',
+          claim_scope: 'PRODUCTION',
+          gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
+          error: 'Neon production persistence is required before live PayPal execution.'
+        };
+      }
+      const connected = await neon.connect();
+      if (!connected) {
+        return {
+          success: false,
+          status: 'PERSISTENCE_FAILURE',
+          claim_scope: 'PRODUCTION',
+          gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
+          error: 'Neon production persistence connection failed; live PayPal execution blocked.'
+        };
+      }
+      const migrated = await neon.runMigrations();
+      if (!migrated.success) {
+        return {
+          success: false,
+          status: 'PERSISTENCE_FAILURE',
+          claim_scope: 'PRODUCTION',
+          gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
+          error: `Neon production schema initialization failed: ${migrated.error || 'unknown error'}`
+        };
+      }
+      const pending = await neon.insertRecord('payments', {
+        id: paymentId,
+        tenant_id: 'TENANT_ENTERPRISE_DEMO',
+        order_id: orderId,
+        amount_cents: amountCents,
+        currency: 'USD',
+        provider: 'PAYPAL_DN35_LIVE',
+        status: 'PENDING_CAPTURE',
+        idempotency_key: idempotencyKey,
+        receipt_hash: receiptHash,
+        created_at: Date.now()
+      });
+      if (!pending) {
+        return {
+          success: false,
+          status: 'PERSISTENCE_FAILURE',
+          claim_scope: 'PRODUCTION',
+          gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
+          error: 'Neon could not persist the pending payment evidence; live PayPal execution blocked.'
+        };
+      }
+    }
 
     try {
       // Step 2: Create Order in PayPal Orders v2 API
@@ -405,12 +464,31 @@ export class PayPalAdapter {
 
         try {
           sqlite.insertRecord('payments', {
-            id: `pay_${Date.now()}`,
+            id: production ? paymentId : `pay_${Date.now()}`,
             tenant_id: 'TENANT_ENTERPRISE_DEMO',
             ...paymentRecord,
             raw_provider_response: JSON.stringify(captureBody)
           });
         } catch {}
+
+        if (production) {
+          const persisted = await neon.insertRecord('payments', {
+            id: paymentId,
+            tenant_id: 'TENANT_ENTERPRISE_DEMO',
+            ...paymentRecord,
+            raw_provider_response: captureBody
+          });
+          if (!persisted) {
+            return {
+              success: false,
+              status: 'PERSISTENCE_FAILURE',
+              claim_scope: 'PRODUCTION',
+              gateway_state: 'PRODUCTION_VERIFIED',
+              payment: paymentRecord,
+              error: 'PayPal Live capture completed but Neon evidence finalization failed. Manual reconciliation required; no false completion claim issued.'
+            };
+          }
+        }
 
         return {
           success: true,
