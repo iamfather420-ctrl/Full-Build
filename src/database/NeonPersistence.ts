@@ -130,6 +130,29 @@ export class NeonStore {
     }
   }
 
+  public async verifyRequiredTables(): Promise<{ verified: number; required: number; missing: string[] }> {
+    const required27 = [
+      'users', 'tenants', 'roles', 'permissions', 'tenant_memberships',
+      'problems', 'paradoxes', 'invariants', 'solutions', 'offers',
+      'proof_bundles', 'proof_evidence', 'tests', 'verification_runs',
+      'orders', 'payments', 'deployments', 'checkpoints', 'rollback_records',
+      'telemetry', 'audit_records', 'chain_records', 'licenses',
+      'adapter_status', 'node_registry', 'execution_runs', 'failures'
+    ];
+    if (!this.isConnected || !this.neonClient) {
+      return { verified: 0, required: required27.length, missing: required27 };
+    }
+    try {
+      const rows = await this.neonClient(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
+      const present = new Set(rows.map((r: any) => r.table_name));
+      const missing = required27.filter(t => !present.has(t));
+      return { verified: required27.length - missing.length, required: required27.length, missing };
+    } catch (e: any) {
+      this.lastError = e?.message || 'Failed to verify Neon tables';
+      return { verified: 0, required: required27.length, missing: required27 };
+    }
+  }
+
   public async insertRecord(tableName: string, data: Record<string, any>): Promise<boolean> {
     if (!this.isConnected || !this.neonClient) return false;
     try {
