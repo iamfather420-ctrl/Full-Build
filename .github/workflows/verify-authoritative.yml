@@ -10,8 +10,12 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      deployment: false
     env:
       SOLVEX_ENV: production
+      PAYPAL_ACTIVE_ENVIRONMENT: ${{ secrets.PAYPAL_ACTIVE_ENVIRONMENT }}
       PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
       PAYPAL_SANDBOX_CLIENT_SECRET: ${{ secrets.PAYPAL_SANDBOX_CLIENT_SECRET }}
       PAYPAL_LIVE_CLIENT_ID: ${{ secrets.PAYPAL_LIVE_CLIENT_ID }}
@@ -37,6 +41,15 @@ jobs:
           # Ensure critical binaries are present
           npx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
+
+      - name: Production preflight
+        run: npm run preflight
+
+      - name: Production runtime wiring verification
+        run: npm run verify:production-runtime
+
+      - name: PayPal dual-environment verification
+        run: npm run verify:paypal
 
       - name: Type-check
         run: npx tsc --noEmit || true
