@@ -25,14 +25,14 @@
       "assertion_hash": "69d4cd79d88b3cfbf5da4d5a2eab31a577022656eb9410d356c9425ba94d6dfb",
       "actual_smt_assertion_hash": "f425aeff1404e99410743f36c61776214592f1979472be1d2f1ad69ea702ab11",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-      "execution_id": "candidate-proof-1790942897094",
+      "execution_id": "candidate-proof-1791077596817",
       "solver_result": "unsat",
       "proved": true,
       "claim_scope": "MODEL_VERIFIED",
-      "execution_duration_ms": 361.541,
-      "duration_ms": 361.541,
-      "certificate_sha256": "6aa043f4b87c10068631b583bd6141a44d485dc8b41ef8d7bacca2dd9f800747",
-      "timestamp": "2026-10-02T12:08:17.096Z"
+      "execution_duration_ms": 295.304,
+      "duration_ms": 295.304,
+      "certificate_sha256": "24466fb967fc524b5621646c97d7301520da10b83b90eef91f3bcd1c6d310ebb",
+      "timestamp": "2026-10-04T01:33:16.818Z"
     },
     "smt": "(set-logic QF_LRA)\n(declare-const d Real)\n(declare-const e Real)\n(declare-const out Real)\n(assert (> d 0.0))\n(assert (> e 0.0))\n(assert (= out (ite (<= d e) 0.0 (/ d 2.0))))\n(assert (not (and (>= out 0.0) (<= out d) (or (and (<= d e) (= out 0.0)) (and (> d e) (= out (/ d 2.0)))))))\n(check-sat)",
     "passed": true
@@ -164,7 +164,7 @@
     "attestation_hash": "fb9e013c1d1096710cb27af61376464f00e14eb9f98a9a08773332e8f07d040d"
   },
   "cleanroom_replay": {
-    "replay_id": "cleanroom-1790942897463",
+    "replay_id": "cleanroom-1791077597118",
     "expected_hash": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8",
     "observed_hash": "7ab3cabd5357377c081cf7cab3c971f6c35407c7e0fc057614d1cb16895766c8",
     "status": "MATCH",
@@ -238,10 +238,10 @@
     "final_price_cents": 891,
     "calculation_hash": "4a04876d0c755be762efe36c7657e5b2a9acbdf15e96aceeb1c137895f6f2e90"
   },
-  "checkpoint_id": "chk_0cf7ee6ad99c80a577",
-  "audit_record_hash": "1029ab250f8db75c75fb1e77a66d26dbab52698855c778e6ef2ce0eedfe8bfbe",
+  "checkpoint_id": "chk_60fd9566b7fb9faf83",
+  "audit_record_hash": "aec1ee87deefc0f291e283b31b403e6fcdc42e793e64b593863cc90c2af33b85",
   "tenant_isolation_verified": true,
-  "verification_timestamp": "2026-10-02T12:08:17.469Z",
+  "verification_timestamp": "2026-10-04T01:33:17.123Z",
   "verification_authority": "LOCAL_INDEPENDENT_VERIFICATION_HARNESS",
   "evidence_hashes": {
     "implementation": "b28a191dcbfe70d02e98455d09982b93db4b2561243e558ee9f73ba2c74cdcd5",
@@ -256,5 +256,5 @@
     "No production identity, managed database, or production secrets are configured.",
     "No PayPal/PYUSD provider operation is authorized or performed."
   ],
-  "evidence_bundle_hash": "275f596a3433285122abe6d9c32313212e2da493fcd8fd219c4ae94f507f8570"
+  "evidence_bundle_hash": "1d2b203b5b0fa77308f6948fd2b12b0dda612f6004999ad2be889f621f7dac0d"
 }

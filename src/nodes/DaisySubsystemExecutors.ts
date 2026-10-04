@@ -674,6 +674,7 @@ export class DaisySubsystemExecutors {
           evidence: {
             configured: pp.hasActiveCredentials(),
             environment: info.environment,
+            pyusd_only_policy: info.pyusd_only_policy,
             webhook_configured: info.webhook_configured,
             authenticated: false,
             fail_closed_enforced: true,

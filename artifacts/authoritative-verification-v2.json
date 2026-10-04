@@ -1,21 +1,19 @@
 {
   "report": {
     "pipeline_name": "SOLVEX Truth-Boundary Verification",
-    "version": "2.0.0",
-    "execution_id": "verification_1790942895354",
-    "commit_sha": "SOURCE_SNAPSHOT_UNVERSIONED",
+    "version": "2.2.0",
+    "execution_id": "verification_1791077595051",
+    "commit_sha": "597016a77795a96183d2bbba3c82ae833e3062f4",
     "environment": "local",
-    "completed_at": "2026-10-02T12:08:15.354Z",
+    "completed_at": "2026-10-04T01:33:15.051Z",
     "gates_total": 4,
     "gates_passed": 3,
     "production_gate_verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
     "production_blockers": [
-      "No live PayPal operation was performed.",
-      "No PayPal provider response supplied explicit PYUSD asset evidence.",
-      "No production identity provider or secret-management deployment was configured.",
-      "No verified marketplace solution exists; all generated intake is candidate-only."
+      "PayPal credentials are not configured in the server environment.",
+      "Neon connection failed. Expected Actions secret NEON_DATABASE_URL."
     ],
-    "claim_scope_verdict": "LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; COMMERCIAL_PRODUCTION_BLOCKED",
+    "claim_scope_verdict": "LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; PROVIDER_CHECK_BLOCKED",
     "artifacts_directory": "/tmp/Full-Build-reconciled/artifacts",
     "gates": [
       {
@@ -24,7 +22,7 @@
         "name": "Security and tenant-isolation regressions",
         "claim_scope": "LOCAL",
         "status": "PASSED",
-        "duration_ms": 23,
+        "duration_ms": 26,
         "details": {
           "total": 9,
           "passed": 9
@@ -36,7 +34,7 @@
         "name": "DFRL model verification",
         "claim_scope": "MODEL",
         "status": "PASSED",
-        "duration_ms": 2786,
+        "duration_ms": 2668,
         "details": {
           "executed": 88,
           "unsat": 88,
@@ -49,30 +47,33 @@
         "name": "Marketplace publication inventory",
         "claim_scope": "LOCAL",
         "status": "PASSED",
-        "duration_ms": 2787,
+        "duration_ms": 2668,
         "details": {
           "total_solution_records": 3,
           "independently_verified": 0,
           "marketplace_published": 0,
-          "policy": "No proof-bound verified solution exists in this execution."
+          "policy": "Inventory is reported. It is not a production credential."
         }
       },
       {
         "gate_index": 3,
         "gate_id": "GATE-04",
-        "name": "Commercial production boundary",
-        "claim_scope": "PRODUCTION",
+        "name": "PayPal provider boundary",
+        "claim_scope": "LOCAL",
         "status": "BLOCKED",
-        "duration_ms": 2787,
+        "duration_ms": 2669,
         "details": {
+          "paypal_environment": "none",
+          "paypal_authenticated": false,
+          "live_api_called": false,
+          "neon_configured": false,
+          "neon_connected": false,
           "blockers": [
-            "No live PayPal operation was performed.",
-            "No PayPal provider response supplied explicit PYUSD asset evidence.",
-            "No production identity provider or secret-management deployment was configured.",
-            "No verified marketplace solution exists; all generated intake is candidate-only."
+            "PayPal credentials are not configured in the server environment.",
+            "Neon connection failed. Expected Actions secret NEON_DATABASE_URL."
           ]
         },
-        "error": "No live PayPal operation was performed. No PayPal provider response supplied explicit PYUSD asset evidence. No production identity provider or secret-management deployment was configured. No verified marketplace solution exists; all generated intake is candidate-only."
+        "error": "PayPal credentials are not configured in the server environment. Neon connection failed. Expected Actions secret NEON_DATABASE_URL."
       }
     ]
   },
@@ -96,7 +97,7 @@
         "name": "HMAC tokens enforce tamper detection, expiry, and tenant scope",
         "category": "SECURITY",
         "passed": true,
-        "duration_ms": 3,
+        "duration_ms": 4,
         "details": {
           "status": "PASSED"
         }
@@ -106,7 +107,7 @@
         "name": "SQLite repository persists and tenant-scopes records",
         "category": "PERSISTENCE",
         "passed": true,
-        "duration_ms": 4,
+        "duration_ms": 3,
         "details": {
           "status": "PASSED"
         }
@@ -116,7 +117,7 @@
         "name": "Daisy static intake creates a PARTIAL candidate, never VERIFIED",
         "category": "DAISY",
         "passed": true,
-        "duration_ms": 6,
+        "duration_ms": 4,
         "details": {
           "status": "PASSED"
         }
@@ -136,7 +137,7 @@
         "name": "PayPal checkout fails closed without server credentials",
         "category": "PAYMENTS",
         "passed": true,
-        "duration_ms": 0,
+        "duration_ms": 1,
         "details": {
           "status": "PASSED"
         }
@@ -176,6 +177,6 @@
   "dfrl_summary": {
     "executed": 88,
     "status": "VERIFIED",
-    "root": "cbb6e3cfd8e086fa4823eabe6b24d5ccf3b674b081e310cc4590ec741fa93728"
+    "root": "dbb5e8e8ed258c560265cfdfb1d4e5fa3170319ea6daa9e40735a2b0a8badec5"
   }
 }

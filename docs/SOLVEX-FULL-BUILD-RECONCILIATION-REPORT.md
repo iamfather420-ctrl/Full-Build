@@ -1,6 +1,6 @@
 # SOLVEX / Full-Build Reconciliation Report
 
-**Status:** Reconciled and verified on an isolated branch; not merged into `main`.
+**Status:** Synced, reconciled, and verified on an isolated branch; not merged into `main`.
 
 ## Repository lineage
 
@@ -8,14 +8,17 @@
 |---|---|
 | Target repository | `https://github.com/iamfather420-ctrl/full-build` |
 | Previous Full-Build `main` HEAD | `22f660ebf562180edb44865330365e1d75005926` |
+| Latest synced Full-Build branch HEAD | `597016a77795a96183d2bbba3c82ae833e3062f4` |
 | Hardened SolveX source commit | `99eb55ff5e060c9b309e480bbfd47bbaf6a7685d` |
 | Reconciliation branch | `manus/solvex-reconciled-20261002` |
 | Merge method | Unrelated-history merge; 72 overlapping conflicts resolved in favor of hardened SolveX |
-| Resulting tracked-file count | 1,515 |
+| Resulting tracked-file count | 1,516 |
 
 ## Reconciliation decisions
 
 - Shared backend, security, authorization, persistence, PayPal, marketplace, proof, test, and root build files use the current hardened SolveX implementation.
+- The latest upstream sandbox OAuth and credential-normalization changes were retained.
+- The upstream removal of the PYUSD evidence gate was not accepted; PYUSD policy and explicit provider-asset evidence remain required before activation.
 - Full-Build-only source and assets remain present where they do not replace an authoritative SolveX path.
 - The existing `website/` integration is retained as a separate deployable application and is not treated as authority for backend authorization or payment state.
 - No `.env` files, credentials, private keys, tokens, or provider secrets were imported.
@@ -53,7 +56,7 @@ The reconciled tree preserves the existing truth semantics. Local/model verifica
 
 ## Validation completed
 
-The root `npm run verify:all` completed successfully after the TypeScript boundary was narrowed to the authoritative SolveX application. The run included type/lint checks, production build, secret scan, API/security checks, 54-node coverage, 88 DFRL formal checks with deterministic replay and mutation/failure/tamper tests, candidate and B2B negative gates, GitHub lineage checks, readiness scans, and truth report generation.
+The root `npm run verify:all` completed successfully after the latest upstream sync and protected PayPal-gate restoration. The run included type/lint checks, production build, secret scan, API/security checks, 54-node coverage, 88 DFRL formal checks with deterministic replay and mutation/failure/tamper tests, candidate and B2B negative gates, GitHub lineage checks, readiness scans, and truth report generation.
 
 The resulting status is **LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; COMMERCIAL_PRODUCTION_BLOCKED**. The production blockers remain expected: no live PayPal operation with explicit PYUSD evidence, no production identity/secret-management deployment evidence, no independently verified marketplace solution, and no real customer acceptance evidence.
 

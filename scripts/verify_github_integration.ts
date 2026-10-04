@@ -11,7 +11,7 @@ const report = {
   source_revision: 'CLONED_GIT_COMMIT',
   repository: GITHUB_FULL_BUILD_INTEGRATION.repository,
   integration_mode: GITHUB_FULL_BUILD_INTEGRATION.integration_mode,
-  upstream_commit: '22f660ebf562180edb44865330365e1d75005926',
+  upstream_commit: '597016a77795a96183d2bbba3c82ae833e3062f4',
   imported_registry_entries: DH_BOOTSTRAP_PARADOXES.length,
   expected_entries: 32,
   missing_codes: missing,

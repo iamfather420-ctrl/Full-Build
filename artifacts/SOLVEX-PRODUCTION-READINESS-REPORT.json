@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-02T12:08:22.146Z",
+  "timestamp": "2026-10-04T01:33:21.294Z",
   "environment": "UNKNOWN",
   "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
   "candidate_id": "DH-C-B28A191DCBFE70D0",
@@ -197,7 +197,7 @@
         "local_fail_closed_diversion": {
           "fail_closed_enforced": true,
           "rollback_status": "ROLLED_BACK",
-          "failure_id": "fail_1790942901725_6zni",
+          "failure_id": "fail_1791077600919_t1pk",
           "evidence_hash": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558"
         },
         "audit_chain_valid_after_test": true,
@@ -213,7 +213,7 @@
         "anonymous_acceptance": {
           "status": 401,
           "error": "Authentication is required",
-          "timestamp": 1790942900788
+          "timestamp": 1791077600134
         },
         "cross_tenant_denial": {
           "authorized": false,
