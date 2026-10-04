@@ -23,7 +23,8 @@
     "verify:sandbox": "tsx scripts/verify_sandbox.ts",
     "verify:proof-closure": "tsx scripts/full_build_verification_closure.ts",
     "verify:ci": "tsx scripts/ci_proof_closure_check.ts",
-    "verify:all": "tsx scripts/verify_authoritative.ts"
+    "verify:all": "tsx scripts/verify_authoritative.ts",
+    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
