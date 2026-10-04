@@ -120,9 +120,9 @@ export class NeonStore {
             status TEXT NOT NULL,
             version TEXT NOT NULL,
             payload_json JSONB
-          );
-          CREATE INDEX IF NOT EXISTS idx_${tbl}_tenant ON ${tbl}(tenant_id);
+          )
         `);
+        await this.neonClient.query(`CREATE INDEX IF NOT EXISTS idx_${tbl}_tenant ON ${tbl}(tenant_id)`);
       }
       return { success: true, tablesCreated: required27.length };
     } catch (e: any) {
