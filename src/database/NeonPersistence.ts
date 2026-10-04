@@ -111,7 +111,7 @@ export class NeonStore {
 
     try {
       for (const tbl of required27) {
-        await this.neonClient(`
+        await this.neonClient.query(`
           CREATE TABLE IF NOT EXISTS ${tbl} (
             id TEXT PRIMARY KEY,
             tenant_id TEXT NOT NULL,
@@ -143,7 +143,7 @@ export class NeonStore {
       return { verified: 0, required: required27.length, missing: required27 };
     }
     try {
-      const rows = await this.neonClient(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
+      const rows = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
       const present = new Set(rows.map((r: any) => r.table_name));
       const missing = required27.filter(t => !present.has(t));
       return { verified: required27.length - missing.length, required: required27.length, missing };
@@ -167,7 +167,7 @@ export class NeonStore {
         payload_json: JSON.stringify(data)
       };
 
-      await this.neonClient(`
+      await this.neonClient.query(`
         INSERT INTO ${tableName} (id, tenant_id, created_at, updated_at, status, version, payload_json)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (id) DO UPDATE SET
@@ -184,7 +184,7 @@ export class NeonStore {
   public async findTenantRecords(tableName: string, tenantId: string, limit: number = 100): Promise<any[]> {
     if (!this.isConnected || !this.neonClient) return [];
     try {
-      const rows = await this.neonClient(`
+      const rows = await this.neonClient.query(`
         SELECT * FROM ${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2
       `, [tenantId, limit]);
       return rows.map((r: any) => ({ ...r, ...r.payload_json }));
