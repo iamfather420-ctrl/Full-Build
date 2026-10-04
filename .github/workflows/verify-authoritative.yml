@@ -15,7 +15,7 @@ jobs:
       deployment: false
     env:
       SOLVEX_ENV: production
-      PAYPAL_ACTIVE_ENVIRONMENT: ${{ secrets.PAYPAL_ACTIVE_ENVIRONMENT }}
+      # This is deployment configuration, not a credential. Keep production explicitly pinned to Live.\n      PAYPAL_ACTIVE_ENVIRONMENT: live
       PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
       PAYPAL_SANDBOX_CLIENT_SECRET: ${{ secrets.PAYPAL_SANDBOX_CLIENT_SECRET }}
       PAYPAL_LIVE_CLIENT_ID: ${{ secrets.PAYPAL_LIVE_CLIENT_ID }}
