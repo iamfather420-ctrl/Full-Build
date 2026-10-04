@@ -122,6 +122,15 @@ export class NeonStore {
             payload_json JSONB
           )
         `);
+        // Existing Neon tables may predate this persistence contract. Evolve them
+        // in place instead of assuming CREATE TABLE IF NOT EXISTS changes their schema.
+        // ADD COLUMN IF NOT EXISTS is idempotent and keeps production migration safe to re-run.
+        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS tenant_id TEXT`);
+        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS created_at BIGINT`);
+        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS updated_at BIGINT`);
+        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS status TEXT`);
+        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS version TEXT`);
+        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS payload_json JSONB`);
         await this.neonClient.query(`CREATE INDEX IF NOT EXISTS idx_${tbl}_tenant ON ${tbl}(tenant_id)`);
       }
       return { success: true, tablesCreated: required27.length };
