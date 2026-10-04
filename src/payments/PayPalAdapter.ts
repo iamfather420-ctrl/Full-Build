@@ -109,7 +109,9 @@ export class PayPalAdapter {
   }
 
   public getEffectiveCredentials(): PayPalCredentials | null {
-    if (this.sessionCredentials && this.sessionCredentials.clientId && this.sessionCredentials.clientSecret) {
+    // Production is environment-authoritative: browser/session credentials can never override live deployment secrets.
+    const productionLocked = typeof process !== 'undefined' && process.env?.SOLVEX_ENV?.toLowerCase() === 'production';
+    if (!productionLocked && this.sessionCredentials && this.sessionCredentials.clientId && this.sessionCredentials.clientSecret) {
       return this.sessionCredentials;
     }
     const envMode = this.getActiveEnvironment();
@@ -119,13 +121,17 @@ export class PayPalAdapter {
     return this.getSandboxCredentials();
   }
 
-  public setSessionCredentials(clientId: string, clientSecret: string, environment: 'sandbox' | 'live' = 'sandbox'): void {
+  public setSessionCredentials(clientId: string, clientSecret: string, environment: 'sandbox' | 'live' = 'sandbox'): boolean {
+    if (typeof process !== 'undefined' && process.env?.SOLVEX_ENV?.toLowerCase() === 'production') {
+      return false;
+    }
     this.sessionCredentials = {
       clientId: clientId.trim(),
       clientSecret: clientSecret.trim(),
       environment
     };
     // Strictly in-memory; never stored in localStorage/sessionStorage
+    return true;
   }
 
   public clearSessionCredentials(): void {
