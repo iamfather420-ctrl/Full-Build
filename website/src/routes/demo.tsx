@@ -11,6 +11,7 @@ import {
   Fingerprint,
   History,
   LockKeyhole,
+  MessageCircleQuestion,
   Play,
   RotateCcw,
   ShieldCheck,
@@ -57,6 +58,9 @@ function Demo() {
   const [step, setStep] = useState<DemoStep>("problem");
   const currentIndex = stepMeta.findIndex((s) => s.id === step);
   const [status, setStatus] = useState("Awaiting a bounded request.");
+  const [reviewed, setReviewed] = useState<boolean | null>(null);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
   const isComplete = step === "receipt";
 
   const activeAction = useMemo(() => {
@@ -95,6 +99,24 @@ function Demo() {
     URL.revokeObjectURL(url);
   }
 
+  function askDaisy() {
+    const normalized = question.trim().toLowerCase();
+    if (!normalized) return;
+    if (normalized.includes("what") && (normalized.includes("different") || normalized.includes("novel"))) {
+      setAnswer("The distinction is the boundary: Daisy can propose, but capability never becomes authority by itself. Solvex checks evidence, a human authorizes, and execution remains scoped, reversible, and auditable.");
+    } else if (normalized.includes("proof") || normalized.includes("verify") || normalized.includes("z3")) {
+      setAnswer(`In this demo, the visible receipt is tied to the evidence root ${manifest.merkle.slice(0, 16)}… and the local manifest reports ${manifest.dfrl.unsat}/${manifest.dfrl.total} DFRL operators. That is scoped evidence, not a universal proof of every real-world outcome.`);
+    } else if (normalized.includes("payment") || normalized.includes("paypal") || normalized.includes("production")) {
+      setAnswer("This walkthrough does not make a live payment or mutate production. Those capabilities stay behind server-side provider checks and fail-closed authorization boundaries; the demo labels them PARTIAL where external evidence is still required.");
+    } else if (normalized.includes("learn") || normalized.includes("autonomous") || normalized.includes("daisy")) {
+      setAnswer("Daisy is the candidate-generation and reasoning layer shown here. Verified learning is intentionally provenance-linked: an outcome should become reusable memory only after evaluation, evidence, and authorization—not simply because the model produced it.");
+    } else if (normalized.includes("rollback") || normalized.includes("undo") || normalized.includes("revers")) {
+      setAnswer("Rollback is part of the success condition. The demo seals a checkpoint, applies a deterministic sandbox change, restores the prior state, and records the compensation decision in the receipt.");
+    } else {
+      setAnswer("I can answer from the verified demo scope: Daisy proposes, Solvex verifies, a human authorizes, MMTAI executes in a sandbox, and the ledger records the result. Ask about proof, security, payments, autonomy, rollback, or what makes the system different.");
+    }
+  }
+
   return (
     <PageShell>
       <main className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
@@ -126,6 +148,12 @@ function Demo() {
         </section>
 
         <section className="mt-5 grid gap-5 md:grid-cols-3"><div className="rounded-xl border border-line bg-surface p-5"><Fingerprint className="size-4 text-lime-300" /><p className="mt-4 font-mono text-2xs uppercase tracking-kicker text-muted">Why it matters</p><p className="mt-2 font-display text-xl font-semibold">Unsafe actions become visible failure states.</p></div><div className="rounded-xl border border-line bg-surface p-5"><LockKeyhole className="size-4 text-amber-200" /><p className="mt-4 font-mono text-2xs uppercase tracking-kicker text-muted">What is novel</p><p className="mt-2 font-display text-xl font-semibold">Capability and authority stay separate by design.</p></div><div className="rounded-xl border border-line bg-surface p-5"><FileCheck2 className="size-4 text-cyan-200" /><p className="mt-4 font-mono text-2xs uppercase tracking-kicker text-muted">What judges can take home</p><p className="mt-2 font-display text-xl font-semibold">A machine-readable proof receipt, not a screenshot.</p></div></section>
+
+        {isComplete && <section className="mt-5 rounded-2xl border border-cyan-200/25 bg-[#0d1418] p-5 md:p-8">
+          <div className="flex items-start gap-3"><MessageCircleQuestion className="mt-1 size-5 text-cyan-200" /><div><p className="font-mono text-2xs uppercase tracking-mark text-cyan-200/70">POST-VIDEO JUDGE REVIEW</p><h2 className="mt-2 font-display text-3xl font-bold tracking-tight">Did the proof-before-power loop make sense?</h2><p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">Before Daisy answers questions, confirm whether the video was understandable. This gives the judge a deliberate review moment instead of treating a finished animation as proof by itself.</p></div></div>
+          <div className="mt-6 flex flex-wrap gap-3"><Button onClick={() => setReviewed(true)} variant={reviewed === true ? "primary" : "outline"}><Check className="size-4" /> Yes, I understand it</Button><Button onClick={() => setReviewed(false)} variant={reviewed === false ? "primary" : "outline"}><MessageCircleQuestion className="size-4" /> I need clarification</Button></div>
+          {reviewed !== null && <div className="mt-7 border-t border-line pt-6"><div className="flex items-center gap-2"><Sparkles className="size-4 text-lime-300" /><p className="font-mono text-2xs uppercase tracking-mark text-lime-200/80">DAISY / REVIEW MODE</p><StateChip state="SCOPED" /></div><p className="mt-3 text-sm text-muted">Ask about the architecture, evidence, security boundaries, rollback, payments, autonomy, or what makes the system different. Daisy answers from the demo’s verified scope and says when a claim is still partial.</p><div className="mt-5 flex flex-col gap-3 sm:flex-row"><input value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") askDaisy(); }} placeholder="Ask Daisy: What makes this different?" className="min-h-11 flex-1 rounded-lg border border-line bg-bg px-4 text-sm text-fg outline-none placeholder:text-muted focus:border-cyan-200/60" aria-label="Ask Daisy a question" /><Button onClick={askDaisy} variant="subtle">Ask Daisy <ArrowRight className="size-4" /></Button></div><div className="mt-4 flex flex-wrap gap-2">{["What makes this different?", "How is the proof scoped?", "Can it touch production?", "How does rollback work?"] .map((prompt) => <button key={prompt} type="button" onClick={() => { setQuestion(prompt); setAnswer(""); }} className="rounded-full border border-line px-3 py-1.5 text-xs text-muted transition-colors hover:border-cyan-200/40 hover:text-fg">{prompt}</button>)}</div>{answer && <div className="mt-5 rounded-xl border border-lime-200/20 bg-lime-200/[0.04] p-5"><p className="font-mono text-2xs uppercase tracking-kicker text-lime-200/80">Daisy’s scoped answer</p><p className="mt-3 text-sm leading-relaxed text-fg/90">{answer}</p></div>}</div>}
+        </section>}
       </main>
     </PageShell>
   );
