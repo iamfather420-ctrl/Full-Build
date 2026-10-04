@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-04T01:33:19.263Z",
+  "timestamp": "2026-10-04T01:43:17.356Z",
   "environment": "UNKNOWN",
   "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
   "status": "NOT_CONFIGURED",
@@ -8,7 +8,6 @@
       "configured": false,
       "environment": "none",
       "gateway_state": "EXTERNAL_PROVIDER_REQUIRED",
-      "pyusd_only_policy": "REQUIRED",
       "webhook_configured": false
     },
     "environment_validation": {

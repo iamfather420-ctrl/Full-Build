@@ -18,7 +18,7 @@
 
 - Shared backend, security, authorization, persistence, PayPal, marketplace, proof, test, and root build files use the current hardened SolveX implementation.
 - The latest upstream sandbox OAuth and credential-normalization changes were retained.
-- The upstream removal of the PYUSD evidence gate was not accepted; PYUSD policy and explicit provider-asset evidence remain required before activation.
+- The upstream removal of the PayPal provider evidence gate was not accepted; provider-authenticated PayPal order, capture, webhook, and audit evidence remain required before activation.
 - Full-Build-only source and assets remain present where they do not replace an authoritative SolveX path.
 - The existing `website/` integration is retained as a separate deployable application and is not treated as authority for backend authorization or payment state.
 - No `.env` files, credentials, private keys, tokens, or provider secrets were imported.
@@ -29,7 +29,7 @@
 - Express server and server-authoritative API router
 - HMAC/RBAC authorization and tenant isolation
 - SQLite local support and Neon production adapter
-- PayPal Orders v2, webhook verification, and PYUSD evidence gates
+- PayPal Orders v2, webhook verification, and PayPal provider evidence gates
 - B2B technical verification versus customer acceptance workflow
 - Daisy 54-node execution coverage
 - DFRL 88-operator formal verification
@@ -46,7 +46,7 @@ The merge retains Full-Build-only native/Android assets, additional proof and ve
 
 - **UNRECOVERED — DO NOT INVENT:** A separately deployed `UAREFAKE.SPACE` authoritative control-plane service was not established from the available repositories.
 - **UNRECOVERED — DO NOT INVENT:** Real customer acceptance evidence for a B2B reference case is absent.
-- **UNRECOVERED — DO NOT INVENT:** Confirmed live PayPal settlement containing explicit PYUSD asset evidence is absent.
+- **UNRECOVERED — DO NOT INVENT:** Confirmed live PayPal settlement containing provider-authenticated PayPal transaction evidence is absent.
 - **UNRECOVERED — DO NOT INVENT:** Production identity-provider and secret-management deployment evidence is absent.
 - **UNRECOVERED — DO NOT INVENT:** The Full-Build-only 120/46 verification material was not promoted to commercial or production evidence merely because files exist; it requires an independent run on this reconciled tree.
 
@@ -58,6 +58,6 @@ The reconciled tree preserves the existing truth semantics. Local/model verifica
 
 The root `npm run verify:all` completed successfully after the latest upstream sync and protected PayPal-gate restoration. The run included type/lint checks, production build, secret scan, API/security checks, 54-node coverage, 88 DFRL formal checks with deterministic replay and mutation/failure/tamper tests, candidate and B2B negative gates, GitHub lineage checks, readiness scans, and truth report generation.
 
-The resulting status is **LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; COMMERCIAL_PRODUCTION_BLOCKED**. The production blockers remain expected: no live PayPal operation with explicit PYUSD evidence, no production identity/secret-management deployment evidence, no independently verified marketplace solution, and no real customer acceptance evidence.
+The resulting status is **LOCAL_SECURITY_VERIFIED / MODEL_VERIFIED; COMMERCIAL_PRODUCTION_BLOCKED**. The production blockers remain expected: no live PayPal operation with provider-authenticated PayPal transaction evidence, no production identity/secret-management deployment evidence, no independently verified marketplace solution, and no real customer acceptance evidence.
 
 Push target: a new branch only. Do not overwrite `main` without a separately reviewed pull request.

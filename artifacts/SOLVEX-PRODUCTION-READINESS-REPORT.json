@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-04T01:33:21.294Z",
+  "timestamp": "2026-10-04T01:43:19.433Z",
   "environment": "UNKNOWN",
   "source_revision": "SOURCE_SNAPSHOT_UNVERSIONED",
   "candidate_id": "DH-C-B28A191DCBFE70D0",
@@ -30,7 +30,7 @@
       "payment_created": false,
       "payment_captured": false,
       "money_moved": false,
-      "pyusd_evidence": "NOT_OBSERVED",
+      "paypal_evidence": "NOT_OBSERVED",
       "webhook_verification": "NOT_VERIFIED"
     }
   },
@@ -92,9 +92,9 @@
     },
     "PAYPAL_PRODUCTION": {
       "status": "PARTIAL",
-      "evidence": "PayPal for Business connector is active, but application runtime credentials and provider-issued PYUSD evidence are not verified. No transactions were found in the inspected window.",
+      "evidence": "PayPal for Business connector is active, but application runtime credentials and provider-authenticated capture evidence are not verified. No transactions were found in the inspected window.",
       "test": "PayPal read-only transaction query; no payment mutation attempted",
-      "remaining_requirement": "Bind the application to the intended PayPal environment, verify webhook configuration, and obtain explicit PYUSD evidence."
+      "remaining_requirement": "Bind the application to the intended PayPal environment, verify webhook configuration, and obtain a provider-authenticated PayPal transaction with matching order evidence."
     },
     "PAYPAL_WEBHOOKS": {
       "status": "BLOCKED",
@@ -113,11 +113,11 @@
       "test": "npm run verify:webhooks",
       "remaining_requirement": "Provider-signed webhook verification, event persistence, idempotency, replay rejection, and tenant/order binding."
     },
-    "PYUSD": {
+    "PAYPAL": {
       "status": "NOT_OBSERVED",
-      "evidence": "No provider-issued PYUSD asset evidence observed.",
-      "test": "npm run verify:payment; capture path requires explicit PYUSD evidence.",
-      "remaining_requirement": "Explicit provider-issued or independently verifiable PYUSD transaction evidence."
+      "evidence": "No provider-authenticated PayPal transaction evidence observed.",
+      "test": "npm run verify:payment; capture path verifies the PayPal order, capture, amount, currency, webhook, and tenant binding.",
+      "remaining_requirement": "Provider-authenticated PayPal transaction evidence with matching stored order and webhook audit trail."
     },
     "MARKETPLACE": {
       "status": "BLOCKED",
@@ -197,7 +197,7 @@
         "local_fail_closed_diversion": {
           "fail_closed_enforced": true,
           "rollback_status": "ROLLED_BACK",
-          "failure_id": "fail_1791077600919_t1pk",
+          "failure_id": "fail_1791078199043_zg7o",
           "evidence_hash": "a8198524f58e72b56283ab71ebddada22840f108b46ef7165bb3fca9919c5558"
         },
         "audit_chain_valid_after_test": true,
@@ -213,7 +213,7 @@
         "anonymous_acceptance": {
           "status": 401,
           "error": "Authentication is required",
-          "timestamp": 1791077600134
+          "timestamp": 1791078198160
         },
         "cross_tenant_denial": {
           "authorized": false,

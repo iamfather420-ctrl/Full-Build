@@ -36,9 +36,8 @@ const checks: SecretCheck[] = [
   check('PRODUCTION_IDP_CLIENT_SECRET', isProduction, v => v.length >= 16, 'Production identity provider client secret'),
   check('AUDIT_SIGNING_KEY', isProduction, v => v.length >= 32, 'Managed audit signing key'),
   check('AUDIT_ENCRYPTION_KEY', isProduction, v => v.length >= 32, 'Managed audit encryption key'),
-  check('PYUSD_PROVIDER', false, v => v.length >= 2, 'Optional provider declaration; does not prove PYUSD'),
-  check('PYUSD_NETWORK', false, v => v.length >= 2, 'Optional network declaration; does not prove PYUSD'),
-  check('PYUSD_ASSET_IDENTIFIER', false, v => v.length >= 2, 'Optional asset declaration; does not prove PYUSD'),
+  check('PAYPAL_PROVIDER', false, v => v.length >= 2, 'Optional provider declaration; does not prove PAYPAL'),
+  check('PAYPAL_NETWORK', false, v => v.length >= 2, 'Optional network declaration; does not prove PAYPAL'),
   check('SOLVEX_BASE_URL', isProduction, v => /^https:\/\//.test(v), 'Production public base URL')
 ];
 const blockers = [...validation.blockers, ...checks.filter(c => c.status === 'MISSING' || c.status === 'INVALID_FORMAT').map(c => `${c.name}:${c.status}`)];

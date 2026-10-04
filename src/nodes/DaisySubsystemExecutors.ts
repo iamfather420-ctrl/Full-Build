@@ -674,7 +674,6 @@ export class DaisySubsystemExecutors {
           evidence: {
             configured: pp.hasActiveCredentials(),
             environment: info.environment,
-            pyusd_only_policy: info.pyusd_only_policy,
             webhook_configured: info.webhook_configured,
             authenticated: false,
             fail_closed_enforced: true,
@@ -715,15 +714,15 @@ export class DaisySubsystemExecutors {
           claim_scope: 'LOCAL',
           status: 'PROHIBITED_BLOCKED',
           duration_ms: performance.now() - start,
-          evidence: { non_paypal_rails_enabled: false, fail_closed: true, policy: 'PAYPAL_PYUSD_ONLY' }
+          evidence: { non_paypal_rails_enabled: false, fail_closed: true, policy: 'PAYPAL_ONLY' }
         };
       }
 
-      // 38. DN-38: PYUSD Evidence Requirement
+      // 38. DN-38: PayPal Provider Evidence Requirement
       case 'DN-38': {
         return {
           node_id: 'DN-38',
-          name: 'PYUSD Evidence Requirement',
+          name: 'PayPal Provider Evidence Requirement',
           category: 'PAYMENTS',
           executed: true,
           claim_scope: 'LOCAL',
@@ -731,7 +730,7 @@ export class DaisySubsystemExecutors {
           duration_ms: performance.now() - start,
           evidence: {
             provider_capture_verified: false,
-            pyusd_asset_evidence_verified: false,
+            paypal_provider_evidence_verified: false,
             production_verified: false,
             gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
             fail_closed: true
@@ -749,7 +748,7 @@ export class DaisySubsystemExecutors {
           claim_scope: 'LOCAL',
           status: 'PROHIBITED_BLOCKED',
           duration_ms: performance.now() - start,
-          evidence: { external_custody_enabled: false, fail_closed: true, policy: 'PAYPAL_PYUSD_ONLY' }
+          evidence: { external_custody_enabled: false, fail_closed: true, policy: 'PAYPAL_ONLY' }
         };
       }
 

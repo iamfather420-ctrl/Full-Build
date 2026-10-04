@@ -13,7 +13,7 @@ export class SandboxVerificationPipeline {
       tests_passed: enterprise.passedTests,
       results: enterprise.results,
       payment_execution: 'NOT_PERFORMED',
-      production_note: 'A sandbox regression suite is not PayPal authentication, a live PYUSD transaction, or production payment verification.'
+      production_note: 'A sandbox regression suite is not PayPal authentication, a live PAYPAL transaction, or production payment verification.'
     };
   }
 }

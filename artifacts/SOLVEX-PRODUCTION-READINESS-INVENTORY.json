@@ -15,7 +15,7 @@
   },
   "authentication": ["src/auth/AuthService.ts", "server-issued HMAC token verification", "public role-selecting login retired"],
   "persistence": ["src/database/SqliteStore.ts", "src/database/DurableStore.ts", "src/database/NeonPersistence.ts"],
-  "payment": ["src/payments/PayPalAdapter.ts", "server-side OAuth/Orders v2/capture/webhook verification", "explicit PYUSD receipt gate"],
+  "payment": ["src/payments/PayPalAdapter.ts", "server-side OAuth/Orders v2/capture/webhook verification", "provider-authenticated PayPal transaction receipt gate"],
   "marketplace": ["src/marketplace/MarketplaceEngine.ts", "verified solution/proof/implementation hash binding"],
   "b2b_evidence": ["src/b2b/B2BReferenceCaseService.ts", "server-authoritative reference/evaluation/acceptance workflow"],
   "tenant_isolation": ["SqliteStore tenant-scoped reads/writes", "AuthService tenant authorization", "DurableStore tenant audit records"],
@@ -40,7 +40,7 @@
     "customer_acceptance": "MISSING",
     "independent_b2b_evidence": "MISSING",
     "paypal": "NOT_CONFIGURED",
-    "pyusd": "NOT_OBSERVED",
+    "paypal": "NOT_OBSERVED",
     "marketplace": "BLOCKED",
     "production": "BLOCKED"
   }

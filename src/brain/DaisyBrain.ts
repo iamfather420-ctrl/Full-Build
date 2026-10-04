@@ -59,7 +59,7 @@ export interface CompleteBrainState {
       claim_scope: string;
       local_fallback_active: boolean;
     };
-    pyusd_policy_dn38: {
+    paypal_provider_dn38: {
       status: string;
       configured: boolean;
       claim_scope: string;
@@ -198,9 +198,9 @@ export class DaisyBrain {
           claim_scope: 'LOCAL',
           local_fallback_active: !hasNeon
         },
-        pyusd_policy_dn38: {
-          status: process.env.PAYPAL_PYUSD_ONLY_ENABLED === 'true' ? 'POLICY_ENABLED' : 'EXTERNAL_PROVIDER_REQUIRED',
-          configured: process.env.PAYPAL_PYUSD_ONLY_ENABLED === 'true',
+        paypal_provider_dn38: {
+          status: hasPayPal ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
+          configured: hasPayPal,
           claim_scope: 'LOCAL'
         },
         stripe_dn36: {

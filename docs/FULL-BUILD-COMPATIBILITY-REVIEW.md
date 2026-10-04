@@ -13,7 +13,7 @@ The cloned repository was inspected as an untrusted external source. No embedded
 The current `manus/grok-ui-integration` branch remains authoritative for:
 
 - server-side authorization and HMAC/RBAC controls;
-- PayPal/PYUSD evidence gates;
+- PayPal provider evidence gates;
 - durable persistence and environment separation;
 - B2B technical verification versus customer acceptance;
 - fail-closed commercial readiness.

@@ -116,7 +116,7 @@ async function main() {
   const externalBlocks = [
     'No customer-specific evidence or authorized customer acceptance exists for this candidate.',
     'No production identity, managed database, or production secrets are configured.',
-    'No PayPal/PYUSD provider operation is authorized or performed.'
+    'No PayPal/PAYPAL provider operation is authorized or performed.'
   ];
   const verificationStatus = allLocalEvidence && externalBlocks.length === 0 ? 'VERIFIED' : 'HOLD';
   const evidenceBundlePayload = {
@@ -155,7 +155,7 @@ async function main() {
     hermetic_test_status: hermetic.payload.passed ? 'PASSED' : 'FAILED', independent_oracle_status: oracle.payload.matches ? 'PASSED' : 'FAILED',
     cleanroom_replay_status: replay.status, evidence_bundle_status: allLocalEvidence ? 'LOCAL_COMPLETE_HOLD' : 'INCOMPLETE',
     verification_status: verificationStatus, marketplace_publication_status: 'NOT_PUBLISHED_BLOCKED', paypal_configuration_status: 'NOT_CONFIGURED',
-    pyusd_evidence_status: 'NOT_OBSERVED', payment_test_status: 'NOT_PERFORMED', fulfillment_test_status: 'NOT_PERFORMED',
+    paypal_evidence_status: 'NOT_OBSERVED', payment_test_status: 'NOT_PERFORMED', fulfillment_test_status: 'NOT_PERFORMED',
     commercial_production_status: 'COMMERCIAL_PRODUCTION_BLOCKED', external_blocks: externalBlocks, evidence_bundle: evidenceBundlePayload
   };
   fs.writeFileSync(path.resolve('artifacts/candidate-verification-DH-C-B28A191DCBFE70D0.json'), JSON.stringify(report, null, 2));

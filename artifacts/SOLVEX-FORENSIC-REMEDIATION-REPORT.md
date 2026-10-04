@@ -4,7 +4,7 @@
 **Repository:** `solvex-platform`  
 **Scope:** Secure the existing Project AGATE / dAIsy / SOLVEX codebase as an evidence-gated B2B platform, run a canonical internal dAIsy candidate intake, and report only verified outcomes.
 
-> **Release posture:** Local build and security gates are verified. Commercial production activation is **blocked**. No PayPal credentials, webhook, provider-approved checkout, capture, explicit PYUSD receipt, or production identity deployment was supplied or executed.
+> **Release posture:** Local build and security gates are verified. Commercial production activation is **blocked**. No PayPal credentials, webhook, provider-approved checkout, capture, provider-authenticated PayPal transaction receipt, or production identity deployment was supplied or executed.
 
 ## 1. Executive result
 
@@ -17,7 +17,7 @@ The codebase was converted from a largely client-/fixture-driven demonstration i
 - A new file-backed SQLite repository stores tenant-scoped records, timestamps, durable audit history, and WAL settings. There is no localStorage/in-memory fallback.
 - Checkpoint snapshots were corrected to exclude the checkpoint registry itself, preventing recursive snapshot growth and preserving rollback checkpoints after restoration.
 - dAIsy now creates a **candidate**, not an auto-verified solution. It completes static intake only and stops on evidence-dependent stages.
-- Payment activation requires an authenticated server flow, a provider order re-read, a capture re-read, amount/currency/reference matching, idempotency protection, and explicit provider-reported PYUSD evidence.
+- Payment activation requires an authenticated server flow, a provider order re-read, a capture re-read, amount/currency/reference matching, idempotency protection, and provider-authenticated PayPal transaction evidence.
 - All non-PayPal settlement/custody rails are hard-disabled in code and the former adapter slots are explicit policy guards.
 
 ## 2. Forensic findings and remediation
@@ -26,11 +26,11 @@ The codebase was converted from a largely client-/fixture-driven demonstration i
 |---|---|---|
 | Browser-controlled tenant/role context could be mistaken for authorization. | Implemented HMAC-signed, expiring tokens with issuer, audience, token ID, tamper detection, expiry checks, tenant checks, and RBAC in `AuthService`; sensitive routes default-deny. | No authenticated production issuer is configured in this sandbox, so protected requests fail closed. |
 | Browser-facing PayPal credential entry and capture-like behavior. | Replaced with a read-only deployment-status screen; removed session credential setters/clearers and browser credential collection. | Environment values remain server-only; the public status endpoint deliberately returns no secret material. |
-| Payment state could be advanced without provider evidence. | Added server-side Orders v2 create/approval/capture design, idempotency key reservation, provider order/capture re-read, strict stored order comparison, signed webhook verification path, and a PYUSD receipt gate. | **No provider transaction was performed.** The gateway reports `EXTERNAL_PROVIDER_REQUIRED` without server credentials. |
+| Payment state could be advanced without provider evidence. | Added server-side Orders v2 create/approval/capture design, idempotency key reservation, provider order/capture re-read, strict stored order comparison, signed webhook verification path, and a PAYPAL receipt gate. | **No provider transaction was performed.** The gateway reports `EXTERNAL_PROVIDER_REQUIRED` without server credentials. |
 | Self-attested proof/candidate data could be treated as verified. | `ProofBundleBuilder` seals only `PARTIAL` or `FAIL`; `ProofEngine.registerBundle` rejects anything lacking test receipts, checked formal proof receipts, independent attestation, replay match, provenance, and a `VERIFIED` state. | There are no proof bundles or verified offerings. |
 | Marketplace publication could be separated from a verifiable solution/proof implementation. | `MarketplaceEngine.publishOffer` enforces solution status, proof status, subject binding, exact implementation hash binding, and evidence integrity before creating a published offer. | Candidate publication was actively tested and blocked. |
 | Storage was not a production-grade durable authority. | Added a server-only SQLite repository with on-disk path, WAL mode, parameterized values, a closed logical-table allow-list, tenant-scoped reads/writes, transactions, durable snapshot persistence, and a chained audit ledger. | SQLite was tested locally. A managed production database, migrations, backups, encryption policy, and RLS deployment remain external deployment work. |
-| Demo claims and unused third-party payment rails exceeded the permitted scope. | Reduced the browser app to overview, PayPal PYUSD readiness, and the verified-marketplace catalogue. Replaced non-PayPal rail nodes with a blocklist, PYUSD-evidence policy guard, and custody exclusion guard. | Static source scan found no residual unsupported-rail references outside test code. |
+| Demo claims and unused third-party payment rails exceeded the permitted scope. | Reduced the browser app to overview, PayPal PAYPAL readiness, and the verified-marketplace catalogue. Replaced non-PayPal rail nodes with a blocklist, PAYPAL-evidence policy guard, and custody exclusion guard. | Static source scan found no residual unsupported-rail references outside test code. |
 
 ## 3. dAIsy execution: actual result
 
@@ -98,7 +98,7 @@ PAYMENT: NOT CONFIGURED
 PRODUCTION: BLOCKED
 ```
 
-See [`b2b-reference-verification-v2.json`](./b2b-reference-verification-v2.json). The mechanism is ready to receive a legitimate authorized business case; no customer, revenue, acceptance, payment, or PYUSD claim was created.
+See [`b2b-reference-verification-v2.json`](./b2b-reference-verification-v2.json). The mechanism is ready to receive a legitimate authorized business case; no customer, revenue, acceptance, payment, or PAYPAL claim was created.
 
 ## 4. Validation performed
 
@@ -138,7 +138,7 @@ At verification time the health endpoint reported:
 
 `authentication_configured: false` is expected for this review service because no production `SOLVEX_AUTH_SECRET` was provided; it is a safety control, not a readiness claim.
 
-## 6. PayPal PYUSD integration truth boundary
+## 6. PayPal PAYPAL integration truth boundary
 
 The integration follows PayPal’s server-side OAuth/Orders pattern, but it is intentionally not marked live or sandbox-verified in the absence of credentials and an authorized payment test.
 
@@ -153,12 +153,12 @@ The integration follows PayPal’s server-side OAuth/Orders pattern, but it is i
 3. Reserves a tenant-scoped idempotency key before provider calls.
 4. Requires payer approval, re-reads the provider order, captures once, and compares reference ID, custom ID, amount, and USD currency against the stored order.
 5. Verifies webhook signatures through PayPal’s `verify-webhook-signature` endpoint and records verified webhook IDs durably.
-6. Refuses order activation if the deployment policy is off or provider payloads do not contain **explicit PYUSD asset evidence**.
+6. Refuses order activation if provider payloads do not contain **provider-authenticated PayPal transaction evidence**.
 7. Leaves the order below `ESCROW_FUNDED` in every unsupported, missing, mismatched, or provider-error condition.
 
 ### Important limitation
 
-PayPal’s public Orders v2 material describes PYUSD acceptance but does not expose a portable request parameter that universally forces the payer’s funding asset. The implementation therefore does **not** infer PYUSD from a USD amount, merchant configuration, or a successful capture. Activation remains blocked unless the provider response carries the explicit PYUSD evidence expected by the deployment policy.
+PayPal’s public Orders v2 material describes PayPal acceptance. The implementation does **not** infer a valid settlement from a USD amount, merchant configuration, or a successful-looking client redirect. Activation remains blocked unless the provider response carries matching order/capture evidence and the signed webhook/audit checks pass.
 
 ## 7. Required external steps before commercial activation
 
@@ -167,11 +167,11 @@ These are deployment/operator actions and were not simulated or bypassed:
 1. Provision a managed secret store and set a randomly generated `SOLVEX_AUTH_SECRET` of at least 32 characters.
 2. Connect the production identity issuer responsible for issuing signed user contexts; do not expose the bootstrap token issuer as a public route.
 3. Provision production persistence with migrations, backups, encryption, monitoring, and tenant authorization controls; local SQLite is not a claim of production HA or RLS.
-4. Obtain PayPal merchant confirmation for the intended PYUSD program and supported receipt fields.
+4. Obtain PayPal merchant confirmation for the intended PayPal program and supported receipt fields.
 5. Set *only* the selected environment’s PayPal credentials, `PAYPAL_WEBHOOK_ID`, HTTPS return/cancel URLs, and registered webhook endpoint.
 6. Confirm a signed webhook verification round trip in the selected environment.
-7. Perform an operator-approved sandbox checkout with no real buyer delivery, then inspect provider order/capture payloads for explicit PYUSD evidence.
-8. Enable `PAYPAL_PYUSD_ONLY_ENABLED=true` only after the preceding evidence is captured and reviewed.
+7. Perform an operator-approved sandbox checkout with no real buyer delivery, then inspect provider order/capture payloads for provider-authenticated PayPal transaction evidence.
+8. Review the provider order, capture, webhook, and audit receipts before any commercial activation decision.
 9. Execute an independent proof/evidence workflow for a solution; publish only after the proof bundle is independently registered and hash-bound.
 10. Perform an operator-approved production smoke test with a controlled merchant/buyer account and retain the resulting provider/audit receipts.
 
@@ -192,7 +192,7 @@ These are deployment/operator actions and were not simulated or bypassed:
 | `VERIFICATION_STATUS` | `HOLD` — not `VERIFIED` |
 | `MARKETPLACE_PUBLICATION_STATUS` | Blocked; partial-candidate negative gate passed |
 | `PAYPAL_CONFIGURATION_STATUS` | Not configured |
-| `PYUSD_EVIDENCE_STATUS` | Not observed |
+| `PAYPAL_EVIDENCE_STATUS` | Not observed |
 | `PAYMENT_TEST_STATUS` | Not performed |
 | `FULFILLMENT_TEST_STATUS` | Not performed |
 | `COMMERCIAL_PRODUCTION_STATUS` | `COMMERCIAL_PRODUCTION_BLOCKED` |
@@ -209,7 +209,7 @@ These are deployment/operator actions and were not simulated or bypassed:
 | `MARKETPLACE_ELIGIBILITY` | `BLOCKED` |
 | `MARKETPLACE_PUBLICATION` | `NOT_ATTEMPTED` |
 | `PAYPAL_CONFIGURATION` | `NOT_CONFIGURED` |
-| `PYUSD_EVIDENCE` | `NOT_OBSERVED` |
+| `PAYPAL_EVIDENCE` | `NOT_OBSERVED` |
 | `COMMERCIAL_PRODUCTION` | `BLOCKED` |
 
 The B2B mechanism can now receive a legitimate authorized business case without allowing the browser, dAIsy, internal synthetic data, or a developer assertion to manufacture customer acceptance.
@@ -231,8 +231,8 @@ The B2B mechanism can now receive a legitimate authorized business case without 
 This work does **not** claim:
 
 - a deployed production identity provider;
-- a live or sandbox PayPal/PYUSD transaction;
-- a confirmed explicit PYUSD provider receipt;
+- a live or sandbox PayPal/PAYPAL transaction;
+- a confirmed explicit PayPal provider receipt;
 - a production database connection, RLS policy, backup, or high-availability setup;
 - an independently verified commercial solution;
 - a published offer, buyer order, paid invoice, funded escrow, delivery, or deployment;

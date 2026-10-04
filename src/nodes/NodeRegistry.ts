@@ -62,7 +62,7 @@ export class NodeRegistry {
       { id: 'DN-35', name: 'PayPal Enterprise Payment Gateway', category: 'PAYMENTS', mode: 'EXTERNAL_PROVIDER_REQUIRED', purpose: 'Server-authoritative fiat payment capture and escrow' },
       { id: 'DN-36', name: 'Fiat Settlement Policy Guard (Stripe Prohibited)', category: 'SECURITY', mode: 'CODE_EXECUTED', purpose: 'Enforces strict prohibition of Stripe per Sovereign Core directive; fiat settlement routed exclusively to PayPal DN-35' },
       { id: 'DN-37', name: 'Non-PayPal Rail Blocklist', category: 'SECURITY', mode: 'CODE_EXECUTED', purpose: 'Hard-disables every non-PayPal payment rail' },
-      { id: 'DN-38', name: 'PYUSD Evidence Requirement', category: 'PAYMENTS', mode: 'EXTERNAL_PROVIDER_REQUIRED', purpose: 'Requires provider-issued PYUSD capture evidence before order activation' },
+      { id: 'DN-38', name: 'PayPal Provider Evidence Requirement', category: 'PAYMENTS', mode: 'EXTERNAL_PROVIDER_REQUIRED', purpose: 'Requires provider-authenticated PayPal capture evidence before order activation' },
       { id: 'DN-39', name: 'External Custody Exclusion Guard', category: 'SECURITY', mode: 'CODE_EXECUTED', purpose: 'Hard-disables third-party custody and settlement bridges' },
       { id: 'DN-40', name: 'Lean4 Theorem Verification Bridge', category: 'LOGIC_SOLVER', mode: 'CODE_EXECUTED', purpose: 'Type theory certificate verification adapter' },
       { id: 'DN-41', name: 'Isabelle/HOL Proof Ingestion Node', category: 'LOGIC_SOLVER', mode: 'CODE_EXECUTED', purpose: 'Higher-order logic theorem ingestion' },

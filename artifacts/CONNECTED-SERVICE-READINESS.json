@@ -26,10 +26,10 @@
       "payment_created": false,
       "payment_captured": false,
       "money_moved": false,
-      "pyusd_evidence": "NOT_OBSERVED",
+      "paypal_evidence": "NOT_OBSERVED",
       "webhook_verification": "NOT_VERIFIED"
     }
   },
-  "truth_boundary": "Connector availability is not equivalent to application runtime configuration, provider-authenticated payment evidence, PYUSD evidence, customer acceptance, or production commercial readiness.",
+  "truth_boundary": "Connector availability is not equivalent to application runtime configuration, provider-authenticated payment evidence, PayPal transaction evidence, customer acceptance, or production commercial readiness.",
   "overall_commercial_state": "BLOCKED"
 }

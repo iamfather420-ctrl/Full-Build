@@ -1,10 +1,10 @@
 {
   "pipeline_name": "SOLVEX Truth-Boundary Verification",
   "version": "2.2.0",
-  "execution_id": "verification_1791077595051",
-  "commit_sha": "597016a77795a96183d2bbba3c82ae833e3062f4",
+  "execution_id": "verification_1791078193319",
+  "commit_sha": "eb52b1c5c6b08208017a6419e7d72d9df5a44de8",
   "environment": "local",
-  "completed_at": "2026-10-04T01:33:15.051Z",
+  "completed_at": "2026-10-04T01:43:13.319Z",
   "gates_total": 4,
   "gates_passed": 3,
   "production_gate_verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
@@ -33,7 +33,7 @@
       "name": "DFRL model verification",
       "claim_scope": "MODEL",
       "status": "PASSED",
-      "duration_ms": 2668,
+      "duration_ms": 2734,
       "details": {
         "executed": 88,
         "unsat": 88,
@@ -46,7 +46,7 @@
       "name": "Marketplace publication inventory",
       "claim_scope": "LOCAL",
       "status": "PASSED",
-      "duration_ms": 2668,
+      "duration_ms": 2734,
       "details": {
         "total_solution_records": 3,
         "independently_verified": 0,
@@ -60,7 +60,7 @@
       "name": "PayPal provider boundary",
       "claim_scope": "LOCAL",
       "status": "BLOCKED",
-      "duration_ms": 2669,
+      "duration_ms": 2735,
       "details": {
         "paypal_environment": "none",
         "paypal_authenticated": false,

@@ -76,7 +76,7 @@ async function payment() {
     status: info.configured ? 'PARTIAL' : 'NOT_CONFIGURED',
     evidence: { masked_provider_status: info, environment_validation: config, checkout_negative_test: { status: result.status, gateway_state: result.gateway_state, claim_scope: result.claim_scope }, transaction_executed: false, money_moved: false },
     test: 'No real transaction attempted; missing-order/provider gate must fail closed.',
-    remaining_requirement: info.configured ? 'Non-destructive provider authentication, webhook verification, explicit PYUSD receipt, and separate sandbox/production evidence.' : 'Configure the correct environment-specific PayPal credentials and webhook identity in managed secrets.',
+    remaining_requirement: info.configured ? 'Non-destructive provider authentication, webhook verification, provider-authenticated PayPal transaction receipt, and separate sandbox/production evidence.' : 'Configure the correct environment-specific PayPal credentials and webhook identity in managed secrets.',
     truth_classification: info.configured ? 'PARTIAL' : 'NOT_CONFIGURED'
   });
 }

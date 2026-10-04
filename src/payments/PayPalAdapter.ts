@@ -8,11 +8,11 @@ export interface PayPalCredentials {
   environment: 'sandbox' | 'live';
 }
 
-export type PayPalGatewayState = 'NOT_CONFIGURED' | 'CONFIGURED' | 'APPROVAL_REQUIRED' | 'ORDER_CAPTURED' | 'RESPONSE_VALIDATED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'PAYPAL_API_ERROR' | 'PYUSD_VERIFICATION_REQUIRED';
+export type PayPalGatewayState = 'NOT_CONFIGURED' | 'CONFIGURED' | 'APPROVAL_REQUIRED' | 'ORDER_CAPTURED' | 'RESPONSE_VALIDATED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'PAYPAL_API_ERROR';
 
 export interface PaymentResult {
   success: boolean;
-  status: 'APPROVAL_REQUIRED' | 'COMPLETED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'AUTHENTICATION_FAILED' | 'PAYPAL_API_ERROR' | 'IDEMPOTENCY_CONFLICT' | 'PYUSD_VERIFICATION_REQUIRED' | 'REJECTED';
+  status: 'APPROVAL_REQUIRED' | 'COMPLETED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'AUTHENTICATION_FAILED' | 'PAYPAL_API_ERROR' | 'IDEMPOTENCY_CONFLICT' | 'REJECTED';
   gateway_state: PayPalGatewayState;
   claim_scope: 'LOCAL' | 'SANDBOX' | 'PRODUCTION';
   payment?: Record<string, any>;
@@ -94,13 +94,12 @@ export class PayPalAdapter {
 
   public hasActiveCredentials(): boolean { return Boolean(this.getEffectiveCredentials()); }
 
-  public getMaskedCredentialsInfo(): { configured: boolean; environment: 'sandbox' | 'live' | 'none'; gateway_state: PayPalGatewayState; pyusd_only_policy: 'ENABLED' | 'REQUIRED' | 'UNCONFIGURED'; webhook_configured: boolean } {
+  public getMaskedCredentialsInfo(): { configured: boolean; environment: 'sandbox' | 'live' | 'none'; gateway_state: PayPalGatewayState; webhook_configured: boolean } {
     const credentials = this.getEffectiveCredentials();
     return {
       configured: Boolean(credentials),
       environment: credentials?.environment || 'none',
       gateway_state: credentials ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
-      pyusd_only_policy: process.env.PAYPAL_PYUSD_ONLY_ENABLED === 'true' ? 'ENABLED' : 'REQUIRED',
       webhook_configured: Boolean(process.env.PAYPAL_WEBHOOK_ID)
     };
   }
@@ -163,7 +162,7 @@ export class PayPalAdapter {
     const order = sqlite.findTenantRecordById<any>('orders', tenantId, orderId);
     if (!order) return { success: false, status: 'REJECTED', gateway_state: 'PAYPAL_API_ERROR', claim_scope: this.scope(credentials), error: 'Order not found in the authenticated tenant.' };
     if (order.status !== 'ORDER_CREATED') return { success: false, status: 'REJECTED', gateway_state: 'PAYPAL_API_ERROR', claim_scope: this.scope(credentials), error: `Order is not eligible for checkout (status=${order.status}).` };
-    if (order.payment_asset_policy !== 'PYUSD_ONLY' || order.currency !== 'USD') return { success: false, status: 'PYUSD_VERIFICATION_REQUIRED', gateway_state: 'PYUSD_VERIFICATION_REQUIRED', claim_scope: this.scope(credentials), error: 'Order payment policy is not configured for PYUSD settlement.' };
+    if (order.payment_provider !== 'PAYPAL' || order.currency !== 'USD') return { success: false, status: 'REJECTED', gateway_state: 'PAYPAL_API_ERROR', claim_scope: this.scope(credentials), error: 'Order payment provider is not configured for PayPal settlement.' };
     const existing = this.findPaymentByIdempotency(tenantId, idempotencyKey);
     if (existing) {
       if (existing.order_id !== orderId) return { success: false, status: 'IDEMPOTENCY_CONFLICT', gateway_state: 'PAYPAL_API_ERROR', claim_scope: this.scope(credentials), error: 'Idempotency key was already used for another order.' };
@@ -172,9 +171,9 @@ export class PayPalAdapter {
 
     const paymentId = `pay_${computeSha256(`${tenantId}:${orderId}:${idempotencyKey}`).slice(0, 20)}`;
     const pending = {
-      id: paymentId, tenant_id: tenantId, order_id: orderId, amount_cents: order.price_cents, currency: 'USD', requested_asset: 'PYUSD',
+      id: paymentId, tenant_id: tenantId, order_id: orderId, amount_cents: order.price_cents, currency: 'USD',
       provider: `PAYPAL_ORDERS_V2_${credentials.environment.toUpperCase()}`, status: 'APPROVAL_REQUIRED', idempotency_key: idempotencyKey,
-      receipt_hash: computeSha256(`${orderId}:${order.price_cents}:USD:PYUSD:${idempotencyKey}`), created_at: Date.now()
+      receipt_hash: computeSha256(`${orderId}:${order.price_cents}:USD:${idempotencyKey}`), created_at: Date.now()
     };
     try {
       sqlite.insertRecord('payments', pending);
@@ -206,17 +205,12 @@ export class PayPalAdapter {
       }
       const updated = { ...pending, paypal_order_id: body.id, approval_url: approvalUrl, provider_response: body };
       sqlite.updateTenantRecord('payments', tenantId, paymentId, updated);
-      DurableStore.getInstance().appendAudit(tenantId, 'PAYPAL_CHECKOUT', 'PAYPAL_ORDER_CREATED', 'PAYMENT', paymentId, { order_id: orderId, paypal_order_id: body.id, amount_cents: order.price_cents, currency: 'USD', requested_asset: 'PYUSD' });
+      DurableStore.getInstance().appendAudit(tenantId, 'PAYPAL_CHECKOUT', 'PAYPAL_ORDER_CREATED', 'PAYMENT', paymentId, { order_id: orderId, paypal_order_id: body.id, amount_cents: order.price_cents, currency: 'USD' });
       return { success: false, status: 'APPROVAL_REQUIRED', gateway_state: 'APPROVAL_REQUIRED', claim_scope: this.scope(credentials), payment: updated, approval_url: approvalUrl };
     } catch (error: any) {
       sqlite.updateTenantRecord('payments', tenantId, paymentId, { status: 'CREATE_NETWORK_FAILED', failure_reason: error.message });
       return { success: false, status: 'PAYPAL_API_ERROR', gateway_state: 'PAYPAL_API_ERROR', claim_scope: this.scope(credentials), error: `PayPal create-order network failure: ${error.message}` };
     }
-  }
-
-  private extractAsset(payload: any): string | undefined {
-    const capture = payload?.purchase_units?.[0]?.payments?.captures?.[0];
-    return capture?.crypto_amount?.currency_code || capture?.seller_receivable_breakdown?.crypto_amount?.currency_code || payload?.payment_source?.crypto?.currency_code;
   }
 
   private captureMatches(payment: any, providerOrder: any, captureBody: any): { ok: boolean; reason?: string; capture?: any } {
@@ -250,19 +244,14 @@ export class PayPalAdapter {
         sqlite.updateTenantRecord('payments', tenantId, payment.id, { status: 'CAPTURE_REJECTED', provider_capture_response: captureBody, failure_reason: checked.reason });
         return { success: false, status: 'PAYPAL_API_ERROR', gateway_state: 'PAYPAL_API_ERROR', claim_scope: this.scope(credentials), error: checked.reason || `PayPal capture HTTP ${captureRes.status}` };
       }
-      const asset = this.extractAsset(captureBody);
-      if (process.env.PAYPAL_PYUSD_ONLY_ENABLED !== 'true' || asset !== 'PYUSD') {
-        sqlite.updateTenantRecord('payments', tenantId, payment.id, { status: 'PYUSD_VERIFICATION_REQUIRED', provider_capture_response: captureBody, observed_asset: asset || null });
-        return { success: false, status: 'PYUSD_VERIFICATION_REQUIRED', gateway_state: 'PYUSD_VERIFICATION_REQUIRED', claim_scope: this.scope(credentials), error: 'Capture completed at PayPal but cannot activate: explicit PYUSD evidence is absent or the PYUSD-only policy is not deployment-enabled.' };
-      }
       const captureId = checked.capture.id;
-      const evidenceHash = computeSha256(JSON.stringify({ order_id: orderId, paypal_order_id: paypalOrderId, paypal_capture_id: captureId, amount_cents: payment.amount_cents, currency: 'USD', asset, provider_status: captureBody.status }));
+      const evidenceHash = computeSha256(JSON.stringify({ order_id: orderId, paypal_order_id: paypalOrderId, paypal_capture_id: captureId, amount_cents: payment.amount_cents, currency: 'USD', provider: 'PAYPAL', provider_status: captureBody.status }));
       sqlite.transaction(() => {
-        sqlite.updateTenantRecord('payments', tenantId, payment.id, { status: 'COMPLETED', paypal_capture_id: captureId, verified_at: Date.now(), observed_asset: asset, evidence_hash: evidenceHash, provider_capture_response: captureBody });
+        sqlite.updateTenantRecord('payments', tenantId, payment.id, { status: 'COMPLETED', paypal_capture_id: captureId, verified_at: Date.now(), evidence_hash: evidenceHash, provider_capture_response: captureBody });
         sqlite.updateTenantRecord('orders', tenantId, orderId, { status: 'ESCROW_FUNDED', payment_id: payment.id, payment_evidence_hash: evidenceHash });
-        DurableStore.getInstance().appendAudit(tenantId, 'PAYPAL_VERIFIER', 'PAYMENT_VERIFIED_AND_ORDER_ACTIVATED', 'ORDER', orderId, { payment_id: payment.id, paypal_order_id: paypalOrderId, paypal_capture_id: captureId, amount_cents: payment.amount_cents, currency: 'USD', asset, evidence_hash: evidenceHash });
+        DurableStore.getInstance().appendAudit(tenantId, 'PAYPAL_VERIFIER', 'PAYMENT_VERIFIED_AND_ORDER_ACTIVATED', 'ORDER', orderId, { payment_id: payment.id, paypal_order_id: paypalOrderId, paypal_capture_id: captureId, amount_cents: payment.amount_cents, currency: 'USD', provider: 'PAYPAL', evidence_hash: evidenceHash });
       });
-      return { success: true, status: 'COMPLETED', gateway_state: 'RESPONSE_VALIDATED', claim_scope: this.scope(credentials), payment: { ...payment, status: 'COMPLETED', paypal_capture_id: captureId, observed_asset: asset, evidence_hash: evidenceHash } };
+      return { success: true, status: 'COMPLETED', gateway_state: 'RESPONSE_VALIDATED', claim_scope: this.scope(credentials), payment: { ...payment, status: 'COMPLETED', paypal_capture_id: captureId, evidence_hash: evidenceHash } };
     } catch (error: any) {
       return { success: false, status: 'PAYPAL_API_ERROR', gateway_state: 'PAYPAL_API_ERROR', claim_scope: this.scope(credentials), error: `PayPal capture network failure: ${error.message}` };
     }

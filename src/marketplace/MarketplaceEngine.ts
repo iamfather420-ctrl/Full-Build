@@ -91,8 +91,8 @@ export class MarketplaceEngine {
       price_cents: offer.price_cents, status: 'ORDER_CREATED', created_at: Date.now()
     };
     this.sqlite.transaction(() => {
-      this.sqlite.insertRecord('orders', { ...order, currency: 'USD', payment_asset_policy: 'PYUSD_ONLY', status: 'ORDER_CREATED' });
-      this.durableStore.appendAudit(tenantId, 'MARKETPLACE_ORDER_GATE', 'ORDER_CREATED', 'ORDER', orderId, { offer_id: offerId, price_cents: order.price_cents, currency: 'USD', payment_asset_policy: 'PYUSD_ONLY' });
+      this.sqlite.insertRecord('orders', { ...order, currency: 'USD', payment_provider: 'PAYPAL', status: 'ORDER_CREATED' });
+      this.durableStore.appendAudit(tenantId, 'MARKETPLACE_ORDER_GATE', 'ORDER_CREATED', 'ORDER', orderId, { offer_id: offerId, price_cents: order.price_cents, currency: 'USD', payment_provider: 'PAYPAL' });
     });
     return { success: true, order };
   }

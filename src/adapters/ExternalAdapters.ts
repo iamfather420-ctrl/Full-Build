@@ -24,15 +24,15 @@ export class ExternalAdapterRegistry {
         notes: hasNeon ? 'Configuration detected; connection/migrations/RLS require separate deployment verification.' : 'Not configured. The local file-backed SQLite store is used only for local/sandbox execution.'
       },
       {
-        adapter_id: 'DN-35', name: 'PayPal PYUSD Commercial Gateway', category: 'PAYMENTS',
+        adapter_id: 'DN-35', name: 'PayPal Commercial Gateway', category: 'PAYMENTS',
         status: paypal.configured ? 'AVAILABLE' : 'EXTERNAL_PROVIDER_REQUIRED',
         required_env_vars: ['PAYPAL_ENVIRONMENT', 'PAYPAL_<ENV>_CLIENT_ID', 'PAYPAL_<ENV>_SECRET', 'PAYPAL_WEBHOOK_ID'],
         provided_env_vars: paypal.configured ? ['PAYPAL_ENVIRONMENT'] : [], live_connected: false,
-        notes: 'PayPal Orders v2 is server-only. SOLVEX requires provider-verified capture evidence and explicit PYUSD evidence before order activation.'
+        notes: 'PayPal Orders v2 is server-only. SOLVEX requires provider-authenticated capture evidence, strict amount/reference matching, and webhook verification before order activation.'
       },
       {
         adapter_id: 'DN-36', name: 'Payment-Rail Policy Guard', category: 'POLICY_INTERLOCK', status: 'AVAILABLE', required_env_vars: [], provided_env_vars: [], live_connected: true,
-        notes: 'SOLVEX does not implement any non-PayPal payment rail, exchange, or custody integration. PayPal PYUSD is the only permitted commercial path.'
+        notes: 'SOLVEX does not implement any non-PayPal payment rail, exchange, or custody integration. PayPal is the only permitted commercial path.'
       }
     ];
   }
