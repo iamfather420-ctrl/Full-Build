@@ -81,17 +81,18 @@
 
   .scan-grid {
     background-image:
-      linear-gradient(
-        to right,
-        color-mix(in oklab, var(--color-fg) 7%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        to bottom,
-        color-mix(in oklab, var(--color-fg) 7%, transparent) 1px,
-        transparent 1px
-      );
+      linear-gradient(to right, color-mix(in oklab, var(--color-fg) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--color-fg) 7%, transparent) 1px, transparent 1px);
     background-size: 56px 56px;
+  }
+
+  .cockpit-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, #8feaff 9%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, #8feaff 9%, transparent) 1px, transparent 1px),
+      radial-gradient(circle at 72% 42%, color-mix(in oklab, #8feaff 14%, transparent), transparent 32%);
+    background-size: 72px 72px, 72px 72px, 100% 100%;
+    mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
   }
 
   .hairline {
@@ -104,43 +105,30 @@
 }
 
 @keyframes scan-sweep {
-  0% {
-    transform: translateY(-30%);
-    opacity: 0;
-  }
-  12% {
-    opacity: 0.85;
-  }
-  88% {
-    opacity: 0.85;
-  }
-  100% {
-    transform: translateY(130%);
-    opacity: 0;
-  }
+  0% { transform: translateY(-30%); opacity: 0; }
+  12% { opacity: 0.85; }
+  88% { opacity: 0.85; }
+  100% { transform: translateY(130%); opacity: 0; }
 }
 
 @keyframes rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-    filter: blur(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
 @keyframes pulse-live {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.35;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes node-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-4px); }
+}
+
+@keyframes orbit-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .scan-sweep {
@@ -155,10 +143,20 @@
   animation: pulse-live 1.6s ease-in-out infinite;
 }
 
+.node-pin {
+  animation: node-float 3.8s ease-in-out infinite;
+}
+
+.orbit-spin {
+  animation: orbit-spin 28s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scan-sweep,
   .rise-in,
-  .live-dot {
+  .live-dot,
+  .node-pin,
+  .orbit-spin {
     animation: none;
   }
 }
