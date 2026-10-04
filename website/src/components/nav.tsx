@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { to: "/", label: ".com" },
+  { to: "/demo", label: "Judge demo" },
   { to: "/store", label: "Storefront" },
   { to: "/registry", label: "AI Registry" },
   { to: "/space", label: ".space" },

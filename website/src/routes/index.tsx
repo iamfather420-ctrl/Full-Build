@@ -10,6 +10,7 @@ import {
   Gauge,
   LockKeyhole,
   Orbit,
+  Play,
   ScanLine,
   ShieldCheck,
   Sparkles,
@@ -99,6 +100,9 @@ function Home() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Button onClick={jumpToProof} size="lg">
                 Enter the proof cockpit <ArrowRight className="size-4" />
+              </Button>
+              <Button asChild variant="subtle" size="lg">
+                <Link to="/demo">Run the judge demo <Play className="size-4" /></Link>
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link to="/registry">Inspect the registry</Link>

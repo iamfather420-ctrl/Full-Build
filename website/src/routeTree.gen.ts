@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as RegistryRouteImport } from './routes/registry'
@@ -26,6 +27,11 @@ import { Route as StoreSkuRouteImport } from './routes/store.$sku'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -91,6 +97,7 @@ const StoreSkuRoute = StoreSkuRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/cart': typeof CartRoute
   '/manifesto': typeof ManifestoRoute
   '/registry': typeof RegistryRouteWithChildren
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/cart': typeof CartRoute
   '/manifesto': typeof ManifestoRoute
   '/registry': typeof RegistryRouteWithChildren
@@ -120,6 +128,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/demo': typeof DemoRoute
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/manifesto': typeof ManifestoRoute
@@ -137,6 +146,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/demo'
     | '/'
     | '/cart'
     | '/manifesto'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/space/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/demo'
     | '/'
     | '/cart'
     | '/manifesto'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/space'
   id:
     | '__root__'
+    | '/demo'
     | '/'
     | '/cart'
     | '/manifesto'
@@ -183,6 +195,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemoRoute: typeof DemoRoute
   CartRoute: typeof CartRoute
   ManifestoRoute: typeof ManifestoRoute
   RegistryRoute: typeof RegistryRouteWithChildren
@@ -197,6 +210,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -328,6 +348,7 @@ const StoreRouteWithChildren = StoreRoute._addFileChildren(StoreRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemoRoute: DemoRoute,
   CartRoute: CartRoute,
   ManifestoRoute: ManifestoRoute,
   RegistryRoute: RegistryRouteWithChildren,
