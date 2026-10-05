@@ -33,7 +33,10 @@
     "verify:proof-closure": "tsx scripts/full_build_verification_closure.ts",
     "verify:ci": "tsx scripts/ci_proof_closure_check.ts",
     "verify:all": "tsx scripts/verify_authoritative.ts",
-    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts"
+    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
+    "os:build:x86": "bash packaging/os/build-image.sh amd64 dist/os/Daisy-AI-OS-amd64.iso",
+    "os:build:arm64": "bash packaging/os/build-image.sh arm64 dist/os/Daisy-AI-OS-arm64.iso",
+    "os:check": "bash packaging/os/check.sh"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

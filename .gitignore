@@ -1,4 +1,5 @@
 node_modules/
+.os-build/
 build/
 dist/
 coverage/

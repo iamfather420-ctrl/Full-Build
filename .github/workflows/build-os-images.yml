@@ -1,0 +1,58 @@
+name: Build Daisy AI OS images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, ai-os-native-build]
+
+jobs:
+  amd64-live-iso:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --legacy-peer-deps
+      - run: |
+          mkdir -p dist/native dist/native-release
+          npx esbuild runtime/src/server.ts --bundle --platform=node --format=cjs --outfile=dist/native/aios-runtime.cjs
+          printf '%s' '{"main":"dist/native/aios-runtime.cjs","output":"dist/native/aios-runtime.blob","disableExperimentalSEAWarning":true,"useSnapshot":false,"useCodeCache":false}' > dist/native/sea-config.json
+          node --experimental-sea-config dist/native/sea-config.json
+          cp "$(command -v node)" dist/native-release/Daisy-AI-OS-linux-x64
+          npx --yes postject dist/native-release/Daisy-AI-OS-linux-x64 NODE_SEA_BLOB dist/native/aios-runtime.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          chmod +x dist/native-release/Daisy-AI-OS-linux-x64
+      - run: sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq live-build xorriso debootstrap rsync
+      - run: npm run os:build:x86
+      - uses: actions/upload-artifact@v4
+        with: { name: Daisy-AI-OS-amd64-live-iso, path: dist/os/Daisy-AI-OS-amd64.iso }
+
+  arm64-runtime:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --legacy-peer-deps
+      - run: |
+          mkdir -p dist/native dist/native-release
+          npx esbuild runtime/src/server.ts --bundle --platform=node --format=cjs --outfile=dist/native/aios-runtime.cjs
+          printf '%s' '{"main":"dist/native/aios-runtime.cjs","output":"dist/native/aios-runtime.blob","disableExperimentalSEAWarning":true,"useSnapshot":false,"useCodeCache":false}' > dist/native/sea-config.json
+          node --experimental-sea-config dist/native/sea-config.json
+          cp "$(command -v node)" dist/native-release/Daisy-AI-OS-linux-arm64
+          npx --yes postject dist/native-release/Daisy-AI-OS-linux-arm64 NODE_SEA_BLOB dist/native/aios-runtime.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          chmod +x dist/native-release/Daisy-AI-OS-linux-arm64
+      - uses: actions/upload-artifact@v4
+        with: { name: Daisy-AI-OS-linux-arm64-runtime, path: dist/native-release/Daisy-AI-OS-linux-arm64 }
+
+  arm64-live-iso:
+    needs: arm64-runtime
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: Daisy-AI-OS-linux-arm64-runtime, path: dist/native-release }
+      - run: chmod +x dist/native-release/Daisy-AI-OS-linux-arm64
+      - run: sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq live-build xorriso debootstrap rsync
+      - run: npm run os:build:arm64
+      - uses: actions/upload-artifact@v4
+        with: { name: Daisy-AI-OS-arm64-live-iso, path: dist/os/Daisy-AI-OS-arm64.iso }
