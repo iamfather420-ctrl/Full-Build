@@ -66,8 +66,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '17' }
-      - run: yes | sdkmanager --licenses >/dev/null || true
-      - run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - run: |
+          SDKMANAGER="$(find "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/gradle-build-action@v3
         with: { gradle-version: '8.9' }
       - run: gradle -p packaging/android assembleDebug
