@@ -23,5 +23,20 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "files": [
+    "server.ts",
+    "src/main.tsx",
+    "runtime/src/core.ts",
+    "runtime/src/cli.ts",
+    "runtime/src/server.ts"
+  ],
+  "exclude": [
+    "src/converted_app",
+    "src/routes",
+    "artifacts",
+    "attached_assets",
+    "Solvex-core",
+    "lib"
+  ]
 }

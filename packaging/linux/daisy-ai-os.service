@@ -1,0 +1,17 @@
+[Unit]
+Description=Daisy AI OS Runtime
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Daisy-AI-OS
+ExecStart=/usr/bin/npm run aios:server
+Restart=on-failure
+RestartSec=3
+Environment=NODE_ENV=production
+Environment=AI_OS_PORT=8787
+Environment=AI_OS_PERMISSIONS=system.info,memory.read,memory.write,files.read
+
+[Install]
+WantedBy=default.target

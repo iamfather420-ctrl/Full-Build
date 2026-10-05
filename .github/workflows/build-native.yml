@@ -1,0 +1,73 @@
+name: Build native Daisy AI OS binaries
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, ai-os-native-build]
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build
+      - run: |
+          mkdir -p dist/native dist/packages
+          npx esbuild runtime/src/server.ts --bundle --platform=node --format=cjs --outfile=dist/native/aios-runtime.cjs
+          printf '%s' '{"main":"dist/native/aios-runtime.cjs","output":"dist/native/aios-runtime.blob","disableExperimentalSEAWarning":true,"useSnapshot":false,"useCodeCache":false}' > dist/native/sea-config.json
+          node --experimental-sea-config dist/native/sea-config.json
+          cp "$(command -v node)" dist/packages/daisy-ai-os-linux-x64
+          npx --yes postject dist/packages/daisy-ai-os-linux-x64 NODE_SEA_BLOB dist/native/aios-runtime.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          chmod +x dist/packages/daisy-ai-os-linux-x64
+      - run: AI_OS_PORT=8788 timeout 10s dist/packages/daisy-ai-os-linux-x64 & sleep 2; curl -fsS http://127.0.0.1:8788/runtime/status
+      - uses: actions/upload-artifact@v4
+        with: { name: Daisy-AI-OS-linux-x64, path: dist/packages/daisy-ai-os-linux-x64 }
+
+  windows:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --legacy-peer-deps
+      - run: New-Item -ItemType Directory -Force dist/native,dist/packages
+      - run: npx esbuild runtime/src/server.ts --bundle --platform=node --format=cjs --outfile=dist/native/aios-runtime.cjs
+      - run: Set-Content -Path dist/native/sea-config.json -Value '{"main":"dist/native/aios-runtime.cjs","output":"dist/native/aios-runtime.blob","disableExperimentalSEAWarning":true,"useSnapshot":false,"useCodeCache":false}'
+        shell: pwsh
+      - run: node --experimental-sea-config dist/native/sea-config.json
+        shell: pwsh
+      - run: |
+          Copy-Item (Get-Command node).Source dist/packages/daisy-ai-os-win-x64.exe
+          npx --yes postject dist/packages/daisy-ai-os-win-x64.exe NODE_SEA_BLOB dist/native/aios-runtime.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+        shell: pwsh
+      - uses: actions/upload-artifact@v4
+        with: { name: Daisy-AI-OS-win-x64, path: dist/packages/daisy-ai-os-win-x64.exe }
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --legacy-peer-deps
+      - run: mkdir -p dist/native dist/packages && npx esbuild runtime/src/server.ts --bundle --platform=node --format=cjs --outfile=dist/native/aios-runtime.cjs
+      - run: node --experimental-sea-config dist/native/sea-config.json
+      - run: cp "$(command -v node)" dist/packages/daisy-ai-os-macos-arm64 && npx --yes postject dist/packages/daisy-ai-os-macos-arm64 NODE_SEA_BLOB dist/native/aios-runtime.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 && chmod +x dist/packages/daisy-ai-os-macos-arm64
+      - uses: actions/upload-artifact@v4
+        with: { name: Daisy-AI-OS-macos-arm64, path: dist/packages/daisy-ai-os-macos-arm64 }
+
+  android:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/gradle-build-action@v3
+        with: { gradle-version: '8.9' }
+      - run: gradle -p packaging/android assembleDebug
+      - uses: actions/upload-artifact@v4
+        with: { name: Daisy-AI-OS-android-debug, path: packaging/android/app/build/outputs/apk/debug/app-debug.apk }

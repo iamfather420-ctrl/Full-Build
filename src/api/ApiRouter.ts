@@ -379,7 +379,13 @@ export class SovereignApiRouter {
   // HTTP Connect/Vite/Express middleware handler
   public handleHttpRequest(req: any, res: any): void {
     const url = new URL(req.url, `http://${req.headers?.host || 'localhost'}`);
-    const pathname = url.pathname;
+    // Express removes the `/api` mount prefix from req.url. The internal
+    // router uses canonical `/api/...` paths, so restore the prefix when the
+    // middleware is mounted under `/api` while remaining compatible with a
+    // direct invocation in tests.
+    const pathname = url.pathname === '/api' || url.pathname.startsWith('/api/')
+      ? url.pathname
+      : `/api${url.pathname}`;
     const method = req.method as any;
     let bodyData = '';
 
