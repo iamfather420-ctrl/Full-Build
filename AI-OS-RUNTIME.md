@@ -24,6 +24,15 @@ npm run aios -- ask "Summarize the current runtime status"
 curl http://localhost:8787/runtime/status
 ```
 
+The API binds to `127.0.0.1` by default. For a controlled deployment, set an explicit bind address and token:
+
+```bash
+AI_OS_BIND=127.0.0.1 AI_OS_API_TOKEN='replace-with-a-secret' npm run aios:server
+curl -H "Authorization: Bearer replace-with-a-secret" http://127.0.0.1:8787/runtime/status
+```
+
+Do not expose the service directly to the internet. Use TLS, authentication, rate limiting, and a firewall. Set `AI_OS_ALLOWED_ORIGIN` only to a trusted browser origin; it is unset by default.
+
 Grant additional capabilities explicitly:
 
 ```bash
