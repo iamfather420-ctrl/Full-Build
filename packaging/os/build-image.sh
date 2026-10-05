@@ -13,6 +13,7 @@ mkdir -p "$WORK/auto" "$WORK/config/package-lists" "$WORK/config/includes.chroot
 RUNTIME="$ROOT/dist/native-release/Daisy-AI-OS-linux-x64"
 KERNEL="linux-image-amd64"
 HEADERS="linux-headers-amd64"
+IMAGE_MODE="iso"
 if [ "$ARCH" = arm64 ]; then RUNTIME="$ROOT/dist/native-release/Daisy-AI-OS-linux-arm64"; KERNEL="linux-image-arm64"; HEADERS="linux-headers-arm64"; fi
 test -s "$RUNTIME" || { echo "Missing native runtime: $RUNTIME" >&2; exit 2; }
 cp "$RUNTIME" "$WORK/config/includes.chroot/opt/daisy/bin/daisy-ai-os"
@@ -55,6 +56,10 @@ hwinfo
 curl
 ca-certificates
 EOF
+if [ "$ARCH" = arm64 ]; then
+  IMAGE_MODE="tar"
+  printf '%s\n' grub-efi-arm64-bin >> "$WORK/config/package-lists/desktop.list.chroot"
+fi
 cat > "$WORK/config/includes.chroot/etc/systemd/system/daisy-ai-os.service" <<'EOF'
 [Unit]
 Description=Daisy AI OS Runtime
@@ -117,7 +122,7 @@ lb config noauto \\
  --linux-flavours "$ARCH" \\
  --initramfs live-boot \\
  --initsystem systemd \\
- --binary-images iso \\
+ --binary-images "$IMAGE_MODE" \\
  --bootloader grub \\
  --bootappend-live "boot=live components quiet splash" \\
  --debian-installer false \\
@@ -129,7 +134,26 @@ mkdir -p "$WORK/config/archives"
 cat > "$WORK/config/archives/security.list.chroot" <<'EOF'
 deb http://deb.debian.org/debian-security bookworm-security main contrib non-free-firmware
 EOF
-(cd "$WORK" && ./auto/config && LIVE_BUILD=/usr/share/live/build lb build)
+(cd "$WORK" && ./auto/config)
+if [ "$ARCH" = arm64 ]; then
+  mkdir -p "$WORK/bin"
+  printf '#!/bin/sh\nexit 0\n' > "$WORK/bin/lb_binary_grub"
+  printf '#!/bin/sh\nexit 0\n' > "$WORK/bin/lb_binary_iso"
+  chmod +x "$WORK/bin/lb_binary_grub" "$WORK/bin/lb_binary_iso"
+  (cd "$WORK" && PATH="$WORK/bin:$PATH" LIVE_BUILD=/usr/share/live/build lb build)
+  mkdir -p "$WORK/binary/boot/grub"
+  cat > "$WORK/binary/boot/grub/grub.cfg" <<'EOF'
+set timeout=5
+set default=0
+menuentry 'Daisy AI OS (ARM64)' {
+  linux /live/vmlinuz boot=live components quiet splash
+  initrd /live/initrd.img
+}
+EOF
+  grub-mkrescue -o "$WORK/binary.iso" "$WORK/binary"
+else
+  (cd "$WORK" && LIVE_BUILD=/usr/share/live/build lb build)
+fi
 mkdir -p "$(dirname "$ROOT/$OUT")"
 if [ -f "$WORK/binary.iso" ]; then cp "$WORK/binary.iso" "$ROOT/$OUT"; else cp "$WORK"/live-image-*.iso "$ROOT/$OUT"; fi
 sha256sum "$ROOT/$OUT" > "$ROOT/$OUT.sha256"

@@ -52,7 +52,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with: { name: Daisy-AI-OS-linux-arm64-runtime, path: dist/native-release }
       - run: chmod +x dist/native-release/Daisy-AI-OS-linux-arm64
-      - run: sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq live-build xorriso debootstrap rsync
+      - run: sudo apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq live-build xorriso debootstrap rsync grub-efi-arm64-bin grub-common grub2-common
       - run: npm run os:build:arm64
       - uses: actions/upload-artifact@v4
         with: { name: Daisy-AI-OS-arm64-live-iso, path: dist/os/Daisy-AI-OS-arm64.iso }
