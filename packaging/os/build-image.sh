@@ -107,6 +107,7 @@ lb config noauto \\
  --distribution bookworm \\
  --archive-areas "main contrib non-free-firmware" \\
  --security false \\
+ --keyring-packages debian-archive-keyring \\
  --firmware-chroot false \\
  --mirror-bootstrap http://deb.debian.org/debian/ \\
  --mirror-chroot http://deb.debian.org/debian/ \\
