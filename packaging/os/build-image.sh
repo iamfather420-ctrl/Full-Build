@@ -115,6 +115,7 @@ lb config noauto \\
  --architectures "$ARCH" \\
  --linux-packages linux-image \\
  --linux-flavours "$ARCH" \\
+ --initramfs live-boot \\
  --binary-images iso \\
  --bootloader grub \\
  --bootappend-live "boot=live components quiet splash" \\
