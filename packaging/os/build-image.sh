@@ -39,8 +39,6 @@ lightdm
 xorg
 xserver-xorg-video-all
 xserver-xorg-input-all
-isolinux
-syslinux-utils
 mesa-utils
 firefox-esr
 policykit-1
@@ -115,6 +113,8 @@ lb config noauto \\
  --mirror-binary http://deb.debian.org/debian/ \\
  --mirror-binary-security http://deb.debian.org/debian-security/ \\
  --architectures "$ARCH" \\
+ --linux-packages linux-image \\
+ --linux-flavours "$ARCH" \\
  --binary-images iso \\
  --bootloader grub \\
  --bootappend-live "boot=live components quiet splash" \\
