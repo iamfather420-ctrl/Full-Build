@@ -1,0 +1,15 @@
+{
+  "name": "daisy-ai-os-freedom-sim",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types server.mjs",
+    "start": "node --experimental-strip-types server.mjs",
+    "activate": "node --experimental-strip-types scripts/activate-os.ts",
+    "verify": "node --experimental-strip-types scripts/verify-complete.ts",
+    "build:native": "bash scripts/build-native.sh",
+    "build:image": "bash scripts/make-linux-image.sh",
+    "install:linux": "bash scripts/install-linux.sh"
+  }
+}
