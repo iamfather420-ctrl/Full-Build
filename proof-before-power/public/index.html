@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UAREFAKE — Proof Before Power</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@380;500;600&family=Instrument+Serif&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+  <header class="top">
+    <a class="brand" href="https://www.uarefake.com" target="_blank" rel="noreferrer">
+      <span class="mark" aria-hidden="true">UAF</span>
+      <div>
+        <strong>UAREFAKE</strong>
+        <em>Proof Before Power</em>
+      </div>
+    </a>
+    <p class="thesis">Full-Build proposes. This gate decides. A refusal means the tool does not run.</p>
+    <div class="top-actions">
+      <a class="live" id="origin" href="https://www.uarefake.com" target="_blank" rel="noreferrer"><i></i> checking uarefake.com</a>
+      <button id="reset">Reset</button>
+      <button id="tour" class="primary">Judge tour</button>
+    </div>
+  </header>
+
+  <ol class="loop" id="loop"></ol>
+
+  <main>
+    <aside class="rail">
+      <section class="card">
+        <header><h2>Request</h2><span class="kicker">compiler, not a model</span></header>
+        <div class="chips" id="scenarios"></div>
+        <label class="field">Intent
+          <textarea id="intent" rows="4"></textarea>
+        </label>
+        <button class="primary full" id="daisy-act">Daisy Haminja, act</button>
+        <button class="full" id="full-build">Propose from Full-Build</button>
+        <button class="full" id="prove">Compile only</button>
+      </section>
+
+      <section class="card">
+        <header><h2>Policy studio</h2><span class="kicker" id="policy-label">PBP-1</span></header>
+        <label class="slider">Blast radius <b id="blast-val">1</b>
+          <input id="blast" type="range" min="1" max="2000" value="1" />
+        </label>
+        <label class="slider">JIT window <b id="jit-val">120s</b>
+          <input id="jit" type="range" min="5" max="300" value="120" />
+        </label>
+        <p class="fine">Host policy is locked. Production grants are off. A wider blast radius is a host edit, and it still cannot unlock production.</p>
+      </section>
+
+      <section class="card">
+        <header><h2>Adversary</h2></header>
+        <div class="stack" id="attacks"></div>
+      </section>
+    </aside>
+
+    <section class="stage">
+      <div class="banner" id="banner">
+        <div>
+          <span class="eyebrow">Decision</span>
+          <strong id="decision">IDLE</strong>
+          <p id="meaning">Compile a request. The proof is the obligation table, not a paragraph.</p>
+          <p id="tool-state" class="tool-state">Tool not armed</p>
+          <div class="formula" id="formula"></div>
+        </div>
+        <div class="seal" id="seal" aria-hidden="true"></div>
+        <div class="meters">
+          <div><b id="hold-count">0/8</b><span>obligations held</span></div>
+          <div><b id="prove-ms">—</b><span>this prove</span></div>
+          <div><b id="commit-short">—</b><span>commitment</span></div>
+        </div>
+      </div>
+
+      <div class="lanes" id="lanes"></div>
+      <div class="reasons" id="reasons"></div>
+
+      <div class="split">
+        <div class="card">
+          <header><h2>Obligations</h2><span class="kicker">click a row</span></header>
+          <div id="obligations" class="obligations"></div>
+        </div>
+        <div class="card">
+          <header><h2 id="detail-title">Witness</h2><span class="kicker" id="detail-tag">waiting</span></header>
+          <pre id="detail">Select an obligation after the prove step.</pre>
+        </div>
+      </div>
+
+      <div class="card diff-card">
+        <header><h2>Safe rewrite</h2><span class="kicker" id="diff-count">no diff yet</span></header>
+        <div id="diff" class="diff"></div>
+      </div>
+
+      <div class="split lower">
+        <div class="card">
+          <header><h2>Sandbox ledger</h2><span class="kicker" id="ledger-state">UNCHANGED</span></header>
+          <div class="account">
+            <div class="pair">
+              <div><span>before</span><strong>active</strong></div>
+              <div><span>after</span><strong id="acct-status">active</strong></div>
+            </div>
+            <div class="checkpoint" id="ckpt">no checkpoint</div>
+          </div>
+          <div class="row-actions">
+            <button id="authorize" disabled>Sign authorization</button>
+            <button id="execute" disabled>Execute bounded op</button>
+            <button id="rollback" disabled>Reverse state</button>
+          </div>
+        </div>
+        <div class="card">
+          <header><h2>Receipt</h2><span class="kicker" id="receipt-state">NONE</span></header>
+          <p class="hash" id="hash-line">unsealed</p>
+          <pre id="receipt">A receipt is sealed after the loop and re-checked from canonical bytes.</pre>
+          <div class="row-actions">
+            <button id="export" disabled>Export</button>
+            <button id="copy" disabled>Copy hash</button>
+            <button id="tamper" disabled>Tamper</button>
+            <button id="recheck" disabled>Re-verify</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="rail right">
+      <section class="card tour-card" id="tour-card">
+        <header><h2>Tour</h2><span class="kicker" id="tour-step">ready</span></header>
+        <p id="tour-copy">Press Judge tour. Six beats: refuse, inspect, bind, execute, reverse, tamper.</p>
+      </section>
+      <section class="card">
+        <header><h2>Latency</h2><span class="kicker">budget 25ms</span></header>
+        <p class="stat"><b id="p99">—</b><span>worst of 200</span></p>
+        <div class="spark" id="spark"></div>
+        <p class="fine">The prove path does not call a model, so the gate stays inside the budget.</p>
+      </section>
+      <section class="card daisy-card">
+        <header><h2>Daisy Haminja</h2><span class="kicker">live agent</span></header>
+        <p class="fine">Source: iamfather420-ctrl/Full-Build. GATE-14 already blocked production. This page is the live refusal.</p>
+        <pre class="code" id="agent">Daisy Haminja idle
+gate waiting</pre>
+      </section>
+      <section class="card">
+        <header><h2>Audit trail</h2></header>
+        <ol id="trail" class="trail"></ol>
+      </section>
+      <section class="card">
+        <header><h2>Gate scorecard</h2><span class="kicker" id="score">not run</span></header>
+        <button id="scorecard" class="full">Run the 8 checks</button>
+        <ol id="checks" class="trail"></ol>
+      </section>
+      <section class="card">
+        <header><h2>Paste to verify</h2></header>
+        <textarea id="paste" rows="3" placeholder="Paste a receipt JSON"></textarea>
+        <button id="paste-check" class="full">Check pasted receipt</button>
+        <p class="fine" id="paste-result">Independent of the sealed panel above.</p>
+      </section>
+    </aside>
+  </main>
+  <footer>
+    <span>Theory PBP-1 · finite · decidable</span>
+    <span>VERIFIED on this action · production mutation blocked</span>
+    <span id="keys">1 prove · 2 sign · 3 execute · 4 reverse · T tamper</span>
+  </footer>
+  <div id="toast" class="toast" hidden></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
