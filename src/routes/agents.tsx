@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Lifecycle } from "@/lib/lifecycle";
+import { DAISY_FUNCTIONS, daisyPropose, type DaisyFunction } from "@/lib/daisy-functions";
 
 const GOLD = "#D4AF37";
 const BG = "#05080F";
@@ -11,75 +11,51 @@ const MUTED = "#6B7280";
 const BORDER = "#1A2235";
 const MONO = '"IBM Plex Mono", "Courier New", monospace';
 
-const FAMILIES = [
-  { name: "A2A", note: "Agent card, then a structured request. The executor does not run until the gate allows it." },
-  { name: "RAG", note: "A retrieval agent may propose a lookup. It cannot write a record by itself." },
-  { name: "MCP tools", note: "A tool call is a proposal. Permission is checked again at run time." },
-  { name: "Multi-agent", note: "One agent may ask another. Neither can authorize medium or high work." },
-];
-
 export const Route = createFileRoute("/agents")({
   head: () => ({
     meta: [
-      { title: "Agents — Propose through the gate" },
-      { name: "description", content: "Tutorial agents propose. The lifecycle gate decides before a tool runs." },
+      { title: "Daisy functions" },
+      { name: "description", content: "Every tutorial family is a Daisy function. The gate decides before it runs." },
     ],
   }),
   component: AgentsPage,
 });
 
 function AgentsPage() {
+  const [picked, setPicked] = useState<DaisyFunction | null>(null);
   const [state, setState] = useState("IDLE");
-  const [note, setNote] = useState("Daisy can propose a tool call. She cannot run it.");
+  const [note, setNote] = useState("Choose a Daisy function. She proposes. The gate decides.");
 
-  function propose() {
-    const life = new Lifecycle();
-    life.grant("owner", "accounts", "suspend");
-    life.setTool("accounts", false, "production credentials missing");
-    const task = life.propose(
-      { id: "daisy-haminja", kind: "partner" },
-      "owner",
-      "A2A agent requests a production update",
-      "accounts",
-      "suspend",
-      "HIGH",
-    );
-    try {
-      life.authorize(task.id, { id: "daisy-haminja", kind: "partner" });
-      setState("AUTHORIZED");
-      setNote("This path should not succeed.");
-    } catch (error) {
-      setState(task.state);
-      setNote(error instanceof Error ? error.message : "denied");
-    }
+  function run(fn: DaisyFunction) {
+    const result = daisyPropose(fn);
+    setPicked(fn);
+    setState(result.state);
+    setNote(result.note);
   }
 
   return (
     <DashboardLayout>
       <div style={{ background: BG, color: FG, minHeight: "100%", padding: 24, fontFamily: MONO }}>
-        <p style={{ color: GOLD, letterSpacing: "0.16em", fontSize: 12 }}>AGENT TUTORIALS</p>
-        <h1 style={{ fontSize: 32, margin: "8px 0 6px" }}>Agents propose. The gate decides.</h1>
+        <p style={{ color: GOLD, letterSpacing: "0.16em", fontSize: 12 }}>DAISY HAMINJA</p>
+        <h1 style={{ fontSize: 32, margin: "8px 0 6px" }}>All tutorial families are her functions.</h1>
         <p style={{ color: MUTED, maxWidth: 760 }}>
-          The attached catalog covers A2A, retrieval, tool calls, and multi-agent work. On this app those patterns stop at a proposal. A partner cannot authorize high-risk work, and a missing tool stays blocked.
+          A2A, retrieval, tool calls, language, planning, and safety checks are Daisy functions. Low-risk sandbox work can finish. Medium and high work still needs a human, and a missing tool stays blocked.
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 18 }}>
-          {FAMILIES.map((family) => (
-            <section key={family.name} style={{ background: PANEL, border: `1px solid ${BORDER}`, padding: 16 }}>
-              <strong style={{ color: GOLD }}>{family.name}</strong>
-              <p>{family.note}</p>
-            </section>
+          {DAISY_FUNCTIONS.map((fn) => (
+            <button key={fn.id} onClick={() => run(fn)} style={{ textAlign: "left", background: PANEL, border: `1px solid ${picked?.id === fn.id ? GOLD : BORDER}`, color: FG, padding: 16 }}>
+              <strong style={{ color: GOLD }}>{fn.family}</strong>
+              <div>{fn.name}</div>
+              <div style={{ color: MUTED }}>{fn.risk} · {fn.note}</div>
+            </button>
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 8, margin: "18px 0" }}>
-          <button onClick={propose}>Daisy proposes an A2A tool call</button>
-          <Link to="/lifecycle">Open lifecycle gate</Link>
-        </div>
-
-        <section style={{ background: PANEL, border: `1px solid ${BORDER}`, padding: 16 }}>
+        <section style={{ background: PANEL, border: `1px solid ${BORDER}`, padding: 16, marginTop: 18 }}>
           <strong style={{ color: GOLD }}>{state}</strong>
           <p>{note}</p>
+          <Link to="/lifecycle">Open lifecycle gate</Link>
         </section>
       </div>
     </DashboardLayout>
