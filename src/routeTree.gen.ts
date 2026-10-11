@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LifecycleRouteImport } from './routes/lifecycle'
 import { Route as SovereignRouteImport } from './routes/sovereign'
 import { Route as OwnerRouteImport } from './routes/owner'
 import { Route as OutreachRouteImport } from './routes/outreach'
@@ -22,6 +23,11 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 
+const LifecycleRoute = LifecycleRouteImport.update({
+  id: '/lifecycle',
+  path: '/lifecycle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SovereignRoute = SovereignRouteImport.update({
   id: '/sovereign',
   path: '/sovereign',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/brain': typeof BrainRoute
   '/challenges': typeof ChallengesRoute
+  '/lifecycle': typeof LifecycleRoute
   '/library': typeof LibraryRoute
   '/marketplace': typeof MarketplaceRoute
   '/outreach': typeof OutreachRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/brain': typeof BrainRoute
   '/challenges': typeof ChallengesRoute
+  '/lifecycle': typeof LifecycleRoute
   '/library': typeof LibraryRoute
   '/marketplace': typeof MarketplaceRoute
   '/outreach': typeof OutreachRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/brain': typeof BrainRoute
   '/challenges': typeof ChallengesRoute
+  '/lifecycle': typeof LifecycleRoute
   '/library': typeof LibraryRoute
   '/marketplace': typeof MarketplaceRoute
   '/outreach': typeof OutreachRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/brain'
     | '/challenges'
+    | '/lifecycle'
     | '/library'
     | '/marketplace'
     | '/outreach'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/brain'
     | '/challenges'
+    | '/lifecycle'
     | '/library'
     | '/marketplace'
     | '/outreach'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/brain'
     | '/challenges'
+    | '/lifecycle'
     | '/library'
     | '/marketplace'
     | '/outreach'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   BrainRoute: typeof BrainRoute
   ChallengesRoute: typeof ChallengesRoute
   LibraryRoute: typeof LibraryRoute
+  LifecycleRoute: typeof LifecycleRoute
   MarketplaceRoute: typeof MarketplaceRoute
   OutreachRoute: typeof OutreachRoute
   OwnerRoute: typeof OwnerRoute
@@ -221,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lifecycle': {
+      id: '/lifecycle'
+      path: '/lifecycle'
+      fullPath: '/lifecycle'
+      preLoaderRoute: typeof LifecycleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/challenges': {
@@ -283,6 +303,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrainRoute: BrainRoute,
   ChallengesRoute: ChallengesRoute,
   LibraryRoute: LibraryRoute,
+  LifecycleRoute: LifecycleRoute,
   MarketplaceRoute: MarketplaceRoute,
   OutreachRoute: OutreachRoute,
   OwnerRoute: OwnerRoute,
