@@ -26,7 +26,10 @@ export const DAISY_FUNCTIONS: DaisyFunction[] = [
   { id: "security", family: "Security", name: "Request a safety check", tool: "security", operation: "check", risk: "HIGH", available: false, reason: "production scanner not granted", note: "Daisy may request a check. She cannot run a production scan." },
   { id: "gpt", family: "GPT-5", name: "Draft a reply", tool: "draft", operation: "write", risk: "LOW", available: true, reason: "draft only", note: "A draft is not an action on an account." },
   { id: "minimax", family: "MiniMax", name: "Score options", tool: "planner", operation: "score", risk: "LOW", available: true, reason: "local planner", note: "Scoring options does not execute the chosen option." },
-  { id: "mirascope", family: "Mirascope", name: "Structure a call", tool: "schema", operation: "compile", risk: "LOW", available: true, reason: "compiler", note: "Compile the call. Do not run it." },
+  { id: "protocol", family: "Protocol", name: "Classify and route a request", tool: "protocol", operation: "route", risk: "LOW", available: true, reason: "intent only", note: "User, AI OS, and swarm talk in tokens. Execute is still a separate step." },
+  { id: "agate-gate", family: "Agatel", name: "Check the network pass", tool: "agate", operation: "admit", risk: "HIGH", available: false, reason: "soulbound pass not present", note: "No pass means the connection is refused. Non-verified stays invisible." },
+  { id: "guardian", family: "Agatel", name: "Request a safety mute", tool: "guardian", operation: "mute", risk: "HIGH", available: false, reason: "jury not seated", note: "A safety flag can be proposed. Daisy cannot mute by herself." },
+  { id: "remix", family: "Remix", name: "Draft a non-transferable pass", tool: "remix", operation: "draft", risk: "LOW", available: true, reason: "draft only", note: "The Remix backup can draft Storage, Owner, or a pass. It does not deploy." },
 ];
 
 export function daisyPropose(fn: DaisyFunction): { task: Task; note: string; state: string } {

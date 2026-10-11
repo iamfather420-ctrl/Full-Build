@@ -39,7 +39,7 @@ function AgentsPage() {
         <p style={{ color: GOLD, letterSpacing: "0.16em", fontSize: 12 }}>DAISY HAMINJA</p>
         <h1 style={{ fontSize: 32, margin: "8px 0 6px" }}>All tutorial families are her functions.</h1>
         <p style={{ color: MUTED, maxWidth: 760 }}>
-          A2A, retrieval, tool calls, language, planning, and safety checks are Daisy functions. Low-risk sandbox work can finish. Medium and high work still needs a human, and a missing tool stays blocked.
+          A2A, retrieval, the protocol swarm, the Agatel pass, and the Remix draft are Daisy functions. Low-risk sandbox work can finish. Medium and high work still needs a human, and a missing pass or tool stays blocked.
         </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 18 }}>
