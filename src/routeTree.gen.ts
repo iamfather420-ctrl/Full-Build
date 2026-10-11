@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as MmtaiRouteImport } from './routes/mmtai'
 import { Route as LifecycleRouteImport } from './routes/lifecycle'
 import { Route as SovereignRouteImport } from './routes/sovereign'
@@ -24,6 +25,11 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MmtaiRoute = MmtaiRouteImport.update({
   id: '/mmtai',
   path: '/mmtai',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/brain': typeof BrainRoute
   '/challenges': typeof ChallengesRoute
+  '/agents': typeof AgentsRoute
   '/mmtai': typeof MmtaiRoute
   '/lifecycle': typeof LifecycleRoute
   '/library': typeof LibraryRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/brain': typeof BrainRoute
   '/challenges': typeof ChallengesRoute
+  '/agents': typeof AgentsRoute
   '/mmtai': typeof MmtaiRoute
   '/lifecycle': typeof LifecycleRoute
   '/library': typeof LibraryRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/brain': typeof BrainRoute
   '/challenges': typeof ChallengesRoute
+  '/agents': typeof AgentsRoute
   '/mmtai': typeof MmtaiRoute
   '/lifecycle': typeof LifecycleRoute
   '/library': typeof LibraryRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/brain'
     | '/challenges'
+    | '/agents'
     | '/mmtai'
     | '/lifecycle'
     | '/library'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/brain'
     | '/challenges'
+    | '/agents'
     | '/mmtai'
     | '/lifecycle'
     | '/library'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/brain'
     | '/challenges'
+    | '/agents'
     | '/mmtai'
     | '/lifecycle'
     | '/library'
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   BrainRoute: typeof BrainRoute
   ChallengesRoute: typeof ChallengesRoute
   LibraryRoute: typeof LibraryRoute
+  AgentsRoute: typeof AgentsRoute
   MmtaiRoute: typeof MmtaiRoute
   LifecycleRoute: typeof LifecycleRoute
   MarketplaceRoute: typeof MarketplaceRoute
@@ -261,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/mmtai'
       fullPath: '/mmtai'
       preLoaderRoute: typeof MmtaiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/challenges': {
@@ -325,6 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   LifecycleRoute: LifecycleRoute,
   MmtaiRoute: MmtaiRoute,
+  AgentsRoute: AgentsRoute,
   MarketplaceRoute: MarketplaceRoute,
   OutreachRoute: OutreachRoute,
   OwnerRoute: OwnerRoute,

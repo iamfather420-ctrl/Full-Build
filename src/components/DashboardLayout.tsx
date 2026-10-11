@@ -27,6 +27,7 @@ const TICKER_ITEMS = [
 interface NavItem { to: string; label: string; admin?: boolean }
 
 const MAIN_NAV: NavItem[] = [
+  { to: '/agents', label: 'AGENT GATE' },
   { to: '/mmtai', label: 'MMTAI CORE' },
   { to: '/lifecycle', label: 'LIFECYCLE GATE' },
   { to: '/marketplace', label: 'PARADOX VAULT' },
