@@ -34,3 +34,17 @@ assert.equal(auth.verifyToken(tokenFor({ ...baseClaims, issued_at: now + 60_000,
 assert.equal(auth.verifyToken(tokenFor({ ...baseClaims, role: 'SUPERUSER', expires_at: now + 60_000 })).valid, false, 'unknown role must fail');
 
 console.log('PASS: signed token integrity, expiry, lifetime cap, issue-time skew, and role validation.');
+
+import { NeonStore } from '../src/database/NeonPersistence';
+
+const store = NeonStore.getInstance() as any;
+let sqlCalls = 0;
+store.isConnected = true;
+store.neonClient = { query: async () => { sqlCalls += 1; throw new Error('unexpected SQL'); } };
+store.tenantIsolationVerified = false;
+assert.equal(await store.insertRecord('orders', { id: 'test-only', tenant_id: 'tenant-a' }), false,
+  'tenant write must fail when RLS posture is unverified');
+assert.deepEqual(await store.findTenantRecords('orders', 'tenant-a'), [],
+  'tenant read must fail when RLS posture is unverified');
+assert.equal(sqlCalls, 0, 'no SQL may execute before RLS posture is verified');
+console.log('PASS: Neon tenant IO fails closed when RLS posture is unverified.');
