@@ -239,6 +239,7 @@ export class NeonStore {
       // PostgreSQL custom GUCs under app.* can be changed by a SQL session. Neither
       // app.tenant_id nor app.is_owner/app.can_* proves identity on its own. Fail closed
       // until policies use an independently trusted authorization context and adversarial
+      // tests prove that untrusted callers cannot forge it.
       const policyRows = await this.neonClient.query(`
         SELECT tablename, policyname, COALESCE(qual, '') AS qual,
                COALESCE(with_check, '') AS with_check
