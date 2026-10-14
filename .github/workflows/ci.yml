@@ -20,8 +20,10 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Repair lockfile drift from package.json
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Regenerate stale lockfile from package.json
+        run: |
+          rm package-lock.json
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Commit regenerated lockfile to this PR branch
         run: |
           if ! git diff --quiet -- package-lock.json; then
