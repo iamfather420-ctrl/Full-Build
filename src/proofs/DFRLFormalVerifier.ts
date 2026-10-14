@@ -85,6 +85,7 @@ export interface DFRL88VerificationReport {
   error_count: number;
   not_executed_count: number;
   authored_models_count: number;
+  theorem_specific_models_count: number;
   generated_models_count: number;
   deterministic_replays_matched: number;
   claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED' | 'EXISTENTIAL_WITNESS' | 'COMPETING_ASSUMPTIONS' | 'MIXED';
@@ -266,8 +267,9 @@ export class DFRLFormalVerifier {
       replays.push(await this.replayPropositionCleanroom(item, res));
     }
     const replaysMatched = replays.filter(r => r.replay_match).length;
-    const authoredCount = results.filter(r => /^DFRL-P-0(0[1-9]|1[0-9]|20)$/.test(r.operator_id)).length;
-    const generatedCount = results.length - authoredCount;
+    const authoredCount = REAL_88_PARADOX_REGISTRY.filter(item => item.model_classification === 'AUTHORED_MODEL').length;
+    const theoremSpecificCount = THEOREM_SPECIFIC_68.length;
+    const generatedCount = REAL_88_PARADOX_REGISTRY.filter(item => item.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
     const allExecuted = executed === REAL_88_PARADOX_REGISTRY.length && errorCount === 0 && unknownCount === 0;
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const allProved = results.every(r => r.proved);
@@ -282,7 +284,8 @@ export class DFRLFormalVerifier {
       unsat_proved_count: unsatCount, exact_verified_count: exactVerifiedCount, bounded_model_verified_count: boundedModelVerifiedCount,
       existential_witness_count: existentialWitnessCount, competing_assumption_count: competingAssumptionCount,
       sat_count: satCount, unknown_count: unknownCount, error_count: errorCount, not_executed_count: notExecutedCount,
-      authored_models_count: authoredCount, generated_models_count: generatedCount, deterministic_replays_matched: replaysMatched,
+      authored_models_count: authoredCount, theorem_specific_models_count: theoremSpecificCount,
+      generated_models_count: generatedCount, deterministic_replays_matched: replaysMatched,
       claim_scope: 'MIXED', solver_engine: 'Microsoft Research Z3 WASM (z3-solver)', solver_version: this.solverVersion,
       overall_status: overallStatus, verification_root_sha256: '', results, replays
     };
