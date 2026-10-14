@@ -245,10 +245,10 @@ export class NeonStore {
         FROM pg_policies
         WHERE schemaname = 'public'
       `);
-      const privilegedFlagPattern = /current_setting\\s*\\(\\s*'app\\.(?:is_owner|can_[a-z0-9_]+|provisioning_tenant_id)'/i;
+      const privilegedFlagPattern = /current_setting\s*\(\s*'app\.(?:is_owner|can_[a-z0-9_]+|provisioning_tenant_id)'/i;
       const policiesWithUntrustedFlags = (Array.isArray(policyRows) ? policyRows : [])
         .filter((p: any) => privilegedFlagPattern.test(String(p.qual || '') + ' ' + String(p.with_check || '')))
-        .map((p: any) => `\${String(p.tablename)}.\${String(p.policyname)}`)
+        .map((p: any) => `${String(p.tablename)}.${String(p.policyname)}`)
         .sort();
 
       const success = tables.length > 0 &&
