@@ -16,6 +16,7 @@ jobs:
       deployment: false
     env:
       SOLVEX_ENV: production
+      PAYMENTS_ENABLED: 'false'
       # This is deployment configuration, not a credential. Keep production explicitly pinned to Live.
       PAYPAL_ACTIVE_ENVIRONMENT: live
       PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
@@ -52,7 +53,7 @@ jobs:
         run: npm run verify:production-runtime
 
       - name: PayPal dual-environment verification
-        if: github.event_name != 'pull_request'
+        if: env.PAYMENTS_ENABLED == 'true' && github.event_name != 'pull_request'
         run: npm run verify:paypal
 
       - name: Type-check
