@@ -236,16 +236,16 @@ export class NeonStore {
       const role = tables[0]?.current_role ? String(tables[0].current_role) : null;
       const bypass = typeof tables[0]?.role_bypass_rls === 'boolean' ? tables[0].role_bypass_rls : null;
 
-      // A GUC such as app.is_owner or app.can_manage_tenants is not itself an
-      // authorization credential. Policies granting privilege from these flags
-      // block readiness until trusted authorization context is independently established.
+      // PostgreSQL custom GUCs under app.* can be changed by a SQL session. Neither
+      // app.tenant_id nor app.is_owner/app.can_* proves identity on its own. Fail closed
+      // until policies use an independently trusted authorization context and adversarial
       const policyRows = await this.neonClient.query(`
         SELECT tablename, policyname, COALESCE(qual, '') AS qual,
                COALESCE(with_check, '') AS with_check
         FROM pg_policies
         WHERE schemaname = 'public'
       `);
-      const privilegedFlagPattern = /current_setting\s*\(\s*'app\.(?:is_owner|can_[a-z0-9_]+|provisioning_tenant_id)'/i;
+      const privilegedFlagPattern = /current_setting\s*\(\s*'app\.[a-z0-9_]+/i;
       const policiesWithUntrustedFlags = (Array.isArray(policyRows) ? policyRows : [])
         .filter((p: any) => privilegedFlagPattern.test(String(p.qual || '') + ' ' + String(p.with_check || '')))
         .map((p: any) => `${String(p.tablename)}.${String(p.policyname)}`)
