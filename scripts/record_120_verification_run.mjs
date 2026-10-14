@@ -69,6 +69,12 @@ const checks = {
       result.replay_match === true &&
       result.source_integrity === "PASS" &&
       result.evidence_integrity === "PASS" &&
+      result.contract_hash === crypto.createHash("sha256").update(
+        `${result.case_id}:${result.name}:${result.domain}:${result.formal_proposition}:${result.z3_smt_assertion}`
+      ).digest("hex") &&
+      result.source_hash === crypto.createHash("sha256").update(
+        `${result.source_file}:${result.source_content_hash}:${result.contract_hash}:${result.commit_sha}`
+      ).digest("hex") &&
       result.evidence_hash === crypto.createHash("sha256").update(
         `${result.case_id}:${result.contract_hash}:${result.source_hash}:${result.actual_result}:${result.replay_result}:${result.commit_sha}`
       ).digest("hex")),
