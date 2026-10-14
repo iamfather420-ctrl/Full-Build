@@ -26,5 +26,9 @@ jobs:
         run: npm run test:formal-hash
       - name: Typecheck
         run: npm run lint
+      - name: Build application bundle
+        run: npm run build
+      - name: Check enterprise invariants
+        run: npm run verify:enterprise
       - name: Execute the original 120-case verifier
         run: npm run verify:120
