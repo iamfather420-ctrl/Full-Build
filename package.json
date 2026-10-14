@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
+    "test:formal-hash": "tsx scripts/test_formal_evidence_hash.ts",
     "preflight": "tsx scripts/preflight.ts",
     "verify:enterprise": "tsx scripts/verify_enterprise.ts",
     "verify:dfrl": "tsx scripts/verify_dfrl.ts",
