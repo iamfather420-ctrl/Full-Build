@@ -56,6 +56,17 @@ const checks = {
   summary_counts_match: summary.total_z3_executions === 120 &&
     summary.replay_matches === 120 &&
     summary.expected_result_matches === 120,
+  adversarial_tests_passed: [
+    forensic.adversarial_verification?.dfrl_mutation,
+    forensic.adversarial_verification?.dfrl_failure_injection,
+    forensic.adversarial_verification?.dfrl_artifact_tamper,
+    forensic.adversarial_verification?.dh_smt_mutation,
+    forensic.adversarial_verification?.dh_failure_injection,
+    forensic.adversarial_verification?.dh_artifact_tamper,
+  ].every(result => result?.passed === true),
+  contract_hash_guard: forensic.adversarial_verification?.contract_hash_guard === true,
+  source_hash_guard: forensic.adversarial_verification?.source_hash_guard === true,
+  replay_mismatch_guard: forensic.adversarial_verification?.replay_mismatch_guard === true,
 };
 const failed = Object.entries(checks).filter(([, passed]) => !passed).map(([name]) => name);
 if (failed.length > 0 || total.closure_verdict !== "PROVEN_120_FORMAL_CLOSURE") {
