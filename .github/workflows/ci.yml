@@ -1,0 +1,31 @@
+name: Build and Enterprise CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Reconcile lockfile with declared dependencies
+        run: npm install --package-lock-only --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+      - name: Install clean dependency tree
+        run: npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: TypeScript
+        run: npm run lint
+      - name: Enterprise invariants
+        run: npm run verify:enterprise
