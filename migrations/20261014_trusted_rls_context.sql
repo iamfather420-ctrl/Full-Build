@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS solvex_private.auth_secrets (
 REVOKE ALL ON TABLE solvex_private.auth_secrets FROM PUBLIC;
 
 CREATE OR REPLACE FUNCTION solvex_private.current_claims()
-RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
-SET search_path = pg_catalog, solvex_private, public
+RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER
+SET search_path = pg_catalog, solvex_private
 AS $fn$
 DECLARE
   token text; encoded_claims text; supplied_signature text; signing_secret text;
@@ -28,7 +28,7 @@ BEGIN
   SELECT secret_value INTO signing_secret FROM solvex_private.auth_secrets
     WHERE secret_name = 'SOLVEX_AUTH_SECRET';
   IF signing_secret IS NULL THEN RETURN NULL; END IF;
-  expected_signature := encode(digest(convert_to(encoded_claims || ':' || signing_secret, 'UTF8'), 'sha256'), 'hex');
+  expected_signature := encode(public.digest(convert_to(encoded_claims || ':' || signing_secret, 'UTF8'), 'sha256'), 'hex');
   IF supplied_signature <> expected_signature THEN RETURN NULL; END IF;
   BEGIN
     claims := convert_from(decode(encoded_claims, 'base64'), 'UTF8')::jsonb;
