@@ -490,8 +490,19 @@ export class DHFormalVerifier {
    */
   public runArtifactTamperTest(report: DH32VerificationReport): DHTamperTestResult {
     const originalRootHash = report.verification_root_sha256;
-    const tamperedRootHash = originalRootHash.replace(/[0-9a-f]/, (c) => (c === 'a' ? 'b' : 'a'));
-    const tamperDetected = tamperedRootHash !== originalRootHash;
+    const rootSeed = report.results
+      .map(r => `${r.case_id}:${r.contract_hash}:${r.evidence_hash}:${r.actual_result}`)
+      .join('|');
+    const recomputedOriginalRoot = computeSha256(rootSeed);
+    const tamperedResults = report.results.map((result, index) => index === 0
+      ? { ...result, actual_result: result.actual_result === 'sat' ? 'unsat' : 'sat' }
+      : result);
+    const tamperedSeed = tamperedResults
+      .map(r => `${r.case_id}:${r.contract_hash}:${r.evidence_hash}:${r.actual_result}`)
+      .join('|');
+    const tamperedRootHash = computeSha256(tamperedSeed);
+    const tamperDetected = recomputedOriginalRoot === originalRootHash &&
+      tamperedRootHash !== originalRootHash;
 
     return {
       test_name: 'DH Cryptographic Proof Manifest Tamper Detection',
@@ -501,8 +512,8 @@ export class DHFormalVerifier {
       tamper_detected: tamperDetected,
       passed: tamperDetected,
       details: tamperDetected
-        ? 'Cryptographic integrity verification successfully identified manifest byte mutation.'
-        : 'Tamper test failed: mutated root hash was not detected.'
+        ? 'Recomputed report root matches the original; mutating a solver result changes the root and is detected.'
+        : 'Tamper test failed: original root mismatch or mutated result did not change the recomputed root.'
     };
   }
 }
