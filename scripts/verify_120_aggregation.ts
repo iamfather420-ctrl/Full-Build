@@ -178,7 +178,23 @@ async function main() {
       unknown_count: dfrlReport.unknown_count,
       error_count: dfrlReport.error_count,
       root_hash: dfrlReport.verification_root_sha256,
-      status: dfrlReport.overall_status
+      status: dfrlReport.overall_status,
+      results: dfrlReport.results.map(result => ({
+        operator_id: result.operator_id,
+        operator_name: result.operator_name,
+        model_classification: result.model_classification,
+        model_scope: result.model_scope,
+        expected_solver_result: result.expected_solver_result,
+        solver_result: result.solver_result,
+        proved: result.proved,
+        claim_scope: result.claim_scope,
+        assertion_hash: result.assertion_hash,
+        actual_smt_assertion_hash: result.actual_smt_assertion_hash,
+        certificate_sha256: result.certificate_sha256,
+        execution_id: result.execution_id,
+        execution_duration_ms: result.execution_duration_ms
+      })),
+      replays: dfrlReport.replays
     },
     dh: {
       required: 32,
@@ -193,7 +209,22 @@ async function main() {
       unknown_count: dhReport.unknown_count,
       error_count: dhReport.error_count,
       root_hash: dhReport.verification_root_sha256,
-      status: dhReport.overall_status
+      status: dhReport.overall_status,
+      results: dhReport.results.map(result => ({
+        case_id: result.case_id,
+        expected_result: result.expected_result,
+        actual_result: result.actual_result,
+        replay_result: result.replay_result,
+        replay_match: result.replay_match,
+        verified: result.verified,
+        scope: result.scope,
+        contract_hash: result.contract_hash,
+        source_hash: result.source_hash,
+        evidence_hash: result.evidence_hash,
+        evidence_integrity: result.evidence_integrity,
+        source_integrity: result.source_integrity,
+        commit_sha: result.commit_sha
+      }))
     },
     total: {
       required: 120,
