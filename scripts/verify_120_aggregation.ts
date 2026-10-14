@@ -56,7 +56,13 @@ async function main() {
     dhMutationTest, dhFailureInjectionTest, dhTamperTest,
   ];
   const adversarialPassed = adversarialTests.every(test => test.passed);
+  const integrityGuardsPassed = dhReport.results.every(result =>
+    result.evidence_integrity === 'PASS' &&
+    result.source_integrity === 'PASS' &&
+    result.replay_match
+  );
   console.log(` -> Adversarial checks:   ${adversarialTests.filter(test => test.passed).length} / ${adversarialTests.length}`);
+  console.log(` -> DH integrity guards:  ${integrityGuardsPassed ? 'PASS' : 'FAIL'}`);
 
   const totalZ3Executions = dfrlReport.executed + dhReport.executed;
   const dfrlExpectedMatches = dfrlReport.results.filter(result => result.proved).length;
@@ -85,6 +91,7 @@ async function main() {
     dhReport.executed === 32 &&
     dhReport.blocked_count === 0 &&
     dhReport.overall_status === 'VERIFIED' &&
+    integrityGuardsPassed &&
     totalUnknown === 0 &&
     totalError === 0 &&
     adversarialPassed;
