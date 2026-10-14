@@ -160,6 +160,7 @@ async function main() {
     dfrl: {
       required: 88,
       actual_z3_executions: dfrlReport.executed,
+      expected_result_matches: dfrlExpectedMatches,
       replays: dfrlReport.deterministic_replays_matched,
       replay_matches: dfrlReport.deterministic_replays_matched,
       unsat_count: dfrlReport.unsat_count,
@@ -224,6 +225,7 @@ async function main() {
       dfrl: {
         total_required: 88,
         executed: dfrlReport.executed,
+        expected_matches: dfrlExpectedMatches,
         unsat_proved: dfrlReport.unsat_count,
         replays_matched: dfrlReport.deterministic_replays_matched,
         root_hash: dfrlReport.verification_root_sha256,
@@ -260,7 +262,7 @@ async function main() {
 - **Expected-Result Matches:** 120 / 120
 - **Deterministic Cleanroom Replays:** 120 / 120
 - **Combined Root Hash:** \`${combinedRootSha256}\`
-- **Distribution:** UNSAT: ${totalUnsat} (88 DFRL + ${dhReport.unsat_count} DH), SAT: ${totalSat} (${dhReport.sat_count} DH), UNKNOWN: 0, ERROR: 0
+- **Distribution:** UNSAT: ${totalUnsat} (${dfrlReport.unsat_count} DFRL + ${dhReport.unsat_count} DH), SAT: ${totalSat} (${dfrlReport.sat_count} DFRL + ${dhReport.sat_count} DH), UNKNOWN: ${totalUnknown}, ERROR: ${totalError}
 - **Activation Gate Status:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}**
 
 ---
@@ -269,9 +271,9 @@ async function main() {
 
 | Corpus | Target | Z3 Executed | Expected Matches | Replays Matched | Solver Engine | Status |
 |:---|:---:|:---:|:---:|:---:|:---|:---:|
-| **DFRL Operators** | 88 | 88 | 88 | 88 | Microsoft Research Z3 WASM 5.2.0 | **VERIFIED** |
+| **DFRL Operators** | 88 | ${dfrlReport.executed} | ${dfrlExpectedMatches} | ${dfrlReport.deterministic_replays_matched} | Microsoft Research Z3 WASM 5.2.0 | **${dfrlReport.overall_status}** |
 | **DH Formal Contracts** | 32 | 32 | 32 | 32 | Microsoft Research Z3 WASM 5.2.0 | **VERIFIED** |
-| **TOTAL FORMAL CORPUS** | **120** | **120** | **120** | **120** | **Z3 WASM 5.2.0** | **PROVEN_CLOSURE** |
+| **TOTAL FORMAL CORPUS** | **120** | **${totalZ3Executions}** | **${totalExpectedMatches}** | **${totalReplayMatches}** | **Z3 WASM 5.2.0** | **${passed120 ? 'PROVEN_CLOSURE' : 'BLOCKED'}** |
 
 ---
 
@@ -279,7 +281,7 @@ async function main() {
 
 - **DH Registry Records:** 32 metadata records verified via cryptographic canonical hashing, duplicate detection, and family variant classification (\`REGISTRY_VERIFIED\`).
 - **DH Formal Contracts:** 32 distinct SMT contracts executed through Microsoft Research Z3 WASM solver with fresh contexts, cleanroom replays, and cryptographic proof receipts (\`MODEL_VERIFIED\` / \`MODEL_VERIFIED_BOUNDED\` / \`MODEL_VERIFIED_AXIOMATIC\`).
-- **DFRL Operators:** 88 deterministic operational refutations executed through Z3 WASM.
+- **DFRL Operators:** 88 theorem-specific SMT models evaluated against declared expected SAT/UNSAT results and replayed in fresh contexts.
 `;
 
   fs.writeFileSync(path.join(artifactsDir, 'z3-120-formal-verification-summary.md'), summaryMd, 'utf8');
@@ -298,7 +300,7 @@ async function main() {
       total_z3_executions: totalZ3Executions,
       total_cleanroom_replays: totalReplays,
       total_replay_matches: totalReplayMatches,
-      claim_scope: 'PROVEN_120_FORMAL_CLOSURE',
+      claim_scope: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED',
       combined_root_sha256: combinedRootSha256
     },
     dfrl_status: {
@@ -329,12 +331,12 @@ async function main() {
       status: dhReport.overall_status
     },
     adversarial_verification: {
-      dfrl_mutation: true,
-      dfrl_failure_injection: true,
-      dfrl_tamper_alarm: true,
-      dh_smt_mutation: true,
-      dh_failure_injection: true,
-      dh_artifact_tamper: true,
+      dfrl_mutation: dfrlMutationTest,
+      dfrl_failure_injection: dfrlFailureInjectionTest,
+      dfrl_artifact_tamper: dfrlTamperTest,
+      dh_smt_mutation: dhMutationTest,
+      dh_failure_injection: dhFailureInjectionTest,
+      dh_artifact_tamper: dhTamperTest,
       contract_hash_guard: true,
       source_hash_guard: true,
       replay_mismatch_guard: true
@@ -352,15 +354,15 @@ async function main() {
   const forensicMd = `# Solvex Authoritative Forensic Verification Audit Report
 **Commit SHA:** \`${commitSha}\`  
 **Timestamp:** \`${forensicReport.timestamp}\`  
-**Verdict:** **PROVEN_120_FORMAL_CLOSURE (120/120 REAL Z3 EXECUTIONS)**  
+**Verdict:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE (120/120 expected results matched)' : 'BLOCKED'}**  
 **Combined Root Hash:** \`${combinedRootSha256}\`  
 
 ---
 
 ## 1. Executive Summary
-- **DFRL 88-Operator Z3 Subsystem:** 88 / 88 real executions, 88 cleanroom replays, 88 UNSAT proofs.
+- **DFRL 88-Operator Z3 Subsystem:** ${dfrlReport.executed} / 88 real executions, ${dfrlReport.deterministic_replays_matched} cleanroom replays, ${dfrlReport.unsat_count} UNSAT results and ${dfrlReport.sat_count} SAT witnesses.
 - **DH 32-Paradox Authoritative Subsystem:** 32 / 32 real executions, 32 fresh-context replays, 32 matches.
-- **Total Theorem Prover Scope:** Exactly 120 / 120 formal Z3-WASM verified cases.
+- **Total Theorem Prover Scope:** ${totalZ3Executions} executions, ${totalExpectedMatches} expected-result matches, and ${totalReplayMatches} replay matches out of 120.
 - **Independence & Freshness:** 100% fresh Z3 context creation per execution and replay; zero context reuse.
 - **Commit Binding:** HEAD SHA resolved dynamically from current git repository (\`${commitSha}\`).
 - **Source Binding:** Cryptographically bound to disk content of \`src/paradoxes/DHBootstrapParadoxRegistry.ts\`.
@@ -369,7 +371,7 @@ async function main() {
 
 ## 2. Machine-Readable Reconciliation Analysis
 The public repository contained 32 contracts, but 13 were foreign paradoxes not present in the authentic Solvex registry, and 13 shared paradoxes had mismatched/swapped IDs.
-All 32 authentic Solvex DH Bootstrap paradoxes have been reconciled and formally proven:
+The 32 DH formal contracts were evaluated by Z3; their expected-result and replay status is recorded below:
 
 | Case ID | Authentic Local Paradox | Public Mapping Status | Formal Scope | Z3 Result | Replay |
 |:---|:---|:---|:---|:---:|:---:|
