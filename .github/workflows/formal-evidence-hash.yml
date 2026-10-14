@@ -24,6 +24,8 @@ jobs:
         run: npm install --legacy-peer-deps --ignore-scripts
       - name: Test deterministic corpus roots and run-specific receipts
         run: npm run test:formal-hash
+      - name: Authentication regression tests
+        run: npm run test:auth
       - name: Typecheck
         run: npm run lint
       - name: Build application bundle
