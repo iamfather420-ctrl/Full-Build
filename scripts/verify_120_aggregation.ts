@@ -44,8 +44,23 @@ async function main() {
   console.log(` -> DH Distribution:     UNSAT: ${dhReport.unsat_count}, SAT: ${dhReport.sat_count}`);
   console.log(` -> DH Blocked:          ${dhReport.blocked_count}`);
 
+  // Adversarial checks are executed, not represented by hard-coded PASS flags.
+  const dfrlMutationTest = await dfrlVerifier.runSmtMutationTest();
+  const dfrlFailureInjectionTest = await dfrlVerifier.runFailureInjectionTest();
+  const dfrlTamperTest = dfrlVerifier.runArtifactTamperTest(dfrlReport);
+  const dhMutationTest = await dhVerifier.runSmtMutationTest();
+  const dhFailureInjectionTest = await dhVerifier.runFailureInjectionTest();
+  const dhTamperTest = dhVerifier.runArtifactTamperTest(dhReport);
+  const adversarialTests = [
+    dfrlMutationTest, dfrlFailureInjectionTest, dfrlTamperTest,
+    dhMutationTest, dhFailureInjectionTest, dhTamperTest,
+  ];
+  const adversarialPassed = adversarialTests.every(test => test.passed);
+  console.log(` -> Adversarial checks:   ${adversarialTests.filter(test => test.passed).length} / ${adversarialTests.length}`);
+
   const totalZ3Executions = dfrlReport.executed + dhReport.executed;
-  const totalExpectedMatches = dfrlReport.unsat_count + dhReport.expected_result_matches;
+  const dfrlExpectedMatches = dfrlReport.results.filter(result => result.proved).length;
+  const totalExpectedMatches = dfrlExpectedMatches + dhReport.expected_result_matches;
   const totalReplays = dfrlReport.deterministic_replays_matched + dhReport.cleanroom_replays;
   const totalReplayMatches = dfrlReport.deterministic_replays_matched + dhReport.replay_matches;
   const totalUnsat = dfrlReport.unsat_count + dhReport.unsat_count;
@@ -71,7 +86,8 @@ async function main() {
     dhReport.blocked_count === 0 &&
     dhReport.overall_status === 'VERIFIED' &&
     totalUnknown === 0 &&
-    totalError === 0;
+    totalError === 0 &&
+    adversarialPassed;
 
   console.log('\n================================================================');
   console.log('120-CASE FORMAL Z3 VERIFICATION SUMMARY');
@@ -82,8 +98,8 @@ async function main() {
   console.log(`Expected-result matches:   ${totalExpectedMatches} / 120`);
   console.log(`Cleanroom replays:         ${totalReplays} / 120`);
   console.log(`Replay matches:            ${totalReplayMatches} / 120`);
-  console.log(`UNSAT Count:               ${totalUnsat} (88 DFRL + ${dhReport.unsat_count} DH)`);
-  console.log(`SAT Count:                 ${totalSat} (0 DFRL + ${dhReport.sat_count} DH)`);
+  console.log(`UNSAT Count:               ${totalUnsat} (${dfrlReport.unsat_count} DFRL + ${dhReport.unsat_count} DH)`);
+  console.log(`SAT Count:                 ${totalSat} (${dfrlReport.sat_count} DFRL + ${dhReport.sat_count} DH)`);
   console.log(`UNKNOWN:                   ${totalUnknown}`);
   console.log(`ERROR:                     ${totalError}`);
   console.log(`Combined Root Hash:        ${combinedRootSha256}`);
