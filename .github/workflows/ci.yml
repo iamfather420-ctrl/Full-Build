@@ -24,6 +24,8 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Authentication regression tests
+        run: npm run test:auth
       - name: TypeScript
         run: npm run lint
       - name: Enterprise invariants

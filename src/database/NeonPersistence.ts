@@ -66,13 +66,14 @@ export class NeonStore {
 
     try {
       const neonMod = await import('@neondatabase/serverless');
-      if (neonMod && typeof neonMod.neon === 'function') {
-        this.neonClient = neonMod.neon(this.databaseUrl!);
-        // Test lightweight query
-        const testRes = await this.neonClient`SELECT 1 as connected;`;
-        if (testRes && testRes[0]?.connected === 1) {
+      if (neonMod && typeof neonMod.Pool === 'function') {
+        this.neonClient = new neonMod.Pool({ connectionString: this.databaseUrl! });
+        // Pool is required for explicit transactions and transaction-local auth context.
+        const testRes = await this.neonClient.query('SELECT 1 AS connected');
+        if (testRes?.rows?.[0]?.connected === 1) {
           this.isConnected = true;
           this.lastError = null;
+          await this.verifyRlsPosture();
           return true;
         }
       }
@@ -168,8 +169,8 @@ export class NeonStore {
       return { verified: 0, required: required27.length, missing: required27 };
     }
     try {
-      const rows = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
-      const present = new Set(rows.map((r: any) => r.table_name));
+      const result = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
+      const present = new Set((result?.rows || []).map((r: any) => r.table_name));
       const missing = required27.filter(t => !present.has(t));
       this.tablesVerified = required27.length - missing.length;
       return { verified: this.tablesVerified, required: required27.length, missing };
@@ -192,8 +193,11 @@ export class NeonStore {
     policy_count: number;
     current_role: string | null;
     current_role_bypass_rls: boolean | null;
+    auth_context_ready: boolean;
     tables_without_rls: string[];
     tables_without_policy: string[];
+    tables_without_trusted_guard: string[];
+    policies_with_untrusted_privilege_flags: string[];
     error?: string;
   }> {
     this.tenantIsolationVerified = false;
@@ -205,19 +209,26 @@ export class NeonStore {
       policy_count: 0,
       current_role: null as string | null,
       current_role_bypass_rls: null as boolean | null,
+      auth_context_ready: false,
       tables_without_rls: [] as string[],
-      tables_without_policy: [] as string[]
+      tables_without_policy: [] as string[],
+      tables_without_trusted_guard: [] as string[],
+      policies_with_untrusted_privilege_flags: [] as string[]
     };
     if (!this.isConnected || !this.neonClient) {
       return { ...empty, error: this.lastError || 'Neon not connected' };
     }
     try {
-      const rows = await this.neonClient.query(`
+      const queryResult = await this.neonClient.query(`
         SELECT c.relname AS table_name,
                c.relrowsecurity AS rls_enabled,
                c.relforcerowsecurity AS rls_forced,
                (SELECT count(*)::int FROM pg_policies p
                  WHERE p.schemaname = n.nspname AND p.tablename = c.relname) AS policy_count,
+               EXISTS (SELECT 1 FROM pg_policies guard
+                 WHERE guard.schemaname = n.nspname AND guard.tablename = c.relname
+                   AND guard.permissive = 'RESTRICTIVE'
+                   AND guard.policyname IN ('solvex_signed_tenant_context', 'solvex_deny_unclassified')) AS trusted_guard,
                current_user AS current_role,
                COALESCE((SELECT r.rolbypassrls FROM pg_roles r WHERE r.rolname = current_user), false) AS role_bypass_rls
         FROM pg_class c
@@ -226,14 +237,48 @@ export class NeonStore {
           AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
         ORDER BY c.relname
       `);
-      const tables = Array.isArray(rows) ? rows : [];
+      const tables = Array.isArray(queryResult?.rows) ? queryResult.rows : [];
       const withoutRls = tables.filter((r: any) => r.rls_enabled !== true).map((r: any) => String(r.table_name));
       const withoutPolicy = tables.filter((r: any) => Number(r.policy_count) < 1).map((r: any) => String(r.table_name));
+      const withoutTrustedGuard = tables.filter((r: any) => r.trusted_guard !== true).map((r: any) => String(r.table_name));
       const forced = tables.filter((r: any) => r.rls_forced === true).length;
       const policyCount = tables.reduce((sum: number, r: any) => sum + Number(r.policy_count || 0), 0);
       const role = tables[0]?.current_role ? String(tables[0].current_role) : null;
       const bypass = typeof tables[0]?.role_bypass_rls === 'boolean' ? tables[0].role_bypass_rls : null;
-      const success = tables.length > 0 && withoutRls.length === 0 && withoutPolicy.length === 0 && forced === tables.length && bypass === false;
+
+      // PostgreSQL custom GUCs under app.* can be changed by a SQL session. Neither
+      // app.tenant_id nor app.is_owner/app.can_* proves identity on its own. Fail closed
+      // until policies use an independently trusted authorization context and adversarial
+      // tests prove that untrusted callers cannot forge it.
+      const policyResult = await this.neonClient.query(`
+        SELECT p.tablename, p.policyname, p.permissive, COALESCE(p.qual, '') AS qual,
+               COALESCE(p.with_check, '') AS with_check,
+               EXISTS (SELECT 1 FROM pg_policies guard
+                 WHERE guard.schemaname = p.schemaname AND guard.tablename = p.tablename
+                   AND guard.permissive = 'RESTRICTIVE'
+                   AND guard.policyname IN ('solvex_signed_tenant_context', 'solvex_deny_unclassified')) AS has_trusted_guard
+        FROM pg_policies p
+        WHERE p.schemaname = 'public'
+      `);
+      const privilegedFlagPattern = /current_setting\s*\(\s*'app\.[a-z0-9_]+/i;
+      const policiesWithUntrustedFlags = (Array.isArray(policyResult?.rows) ? policyResult.rows : [])
+        .filter((p: any) => p.has_trusted_guard !== true && privilegedFlagPattern.test(String(p.qual || '') + ' ' + String(p.with_check || '')))
+        .map((p: any) => `${String(p.tablename)}.${String(p.policyname)}`)
+        .sort();
+
+      // RLS metadata alone is not enough: the database must have the matching signing
+      // secret provisioned, otherwise every signed tenant context correctly fails closed.
+      const authReadyResult = await this.neonClient.query('SELECT solvex_private.auth_context_ready() AS ready');
+      const authContextReady = authReadyResult?.rows?.[0]?.ready === true;
+
+      const success = tables.length > 0 &&
+        authContextReady &&
+        withoutRls.length === 0 &&
+        withoutPolicy.length === 0 &&
+        withoutTrustedGuard.length === 0 &&
+        forced === tables.length &&
+        bypass === false &&
+        policiesWithUntrustedFlags.length === 0;
       this.tenantIsolationVerified = success;
       return {
         success,
@@ -243,16 +288,43 @@ export class NeonStore {
         policy_count: policyCount,
         current_role: role,
         current_role_bypass_rls: bypass,
+        auth_context_ready: authContextReady,
         tables_without_rls: withoutRls,
-        tables_without_policy: withoutPolicy
+        tables_without_policy: withoutPolicy,
+        tables_without_trusted_guard: withoutTrustedGuard,
+        policies_with_untrusted_privilege_flags: policiesWithUntrustedFlags
       };
     } catch (e: any) {
       return { ...empty, error: e?.message || 'Read-only RLS audit failed' };
     }
   }
 
-  public async insertRecord(tableName: string, data: Record<string, any>): Promise<boolean> {
-    if (!this.isConnected || !this.neonClient) return false;
+  private async withVerifiedAuthContext<T>(token: string | undefined, work: (client: any) => Promise<T>): Promise<T> {
+    if (typeof token !== 'string' || token.trim().length === 0) {
+      throw new Error('A signed authentication token is required for tenant database access.');
+    }
+    if (!this.neonClient || typeof this.neonClient.connect !== 'function') {
+      throw new Error('Transactional PostgreSQL pool is unavailable.');
+    }
+    const client = await this.neonClient.connect();
+    try {
+      await client.query('BEGIN');
+      // The GUC is caller-settable, so RLS must validate the token signature against the
+      // private DB secret before trusting any claims. SET LOCAL prevents pool leakage.
+      await client.query("SELECT set_config('app.auth_token', $1, true)", [token]);
+      const result = await work(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      try { await client.query('ROLLBACK'); } catch {}
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  public async insertRecord(tableName: string, data: Record<string, any>, authToken?: string): Promise<boolean> {
+    if (!this.isConnected || !this.neonClient || !this.tenantIsolationVerified) return false;
     if (!this.isAllowedTable(tableName)) {
       this.lastError = 'Rejected table outside the persistence allowlist';
       return false;
@@ -273,31 +345,34 @@ export class NeonStore {
         payload_json: JSON.stringify(data)
       };
 
-      await this.neonClient.query(`
+      await this.withVerifiedAuthContext(authToken, client => client.query(`
         INSERT INTO ${tableName} (id, tenant_id, created_at, updated_at, status, version, payload_json)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (id) DO UPDATE SET
           updated_at = EXCLUDED.updated_at,
           status = EXCLUDED.status,
           payload_json = EXCLUDED.payload_json
-      `, [payload.id, payload.tenant_id, payload.created_at, payload.updated_at, payload.status, payload.version, payload.payload_json]);
+      `, [payload.id, payload.tenant_id, payload.created_at, payload.updated_at, payload.status, payload.version, payload.payload_json]));
       return true;
     } catch {
       return false;
     }
   }
 
-  public async findTenantRecords(tableName: string, tenantId: string, limit: number = 100): Promise<any[]> {
-    if (!this.isConnected || !this.neonClient) return [];
+  public async findTenantRecords(tableName: string, tenantId: string, limit: number = 100, authToken?: string): Promise<any[]> {
+    if (!this.isConnected || !this.neonClient || !this.tenantIsolationVerified) return [];
     if (!this.isAllowedTable(tableName) || typeof tenantId !== 'string' || tenantId.trim().length === 0) {
       this.lastError = 'Rejected tenant read with an invalid table or tenant identifier';
       return [];
     }
     const safeLimit = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 500)) : 100;
     try {
-      const rows = await this.neonClient.query(`
-        SELECT * FROM ${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2
-      `, [tenantId.trim(), safeLimit]);
+      const rows = await this.withVerifiedAuthContext(authToken, async client => {
+        const result = await client.query(`
+          SELECT * FROM ${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2
+        `, [tenantId.trim(), safeLimit]);
+        return result?.rows || [];
+      });
       return rows.map((r: any) => ({ ...r, ...r.payload_json }));
     } catch {
       return [];

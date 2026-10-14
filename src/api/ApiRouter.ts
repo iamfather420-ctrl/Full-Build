@@ -9,7 +9,7 @@ import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { ExternalAdapterRegistry } from '../adapters/ExternalAdapters';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
-import { AuthService, UserContext, SovereignRole } from '../auth/AuthService';
+import { AuthService, UserContext } from '../auth/AuthService';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { DaisyBrain } from '../brain/DaisyBrain';
@@ -64,9 +64,24 @@ export class SovereignApiRouter {
     try {
       // 1. /api/auth
       if (path === '/api/auth/login' && method === 'POST') {
-        const { email, role = 'CUSTOMER', tenant_id = 'TENANT_ENTERPRISE_DEMO' } = payload || {};
-        if (!email) return { status: 400, error: 'Email is required for authentication', timestamp };
-        const token = this.authService.createSignedToken(`usr_${Date.now()}`, tenant_id, email, role as SovereignRole);
+        // There is no configured production identity-provider exchange in this route.
+        // Never mint production credentials from a caller-supplied email, role, or tenant.
+        if (process.env.NODE_ENV === 'production') {
+          return {
+            status: 503,
+            error: 'Production authentication is unavailable until a trusted identity provider is configured.',
+            timestamp
+          };
+        }
+        const email = typeof payload?.email === 'string' ? payload.email.trim() : '';
+        if (!email) return { status: 400, error: 'Email is required for development authentication', timestamp };
+        // Development-only demo tokens are always least-privileged and tenant-pinned.
+        const token = this.authService.createSignedToken(
+          `usr_${Date.now()}`,
+          'TENANT_ENTERPRISE_DEMO',
+          email,
+          'CUSTOMER'
+        );
         return {
           status: 200,
           data: { token, user: this.authService.verifyToken(token).user },
@@ -78,8 +93,22 @@ export class SovereignApiRouter {
         return { status: 200, data: user, timestamp };
       }
 
+      // The current route handlers still read/write SQLite and DurableStore rather than
+      // using the verified transactional Neon tenant context. A valid token is not enough
+      // to make those stores tenant-safe. Disable production data routes until persistence
+      // wiring and adversarial cross-tenant tests are complete. The auth diagnostics above
+      // remain available, but no business-data handler may run in production yet.
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          status: 503,
+          error: 'Production data API disabled until trusted Neon RLS and API persistence wiring are verified.',
+          timestamp
+        };
+      }
+
       // 2. /api/tenants
       if (path === '/api/tenants' && method === 'GET') {
+        if (!user || user.role !== 'OWNER') return { status: 403, error: 'Forbidden: tenant directory is restricted to OWNER', timestamp };
         const tenants = this.sqlite.getRawDb().all('SELECT id, name, tier, status, created_at FROM tenants');
         return { status: 200, data: tenants, timestamp };
       }
@@ -156,6 +185,7 @@ export class SovereignApiRouter {
 
       // 7. /api/verification
       if (path === '/api/verification' && method === 'GET') {
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: verification run directory is restricted to platform operators', timestamp };
         const runs = this.sqlite.getRawDb().all('SELECT * FROM verification_runs ORDER BY created_at DESC LIMIT 20');
         return { status: 200, data: runs, timestamp };
       }
@@ -235,6 +265,8 @@ export class SovereignApiRouter {
 
       // 11. /api/payments
       if (path === '/api/payments/capture' && method === 'POST') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment capture is restricted to platform operators', timestamp };
         const { order_id, amount_cents, idempotency_key } = payload || {};
         if (!order_id || !amount_cents) return { status: 400, error: 'order_id and amount_cents required', timestamp };
         const paypal = PayPalAdapter.getInstance();
@@ -242,17 +274,23 @@ export class SovereignApiRouter {
         return { status: 200, data: res, timestamp };
       }
       if (path === '/api/payments/paypal/status' && method === 'GET') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment status is restricted to platform operators', timestamp };
         const paypal = PayPalAdapter.getInstance();
         const info = paypal.getMaskedCredentialsInfo();
         return { status: 200, data: info, timestamp };
       }
       if (path === '/api/payments/paypal/test' && method === 'POST') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment credential tests are restricted to platform operators', timestamp };
         const { client_id, client_secret, environment } = payload || {};
         const paypal = PayPalAdapter.getInstance();
         const res = await paypal.testLiveCredentials(client_id, client_secret, environment);
         return { status: 200, data: res, timestamp };
       }
       if (path === '/api/payments/paypal/configure' && method === 'POST') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment configuration is restricted to platform operators', timestamp };
         const { client_id, client_secret, environment = 'sandbox' } = payload || {};
         if (!client_id || !client_secret) return { status: 400, error: 'client_id and client_secret required', timestamp };
         const paypal = PayPalAdapter.getInstance();
@@ -284,6 +322,7 @@ export class SovereignApiRouter {
 
       // 15. /api/audit/chain
       if (path === '/api/audit/chain' && method === 'GET') {
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: global audit chain is restricted to platform operators', timestamp };
         const verification = this.durableStore.verifyChain();
         return {
           status: 200,
@@ -296,6 +335,7 @@ export class SovereignApiRouter {
         };
       }
       if (path === '/api/audit/chain/verify' && method === 'POST') {
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: global audit verification is restricted to platform operators', timestamp };
         const verification = this.durableStore.verifyChain();
         return { status: 200, data: verification, timestamp };
       }

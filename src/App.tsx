@@ -49,8 +49,9 @@ export default function App() {
     user_id: 'usr_enterprise_master',
     tenant_id: 'TENANT_ENTERPRISE_DEMO',
     email: 'operator@sovereign-agate.io',
-    role: 'OWNER',
-    issued_at: Date.now()
+    role: 'CUSTOMER',
+    issued_at: Date.now(),
+    expires_at: Date.now() + 15 * 60 * 1000
   });
 
   const [chainValid, setChainValid] = useState(true);
