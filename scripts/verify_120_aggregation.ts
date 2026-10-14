@@ -407,7 +407,7 @@ async function main() {
 - **Total Theorem Prover Scope:** ${totalZ3Executions}/120 formal Z3-WASM executions; ${totalExpectedMatches}/120 expected matches.
 - **Adversarial suite:** ${adversarialVerificationPassed ? 'PASSED' : 'FAILED'}.
 - **Replay implementation:** DFRL primary and cleanroom solvers use separate contexts in the same process; DH replay outcomes are recorded per case. This is not a separate-machine replay.
-- **Commit Binding:** Repository commit `${commitSha}`; DH source-content integrity is recorded per case.
+- **Commit Binding:** Repository commit ${commitSha}; DH source-content integrity is recorded per case.
 
 ---
 
