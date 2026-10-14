@@ -243,7 +243,7 @@ export class DFRLFormalVerifier {
       const { Context } = z3Mod;
       const replayCtx = new Context(`cleanroom_replay_${item.code.replace(/[^a-zA-Z0-9]/g, '_')}`);
       const replaySolver = new replayCtx.Solver();
-      await replaySolver.fromString(item.z3_smt_assertion);
+      await replaySolver.fromString(item.z3_smt_assertion.replace(/\(check-sat\)/g, '').trim());
       replayResult = await replaySolver.check();
     } catch { replayResult = 'error'; }
     const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}`;
@@ -312,8 +312,8 @@ export class DFRLFormalVerifier {
       mutation_detected: false, passed: false, details: 'Z3 solver unavailable for mutation testing'
     };
     const { Context } = z3Mod;
-    const ctxOrig = new Context('mut_orig'); const solverOrig = new ctxOrig.Solver(); await solverOrig.fromString(originalSmt); const origRes = await solverOrig.check();
-    const ctxMut = new Context('mut_pert'); const solverMut = new ctxMut.Solver(); await solverMut.fromString(mutatedSmt); const mutRes = await solverMut.check();
+    const ctxOrig = new Context('mut_orig'); const solverOrig = new ctxOrig.Solver(); await solverOrig.fromString(originalSmt.replace(/\(check-sat\)/g, '').trim()); const origRes = await solverOrig.check();
+    const ctxMut = new Context('mut_pert'); const solverMut = new ctxMut.Solver(); await solverMut.fromString(mutatedSmt.replace(/\(check-sat\)/g, '').trim()); const mutRes = await solverMut.check();
     const mutationDetected = origRes === 'unsat' && mutRes === 'sat';
     return {
       test_name: 'DFRL Operator SMT Invariant Mutation Test', target_operator_id: targetItem.code, operator_code: targetItem.code,
