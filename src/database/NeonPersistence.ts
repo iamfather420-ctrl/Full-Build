@@ -73,6 +73,7 @@ export class NeonStore {
         if (testRes && testRes[0]?.connected === 1) {
           this.isConnected = true;
           this.lastError = null;
+          await this.verifyRlsPosture();
           return true;
         }
       }
@@ -277,7 +278,7 @@ export class NeonStore {
   }
 
   public async insertRecord(tableName: string, data: Record<string, any>): Promise<boolean> {
-    if (!this.isConnected || !this.neonClient) return false;
+    if (!this.isConnected || !this.neonClient || !this.tenantIsolationVerified) return false;
     if (!this.isAllowedTable(tableName)) {
       this.lastError = 'Rejected table outside the persistence allowlist';
       return false;
@@ -313,7 +314,7 @@ export class NeonStore {
   }
 
   public async findTenantRecords(tableName: string, tenantId: string, limit: number = 100): Promise<any[]> {
-    if (!this.isConnected || !this.neonClient) return [];
+    if (!this.isConnected || !this.neonClient || !this.tenantIsolationVerified) return [];
     if (!this.isAllowedTable(tableName) || typeof tenantId !== 'string' || tenantId.trim().length === 0) {
       this.lastError = 'Rejected tenant read with an invalid table or tenant identifier';
       return [];
