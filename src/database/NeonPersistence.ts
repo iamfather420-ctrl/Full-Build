@@ -20,6 +20,23 @@ export class NeonStore {
   private neonClient: any = null;
   private isConnected: boolean = false;
   private lastError: string | null = null;
+  private tablesVerified = 0;
+  private readonly totalRequiredTables = 27;
+  private tenantIsolationVerified = false;
+  private restartReadbackVerified = false;
+
+  private readonly requiredTables = [
+    'users', 'tenants', 'roles', 'permissions', 'tenant_memberships',
+    'problems', 'paradoxes', 'invariants', 'solutions', 'offers',
+    'proof_bundles', 'proof_evidence', 'tests', 'verification_runs',
+    'orders', 'payments', 'deployments', 'checkpoints', 'rollback_records',
+    'telemetry', 'audit_records', 'chain_records', 'licenses',
+    'adapter_status', 'node_registry', 'execution_runs', 'failures'
+  ] as const;
+
+  private isAllowedTable(tableName: string): boolean {
+    return (this.requiredTables as readonly string[]).includes(tableName);
+  }
 
   private constructor() {
     this.databaseUrl = (typeof process !== 'undefined' && process.env?.NEON_DATABASE_URL) || null;
@@ -37,6 +54,10 @@ export class NeonStore {
   }
 
   public async connect(): Promise<boolean> {
+    // Every connection attempt invalidates prior verification until the checks are rerun.
+    this.tablesVerified = 0;
+    this.tenantIsolationVerified = false;
+    this.restartReadbackVerified = false;
     if (!this.isConfigured()) {
       this.isConnected = false;
       this.lastError = 'NEON_DATABASE_URL not configured';
@@ -72,11 +93,11 @@ export class NeonStore {
         backend: 'SQLITE_LOCAL',
         configured: false,
         connected: false,
-        tables_verified: 27,
-        total_required_tables: 27,
-        tenant_isolation_verified: true,
-        restart_readback_verified: true,
-        notes: 'Neon not configured. Operating in SQLITE_LOCAL deterministic fallback mode.'
+        tables_verified: 0,
+        total_required_tables: this.totalRequiredTables,
+        tenant_isolation_verified: false,
+        restart_readback_verified: false,
+        notes: 'NEON_DATABASE_URL is not configured. Cloud persistence is unverified; local fallback selection must be reported separately by the caller.'
       };
     }
 
@@ -84,10 +105,10 @@ export class NeonStore {
       backend: this.isConnected ? 'NEON_POSTGRES' : 'PERSISTENCE_UNAVAILABLE',
       configured: isConf,
       connected: this.isConnected,
-      tables_verified: this.isConnected ? 27 : 0,
-      total_required_tables: 27,
-      tenant_isolation_verified: this.isConnected,
-      restart_readback_verified: this.isConnected,
+      tables_verified: this.isConnected ? this.tablesVerified : 0,
+      total_required_tables: this.totalRequiredTables,
+      tenant_isolation_verified: this.isConnected && this.tenantIsolationVerified,
+      restart_readback_verified: this.isConnected && this.restartReadbackVerified,
       last_error: this.lastError || undefined,
       notes: this.isConnected
         ? 'Connected directly to Neon serverless cloud PostgreSQL instance.'
@@ -100,14 +121,7 @@ export class NeonStore {
       return { success: false, tablesCreated: 0, error: this.lastError || 'Neon not connected' };
     }
 
-    const required27 = [
-      'users', 'tenants', 'roles', 'permissions', 'tenant_memberships',
-      'problems', 'paradoxes', 'invariants', 'solutions', 'offers',
-      'proof_bundles', 'proof_evidence', 'tests', 'verification_runs',
-      'orders', 'payments', 'deployments', 'checkpoints', 'rollback_records',
-      'telemetry', 'audit_records', 'chain_records', 'licenses',
-      'adapter_status', 'node_registry', 'execution_runs', 'failures'
-    ];
+    const required27 = [...this.requiredTables];
 
     try {
       for (const tbl of required27) {
@@ -149,26 +163,109 @@ export class NeonStore {
       'adapter_status', 'node_registry', 'execution_runs', 'failures'
     ];
     if (!this.isConnected || !this.neonClient) {
+      this.tablesVerified = 0;
+      this.tenantIsolationVerified = false;
       return { verified: 0, required: required27.length, missing: required27 };
     }
     try {
       const rows = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
       const present = new Set(rows.map((r: any) => r.table_name));
       const missing = required27.filter(t => !present.has(t));
-      return { verified: required27.length - missing.length, required: required27.length, missing };
+      this.tablesVerified = required27.length - missing.length;
+      return { verified: this.tablesVerified, required: required27.length, missing };
     } catch (e: any) {
       this.lastError = e?.message || 'Failed to verify Neon tables';
+      this.tablesVerified = 0;
       return { verified: 0, required: required27.length, missing: required27 };
+    }
+  }
+
+  /**
+   * Read-only audit of PostgreSQL row-level security. This never changes schema or policies.
+   * "Connected" is not evidence that tenant isolation is enabled; callers must inspect this result.
+   */
+  public async verifyRlsPosture(): Promise<{
+    success: boolean;
+    public_tables: number;
+    rls_enabled_tables: number;
+    forced_rls_tables: number;
+    policy_count: number;
+    current_role: string | null;
+    current_role_bypass_rls: boolean | null;
+    tables_without_rls: string[];
+    tables_without_policy: string[];
+    error?: string;
+  }> {
+    this.tenantIsolationVerified = false;
+    const empty = {
+      success: false,
+      public_tables: 0,
+      rls_enabled_tables: 0,
+      forced_rls_tables: 0,
+      policy_count: 0,
+      current_role: null as string | null,
+      current_role_bypass_rls: null as boolean | null,
+      tables_without_rls: [] as string[],
+      tables_without_policy: [] as string[]
+    };
+    if (!this.isConnected || !this.neonClient) {
+      return { ...empty, error: this.lastError || 'Neon not connected' };
+    }
+    try {
+      const rows = await this.neonClient.query(`
+        SELECT c.relname AS table_name,
+               c.relrowsecurity AS rls_enabled,
+               c.relforcerowsecurity AS rls_forced,
+               (SELECT count(*)::int FROM pg_policies p
+                 WHERE p.schemaname = n.nspname AND p.tablename = c.relname) AS policy_count,
+               current_user AS current_role,
+               COALESCE((SELECT r.rolbypassrls FROM pg_roles r WHERE r.rolname = current_user), false) AS role_bypass_rls
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')
+          AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
+        ORDER BY c.relname
+      `);
+      const tables = Array.isArray(rows) ? rows : [];
+      const withoutRls = tables.filter((r: any) => r.rls_enabled !== true).map((r: any) => String(r.table_name));
+      const withoutPolicy = tables.filter((r: any) => Number(r.policy_count) < 1).map((r: any) => String(r.table_name));
+      const forced = tables.filter((r: any) => r.rls_forced === true).length;
+      const policyCount = tables.reduce((sum: number, r: any) => sum + Number(r.policy_count || 0), 0);
+      const role = tables[0]?.current_role ? String(tables[0].current_role) : null;
+      const bypass = typeof tables[0]?.role_bypass_rls === 'boolean' ? tables[0].role_bypass_rls : null;
+      const success = tables.length > 0 && withoutRls.length === 0 && withoutPolicy.length === 0 && forced === tables.length && bypass === false;
+      this.tenantIsolationVerified = success;
+      return {
+        success,
+        public_tables: tables.length,
+        rls_enabled_tables: tables.length - withoutRls.length,
+        forced_rls_tables: forced,
+        policy_count: policyCount,
+        current_role: role,
+        current_role_bypass_rls: bypass,
+        tables_without_rls: withoutRls,
+        tables_without_policy: withoutPolicy
+      };
+    } catch (e: any) {
+      return { ...empty, error: e?.message || 'Read-only RLS audit failed' };
     }
   }
 
   public async insertRecord(tableName: string, data: Record<string, any>): Promise<boolean> {
     if (!this.isConnected || !this.neonClient) return false;
+    if (!this.isAllowedTable(tableName)) {
+      this.lastError = 'Rejected table outside the persistence allowlist';
+      return false;
+    }
+    if (typeof data.tenant_id !== 'string' || data.tenant_id.trim().length === 0) {
+      this.lastError = 'Rejected write without an explicit tenant_id';
+      return false;
+    }
     try {
       const now = Date.now();
       const payload = {
         id: data.id || `rec_${Date.now()}`,
-        tenant_id: data.tenant_id || 'TENANT_SOVEREIGN_ROOT',
+        tenant_id: data.tenant_id.trim(),
         created_at: data.created_at || now,
         updated_at: data.updated_at || now,
         status: data.status || 'ACTIVE',
@@ -192,10 +289,15 @@ export class NeonStore {
 
   public async findTenantRecords(tableName: string, tenantId: string, limit: number = 100): Promise<any[]> {
     if (!this.isConnected || !this.neonClient) return [];
+    if (!this.isAllowedTable(tableName) || typeof tenantId !== 'string' || tenantId.trim().length === 0) {
+      this.lastError = 'Rejected tenant read with an invalid table or tenant identifier';
+      return [];
+    }
+    const safeLimit = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 500)) : 100;
     try {
       const rows = await this.neonClient.query(`
         SELECT * FROM ${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2
-      `, [tenantId, limit]);
+      `, [tenantId.trim(), safeLimit]);
       return rows.map((r: any) => ({ ...r, ...r.payload_json }));
     } catch {
       return [];
