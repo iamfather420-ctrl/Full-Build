@@ -4,6 +4,7 @@ import cp from 'child_process';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { computeSha256 } from '../src/database/DatabaseSchema';
+import { buildFormalEvidenceHashes } from '../src/proofs/formalEvidenceHash';
 import { System46Gates } from '../src/proofs/System46Gates';
 
 async function main() {
@@ -43,25 +44,54 @@ async function main() {
   console.log(` -> DH Blocked:          ${dhReport.blocked_count}`);
 
   const totalZ3Executions = dfrlReport.executed + dhReport.executed;
-  const totalExpectedMatches = dfrlReport.unsat_count + dhReport.expected_result_matches;
-  const totalReplays = dfrlReport.executed + dhReport.cleanroom_replays;
-  const totalReplayMatches = dfrlReport.deterministic_replays_matched + dhReport.replay_matches;
-  const totalUnsat = dfrlReport.unsat_count + dhReport.unsat_count;
-  const totalSat = dfrlReport.sat_count + dhReport.sat_count;
-  const totalUnknown = dfrlReport.unknown_count + dhReport.unknown_count;
-  const totalError = dfrlReport.error_count + dhReport.error_count;
+  const dfrlExpectedMatches = dfrlReport.results.filter(r =>
+    r.solver_result === 'unsat' && r.proved && r.claim_scope === 'MODEL_VERIFIED'
+  ).length;
+  const dhExpectedMatches = dhReport.results.filter(r => r.actual_result === r.expected_result).length;
+  const totalExpectedMatches = dfrlExpectedMatches + dhExpectedMatches;
+  const totalReplays = dfrlReport.replays.length + dhReport.replays.length;
+  const dfrlReplayMatches = dfrlReport.replays.filter(r =>
+    r.replay_match && r.original_result === 'unsat' && r.replay_result === 'unsat' &&
+    r.original_assertion_hash === r.replay_assertion_hash
+  ).length;
+  const dhReplayMatches = dhReport.replays.filter(r => r.replay_match && r.original_result === r.replay_result).length;
+  const totalReplayMatches = dfrlReplayMatches + dhReplayMatches;
+  const totalUnsat = dfrlReport.results.filter(r => r.solver_result === 'unsat').length +
+    dhReport.results.filter(r => r.actual_result === 'unsat').length;
+  const totalSat = dfrlReport.results.filter(r => r.solver_result === 'sat').length +
+    dhReport.results.filter(r => r.actual_result === 'sat').length;
+  const totalUnknown = dfrlReport.results.filter(r => r.solver_result === 'unknown').length +
+    dhReport.results.filter(r => r.actual_result === 'unknown').length;
+  const totalError = dfrlReport.results.filter(r =>
+    r.solver_result === 'error' || r.solver_result === 'formal_execution_not_performed'
+  ).length + dhReport.results.filter(r => r.actual_result === 'error' || r.actual_result === 'unknown').length;
+
+  const expectedSatCaseIds = ['DH-P-019', 'DH-P-031'];
+  const actualSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
+  const dfrlIds = dfrlReport.results.map(r => r.operator_id);
+  const dhIds = dhReport.results.map(r => r.case_id);
+  const dfrlCasesValid = dfrlReport.results.length === 88 && new Set(dfrlIds).size === 88 &&
+    dfrlReport.results.every(r => r.solver_result === 'unsat' && r.proved) &&
+    dfrlReport.replays.length === 88 &&
+    dfrlReport.replays.every(r => r.replay_match && r.original_result === 'unsat' &&
+      r.replay_result === 'unsat' && r.original_assertion_hash === r.replay_assertion_hash);
+  const dhCasesValid = dhReport.results.length === 32 && new Set(dhIds).size === 32 &&
+    dhReport.results.every(r => r.actual_result === r.expected_result && r.replay_result === r.actual_result &&
+      r.replay_match && r.verified && r.source_integrity === 'PASS' &&
+      r.evidence_integrity === 'PASS' && !r.error) &&
+    dhReport.replays.length === 32 &&
+    dhReport.replays.every(r => r.replay_match && r.original_result === r.replay_result) &&
+    JSON.stringify(actualSatCaseIds) === JSON.stringify(expectedSatCaseIds);
 
   const duration = Date.now() - startTime;
+  const evidenceHashes = buildFormalEvidenceHashes(commitSha, dfrlReport, dhReport);
+  const combinedRootSha256 = evidenceHashes.corpus_root_sha256;
+  const runEvidenceSha256 = evidenceHashes.run_evidence_sha256;
 
-  const combinedRootSeed = `${dfrlReport.verification_root_sha256}:${dhReport.verification_root_sha256}:${commitSha}`;
-  const combinedRootSha256 = computeSha256(combinedRootSeed);
-
-  const passed120 = totalZ3Executions === 120 &&
-    totalExpectedMatches === 120 &&
-    totalReplays === 120 &&
-    totalReplayMatches === 120 &&
-    totalUnknown === 0 &&
-    totalError === 0;
+  const passed120 = totalZ3Executions === 120 && totalExpectedMatches === 120 &&
+    totalReplays === 120 && totalReplayMatches === 120 && totalUnknown === 0 && totalError === 0 &&
+    dfrlReport.overall_status === 'VERIFIED' && dhReport.overall_status === 'VERIFIED' &&
+    dhReport.blocked_count === 0 && dfrlCasesValid && dhCasesValid;
 
   console.log('\n================================================================');
   console.log('120-CASE FORMAL Z3 VERIFICATION SUMMARY');
@@ -82,18 +112,15 @@ async function main() {
   console.log(`Activation Gate Verdict:   ${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}`);
   console.log('================================================================');
 
+  const artifactsDir = path.resolve(process.cwd(), 'artifacts');
+  if (!fs.existsSync(artifactsDir)) fs.mkdirSync(artifactsDir, { recursive: true });
+
   // Execute the authoritative 46-gate truth-boundary suite before allowing brain activation.
   const gatesReport = await System46Gates.getInstance().evaluateAll46Gates();
-  fs.writeFileSync(
-    path.join(process.cwd(), 'artifacts', 'system-46-gates.json'),
-    JSON.stringify(gatesReport, null, 2),
-    'utf8'
-  );
+  fs.writeFileSync(path.join(artifactsDir, 'system-46-gates.json'), JSON.stringify(gatesReport, null, 2), 'utf8');
 
-  const providerBoundaryOnly = gatesReport.gates.filter(g =>
-    g.status === 'FAIL' || (g.status === 'BLOCKED' && g.gate_id !== 'GATE-14')
-  );
-  const brainActive = passed120 && providerBoundaryOnly.length === 0;
+  const nonPassedGates = gatesReport.gates.filter(g => g.status !== 'PASSED');
+  const brainActive = passed120 && gatesReport.gates.length === 46 && nonPassedGates.length === 0;
 
   const activationGate = {
     schema_version: '1.0.0',
@@ -112,11 +139,17 @@ async function main() {
     },
     mandatory_gates: {
       total: 46,
-      passed: gatesReport.gates_passed,
-      failed: providerBoundaryOnly.length
+      observed: gatesReport.gates.length,
+      passed: gatesReport.gates.filter(g => g.status === 'PASSED').length,
+      failed: gatesReport.gates.filter(g => g.status === 'FAIL').length,
+      blocked: gatesReport.gates.filter(g => g.status === 'BLOCKED').length,
+      external_provider_required: gatesReport.gates.filter(g => g.status === 'EXTERNAL_PROVIDER_REQUIRED').length,
+      non_passed: nonPassedGates.length
     },
-    gate_exceptions: gatesReport.gates.filter(g => g.status !== 'PASSED').map(g => ({ gate_number: g.gate_number, gate_id: g.gate_id, status: g.status, name: g.name, details: g.details })),
+    gate_exceptions: nonPassedGates.map(g => ({ gate_number: g.gate_number, gate_id: g.gate_id, status: g.status, name: g.name, details: g.details })),
     verification_root_sha256: combinedRootSha256,
+    corpus_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256,
     source_commit_sha: commitSha,
     generated_at: new Date().toISOString()
   };
@@ -125,11 +158,6 @@ async function main() {
     JSON.stringify(activationGate, null, 2),
     'utf8'
   );
-
-  const artifactsDir = path.resolve(process.cwd(), 'artifacts');
-  if (!fs.existsSync(artifactsDir)) {
-    fs.mkdirSync(artifactsDir, { recursive: true });
-  }
 
   // 1. formal-aggregation.json (Requirement 13)
   const formalAggregationArtifact = {
@@ -146,6 +174,7 @@ async function main() {
       unknown_count: dfrlReport.unknown_count,
       error_count: dfrlReport.error_count,
       root_hash: dfrlReport.verification_root_sha256,
+      corpus_root_hash: evidenceHashes.dfrl_corpus_root_sha256,
       status: dfrlReport.overall_status
     },
     dh: {
@@ -160,6 +189,7 @@ async function main() {
       unknown_count: dhReport.unknown_count,
       error_count: dhReport.error_count,
       root_hash: dhReport.verification_root_sha256,
+      corpus_root_hash: evidenceHashes.dh_corpus_root_sha256,
       status: dhReport.overall_status
     },
     total: {
@@ -174,6 +204,8 @@ async function main() {
         error: totalError
       },
       combined_root_sha256: combinedRootSha256,
+      corpus_root_sha256: combinedRootSha256,
+      run_evidence_sha256: runEvidenceSha256,
       closure_verdict: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'
     }
   };
@@ -220,6 +252,8 @@ async function main() {
       }
     },
     combined_root_sha256: combinedRootSha256,
+    corpus_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256,
     activation_gate: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'
   };
 
@@ -238,7 +272,8 @@ async function main() {
 - **Total Z3 Executions:** 120 / 120
 - **Expected-Result Matches:** 120 / 120
 - **Deterministic Cleanroom Replays:** 120 / 120
-- **Combined Root Hash:** \`${combinedRootSha256}\`
+- **Stable Corpus Root Hash:** \`${combinedRootSha256}\`
+- **Run-Specific Evidence Hash:** \`${runEvidenceSha256}\`
 - **Distribution:** UNSAT: ${totalUnsat} (88 DFRL + ${dhReport.unsat_count} DH), SAT: ${totalSat} (${dhReport.sat_count} DH), UNKNOWN: 0, ERROR: 0
 - **Activation Gate Status:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}**
 
@@ -277,8 +312,10 @@ async function main() {
       total_z3_executions: totalZ3Executions,
       total_cleanroom_replays: totalReplays,
       total_replay_matches: totalReplayMatches,
-      claim_scope: 'PROVEN_120_FORMAL_CLOSURE',
-      combined_root_sha256: combinedRootSha256
+      claim_scope: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED',
+      combined_root_sha256: combinedRootSha256,
+      corpus_root_sha256: combinedRootSha256,
+      run_evidence_sha256: runEvidenceSha256
     },
     dfrl_status: {
       total: 88,
@@ -331,18 +368,18 @@ async function main() {
   const forensicMd = `# Solvex Authoritative Forensic Verification Audit Report
 **Commit SHA:** \`${commitSha}\`  
 **Timestamp:** \`${forensicReport.timestamp}\`  
-**Verdict:** **PROVEN_120_FORMAL_CLOSURE (120/120 REAL Z3 EXECUTIONS)**  
-**Combined Root Hash:** \`${combinedRootSha256}\`  
+**Verdict:** **\${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'} (\${totalZ3Executions}/120 REAL Z3 EXECUTIONS)**  
+**Stable Corpus Root Hash:** \`${combinedRootSha256}\`  
+**Run-Specific Evidence Hash:** \`${runEvidenceSha256}\`  
 
 ---
 
 ## 1. Executive Summary
-- **DFRL 88-Operator Z3 Subsystem:** 88 / 88 real executions, 88 cleanroom replays, 88 UNSAT proofs.
-- **DH 32-Paradox Authoritative Subsystem:** 32 / 32 real executions, 32 fresh-context replays, 32 matches.
-- **Total Theorem Prover Scope:** Exactly 120 / 120 formal Z3-WASM verified cases.
-- **Independence & Freshness:** 100% fresh Z3 context creation per execution and replay; zero context reuse.
-- **Commit Binding:** HEAD SHA resolved dynamically from current git repository (\`${commitSha}\`).
-- **Source Binding:** Cryptographically bound to disk content of \`src/paradoxes/DHBootstrapParadoxRegistry.ts\`.
+- **DFRL 88-Operator Z3 Subsystem:** \${dfrlReport.executed}/88 executions, \${dfrlReplayMatches}/88 replay matches, \${dfrlReport.unsat_count}/88 UNSAT results.
+- **DH 32-Paradox Authoritative Subsystem:** \${dhReport.executed}/32 executions, \${dhReplayMatches}/32 replay matches, \${dhExpectedMatches}/32 expected-result matches.
+- **Total Theorem Prover Scope:** \${totalZ3Executions}/120 formal Z3-WASM executions; \${totalExpectedMatches}/120 expected matches.
+- **Replay implementation:** DFRL primary and cleanroom solvers use separate contexts in the same process; DH replay outcomes are recorded per case. This is not a separate-machine replay.
+- **Commit Binding:** Repository commit \`${commitSha}\`; DH source-content integrity is recorded per case.
 
 ---
 
