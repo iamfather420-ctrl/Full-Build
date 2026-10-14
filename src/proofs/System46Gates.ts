@@ -100,7 +100,8 @@ export class System46Gates {
     // -------------------------------------------------------------
     const failedPrior = evaluatedGates.filter(g => g.status === 'FAIL').length;
     const passedPrior = evaluatedGates.filter(g => g.status === 'PASSED').length;
-    const masterPassed = failedPrior === 0 && passedPrior >= 43;
+    const nonPassedPrior = evaluatedGates.filter(g => g.status !== 'PASSED').length;
+    const masterPassed = evaluatedGates.length === 45 && nonPassedPrior === 0;
 
     evaluatedGates.push({
       gate_number: 46,
@@ -115,6 +116,7 @@ export class System46Gates {
         total_preceding_gates: 45,
         preceding_passed: passedPrior,
         preceding_failed: failedPrior,
+        preceding_non_passed: nonPassedPrior,
         external_boundaries_preserved: true,
         fail_closed_active: true
       }
@@ -136,9 +138,11 @@ export class System46Gates {
       external_provider_required_count: extCount,
       blocked_count: blockedCount,
       failed_count: failCount,
-      all_local_and_model_passed: failCount === 0,
+      all_local_and_model_passed: failCount === 0 && extCount === 0 && blockedCount === 0 && passedCount === 46,
       gates: evaluatedGates,
-      overall_verdict: failCount === 0 ? 'VERIFIED_SOVEREIGN_CLOSURE' : 'BLOCKED'
+      overall_verdict: failCount === 0 && extCount === 0 && blockedCount === 0 && passedCount === 46
+        ? 'VERIFIED_SOVEREIGN_CLOSURE'
+        : 'BLOCKED'
     };
   }
 }
