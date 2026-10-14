@@ -252,10 +252,9 @@ export class Z3FormalProofEngine {
       if (solverResult === 'sat') {
         counterexample = { model: solver.model().toString() };
       }
-      explanation = provedExplanation ||
-        (solverResult === expectedResult
-          ? `Z3 WASM returned ${solverResult.toUpperCase()} for the formal proposition.`
-          : `Z3 WASM returned ${solverResult.toUpperCase()}, expected ${expectedResult.toUpperCase()}.`);
+      explanation = solverResult === expectedResult
+        ? (provedExplanation || `Z3 WASM returned the expected ${solverResult.toUpperCase()} result.`)
+        : `Z3 WASM returned ${solverResult.toUpperCase()}, expected ${expectedResult.toUpperCase()}; verification failed closed.`;
     } catch (error) {
       solverResult = 'unknown';
       explanation = `Z3 execution failed closed: ${error instanceof Error ? error.message : String(error)}`;
