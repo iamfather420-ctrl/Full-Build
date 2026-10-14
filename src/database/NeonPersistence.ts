@@ -195,6 +195,7 @@ export class NeonStore {
     current_role_bypass_rls: boolean | null;
     tables_without_rls: string[];
     tables_without_policy: string[];
+    tables_without_trusted_guard: string[];
     policies_with_untrusted_privilege_flags: string[];
     error?: string;
   }> {
@@ -209,6 +210,7 @@ export class NeonStore {
       current_role_bypass_rls: null as boolean | null,
       tables_without_rls: [] as string[],
       tables_without_policy: [] as string[],
+      tables_without_trusted_guard: [] as string[],
       policies_with_untrusted_privilege_flags: [] as string[]
     };
     if (!this.isConnected || !this.neonClient) {
@@ -221,6 +223,10 @@ export class NeonStore {
                c.relforcerowsecurity AS rls_forced,
                (SELECT count(*)::int FROM pg_policies p
                  WHERE p.schemaname = n.nspname AND p.tablename = c.relname) AS policy_count,
+               EXISTS (SELECT 1 FROM pg_policies guard
+                 WHERE guard.schemaname = n.nspname AND guard.tablename = c.relname
+                   AND guard.permissive = 'RESTRICTIVE'
+                   AND guard.policyname IN ('solvex_signed_tenant_context', 'solvex_deny_unclassified')) AS trusted_guard,
                current_user AS current_role,
                COALESCE((SELECT r.rolbypassrls FROM pg_roles r WHERE r.rolname = current_user), false) AS role_bypass_rls
         FROM pg_class c
@@ -232,6 +238,7 @@ export class NeonStore {
       const tables = Array.isArray(queryResult?.rows) ? queryResult.rows : [];
       const withoutRls = tables.filter((r: any) => r.rls_enabled !== true).map((r: any) => String(r.table_name));
       const withoutPolicy = tables.filter((r: any) => Number(r.policy_count) < 1).map((r: any) => String(r.table_name));
+      const withoutTrustedGuard = tables.filter((r: any) => r.trusted_guard !== true).map((r: any) => String(r.table_name));
       const forced = tables.filter((r: any) => r.rls_forced === true).length;
       const policyCount = tables.reduce((sum: number, r: any) => sum + Number(r.policy_count || 0), 0);
       const role = tables[0]?.current_role ? String(tables[0].current_role) : null;
@@ -242,20 +249,25 @@ export class NeonStore {
       // until policies use an independently trusted authorization context and adversarial
       // tests prove that untrusted callers cannot forge it.
       const policyResult = await this.neonClient.query(`
-        SELECT tablename, policyname, COALESCE(qual, '') AS qual,
-               COALESCE(with_check, '') AS with_check
-        FROM pg_policies
-        WHERE schemaname = 'public'
+        SELECT p.tablename, p.policyname, p.permissive, COALESCE(p.qual, '') AS qual,
+               COALESCE(p.with_check, '') AS with_check,
+               EXISTS (SELECT 1 FROM pg_policies guard
+                 WHERE guard.schemaname = p.schemaname AND guard.tablename = p.tablename
+                   AND guard.permissive = 'RESTRICTIVE'
+                   AND guard.policyname IN ('solvex_signed_tenant_context', 'solvex_deny_unclassified')) AS has_trusted_guard
+        FROM pg_policies p
+        WHERE p.schemaname = 'public'
       `);
       const privilegedFlagPattern = /current_setting\s*\(\s*'app\.[a-z0-9_]+/i;
       const policiesWithUntrustedFlags = (Array.isArray(policyResult?.rows) ? policyResult.rows : [])
-        .filter((p: any) => privilegedFlagPattern.test(String(p.qual || '') + ' ' + String(p.with_check || '')))
+        .filter((p: any) => p.has_trusted_guard !== true && privilegedFlagPattern.test(String(p.qual || '') + ' ' + String(p.with_check || '')))
         .map((p: any) => `${String(p.tablename)}.${String(p.policyname)}`)
         .sort();
 
       const success = tables.length > 0 &&
         withoutRls.length === 0 &&
         withoutPolicy.length === 0 &&
+        withoutTrustedGuard.length === 0 &&
         forced === tables.length &&
         bypass === false &&
         policiesWithUntrustedFlags.length === 0;
@@ -270,6 +282,7 @@ export class NeonStore {
         current_role_bypass_rls: bypass,
         tables_without_rls: withoutRls,
         tables_without_policy: withoutPolicy,
+        tables_without_trusted_guard: withoutTrustedGuard,
         policies_with_untrusted_privilege_flags: policiesWithUntrustedFlags
       };
     } catch (e: any) {
