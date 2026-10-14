@@ -101,6 +101,7 @@ export class SovereignApiRouter {
 
       // 2. /api/tenants
       if (path === '/api/tenants' && method === 'GET') {
+        if (!user || user.role !== 'OWNER') return { status: 403, error: 'Forbidden: tenant directory is restricted to OWNER', timestamp };
         const tenants = this.sqlite.getRawDb().all('SELECT id, name, tier, status, created_at FROM tenants');
         return { status: 200, data: tenants, timestamp };
       }
@@ -177,6 +178,7 @@ export class SovereignApiRouter {
 
       // 7. /api/verification
       if (path === '/api/verification' && method === 'GET') {
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: verification run directory is restricted to platform operators', timestamp };
         const runs = this.sqlite.getRawDb().all('SELECT * FROM verification_runs ORDER BY created_at DESC LIMIT 20');
         return { status: 200, data: runs, timestamp };
       }
@@ -256,6 +258,8 @@ export class SovereignApiRouter {
 
       // 11. /api/payments
       if (path === '/api/payments/capture' && method === 'POST') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment capture is restricted to platform operators', timestamp };
         const { order_id, amount_cents, idempotency_key } = payload || {};
         if (!order_id || !amount_cents) return { status: 400, error: 'order_id and amount_cents required', timestamp };
         const paypal = PayPalAdapter.getInstance();
@@ -263,17 +267,23 @@ export class SovereignApiRouter {
         return { status: 200, data: res, timestamp };
       }
       if (path === '/api/payments/paypal/status' && method === 'GET') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment status is restricted to platform operators', timestamp };
         const paypal = PayPalAdapter.getInstance();
         const info = paypal.getMaskedCredentialsInfo();
         return { status: 200, data: info, timestamp };
       }
       if (path === '/api/payments/paypal/test' && method === 'POST') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment credential tests are restricted to platform operators', timestamp };
         const { client_id, client_secret, environment } = payload || {};
         const paypal = PayPalAdapter.getInstance();
         const res = await paypal.testLiveCredentials(client_id, client_secret, environment);
         return { status: 200, data: res, timestamp };
       }
       if (path === '/api/payments/paypal/configure' && method === 'POST') {
+        if (process.env.PAYMENTS_ENABLED !== 'true') return { status: 503, error: 'Payments are disabled by deployment policy.', timestamp };
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: payment configuration is restricted to platform operators', timestamp };
         const { client_id, client_secret, environment = 'sandbox' } = payload || {};
         if (!client_id || !client_secret) return { status: 400, error: 'client_id and client_secret required', timestamp };
         const paypal = PayPalAdapter.getInstance();
@@ -305,6 +315,7 @@ export class SovereignApiRouter {
 
       // 15. /api/audit/chain
       if (path === '/api/audit/chain' && method === 'GET') {
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: global audit chain is restricted to platform operators', timestamp };
         const verification = this.durableStore.verifyChain();
         return {
           status: 200,
@@ -317,6 +328,7 @@ export class SovereignApiRouter {
         };
       }
       if (path === '/api/audit/chain/verify' && method === 'POST') {
+        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) return { status: 403, error: 'Forbidden: global audit verification is restricted to platform operators', timestamp };
         const verification = this.durableStore.verifyChain();
         return { status: 200, data: verification, timestamp };
       }
