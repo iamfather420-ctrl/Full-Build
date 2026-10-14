@@ -1,0 +1,59 @@
+name: Current 120-Case Formal Verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/proofs/**"
+      - "src/formal/**"
+      - "scripts/verify_120_aggregation.ts"
+      - "scripts/record_120_verification_run.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/verify-120.yml"
+  pull_request:
+    paths:
+      - "src/proofs/**"
+      - "src/formal/**"
+      - "scripts/verify_120_aggregation.ts"
+      - "scripts/record_120_verification_run.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/verify-120.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-120:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build app without external credentials
+        run: npm run build
+      - name: TypeScript
+        run: npm run lint
+      - name: Execute 88 DFRL and 32 DH Z3 verifications with cleanroom replays
+        run: npm run verify:120
+      - name: Bind receipts to this commit and verify hashes/counts
+        run: node scripts/record_120_verification_run.mjs
+      - name: Upload current-commit proof evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: formal-verification-120-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            artifacts/formal-aggregation.json
+            artifacts/z3-120-formal-verification-summary.json
+            artifacts/final-forensic-report.json
+            artifacts/current-120-verification-run.json
