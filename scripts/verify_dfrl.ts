@@ -15,8 +15,9 @@ async function main() {
   console.log(`SAT Results:            ${report.sat_count}`);
   console.log(`Unknown Results:        ${report.unknown_count}`);
   console.log(`Execution Errors:       ${report.error_count}`);
-  console.log(`Authored Models:        ${report.authored_models_count} (DFRL-P-001 to P-020)`);
-  console.log(`Generated Models:       ${report.generated_models_count} (DFRL-P-021 to P-088)`);
+  console.log(`Authored Models:        ${report.authored_models_count} (registry-classified)`);
+  console.log(`Theorem-Specific Models: ${report.theorem_specific_models_count} (DFRL-P-021 to P-088)`);
+  console.log(`Generated Generalized:  ${report.generated_models_count}`);
   console.log(`Deterministic Replays:  ${report.deterministic_replays_matched}`);
   console.log(`Claim Scope:            ${report.claim_scope}`);
   console.log(`Root Hash:              ${report.verification_root_sha256}`);

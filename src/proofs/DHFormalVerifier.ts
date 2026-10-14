@@ -30,6 +30,7 @@ export interface DHFormalVerificationResult {
   domain: string;
   statement: string;
   formal_proposition: string;
+  z3_smt_assertion: string;
   assumptions: string[];
   axioms: string[];
   constraints: string[];
@@ -42,6 +43,7 @@ export interface DHFormalVerificationResult {
   solver: string;
   solver_version: string;
   contract_hash: string;
+  source_file: string;
   source_hash: string;
   source_content_hash: string;
   evidence_hash: string;
@@ -205,6 +207,18 @@ export class DHFormalVerifier {
     return `CANONICAL_SOURCE_REF:${sourceFilePath}:DH_BOOTSTRAP_PARADOX_REGISTRY_V1`;
   }
 
+  private sourceMatchesGitCommit(sourceFilePath: string): boolean {
+    const safePath = sourceFilePath.replace(/[^a-zA-Z0-9_./-]/g, '');
+    if (!platformContext?.execSync || safePath !== sourceFilePath || !safePath.startsWith('src/')) return false;
+    try {
+      const committedBlob = platformContext.execSync(`git rev-parse HEAD:${safePath}`).toString().trim();
+      const workingBlob = platformContext.execSync(`git hash-object -- ${safePath}`).toString().trim();
+      return /^[0-9a-f]{40}$/i.test(committedBlob) && committedBlob === workingBlob;
+    } catch {
+      return false;
+    }
+  }
+
   /**
    * Generates the canonical reconciliation table between original local DH registry and public contracts.
    */
@@ -319,7 +333,7 @@ export class DHFormalVerifier {
     const resultMatch = actualResult === contract.expected_result;
     const nonError = actualResult !== 'unknown' && actualResult !== 'error';
     const evidencePass = computeSha256(evidenceSeed) === evidenceHash;
-    const sourcePass = sourceHash.length === 64;
+    const sourcePass = sourceHash.length === 64 && this.sourceMatchesGitCommit(contract.source_file);
     const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass;
 
     const result: DHFormalVerificationResult = {
@@ -328,6 +342,7 @@ export class DHFormalVerifier {
       domain: contract.domain,
       statement: contract.statement,
       formal_proposition: contract.formal_proposition,
+      z3_smt_assertion: contract.z3_smt_assertion,
       assumptions: contract.assumptions,
       axioms: contract.axioms,
       constraints: contract.constraints,
@@ -340,6 +355,7 @@ export class DHFormalVerifier {
       solver: 'z3-wasm',
       solver_version: this.solverVersion,
       contract_hash: contract.contract_hash,
+      source_file: contract.source_file,
       source_hash: sourceHash,
       source_content_hash: sourceContentHash,
       evidence_hash: evidenceHash,
@@ -490,8 +506,19 @@ export class DHFormalVerifier {
    */
   public runArtifactTamperTest(report: DH32VerificationReport): DHTamperTestResult {
     const originalRootHash = report.verification_root_sha256;
-    const tamperedRootHash = originalRootHash.replace(/[0-9a-f]/, (c) => (c === 'a' ? 'b' : 'a'));
-    const tamperDetected = tamperedRootHash !== originalRootHash;
+    const rootSeed = report.results
+      .map(r => `${r.case_id}:${r.contract_hash}:${r.evidence_hash}:${r.actual_result}`)
+      .join('|');
+    const recomputedOriginalRoot = computeSha256(rootSeed);
+    const tamperedResults = report.results.map((result, index) => index === 0
+      ? { ...result, actual_result: result.actual_result === 'sat' ? 'unsat' : 'sat' }
+      : result);
+    const tamperedSeed = tamperedResults
+      .map(r => `${r.case_id}:${r.contract_hash}:${r.evidence_hash}:${r.actual_result}`)
+      .join('|');
+    const tamperedRootHash = computeSha256(tamperedSeed);
+    const tamperDetected = recomputedOriginalRoot === originalRootHash &&
+      tamperedRootHash !== originalRootHash;
 
     return {
       test_name: 'DH Cryptographic Proof Manifest Tamper Detection',
@@ -501,8 +528,8 @@ export class DHFormalVerifier {
       tamper_detected: tamperDetected,
       passed: tamperDetected,
       details: tamperDetected
-        ? 'Cryptographic integrity verification successfully identified manifest byte mutation.'
-        : 'Tamper test failed: mutated root hash was not detected.'
+        ? 'Recomputed report root matches the original; mutating a solver result changes the root and is detected.'
+        : 'Tamper test failed: original root mismatch or mutated result did not change the recomputed root.'
     };
   }
 }

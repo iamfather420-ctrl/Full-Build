@@ -82,7 +82,10 @@ export async function runFullBuildVerificationClosure() {
   const timestampUtc = new Date().toISOString();
   const repoName = 'iamfather420-ctrl/Full-Build';
   const branchName = 'main';
-  const targetCommitSha = '728625581c2f89210c752d03fda0a154812b2366';
+  const targetCommitSha = cp.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+  if (!/^[0-9a-f]{40}$/i.test(targetCommitSha)) {
+    throw new Error('Could not resolve an exact Git commit SHA; refusing to bind evidence to a guessed baseline.');
+  }
   const runtime = `Node.js ${process.version} (${process.platform} ${process.arch})`;
   const artifactsDir = path.resolve(process.cwd(), 'artifacts');
   const receiptsDir = path.resolve(artifactsDir, 'proof-receipts');
@@ -111,7 +114,10 @@ export async function runFullBuildVerificationClosure() {
   // PHASE 1 — FREEZE THE TARGET BASELINE
   // ============================================================================
   console.log('[PHASE 1] Freezing Target Baseline...');
-  const lockfileContent = fs.existsSync('bun.lock') ? fs.readFileSync('bun.lock') : Buffer.from('');
+  const lockfileCandidates = ['bun.lock', 'bun.lockb', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'];
+  const lockfilePath = lockfileCandidates.find(candidate => fs.existsSync(candidate));
+  if (!lockfilePath) throw new Error('No package-manager lockfile found; refusing to record an incomplete dependency baseline.');
+  const lockfileContent = fs.readFileSync(lockfilePath);
   const packageJsonContent = fs.readFileSync('package.json', 'utf8');
   const lockfileHash = sha256(lockfileContent);
   const packageJsonHash = sha256(packageJsonContent);
@@ -151,6 +157,7 @@ export async function runFullBuildVerificationClosure() {
     node_version: process.version,
     os_environment: `${process.platform} ${process.arch}`,
     package_manager: fs.existsSync('bun.lock') ? 'bun / npm' : 'npm',
+    lockfile_path: lockfilePath,
     lockfile_hash: lockfileHash,
     package_json_hash: packageJsonHash,
     source_tree_hash: overallSourceTreeHash,
@@ -731,7 +738,7 @@ export async function runFullBuildVerificationClosure() {
       verification_id: entry.verification_id,
       claim: entry.name,
       preconditions: [
-        'Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366',
+        'Target repository commit frozen at ${targetCommitSha}',
         'Independent Z3 WASM kernel & SQLite Native persistence active',
         'Fail-closed policy interlocks asserted'
       ],
@@ -959,8 +966,11 @@ export async function runFullBuildVerificationClosure() {
   const dfrlProofClosure = {
     solver_kernel: 'Microsoft Research Z3 WebAssembly Kernel (z3-solver v5.2.0-wasm)',
     total_operators: 88,
-    unsat_refutations_proved: dfrlReport.unsat_proved_count,
+    unsat_results: dfrlReport.unsat_count,
+    expected_result_matches: dfrlReport.results.filter(result => result.proved).length,
+    sat_witnesses: dfrlReport.sat_count,
     authored_models: dfrlReport.authored_models_count,
+    theorem_specific_models: dfrlReport.theorem_specific_models_count,
     generated_models: dfrlReport.generated_models_count,
     lean4_status: 'CLAIM_ONLY (Lean4 toolchain not locally installed; formal verification completed in Z3 WASM)',
     coq_status: 'CLAIM_ONLY (Coq Gallina toolchain not locally installed; formal verification completed in Z3 WASM)',
@@ -981,7 +991,7 @@ export async function runFullBuildVerificationClosure() {
       verification_id: r.case_id,
       claim: `${r.name}: ${r.statement}`,
       preconditions: [
-        'Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366',
+        `Target repository commit frozen at ${targetCommitSha}`,
         'Independent Z3 WASM kernel fresh-context execution',
         'Canonical formal contract assert and refutation/satisfaction check'
       ],
@@ -1011,12 +1021,18 @@ export async function runFullBuildVerificationClosure() {
 
   // 120-Case Formal Z3 Aggregation Table
   const totalFormalExec = dfrlReport.executed + dhReport.executed;
-  const totalFormalExpected = dfrlReport.unsat_proved_count + dhReport.expected_result_matches;
-  const totalFormalReplays = dfrlReport.executed + dhReport.cleanroom_replays;
+  const dfrlExpectedMatches = dfrlReport.results.filter(result => result.proved).length;
+  const totalFormalExpected = dfrlExpectedMatches + dhReport.expected_result_matches;
+  const totalFormalReplays = dfrlReport.deterministic_replays_matched + dhReport.cleanroom_replays;
   const totalFormalReplayMatches = dfrlReport.deterministic_replays_matched + dhReport.replay_matches;
-  const totalFormalUnsat = dfrlReport.unsat_proved_count + dhReport.unsat_count;
+  const totalFormalUnsat = dfrlReport.unsat_count + dhReport.unsat_count;
   const totalFormalSat = dfrlReport.sat_count + dhReport.sat_count;
-  const formal120Passed = totalFormalExec === 120 && totalFormalExpected === 120 && totalFormalReplayMatches === 120;
+  const totalFormalUnknown = dfrlReport.unknown_count + dhReport.unknown_count;
+  const totalFormalErrors = dfrlReport.error_count + dhReport.error_count;
+  const adversarialPassed = [dfrlMutation, dfrlFailInj, dfrlTamper, dhMutation, dhFailInj, dhTamper].every(test => test.passed);
+  const formal120Passed = totalFormalExec === 120 && totalFormalExpected === 120 && totalFormalReplays === 120 &&
+    totalFormalReplayMatches === 120 && dfrlReport.overall_status === 'VERIFIED' && dhReport.overall_status === 'VERIFIED' &&
+    totalFormalUnknown === 0 && totalFormalErrors === 0 && adversarialPassed;
 
   const combined120Root = sha256(`${dfrlReport.verification_root_sha256}:${dhReport.verification_root_sha256}:${targetCommitSha}`);
   const summary120Artifact = {
@@ -1032,8 +1048,8 @@ export async function runFullBuildVerificationClosure() {
       expected_result_matches: totalFormalExpected,
       cleanroom_replays: totalFormalReplays,
       replay_matches: totalFormalReplayMatches,
-      unknown_count: 0,
-      error_count: 0
+      unknown_count: totalFormalUnknown,
+      error_count: totalFormalErrors
     },
     distribution: {
       unsat: totalFormalUnsat,
@@ -1045,7 +1061,9 @@ export async function runFullBuildVerificationClosure() {
       dfrl: {
         total_required: 88,
         executed: dfrlReport.executed,
-        unsat_proved: dfrlReport.unsat_proved_count,
+        unsat_results: dfrlReport.unsat_count,
+        expected_matches: dfrlExpectedMatches,
+        theorem_specific_models: dfrlReport.theorem_specific_models_count,
         replays_matched: dfrlReport.deterministic_replays_matched,
         root_hash: dfrlReport.verification_root_sha256,
         status: dfrlReport.overall_status
@@ -1168,10 +1186,10 @@ export async function runFullBuildVerificationClosure() {
     proof_receipts: counts.proof_receipts,
     replay_verified: counts.replay_verified,
     integrity_verified: counts.integrity_verified,
-    formal_proof_rate: `${dfrlReport.unsat_proved_count}/${dfrlReport.total_operators} (100% Z3 WASM UNSAT)`,
-    formal_dh_rate: `${dhReport.expected_result_matches}/${dhReport.total_cases} (100% Z3 WASM Matches: 30 UNSAT, 2 SAT)`,
-    formal_total_120_rate: `${dfrlReport.unsat_proved_count + dhReport.expected_result_matches}/120 (100% Z3 WASM Theorem Proving)`,
-    formal_120_cleanroom_replays: `${dfrlReport.executed + dhReport.cleanroom_replays}/120 (100% Replay Matches)`,
+    formal_proof_rate: `${dfrlExpectedMatches}/${dfrlReport.total_operators} expected SAT/UNSAT outcomes matched; ${dfrlReport.unsat_count} UNSAT and ${dfrlReport.sat_count} SAT`,
+    formal_dh_rate: `${dhReport.expected_result_matches}/${dhReport.total_cases} expected results matched; ${dhReport.unsat_count} UNSAT and ${dhReport.sat_count} SAT`,
+    formal_total_120_rate: `${totalFormalExpected}/120 expected-result matches`,
+    formal_120_cleanroom_replays: `${totalFormalReplays}/120 replays; ${totalFormalReplayMatches} matched`,
     formal_120_status: formal120Passed ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED',
     enterprise_invariant_rate: `${enterpriseResults.passedTests}/${enterpriseResults.totalTests} (100%)`,
     daisy_node_execution_rate: `${daisyNodeResults.executed}/${daisyNodeResults.total} (100%)`,

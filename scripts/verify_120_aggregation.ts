@@ -23,13 +23,15 @@ async function main() {
   console.log(`Current Git Commit SHA: ${commitSha}`);
 
   const startTime = Date.now();
+  const artifactsDir = path.resolve(process.cwd(), 'artifacts');
+  fs.mkdirSync(artifactsDir, { recursive: true });
 
   // 1. Execute 88 DFRL Operators
   console.log('\n[STAGE 1/2] Executing 88 DFRL Operators through Microsoft Research Z3...');
   const dfrlVerifier = DFRLFormalVerifier.getInstance();
   const dfrlReport = await dfrlVerifier.verifyAll88();
   console.log(` -> DFRL Executed:       ${dfrlReport.executed} / ${dfrlReport.total_operators}`);
-  console.log(` -> DFRL UNSAT Proved:   ${dfrlReport.unsat_count} / ${dfrlReport.total_operators}`);
+  console.log(` -> DFRL UNSAT results:  ${dfrlReport.unsat_count} / ${dfrlReport.total_operators}`);
   console.log(` -> DFRL Replays:        ${dfrlReport.deterministic_replays_matched} / ${dfrlReport.total_operators}`);
 
   // 2. Execute 32 DH Formal Contracts
@@ -42,9 +44,30 @@ async function main() {
   console.log(` -> DH Distribution:     UNSAT: ${dhReport.unsat_count}, SAT: ${dhReport.sat_count}`);
   console.log(` -> DH Blocked:          ${dhReport.blocked_count}`);
 
+  // Adversarial checks are executed, not represented by hard-coded PASS flags.
+  const dfrlMutationTest = await dfrlVerifier.runSmtMutationTest();
+  const dfrlFailureInjectionTest = await dfrlVerifier.runFailureInjectionTest();
+  const dfrlTamperTest = dfrlVerifier.runArtifactTamperTest(dfrlReport);
+  const dhMutationTest = await dhVerifier.runSmtMutationTest();
+  const dhFailureInjectionTest = await dhVerifier.runFailureInjectionTest();
+  const dhTamperTest = dhVerifier.runArtifactTamperTest(dhReport);
+  const adversarialTests = [
+    dfrlMutationTest, dfrlFailureInjectionTest, dfrlTamperTest,
+    dhMutationTest, dhFailureInjectionTest, dhTamperTest,
+  ];
+  const adversarialPassed = adversarialTests.every(test => test.passed);
+  const integrityGuardsPassed = dhReport.results.every(result =>
+    result.evidence_integrity === 'PASS' &&
+    result.source_integrity === 'PASS' &&
+    result.replay_match
+  );
+  console.log(` -> Adversarial checks:   ${adversarialTests.filter(test => test.passed).length} / ${adversarialTests.length}`);
+  console.log(` -> DH integrity guards:  ${integrityGuardsPassed ? 'PASS' : 'FAIL'}`);
+
   const totalZ3Executions = dfrlReport.executed + dhReport.executed;
-  const totalExpectedMatches = dfrlReport.unsat_count + dhReport.expected_result_matches;
-  const totalReplays = dfrlReport.executed + dhReport.cleanroom_replays;
+  const dfrlExpectedMatches = dfrlReport.results.filter(result => result.proved).length;
+  const totalExpectedMatches = dfrlExpectedMatches + dhReport.expected_result_matches;
+  const totalReplays = dfrlReport.deterministic_replays_matched + dhReport.cleanroom_replays;
   const totalReplayMatches = dfrlReport.deterministic_replays_matched + dhReport.replay_matches;
   const totalUnsat = dfrlReport.unsat_count + dhReport.unsat_count;
   const totalSat = dfrlReport.sat_count + dhReport.sat_count;
@@ -60,8 +83,18 @@ async function main() {
     totalExpectedMatches === 120 &&
     totalReplays === 120 &&
     totalReplayMatches === 120 &&
+    dfrlReport.total_operators === 88 &&
+    dfrlReport.executed === 88 &&
+    dfrlReport.overall_status === 'VERIFIED' &&
+    dhReport.total_cases === 32 &&
+    dhReport.formalized === 32 &&
+    dhReport.executed === 32 &&
+    dhReport.blocked_count === 0 &&
+    dhReport.overall_status === 'VERIFIED' &&
+    integrityGuardsPassed &&
     totalUnknown === 0 &&
-    totalError === 0;
+    totalError === 0 &&
+    adversarialPassed;
 
   console.log('\n================================================================');
   console.log('120-CASE FORMAL Z3 VERIFICATION SUMMARY');
@@ -72,8 +105,8 @@ async function main() {
   console.log(`Expected-result matches:   ${totalExpectedMatches} / 120`);
   console.log(`Cleanroom replays:         ${totalReplays} / 120`);
   console.log(`Replay matches:            ${totalReplayMatches} / 120`);
-  console.log(`UNSAT Count:               ${totalUnsat} (88 DFRL + ${dhReport.unsat_count} DH)`);
-  console.log(`SAT Count:                 ${totalSat} (0 DFRL + ${dhReport.sat_count} DH)`);
+  console.log(`UNSAT Count:               ${totalUnsat} (${dfrlReport.unsat_count} DFRL + ${dhReport.unsat_count} DH)`);
+  console.log(`SAT Count:                 ${totalSat} (${dfrlReport.sat_count} DFRL + ${dhReport.sat_count} DH)`);
   console.log(`UNKNOWN:                   ${totalUnknown}`);
   console.log(`ERROR:                     ${totalError}`);
   console.log(`Combined Root Hash:        ${combinedRootSha256}`);
@@ -126,11 +159,6 @@ async function main() {
     'utf8'
   );
 
-  const artifactsDir = path.resolve(process.cwd(), 'artifacts');
-  if (!fs.existsSync(artifactsDir)) {
-    fs.mkdirSync(artifactsDir, { recursive: true });
-  }
-
   // 1. formal-aggregation.json (Requirement 13)
   const formalAggregationArtifact = {
     aggregation_name: 'Z3_120_FORMAL_AGGREGATION',
@@ -139,18 +167,39 @@ async function main() {
     dfrl: {
       required: 88,
       actual_z3_executions: dfrlReport.executed,
-      replays: dfrlReport.executed,
+      expected_result_matches: dfrlExpectedMatches,
+      authored_models: dfrlReport.authored_models_count,
+      theorem_specific_models: dfrlReport.theorem_specific_models_count,
+      generated_generalized_models: dfrlReport.generated_models_count,
+      replays: dfrlReport.deterministic_replays_matched,
       replay_matches: dfrlReport.deterministic_replays_matched,
       unsat_count: dfrlReport.unsat_count,
       sat_count: dfrlReport.sat_count,
       unknown_count: dfrlReport.unknown_count,
       error_count: dfrlReport.error_count,
       root_hash: dfrlReport.verification_root_sha256,
-      status: dfrlReport.overall_status
+      status: dfrlReport.overall_status,
+      results: dfrlReport.results.map(result => ({
+        operator_id: result.operator_id,
+        operator_name: result.operator_name,
+        model_classification: result.model_classification,
+        model_scope: result.model_scope,
+        expected_solver_result: result.expected_solver_result,
+        solver_result: result.solver_result,
+        proved: result.proved,
+        claim_scope: result.claim_scope,
+        assertion_hash: result.assertion_hash,
+        actual_smt_assertion_hash: result.actual_smt_assertion_hash,
+        certificate_sha256: result.certificate_sha256,
+        execution_id: result.execution_id,
+        execution_duration_ms: result.execution_duration_ms
+      })),
+      replays: dfrlReport.replays
     },
     dh: {
       required: 32,
       formalized: dhReport.formalized,
+      expected_result_matches: dhReport.expected_result_matches,
       actual_z3_executions: dhReport.executed,
       replays: dhReport.cleanroom_replays,
       replay_matches: dhReport.replay_matches,
@@ -160,7 +209,28 @@ async function main() {
       unknown_count: dhReport.unknown_count,
       error_count: dhReport.error_count,
       root_hash: dhReport.verification_root_sha256,
-      status: dhReport.overall_status
+      status: dhReport.overall_status,
+      results: dhReport.results.map(result => ({
+        case_id: result.case_id,
+        name: result.name,
+        domain: result.domain,
+        formal_proposition: result.formal_proposition,
+        z3_smt_assertion: result.z3_smt_assertion,
+        expected_result: result.expected_result,
+        actual_result: result.actual_result,
+        replay_result: result.replay_result,
+        replay_match: result.replay_match,
+        verified: result.verified,
+        scope: result.scope,
+        contract_hash: result.contract_hash,
+        source_file: result.source_file,
+        source_hash: result.source_hash,
+        source_content_hash: result.source_content_hash,
+        evidence_hash: result.evidence_hash,
+        evidence_integrity: result.evidence_integrity,
+        source_integrity: result.source_integrity,
+        commit_sha: result.commit_sha
+      }))
     },
     total: {
       required: 120,
@@ -203,6 +273,7 @@ async function main() {
       dfrl: {
         total_required: 88,
         executed: dfrlReport.executed,
+        expected_matches: dfrlExpectedMatches,
         unsat_proved: dfrlReport.unsat_count,
         replays_matched: dfrlReport.deterministic_replays_matched,
         root_hash: dfrlReport.verification_root_sha256,
@@ -235,11 +306,11 @@ async function main() {
 
 - **Commit SHA:** \`${commitSha}\`
 - **Timestamp:** \`${summaryArtifact.timestamp}\`
-- **Total Z3 Executions:** 120 / 120
-- **Expected-Result Matches:** 120 / 120
-- **Deterministic Cleanroom Replays:** 120 / 120
+- **Total Z3 Executions:** ${totalZ3Executions} / 120
+- **Expected-Result Matches:** ${totalExpectedMatches} / 120
+- **Deterministic Cleanroom Replays:** ${totalReplays} / 120
 - **Combined Root Hash:** \`${combinedRootSha256}\`
-- **Distribution:** UNSAT: ${totalUnsat} (88 DFRL + ${dhReport.unsat_count} DH), SAT: ${totalSat} (${dhReport.sat_count} DH), UNKNOWN: 0, ERROR: 0
+- **Distribution:** UNSAT: ${totalUnsat} (${dfrlReport.unsat_count} DFRL + ${dhReport.unsat_count} DH), SAT: ${totalSat} (${dfrlReport.sat_count} DFRL + ${dhReport.sat_count} DH), UNKNOWN: ${totalUnknown}, ERROR: ${totalError}
 - **Activation Gate Status:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}**
 
 ---
@@ -248,9 +319,9 @@ async function main() {
 
 | Corpus | Target | Z3 Executed | Expected Matches | Replays Matched | Solver Engine | Status |
 |:---|:---:|:---:|:---:|:---:|:---|:---:|
-| **DFRL Operators** | 88 | 88 | 88 | 88 | Microsoft Research Z3 WASM 5.2.0 | **VERIFIED** |
-| **DH Formal Contracts** | 32 | 32 | 32 | 32 | Microsoft Research Z3 WASM 5.2.0 | **VERIFIED** |
-| **TOTAL FORMAL CORPUS** | **120** | **120** | **120** | **120** | **Z3 WASM 5.2.0** | **PROVEN_CLOSURE** |
+| **DFRL Operators** | 88 | ${dfrlReport.executed} | ${dfrlExpectedMatches} | ${dfrlReport.deterministic_replays_matched} | Microsoft Research Z3 WASM 5.2.0 | **${dfrlReport.overall_status}** |
+| **DH Formal Contracts** | 32 | ${dhReport.executed} | ${dhReport.expected_result_matches} | ${dhReport.replay_matches} | Microsoft Research Z3 WASM 5.2.0 | **${dhReport.overall_status}** |
+| **TOTAL FORMAL CORPUS** | **120** | **${totalZ3Executions}** | **${totalExpectedMatches}** | **${totalReplayMatches}** | **Z3 WASM 5.2.0** | **${passed120 ? 'PROVEN_CLOSURE' : 'BLOCKED'}** |
 
 ---
 
@@ -258,7 +329,7 @@ async function main() {
 
 - **DH Registry Records:** 32 metadata records verified via cryptographic canonical hashing, duplicate detection, and family variant classification (\`REGISTRY_VERIFIED\`).
 - **DH Formal Contracts:** 32 distinct SMT contracts executed through Microsoft Research Z3 WASM solver with fresh contexts, cleanroom replays, and cryptographic proof receipts (\`MODEL_VERIFIED\` / \`MODEL_VERIFIED_BOUNDED\` / \`MODEL_VERIFIED_AXIOMATIC\`).
-- **DFRL Operators:** 88 deterministic operational refutations executed through Z3 WASM.
+- **DFRL Operators:** 88 theorem-specific SMT models evaluated against declared expected SAT/UNSAT results and replayed in fresh contexts.
 `;
 
   fs.writeFileSync(path.join(artifactsDir, 'z3-120-formal-verification-summary.md'), summaryMd, 'utf8');
@@ -277,12 +348,16 @@ async function main() {
       total_z3_executions: totalZ3Executions,
       total_cleanroom_replays: totalReplays,
       total_replay_matches: totalReplayMatches,
-      claim_scope: 'PROVEN_120_FORMAL_CLOSURE',
+      claim_scope: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED',
       combined_root_sha256: combinedRootSha256
     },
     dfrl_status: {
       total: 88,
       executed: dfrlReport.executed,
+      expected_result_matches: dfrlExpectedMatches,
+      authored_models: dfrlReport.authored_models_count,
+      theorem_specific_models: dfrlReport.theorem_specific_models_count,
+      generated_generalized_models: dfrlReport.generated_models_count,
       unsat: dfrlReport.unsat_count,
       sat: dfrlReport.sat_count,
       replays_matched: dfrlReport.deterministic_replays_matched,
@@ -308,15 +383,17 @@ async function main() {
       status: dhReport.overall_status
     },
     adversarial_verification: {
-      dfrl_mutation: true,
-      dfrl_failure_injection: true,
-      dfrl_tamper_alarm: true,
-      dh_smt_mutation: true,
-      dh_failure_injection: true,
-      dh_artifact_tamper: true,
-      contract_hash_guard: true,
-      source_hash_guard: true,
-      replay_mismatch_guard: true
+      dfrl_mutation: dfrlMutationTest,
+      dfrl_failure_injection: dfrlFailureInjectionTest,
+      dfrl_artifact_tamper: dfrlTamperTest,
+      dh_smt_mutation: dhMutationTest,
+      dh_failure_injection: dhFailureInjectionTest,
+      dh_artifact_tamper: dhTamperTest,
+      contract_hash_guard: dhReport.results.every(result =>
+        computeSha256(`${result.case_id}:${result.name}:${result.domain}:${result.formal_proposition}:${result.z3_smt_assertion}`) === result.contract_hash
+      ),
+      source_hash_guard: dhReport.results.every(result => result.source_integrity === 'PASS'),
+      replay_mismatch_guard: dhReport.results.every(result => result.replay_match)
     },
     reconciliation_table: reconciliationTable
   };
@@ -331,16 +408,16 @@ async function main() {
   const forensicMd = `# Solvex Authoritative Forensic Verification Audit Report
 **Commit SHA:** \`${commitSha}\`  
 **Timestamp:** \`${forensicReport.timestamp}\`  
-**Verdict:** **PROVEN_120_FORMAL_CLOSURE (120/120 REAL Z3 EXECUTIONS)**  
+**Verdict:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE (120/120 expected results matched)' : 'BLOCKED'}**  
 **Combined Root Hash:** \`${combinedRootSha256}\`  
 
 ---
 
 ## 1. Executive Summary
-- **DFRL 88-Operator Z3 Subsystem:** 88 / 88 real executions, 88 cleanroom replays, 88 UNSAT proofs.
-- **DH 32-Paradox Authoritative Subsystem:** 32 / 32 real executions, 32 fresh-context replays, 32 matches.
-- **Total Theorem Prover Scope:** Exactly 120 / 120 formal Z3-WASM verified cases.
-- **Independence & Freshness:** 100% fresh Z3 context creation per execution and replay; zero context reuse.
+- **DFRL 88-Operator Z3 Subsystem:** ${dfrlReport.executed} / 88 real executions, ${dfrlReport.deterministic_replays_matched} cleanroom replays, ${dfrlReport.unsat_count} UNSAT results and ${dfrlReport.sat_count} SAT witnesses.
+- **DH 32-Paradox Authoritative Subsystem:** ${dhReport.executed} / 32 real executions, ${dhReport.cleanroom_replays} fresh-context replays, ${dhReport.expected_result_matches} expected matches.
+- **Total Theorem Prover Scope:** ${totalZ3Executions} executions, ${totalExpectedMatches} expected-result matches, and ${totalReplayMatches} replay matches out of 120.
+- **Independence & Freshness:** each execution and replay uses a fresh Z3 context; results and replay counts are recorded in the commit-bound receipts.
 - **Commit Binding:** HEAD SHA resolved dynamically from current git repository (\`${commitSha}\`).
 - **Source Binding:** Cryptographically bound to disk content of \`src/paradoxes/DHBootstrapParadoxRegistry.ts\`.
 
@@ -348,7 +425,7 @@ async function main() {
 
 ## 2. Machine-Readable Reconciliation Analysis
 The public repository contained 32 contracts, but 13 were foreign paradoxes not present in the authentic Solvex registry, and 13 shared paradoxes had mismatched/swapped IDs.
-All 32 authentic Solvex DH Bootstrap paradoxes have been reconciled and formally proven:
+The 32 DH formal contracts were evaluated by Z3; their expected-result and replay status is recorded below:
 
 | Case ID | Authentic Local Paradox | Public Mapping Status | Formal Scope | Z3 Result | Replay |
 |:---|:---|:---|:---|:---:|:---:|
