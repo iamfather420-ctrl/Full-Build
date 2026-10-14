@@ -51,6 +51,8 @@ jobs:
         run: npm run build
       - name: TypeScript
         run: npm run lint
+      - name: Verify the general theorem engine uses real Z3 and fails closed
+        run: npm run verify:z3-engine
       - name: Execute 88 DFRL and 32 DH Z3 verifications with cleanroom replays
         run: npm run verify:120
       - name: Bind receipts to this commit and verify hashes/counts
