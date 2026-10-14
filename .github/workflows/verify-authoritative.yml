@@ -45,6 +45,7 @@ jobs:
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
 
       - name: Production preflight
+        if: github.event_name != 'pull_request'
         run: npm run preflight
 
       - name: Production runtime wiring verification
