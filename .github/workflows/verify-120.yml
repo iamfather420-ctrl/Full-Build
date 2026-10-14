@@ -7,7 +7,11 @@ on:
     paths:
       - "src/proofs/**"
       - "src/formal/**"
+      - "src/paradoxes/**"
+      - "src/data/paradoxData.ts"
       - "scripts/verify_120_aggregation.ts"
+      - "scripts/verify_dfrl.ts"
+      - "scripts/full_build_verification_closure.ts"
       - "scripts/record_120_verification_run.mjs"
       - "package.json"
       - "package-lock.json"
@@ -16,7 +20,11 @@ on:
     paths:
       - "src/proofs/**"
       - "src/formal/**"
+      - "src/paradoxes/**"
+      - "src/data/paradoxData.ts"
       - "scripts/verify_120_aggregation.ts"
+      - "scripts/verify_dfrl.ts"
+      - "scripts/full_build_verification_closure.ts"
       - "scripts/record_120_verification_run.mjs"
       - "package.json"
       - "package-lock.json"
