@@ -212,6 +212,10 @@ async function main() {
       status: dhReport.overall_status,
       results: dhReport.results.map(result => ({
         case_id: result.case_id,
+        name: result.name,
+        domain: result.domain,
+        formal_proposition: result.formal_proposition,
+        z3_smt_assertion: result.z3_smt_assertion,
         expected_result: result.expected_result,
         actual_result: result.actual_result,
         replay_result: result.replay_result,
@@ -383,7 +387,9 @@ async function main() {
       dh_smt_mutation: dhMutationTest,
       dh_failure_injection: dhFailureInjectionTest,
       dh_artifact_tamper: dhTamperTest,
-      contract_hash_guard: dhReport.results.every(result => result.evidence_integrity === 'PASS'),
+      contract_hash_guard: dhReport.results.every(result =>
+        computeSha256(`${result.case_id}:${result.name}:${result.domain}:${result.formal_proposition}:${result.z3_smt_assertion}`) === result.contract_hash
+      ),
       source_hash_guard: dhReport.results.every(result => result.source_integrity === 'PASS'),
       replay_mismatch_guard: dhReport.results.every(result => result.replay_match)
     },
