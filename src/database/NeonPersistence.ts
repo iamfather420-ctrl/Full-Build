@@ -214,7 +214,7 @@ export class NeonStore {
       return { ...empty, error: this.lastError || 'Neon not connected' };
     }
     try {
-      const rows = await this.neonClient.query(\`
+      const rows = await this.neonClient.query(`
         SELECT c.relname AS table_name,
                c.relrowsecurity AS rls_enabled,
                c.relforcerowsecurity AS rls_forced,
@@ -227,7 +227,7 @@ export class NeonStore {
         WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')
           AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
         ORDER BY c.relname
-      \`);
+      `);
       const tables = Array.isArray(rows) ? rows : [];
       const withoutRls = tables.filter((r: any) => r.rls_enabled !== true).map((r: any) => String(r.table_name));
       const withoutPolicy = tables.filter((r: any) => Number(r.policy_count) < 1).map((r: any) => String(r.table_name));
@@ -239,16 +239,16 @@ export class NeonStore {
       // A GUC such as app.is_owner or app.can_manage_tenants is not itself an
       // authorization credential. Policies granting privilege from these flags
       // block readiness until trusted authorization context is independently established.
-      const policyRows = await this.neonClient.query(\`
+      const policyRows = await this.neonClient.query(`
         SELECT tablename, policyname, COALESCE(qual, '') AS qual,
                COALESCE(with_check, '') AS with_check
         FROM pg_policies
         WHERE schemaname = 'public'
-      \`);
+      `);
       const privilegedFlagPattern = /current_setting\\s*\\(\\s*'app\\.(?:is_owner|can_[a-z0-9_]+|provisioning_tenant_id)'/i;
       const policiesWithUntrustedFlags = (Array.isArray(policyRows) ? policyRows : [])
         .filter((p: any) => privilegedFlagPattern.test(String(p.qual || '') + ' ' + String(p.with_check || '')))
-        .map((p: any) => \`\${String(p.tablename)}.\${String(p.policyname)}\`)
+        .map((p: any) => `\${String(p.tablename)}.\${String(p.policyname)}`)
         .sort();
 
       const success = tables.length > 0 &&
