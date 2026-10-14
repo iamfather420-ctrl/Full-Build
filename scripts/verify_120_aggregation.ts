@@ -183,6 +183,7 @@ async function main() {
     dh: {
       required: 32,
       formalized: dhReport.formalized,
+      expected_result_matches: dhReport.expected_result_matches,
       actual_z3_executions: dhReport.executed,
       replays: dhReport.cleanroom_replays,
       replay_matches: dhReport.replay_matches,
