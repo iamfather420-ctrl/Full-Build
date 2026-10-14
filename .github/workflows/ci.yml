@@ -31,7 +31,7 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add package-lock.json
             git commit -m "fix: synchronize npm lockfile"
-            git push
+            git push origin HEAD:refs/heads/fix/refresh-package-lock
           fi
       - name: Install locked dependencies
         run: npm ci
