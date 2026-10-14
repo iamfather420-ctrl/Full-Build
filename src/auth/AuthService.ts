@@ -18,7 +18,8 @@ export class AuthService {
 
   private constructor() {
     const configured = (typeof process !== 'undefined' && process.env?.SOLVEX_AUTH_SECRET) || '';
-    this.secretSalt = configured.trim() || (process.env.NODE_ENV === 'production' ? '' : 'SOVEREIGN_AUTH_SECRET_v1');
+    const isProduction = typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
+    this.secretSalt = configured.trim() || (isProduction ? '' : 'SOVEREIGN_AUTH_SECRET_v1');
   }
 
   public static getInstance(): AuthService {
