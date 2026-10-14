@@ -205,6 +205,18 @@ export class DHFormalVerifier {
     return `CANONICAL_SOURCE_REF:${sourceFilePath}:DH_BOOTSTRAP_PARADOX_REGISTRY_V1`;
   }
 
+  private sourceMatchesGitCommit(sourceFilePath: string): boolean {
+    const safePath = sourceFilePath.replace(/[^a-zA-Z0-9_./-]/g, '');
+    if (!platformContext?.execSync || safePath !== sourceFilePath || !safePath.startsWith('src/')) return false;
+    try {
+      const committedBlob = platformContext.execSync(`git rev-parse HEAD:${safePath}`).toString().trim();
+      const workingBlob = platformContext.execSync(`git hash-object -- ${safePath}`).toString().trim();
+      return /^[0-9a-f]{40}$/i.test(committedBlob) && committedBlob === workingBlob;
+    } catch {
+      return false;
+    }
+  }
+
   /**
    * Generates the canonical reconciliation table between original local DH registry and public contracts.
    */
@@ -319,7 +331,7 @@ export class DHFormalVerifier {
     const resultMatch = actualResult === contract.expected_result;
     const nonError = actualResult !== 'unknown' && actualResult !== 'error';
     const evidencePass = computeSha256(evidenceSeed) === evidenceHash;
-    const sourcePass = sourceHash.length === 64;
+    const sourcePass = sourceHash.length === 64 && this.sourceMatchesGitCommit(contract.source_file);
     const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass;
 
     const result: DHFormalVerificationResult = {
