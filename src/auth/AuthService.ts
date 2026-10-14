@@ -34,13 +34,17 @@ export class AuthService {
     if (!this.secretSalt) {
       throw new Error('SOLVEX_AUTH_SECRET is required to issue tokens in production.');
     }
+    if (!Number.isFinite(ttlMs) || ttlMs <= 0 || ttlMs > 15 * 60 * 1000) {
+      throw new Error('Token lifetime must be between 1 ms and 15 minutes.');
+    }
+    const issuedAt = Date.now();
     const payload = {
       user_id: userId,
       tenant_id: tenantId,
       email,
       role,
-      issued_at: Date.now(),
-      expires_at: Date.now() + ttlMs
+      issued_at: issuedAt,
+      expires_at: issuedAt + ttlMs
     };
     const b64 = typeof btoa === 'function'
       ? btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
