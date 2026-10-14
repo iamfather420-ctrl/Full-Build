@@ -23,6 +23,8 @@ async function main() {
   console.log(`Current Git Commit SHA: ${commitSha}`);
 
   const startTime = Date.now();
+  const artifactsDir = path.resolve(process.cwd(), 'artifacts');
+  fs.mkdirSync(artifactsDir, { recursive: true });
 
   // 1. Execute 88 DFRL Operators
   console.log('\n[STAGE 1/2] Executing 88 DFRL Operators through Microsoft Research Z3...');
@@ -44,7 +46,7 @@ async function main() {
 
   const totalZ3Executions = dfrlReport.executed + dhReport.executed;
   const totalExpectedMatches = dfrlReport.unsat_count + dhReport.expected_result_matches;
-  const totalReplays = dfrlReport.executed + dhReport.cleanroom_replays;
+  const totalReplays = dfrlReport.deterministic_replays_matched + dhReport.cleanroom_replays;
   const totalReplayMatches = dfrlReport.deterministic_replays_matched + dhReport.replay_matches;
   const totalUnsat = dfrlReport.unsat_count + dhReport.unsat_count;
   const totalSat = dfrlReport.sat_count + dhReport.sat_count;
@@ -60,6 +62,14 @@ async function main() {
     totalExpectedMatches === 120 &&
     totalReplays === 120 &&
     totalReplayMatches === 120 &&
+    dfrlReport.total_operators === 88 &&
+    dfrlReport.executed === 88 &&
+    dfrlReport.overall_status === 'VERIFIED' &&
+    dhReport.total_cases === 32 &&
+    dhReport.formalized === 32 &&
+    dhReport.executed === 32 &&
+    dhReport.blocked_count === 0 &&
+    dhReport.overall_status === 'VERIFIED' &&
     totalUnknown === 0 &&
     totalError === 0;
 
@@ -126,11 +136,6 @@ async function main() {
     'utf8'
   );
 
-  const artifactsDir = path.resolve(process.cwd(), 'artifacts');
-  if (!fs.existsSync(artifactsDir)) {
-    fs.mkdirSync(artifactsDir, { recursive: true });
-  }
-
   // 1. formal-aggregation.json (Requirement 13)
   const formalAggregationArtifact = {
     aggregation_name: 'Z3_120_FORMAL_AGGREGATION',
@@ -139,7 +144,7 @@ async function main() {
     dfrl: {
       required: 88,
       actual_z3_executions: dfrlReport.executed,
-      replays: dfrlReport.executed,
+      replays: dfrlReport.deterministic_replays_matched,
       replay_matches: dfrlReport.deterministic_replays_matched,
       unsat_count: dfrlReport.unsat_count,
       sat_count: dfrlReport.sat_count,
