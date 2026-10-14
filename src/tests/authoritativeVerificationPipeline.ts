@@ -408,11 +408,12 @@ export class AuthoritativeVerificationPipeline {
     // GATE 11: External Provider Verification (Neon, PayPal)
     // ==========================================
     const g11Start = performance.now();
+    const paymentsEnabled = (typeof process !== 'undefined' && process.env?.PAYMENTS_ENABLED) === 'true';
     const pp = PayPalAdapter.getInstance();
-    const hasPayPal = pp.hasActiveCredentials();
-    const ppCreds = pp.getEffectiveCredentials();
+    const hasPayPal = paymentsEnabled && pp.hasActiveCredentials();
+    const ppCreds = paymentsEnabled ? pp.getEffectiveCredentials() : null;
     let ppAuth = false;
-    if (hasPayPal && ppCreds) {
+    if (paymentsEnabled && hasPayPal && ppCreds) {
       const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
       ppAuth = testPP.valid;
     }
@@ -423,31 +424,36 @@ export class AuthoritativeVerificationPipeline {
     if (hasNeon) {
       neonConn = await neon.connect();
     }
+    const neonRlsPosture = neonConn ? await neon.verifyRlsPosture() : null;
+    const gate11Ready = (!paymentsEnabled || ppAuth) && neonConn && (env !== 'production' || neonRlsPosture?.success === true);
 
     recordGate(
       11,
       'GATE-11',
       'External Provider Gateways (Neon, PayPal)',
       'LOCAL',
-      (ppAuth && neonConn) ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
+      gate11Ready ? 'PASSED' : 'EXTERNAL_PROVIDER_REQUIRED',
       performance.now() - g11Start,
       {
+        payments_enabled: paymentsEnabled,
         paypal: {
+          required: paymentsEnabled,
           configured: hasPayPal,
-          environment: ppCreds?.environment || 'NOT_CONFIGURED',
+          environment: ppCreds?.environment || (paymentsEnabled ? 'NOT_CONFIGURED' : 'DISABLED'),
           authenticated: ppAuth,
-          status: hasPayPal ? (ppAuth ? 'AUTHENTICATED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED',
+          status: !paymentsEnabled ? 'DISABLED_NOT_REQUIRED' : (hasPayPal ? (ppAuth ? 'AUTHENTICATED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED'),
           claim_scope: 'LOCAL'
         },
         neon: {
           configured: hasNeon,
           connected: neonConn,
           status: hasNeon ? (neonConn ? 'CONNECTED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED',
+          rls_posture: neonRlsPosture,
           claim_scope: 'LOCAL'
         },
         stripe: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Sovereign Security Directive forbids Stripe; fiat settlements route exclusively to PayPal DN-35'
+          policy: 'Stripe is prohibited; PayPal DN-35 is required only when PAYMENTS_ENABLED=true.'
         }
       }
     );
@@ -686,11 +692,14 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     // Production credential gates
     if (env === 'production') {
-      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
+      if (paymentsEnabled && (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth)) {
         productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
       }
       if (!hasNeon || !neonConn) {
-        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
+        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production persistence requires NEON_DATABASE_URL.');
+      }
+      if (!neonRlsPosture?.success) {
+        productionBlockers.push('GATE-11 Neon tenant isolation is not verified: public tables require enabled/forced RLS policies and a runtime role without BYPASSRLS.');
       }
     } else {
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
@@ -706,7 +715,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    } else if (env === 'sandbox' && hasPayPal && ppCreds?.environment === 'sandbox') {
+    } else if (env === 'sandbox' && paymentsEnabled && hasPayPal && ppCreds?.environment === 'sandbox') {
       claimScopeVerdict = 'SANDBOX_VERIFIED';
     } else {
       claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
