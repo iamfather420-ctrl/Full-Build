@@ -50,12 +50,15 @@ jobs:
         run: npm run verify:production-runtime
 
       - name: PayPal dual-environment verification
+        if: always()
         run: npm run verify:paypal
 
       - name: Type-check
-        run: npx tsc --noEmit || true
+        if: always()
+        run: npm run lint
 
       - name: Run Unified 120-Case Reproducible Verification Corpus
+        if: always()
         id: verify
         run: |
           echo "Starting authoritative verification against commit $(git rev-parse HEAD)"
