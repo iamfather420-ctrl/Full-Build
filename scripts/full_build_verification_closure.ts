@@ -991,7 +991,7 @@ export async function runFullBuildVerificationClosure() {
       verification_id: r.case_id,
       claim: `${r.name}: ${r.statement}`,
       preconditions: [
-        'Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366',
+        `Target repository commit frozen at ${targetCommitSha}`,
         'Independent Z3 WASM kernel fresh-context execution',
         'Canonical formal contract assert and refutation/satisfaction check'
       ],
