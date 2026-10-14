@@ -31,7 +31,7 @@ async function main() {
   const dfrlVerifier = DFRLFormalVerifier.getInstance();
   const dfrlReport = await dfrlVerifier.verifyAll88();
   console.log(` -> DFRL Executed:       ${dfrlReport.executed} / ${dfrlReport.total_operators}`);
-  console.log(` -> DFRL UNSAT Proved:   ${dfrlReport.unsat_count} / ${dfrlReport.total_operators}`);
+  console.log(` -> DFRL UNSAT results:  ${dfrlReport.unsat_count} / ${dfrlReport.total_operators}`);
   console.log(` -> DFRL Replays:        ${dfrlReport.deterministic_replays_matched} / ${dfrlReport.total_operators}`);
 
   // 2. Execute 32 DH Formal Contracts
@@ -258,9 +258,9 @@ async function main() {
 
 - **Commit SHA:** \`${commitSha}\`
 - **Timestamp:** \`${summaryArtifact.timestamp}\`
-- **Total Z3 Executions:** 120 / 120
-- **Expected-Result Matches:** 120 / 120
-- **Deterministic Cleanroom Replays:** 120 / 120
+- **Total Z3 Executions:** ${totalZ3Executions} / 120
+- **Expected-Result Matches:** ${totalExpectedMatches} / 120
+- **Deterministic Cleanroom Replays:** ${totalReplays} / 120
 - **Combined Root Hash:** \`${combinedRootSha256}\`
 - **Distribution:** UNSAT: ${totalUnsat} (${dfrlReport.unsat_count} DFRL + ${dhReport.unsat_count} DH), SAT: ${totalSat} (${dfrlReport.sat_count} DFRL + ${dhReport.sat_count} DH), UNKNOWN: ${totalUnknown}, ERROR: ${totalError}
 - **Activation Gate Status:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}**
@@ -272,7 +272,7 @@ async function main() {
 | Corpus | Target | Z3 Executed | Expected Matches | Replays Matched | Solver Engine | Status |
 |:---|:---:|:---:|:---:|:---:|:---|:---:|
 | **DFRL Operators** | 88 | ${dfrlReport.executed} | ${dfrlExpectedMatches} | ${dfrlReport.deterministic_replays_matched} | Microsoft Research Z3 WASM 5.2.0 | **${dfrlReport.overall_status}** |
-| **DH Formal Contracts** | 32 | 32 | 32 | 32 | Microsoft Research Z3 WASM 5.2.0 | **VERIFIED** |
+| **DH Formal Contracts** | 32 | ${dhReport.executed} | ${dhReport.expected_result_matches} | ${dhReport.replay_matches} | Microsoft Research Z3 WASM 5.2.0 | **${dhReport.overall_status}** |
 | **TOTAL FORMAL CORPUS** | **120** | **${totalZ3Executions}** | **${totalExpectedMatches}** | **${totalReplayMatches}** | **Z3 WASM 5.2.0** | **${passed120 ? 'PROVEN_CLOSURE' : 'BLOCKED'}** |
 
 ---
@@ -337,9 +337,9 @@ async function main() {
       dh_smt_mutation: dhMutationTest,
       dh_failure_injection: dhFailureInjectionTest,
       dh_artifact_tamper: dhTamperTest,
-      contract_hash_guard: true,
-      source_hash_guard: true,
-      replay_mismatch_guard: true
+      contract_hash_guard: dhReport.results.every(result => result.evidence_integrity === 'PASS'),
+      source_hash_guard: dhReport.results.every(result => result.source_integrity === 'PASS'),
+      replay_mismatch_guard: dhReport.results.every(result => result.replay_match)
     },
     reconciliation_table: reconciliationTable
   };
@@ -361,9 +361,9 @@ async function main() {
 
 ## 1. Executive Summary
 - **DFRL 88-Operator Z3 Subsystem:** ${dfrlReport.executed} / 88 real executions, ${dfrlReport.deterministic_replays_matched} cleanroom replays, ${dfrlReport.unsat_count} UNSAT results and ${dfrlReport.sat_count} SAT witnesses.
-- **DH 32-Paradox Authoritative Subsystem:** 32 / 32 real executions, 32 fresh-context replays, 32 matches.
+- **DH 32-Paradox Authoritative Subsystem:** ${dhReport.executed} / 32 real executions, ${dhReport.cleanroom_replays} fresh-context replays, ${dhReport.expected_result_matches} expected matches.
 - **Total Theorem Prover Scope:** ${totalZ3Executions} executions, ${totalExpectedMatches} expected-result matches, and ${totalReplayMatches} replay matches out of 120.
-- **Independence & Freshness:** 100% fresh Z3 context creation per execution and replay; zero context reuse.
+- **Independence & Freshness:** each execution and replay uses a fresh Z3 context; results and replay counts are recorded in the commit-bound receipts.
 - **Commit Binding:** HEAD SHA resolved dynamically from current git repository (\`${commitSha}\`).
 - **Source Binding:** Cryptographically bound to disk content of \`src/paradoxes/DHBootstrapParadoxRegistry.ts\`.
 
