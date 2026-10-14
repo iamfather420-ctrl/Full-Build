@@ -46,9 +46,14 @@ const checks = {
   errors_zero: total.distribution.error === 0,
   dfrl_verified: formal.dfrl.status === "VERIFIED" &&
     formal.dfrl.actual_z3_executions === 88 &&
+    formal.dfrl.expected_result_matches === 88 &&
     formal.dfrl.replay_matches === 88,
+  dfrl_provenance: formal.dfrl.authored_models === 88 &&
+    formal.dfrl.theorem_specific_models === 68 &&
+    formal.dfrl.generated_generalized_models === 0,
   dh_verified: formal.dh.status === "VERIFIED" &&
     formal.dh.actual_z3_executions === 32 &&
+    formal.dh.expected_result_matches === 32 &&
     formal.dh.replay_matches === 32 &&
     formal.dh.blocked === 0,
   summary_root_matches: summary.combined_root_sha256 === total.combined_root_sha256,
