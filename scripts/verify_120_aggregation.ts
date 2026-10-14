@@ -92,6 +92,29 @@ async function main() {
     dfrlReport.overall_status === 'VERIFIED' && dhReport.overall_status === 'VERIFIED' &&
     dhReport.blocked_count === 0 && dfrlCasesValid && dhCasesValid;
 
+  // Execute adversarial checks for real; do not write hard-coded PASSED flags into evidence.
+  const adversarialVerification = {
+    dfrl_mutation: await dfrlVerifier.runSmtMutationTest(),
+    dfrl_failure_injection: await dfrlVerifier.runZ3FailureInjectionTest(),
+    dfrl_tamper_alarm: dfrlVerifier.runArtifactTamperTest(dfrlReport),
+    dh_smt_mutation: await dhVerifier.runSmtMutationTest(),
+    dh_failure_injection: await dhVerifier.runFailureInjectionTest(),
+    dh_artifact_tamper: dhVerifier.runArtifactTamperTest(dhReport),
+    contract_hash_integrity: dhReport.results.every(r => r.evidence_integrity === 'PASS' && !!r.contract_hash),
+    source_hash_integrity: dhReport.results.every(r => r.source_integrity === 'PASS' && !!r.source_content_hash),
+    replay_integrity: dfrlReport.replays.every(r => r.replay_match) && dhReport.replays.every(r => r.replay_match)
+  };
+  const adversarialVerificationPassed =
+    adversarialVerification.dfrl_mutation.passed &&
+    adversarialVerification.dfrl_failure_injection.passed &&
+    adversarialVerification.dfrl_tamper_alarm.passed &&
+    adversarialVerification.dh_smt_mutation.passed &&
+    adversarialVerification.dh_failure_injection.passed &&
+    adversarialVerification.dh_artifact_tamper.passed &&
+    adversarialVerification.contract_hash_integrity &&
+    adversarialVerification.source_hash_integrity &&
+    adversarialVerification.replay_integrity;
+
   console.log('\n================================================================');
   console.log('120-CASE FORMAL Z3 VERIFICATION SUMMARY');
   console.log('================================================================');
@@ -119,14 +142,15 @@ async function main() {
   fs.writeFileSync(path.join(artifactsDir, 'system-46-gates.json'), JSON.stringify(gatesReport, null, 2), 'utf8');
 
   const nonPassedGates = gatesReport.gates.filter(g => g.status !== 'PASSED');
-  const brainActive = passed120 && gatesReport.gates.length === 46 && nonPassedGates.length === 0;
+  const brainActive = passed120 && adversarialVerificationPassed &&
+    gatesReport.gates.length === 46 && nonPassedGates.length === 0;
 
   const activationGate = {
     schema_version: '1.0.0',
     status: brainActive ? 'ACTIVE' : 'BLOCKED',
     reason: brainActive
-      ? '120/120 formal corpus verified and all 46 system gates passed with no external-provider or blocked gates.'
-      : 'Activation blocked until 120/120 formal verification and all 46 system gates have no failed, blocked, or external-provider-required gates.',
+      ? '120/120 formal corpus and adversarial checks passed; all 46 system gates are PASSED.'
+      : 'Activation blocked until formal corpus, adversarial checks, and all 46 system gates pass; no provider or blocked gate may be excluded.',
     corpus: {
       total_required: 120,
       dfrl_required: 88,
@@ -135,6 +159,18 @@ async function main() {
       deterministic_replays: totalReplayMatches,
       unknown: totalUnknown,
       errors: totalError
+    },
+    adversarial_verification: {
+      passed: adversarialVerificationPassed,
+      dfrl_mutation: adversarialVerification.dfrl_mutation.passed,
+      dfrl_failure_injection: adversarialVerification.dfrl_failure_injection.passed,
+      dfrl_tamper_alarm: adversarialVerification.dfrl_tamper_alarm.passed,
+      dh_smt_mutation: adversarialVerification.dh_smt_mutation.passed,
+      dh_failure_injection: adversarialVerification.dh_failure_injection.passed,
+      dh_artifact_tamper: adversarialVerification.dh_artifact_tamper.passed,
+      contract_hash_integrity: adversarialVerification.contract_hash_integrity,
+      source_hash_integrity: adversarialVerification.source_hash_integrity,
+      replay_integrity: adversarialVerification.replay_integrity
     },
     mandatory_gates: {
       total: 46,
@@ -270,12 +306,12 @@ async function main() {
 
 - **Commit SHA:** \`${commitSha}\`
 - **Timestamp:** \`${summaryArtifact.timestamp}\`
-- **Total Z3 Executions:** 120 / 120
-- **Expected-Result Matches:** 120 / 120
-- **Deterministic Cleanroom Replays:** 120 / 120
+- **Total Z3 Executions:** ${totalZ3Executions} / 120
+- **Expected-Result Matches:** ${totalExpectedMatches} / 120
+- **Deterministic Cleanroom Replays:** ${totalReplays} / 120
 - **Stable Corpus Root Hash:** \`${combinedRootSha256}\`
 - **Run-Specific Evidence Hash:** \`${runEvidenceSha256}\`
-- **Distribution:** UNSAT: ${totalUnsat} (88 DFRL + ${dhReport.unsat_count} DH), SAT: ${totalSat} (${dhReport.sat_count} DH), UNKNOWN: 0, ERROR: 0
+- **Distribution:** UNSAT: ${totalUnsat} (DFRL ${dfrlReport.results.filter(r => r.solver_result === 'unsat').length} + DH ${dhReport.unsat_count}), SAT: ${totalSat} (${dhReport.sat_count} DH), UNKNOWN: ${totalUnknown}, ERROR: ${totalError}
 - **Activation Gate Status:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}**
 
 ---
@@ -284,9 +320,9 @@ async function main() {
 
 | Corpus | Target | Z3 Executed | Expected Matches | Replays Matched | Solver Engine | Status |
 |:---|:---:|:---:|:---:|:---:|:---|:---:|
-| **DFRL Operators** | 88 | 88 | 88 | 88 | Microsoft Research Z3 WASM 5.2.0 | **VERIFIED** |
-| **DH Formal Contracts** | 32 | 32 | 32 | 32 | Microsoft Research Z3 WASM 5.2.0 | **VERIFIED** |
-| **TOTAL FORMAL CORPUS** | **120** | **120** | **120** | **120** | **Z3 WASM 5.2.0** | **PROVEN_CLOSURE** |
+| **DFRL Operators** | 88 | ${dfrlReport.executed} | ${dfrlExpectedMatches} | ${dfrlReplayMatches} | Microsoft Research Z3 WASM 5.2.0 | **${dfrlCasesValid ? 'VERIFIED' : 'FAILED'}** |
+| **DH Formal Contracts** | 32 | ${dhReport.executed} | ${dhExpectedMatches} | ${dhReplayMatches} | Microsoft Research Z3 WASM 5.2.0 | **${dhCasesValid ? 'VERIFIED' : 'FAILED'}** |
+| **TOTAL FORMAL CORPUS** | **120** | **${totalZ3Executions}** | **${totalExpectedMatches}** | **${totalReplayMatches}** | **Z3 WASM 5.2.0** | **${passed120 ? 'PROVEN_CLOSURE' : 'BLOCKED'}** |
 
 ---
 
@@ -345,17 +381,7 @@ async function main() {
       },
       status: dhReport.overall_status
     },
-    adversarial_verification: {
-      dfrl_mutation: true,
-      dfrl_failure_injection: true,
-      dfrl_tamper_alarm: true,
-      dh_smt_mutation: true,
-      dh_failure_injection: true,
-      dh_artifact_tamper: true,
-      contract_hash_guard: true,
-      source_hash_guard: true,
-      replay_mismatch_guard: true
-    },
+    adversarial_verification: adversarialVerification,
     reconciliation_table: reconciliationTable
   };
 
@@ -369,24 +395,25 @@ async function main() {
   const forensicMd = `# Solvex Authoritative Forensic Verification Audit Report
 **Commit SHA:** \`${commitSha}\`  
 **Timestamp:** \`${forensicReport.timestamp}\`  
-**Verdict:** **\${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'} (\${totalZ3Executions}/120 REAL Z3 EXECUTIONS)**  
+**Verdict:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'} (${totalZ3Executions}/120 REAL Z3 EXECUTIONS)**  
 **Stable Corpus Root Hash:** \`${combinedRootSha256}\`  
 **Run-Specific Evidence Hash:** \`${runEvidenceSha256}\`  
 
 ---
 
 ## 1. Executive Summary
-- **DFRL 88-Operator Z3 Subsystem:** \${dfrlReport.executed}/88 executions, \${dfrlReplayMatches}/88 replay matches, \${dfrlReport.unsat_count}/88 UNSAT results.
-- **DH 32-Paradox Authoritative Subsystem:** \${dhReport.executed}/32 executions, \${dhReplayMatches}/32 replay matches, \${dhExpectedMatches}/32 expected-result matches.
-- **Total Theorem Prover Scope:** \${totalZ3Executions}/120 formal Z3-WASM executions; \${totalExpectedMatches}/120 expected matches.
+- **DFRL 88-Operator Z3 Subsystem:** ${dfrlReport.executed}/88 executions, ${dfrlReplayMatches}/88 replay matches, ${dfrlReport.unsat_count}/88 UNSAT results.
+- **DH 32-Paradox Authoritative Subsystem:** ${dhReport.executed}/32 executions, ${dhReplayMatches}/32 replay matches, ${dhExpectedMatches}/32 expected-result matches.
+- **Total Theorem Prover Scope:** ${totalZ3Executions}/120 formal Z3-WASM executions; ${totalExpectedMatches}/120 expected matches.
+- **Adversarial suite:** ${adversarialVerificationPassed ? 'PASSED' : 'FAILED'}.
 - **Replay implementation:** DFRL primary and cleanroom solvers use separate contexts in the same process; DH replay outcomes are recorded per case. This is not a separate-machine replay.
-- **Commit Binding:** Repository commit \`${commitSha}\`; DH source-content integrity is recorded per case.
+- **Commit Binding:** Repository commit `${commitSha}`; DH source-content integrity is recorded per case.
 
 ---
 
 ## 2. Machine-Readable Reconciliation Analysis
 The public repository contained 32 contracts, but 13 were foreign paradoxes not present in the authentic Solvex registry, and 13 shared paradoxes had mismatched/swapped IDs.
-All 32 authentic Solvex DH Bootstrap paradoxes have been reconciled and formally proven:
+${dhCasesValid ? 'All 32 authentic Solvex DH Bootstrap paradoxes matched their expected solver outcomes and replay records.' : 'DH formal closure is BLOCKED: one or more case, replay, expected-outcome, or integrity checks failed.'}
 
 | Case ID | Authentic Local Paradox | Public Mapping Status | Formal Scope | Z3 Result | Replay |
 |:---|:---|:---|:---|:---:|:---:|
@@ -405,12 +432,15 @@ ${reconciliationTable.map(row => {
 ---
 
 ## 4. Adversarial Verification Suite
-1. **SMT Premise Mutation:** PASSED (Perturbation shifts UNSAT to SAT; sensitivity confirmed).
-2. **Failure Injection:** PASSED (Malformed SMT yields error; fail-closed boundary enforced).
-3. **Artifact Tamper Alarm:** PASSED (Single-byte manifest tamper triggers cryptographic alarm).
-4. **Contract Hash Corruption Guard:** PASSED (Contract mutations detected).
-5. **Source Hash Corruption Guard:** PASSED (Source file drift detected).
-6. **Replay Mismatch Guard:** PASSED (Replay drift fails closed).
+1. **DFRL SMT premise mutation:** ${adversarialVerification.dfrl_mutation.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dfrl_mutation.details}
+2. **DFRL failure injection:** ${adversarialVerification.dfrl_failure_injection.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dfrl_failure_injection.notes}
+3. **DFRL artifact tamper:** ${adversarialVerification.dfrl_tamper_alarm.passed ? 'PASSED' : 'FAILED'}
+4. **DH SMT premise mutation:** ${adversarialVerification.dh_smt_mutation.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dh_smt_mutation.details}
+5. **DH failure injection:** ${adversarialVerification.dh_failure_injection.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dh_failure_injection.details}
+6. **DH artifact tamper:** ${adversarialVerification.dh_artifact_tamper.passed ? 'PASSED' : 'FAILED'}
+7. **Contract hash integrity:** ${adversarialVerification.contract_hash_integrity ? 'PASSED' : 'FAILED'}
+8. **Source hash integrity:** ${adversarialVerification.source_hash_integrity ? 'PASSED' : 'FAILED'}
+9. **Replay integrity:** ${adversarialVerification.replay_integrity ? 'PASSED' : 'FAILED'}.
 `;
 
   fs.writeFileSync(path.join(artifactsDir, 'final-forensic-report.md'), forensicMd, 'utf8');
