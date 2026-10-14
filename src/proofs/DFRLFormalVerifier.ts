@@ -49,6 +49,7 @@ export interface DFRLVerificationResult {
   solver_version: string;
   execution_id: string;
   solver_result: 'unsat' | 'sat' | 'unknown' | 'error' | 'formal_execution_not_performed';
+  expected_solver_result: 'unsat' | 'sat';
   proved: boolean;
   claim_scope: 'MODEL_VERIFIED' | 'BOUNDED_MODEL_VERIFIED' | 'EXISTENTIAL_WITNESS' | 'COMPETING_ASSUMPTIONS' | 'MIXED';
   execution_duration_ms: number;
@@ -181,6 +182,8 @@ export class DFRLFormalVerifier {
     const timestamp = new Date().toISOString();
     const assertionHash = computeSha256(item.formal_invariant);
     const smtHash = computeSha256(item.z3_smt_assertion);
+    const expectedResult: 'unsat' | 'sat' =
+      item.expected_solver_result ?? THEOREM_SPECIFIC_68.find(m => m.code === item.code)?.expected_solver_result ?? 'unsat';
     const z3Mod = await this.getZ3Module();
     if (!z3Mod) {
       const duration = performance.now() - start;
@@ -188,7 +191,8 @@ export class DFRLFormalVerifier {
         operator_id: item.code, operator_name: item.name, model_classification: item.model_classification,
         model_scope: item.model_scope, domain: item.domain, category: item.category, assertion: item.formal_invariant,
         assertion_hash: assertionHash, actual_smt_assertion_hash: smtHash, solver_version: this.solverVersion,
-        execution_id: executionId, solver_result: 'formal_execution_not_performed', proved: false,
+        execution_id: executionId, solver_result: 'formal_execution_not_performed',
+        expected_solver_result: expectedResult, proved: false,
         claim_scope: this.getClaimScope(item), execution_duration_ms: Number(duration.toFixed(3)),
         error: 'Z3 WASM solver module could not be initialized', certificate_sha256: '', timestamp
       };
@@ -197,13 +201,12 @@ export class DFRLFormalVerifier {
     }
 
     let solverResult: DFRLVerificationResult['solver_result'] = 'unknown';
-    const expectedResult: 'unsat' | 'sat' = THEOREM_SPECIFIC_68.find(m => m.code === item.code)?.expected_solver_result ?? 'unsat';
     let execError: string | undefined;
     try {
       const { Context } = z3Mod;
       const ctx = new Context(`ctx_${item.code.replace(/[^a-zA-Z0-9]/g, '_')}`);
       const solver = new ctx.Solver();
-      await solver.fromString(item.z3_smt_assertion);
+      await solver.fromString(item.z3_smt_assertion.replace(/\(check-sat\)/g, '').trim());
       const res = await solver.check();
       solverResult = res === 'unsat' ? 'unsat' : res === 'sat' ? 'sat' : 'unknown';
     } catch (err: any) {
@@ -217,7 +220,8 @@ export class DFRLFormalVerifier {
       model_classification: item.model_classification, model_scope: item.model_scope, domain: item.domain,
       category: item.category, assertion: item.formal_invariant, assertion_hash: assertionHash,
       actual_smt_assertion_hash: smtHash, solver_version: this.solverVersion, execution_id: executionId,
-      solver_result: solverResult, proved: solverResult === expectedResult, claim_scope: this.getClaimScope(item),
+      solver_result: solverResult, expected_solver_result: expectedResult,
+      proved: solverResult === expectedResult, claim_scope: this.getClaimScope(item),
       execution_duration_ms: Number(duration.toFixed(3)), duration_ms: Number(duration.toFixed(3)),
       error: execError, certificate_sha256: '', timestamp
     };
