@@ -74,8 +74,8 @@ export class NeonStore {
         connected: false,
         tables_verified: 27,
         total_required_tables: 27,
-        tenant_isolation_verified: true,
-        restart_readback_verified: true,
+        tenant_isolation_verified: false,
+        restart_readback_verified: false,
         notes: 'Neon not configured. Operating in SQLITE_LOCAL deterministic fallback mode.'
       };
     }
@@ -86,8 +86,8 @@ export class NeonStore {
       connected: this.isConnected,
       tables_verified: this.isConnected ? 27 : 0,
       total_required_tables: 27,
-      tenant_isolation_verified: this.isConnected,
-      restart_readback_verified: this.isConnected,
+      tenant_isolation_verified: false,
+      restart_readback_verified: false,
       last_error: this.lastError || undefined,
       notes: this.isConnected
         ? 'Connected directly to Neon serverless cloud PostgreSQL instance.'
@@ -159,6 +159,74 @@ export class NeonStore {
     } catch (e: any) {
       this.lastError = e?.message || 'Failed to verify Neon tables';
       return { verified: 0, required: required27.length, missing: required27 };
+    }
+  }
+
+  /**
+   * Read-only audit of PostgreSQL row-level security. This never changes schema or policies.
+   * "Connected" is not evidence that tenant isolation is enabled; callers must inspect this result.
+   */
+  public async verifyRlsPosture(): Promise<{
+    success: boolean;
+    public_tables: number;
+    rls_enabled_tables: number;
+    forced_rls_tables: number;
+    policy_count: number;
+    current_role: string | null;
+    current_role_bypass_rls: boolean | null;
+    tables_without_rls: string[];
+    tables_without_policy: string[];
+    error?: string;
+  }> {
+    const empty = {
+      success: false,
+      public_tables: 0,
+      rls_enabled_tables: 0,
+      forced_rls_tables: 0,
+      policy_count: 0,
+      current_role: null as string | null,
+      current_role_bypass_rls: null as boolean | null,
+      tables_without_rls: [] as string[],
+      tables_without_policy: [] as string[]
+    };
+    if (!this.isConnected || !this.neonClient) {
+      return { ...empty, error: this.lastError || 'Neon not connected' };
+    }
+    try {
+      const rows = await this.neonClient.query(`
+        SELECT c.relname AS table_name,
+               c.relrowsecurity AS rls_enabled,
+               c.relforcerowsecurity AS rls_forced,
+               (SELECT count(*)::int FROM pg_policies p
+                 WHERE p.schemaname = n.nspname AND p.tablename = c.relname) AS policy_count,
+               current_user AS current_role,
+               COALESCE((SELECT r.rolbypassrls FROM pg_roles r WHERE r.rolname = current_user), false) AS role_bypass_rls
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')
+          AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
+        ORDER BY c.relname
+      `);
+      const tables = Array.isArray(rows) ? rows : [];
+      const withoutRls = tables.filter((r: any) => r.rls_enabled !== true).map((r: any) => String(r.table_name));
+      const withoutPolicy = tables.filter((r: any) => Number(r.policy_count) < 1).map((r: any) => String(r.table_name));
+      const forced = tables.filter((r: any) => r.rls_forced === true).length;
+      const policyCount = tables.reduce((sum: number, r: any) => sum + Number(r.policy_count || 0), 0);
+      const role = tables[0]?.current_role ? String(tables[0].current_role) : null;
+      const bypass = typeof tables[0]?.role_bypass_rls === 'boolean' ? tables[0].role_bypass_rls : null;
+      return {
+        success: tables.length > 0 && withoutRls.length === 0 && withoutPolicy.length === 0 && forced === tables.length && bypass === false,
+        public_tables: tables.length,
+        rls_enabled_tables: tables.length - withoutRls.length,
+        forced_rls_tables: forced,
+        policy_count: policyCount,
+        current_role: role,
+        current_role_bypass_rls: bypass,
+        tables_without_rls: withoutRls,
+        tables_without_policy: withoutPolicy
+      };
+    } catch (e: any) {
+      return { ...empty, error: e?.message || 'Read-only RLS audit failed' };
     }
   }
 
