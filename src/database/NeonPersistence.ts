@@ -54,6 +54,10 @@ export class NeonStore {
   }
 
   public async connect(): Promise<boolean> {
+    // Every connection attempt invalidates prior verification until the checks are rerun.
+    this.tablesVerified = 0;
+    this.tenantIsolationVerified = false;
+    this.restartReadbackVerified = false;
     if (!this.isConfigured()) {
       this.isConnected = false;
       this.lastError = 'NEON_DATABASE_URL not configured';
@@ -192,6 +196,7 @@ export class NeonStore {
     tables_without_policy: string[];
     error?: string;
   }> {
+    this.tenantIsolationVerified = false;
     const empty = {
       success: false,
       public_tables: 0,
