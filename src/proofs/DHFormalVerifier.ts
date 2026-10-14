@@ -43,6 +43,7 @@ export interface DHFormalVerificationResult {
   solver: string;
   solver_version: string;
   contract_hash: string;
+  source_file: string;
   source_hash: string;
   source_content_hash: string;
   evidence_hash: string;
@@ -354,6 +355,7 @@ export class DHFormalVerifier {
       solver: 'z3-wasm',
       solver_version: this.solverVersion,
       contract_hash: contract.contract_hash,
+      source_file: contract.source_file,
       source_hash: sourceHash,
       source_content_hash: sourceContentHash,
       evidence_hash: evidenceHash,
