@@ -9,7 +9,7 @@ import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { ExternalAdapterRegistry } from '../adapters/ExternalAdapters';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
-import { AuthService, UserContext, SovereignRole } from '../auth/AuthService';
+import { AuthService, UserContext } from '../auth/AuthService';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { DaisyBrain } from '../brain/DaisyBrain';
@@ -64,9 +64,24 @@ export class SovereignApiRouter {
     try {
       // 1. /api/auth
       if (path === '/api/auth/login' && method === 'POST') {
-        const { email, role = 'CUSTOMER', tenant_id = 'TENANT_ENTERPRISE_DEMO' } = payload || {};
-        if (!email) return { status: 400, error: 'Email is required for authentication', timestamp };
-        const token = this.authService.createSignedToken(`usr_${Date.now()}`, tenant_id, email, role as SovereignRole);
+        // There is no configured production identity-provider exchange in this route.
+        // Never mint production credentials from a caller-supplied email, role, or tenant.
+        if (process.env.NODE_ENV === 'production') {
+          return {
+            status: 503,
+            error: 'Production authentication is unavailable until a trusted identity provider is configured.',
+            timestamp
+          };
+        }
+        const email = typeof payload?.email === 'string' ? payload.email.trim() : '';
+        if (!email) return { status: 400, error: 'Email is required for development authentication', timestamp };
+        // Development-only demo tokens are always least-privileged and tenant-pinned.
+        const token = this.authService.createSignedToken(
+          `usr_${Date.now()}`,
+          'TENANT_ENTERPRISE_DEMO',
+          email,
+          'CUSTOMER'
+        );
         return {
           status: 200,
           data: { token, user: this.authService.verifyToken(token).user },
@@ -76,6 +91,12 @@ export class SovereignApiRouter {
       if (path === '/api/auth/me' && method === 'GET') {
         if (!user) return { status: 401, error: 'Unauthorized: Missing or invalid token', timestamp };
         return { status: 200, data: user, timestamp };
+      }
+
+      // All application API routes require a verified signed token. Production remains
+      // closed until a trusted identity-provider integration can issue these tokens.
+      if (process.env.NODE_ENV === 'production' && !user) {
+        return { status: 401, error: 'Unauthorized: production API requires a verified identity token', timestamp };
       }
 
       // 2. /api/tenants
