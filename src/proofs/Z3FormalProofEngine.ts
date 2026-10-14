@@ -229,52 +229,41 @@ export class Z3FormalProofEngine {
     provedExplanation?: string
   ): Promise<Z3ProofResult> {
     const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    let solverResult: 'unsat' | 'sat' | 'unknown' = 'unknown';
+    let counterexample: Record<string, string> | undefined;
+    let explanation = 'Z3 execution did not complete.';
 
-    // Formal Symbolic SMT Solver Engine
-    // Solves propositional constraints, self-referential equalities, contradiction checks, and arithmetic bounds
-    let solverResult: 'unsat' | 'sat' | 'unknown' = 'unsat';
-    let counterexample: Record<string, string> | undefined = undefined;
+    // Never infer a solver result from text patterns or default to the expected result.
+    // Every result below comes from the bundled Z3 WASM solver; failures fail closed.
+    try {
+      const api = await import('z3-solver');
+      const z3 = await api.init();
+      const { Context } = z3;
+      const contextName = `theorem_${theoremId.replace(/[^a-zA-Z0-9_]/g, '_')}_${Date.now()}`;
+      const ctx = new Context(contextName);
+      const solver = new ctx.Solver();
+      const executableScript = smtScript.replace(/\(check-sat\)/g, '').trim();
+      await solver.fromString(executableScript);
+      const rawResult = await solver.check();
+      solverResult = rawResult === 'sat' || rawResult === 'unsat' || rawResult === 'unknown'
+        ? rawResult
+        : 'unknown';
 
-    const normalized = smtScript.replace(/;[^\n]*/g, '').trim();
-
-    // Check for direct contradiction patterns:
-    // 1. (= X (not X)) -> boolean impossibility (UNSAT)
-    // 2. (= v1 0) and (= v2 1) and (= v1 v2) -> 0 = 1 (UNSAT)
-    // 3. (> Omega Omega) -> irreflexive strict order (UNSAT)
-    // 4. Pigeonhole distinct p0..p3 in range 1..3 -> |Domain| > |Codomain| (UNSAT)
-    // 5. Decrement progress negation: (not (and (< (s - 1) s) (>= (s - 1) 0))) for s > 0 -> s - 1 < s is true and s - 1 >= 0 is true, so and is true, not is false -> UNSAT
-    // 6. Real halving: (not (and (< d/2 d) (> d/2 0))) for d > 0 -> true, not is false -> UNSAT
-    if (
-      normalized.includes('(= (Member R R) (not (Member R R)))') ||
-      normalized.includes('(forall ((p Person)) (= (Shaves Barber p) (not (Shaves p p))))') ||
-      normalized.includes('(= LiarStatement (not LiarStatement))') ||
-      normalized.includes('(= Liar (not Liar))') ||
-      normalized.includes('(= C (=> C FalseConst))') ||
-      normalized.includes('(not (and (< s_next s) (>= s_next 0)))') ||
-      normalized.includes('(not (and (< d_next d) (> d_next 0.0)))') ||
-      (normalized.includes('(= v1 0)') && normalized.includes('(= v2 1)') && normalized.includes('(= v1 v2)')) ||
-      (normalized.includes('distinct p0 p1 p2 p3') && normalized.includes('<= p3 3')) ||
-      normalized.includes('(= s_next (- s')
-    ) {
-      solverResult = 'unsat';
-    } else if (normalized.includes('(assert false)') || normalized.includes('(assert (= 0 1))')) {
-      solverResult = 'unsat';
-    } else if (normalized.includes('(assert true)')) {
-      solverResult = 'sat';
-      counterexample = { 'model': 'true' };
-    } else {
-      // General DPLL symbolic evaluation
-      solverResult = expectedResult;
+      if (solverResult === 'sat') {
+        counterexample = { model: solver.model().toString() };
+      }
+      explanation = provedExplanation ||
+        (solverResult === expectedResult
+          ? `Z3 WASM returned ${solverResult.toUpperCase()} for the formal proposition.`
+          : `Z3 WASM returned ${solverResult.toUpperCase()}, expected ${expectedResult.toUpperCase()}.`);
+    } catch (error) {
+      solverResult = 'unknown';
+      explanation = `Z3 execution failed closed: ${error instanceof Error ? error.message : String(error)}`;
     }
 
     const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const durationMs = Number((end - start).toFixed(2));
-
     const proved = solverResult === expectedResult;
-    const explanation = proved
-      ? (provedExplanation || `Theorem proved: Z3 SMT solver confirmed status [${solverResult.toUpperCase()}].`)
-      : `Verification failed: Z3 solver returned [${solverResult.toUpperCase()}], expected [${expectedResult.toUpperCase()}].`;
-
     const certPayload = {
       theoremId,
       theoremName,
