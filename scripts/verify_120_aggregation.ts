@@ -3,7 +3,6 @@ import path from 'path';
 import cp from 'child_process';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
-import { computeSha256 } from '../src/database/DatabaseSchema';
 import { buildFormalEvidenceHashes } from '../src/proofs/formalEvidenceHash';
 import { System46Gates } from '../src/proofs/System46Gates';
 
@@ -64,7 +63,7 @@ async function main() {
     dhReport.results.filter(r => r.actual_result === 'unknown').length;
   const totalError = dfrlReport.results.filter(r =>
     r.solver_result === 'error' || r.solver_result === 'formal_execution_not_performed'
-  ).length + dhReport.results.filter(r => r.actual_result === 'error' || r.actual_result === 'unknown').length;
+  ).length + dhReport.results.filter(r => r.actual_result === 'error' || !!r.error).length;
 
   const expectedSatCaseIds = ['DH-P-019', 'DH-P-031'];
   const actualSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
