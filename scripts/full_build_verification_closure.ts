@@ -82,7 +82,10 @@ export async function runFullBuildVerificationClosure() {
   const timestampUtc = new Date().toISOString();
   const repoName = 'iamfather420-ctrl/Full-Build';
   const branchName = 'main';
-  const targetCommitSha = '728625581c2f89210c752d03fda0a154812b2366';
+  const targetCommitSha = cp.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+  if (!/^[0-9a-f]{40}$/i.test(targetCommitSha)) {
+    throw new Error('Could not resolve an exact Git commit SHA; refusing to bind evidence to a guessed baseline.');
+  }
   const runtime = `Node.js ${process.version} (${process.platform} ${process.arch})`;
   const artifactsDir = path.resolve(process.cwd(), 'artifacts');
   const receiptsDir = path.resolve(artifactsDir, 'proof-receipts');
@@ -111,7 +114,10 @@ export async function runFullBuildVerificationClosure() {
   // PHASE 1 — FREEZE THE TARGET BASELINE
   // ============================================================================
   console.log('[PHASE 1] Freezing Target Baseline...');
-  const lockfileContent = fs.existsSync('bun.lock') ? fs.readFileSync('bun.lock') : Buffer.from('');
+  const lockfileCandidates = ['bun.lock', 'bun.lockb', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'];
+  const lockfilePath = lockfileCandidates.find(candidate => fs.existsSync(candidate));
+  if (!lockfilePath) throw new Error('No package-manager lockfile found; refusing to record an incomplete dependency baseline.');
+  const lockfileContent = fs.readFileSync(lockfilePath);
   const packageJsonContent = fs.readFileSync('package.json', 'utf8');
   const lockfileHash = sha256(lockfileContent);
   const packageJsonHash = sha256(packageJsonContent);
@@ -151,6 +157,7 @@ export async function runFullBuildVerificationClosure() {
     node_version: process.version,
     os_environment: `${process.platform} ${process.arch}`,
     package_manager: fs.existsSync('bun.lock') ? 'bun / npm' : 'npm',
+    lockfile_path: lockfilePath,
     lockfile_hash: lockfileHash,
     package_json_hash: packageJsonHash,
     source_tree_hash: overallSourceTreeHash,
