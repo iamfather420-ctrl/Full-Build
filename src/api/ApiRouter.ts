@@ -93,10 +93,17 @@ export class SovereignApiRouter {
         return { status: 200, data: user, timestamp };
       }
 
-      // All application API routes require a verified signed token. Production remains
-      // closed until a trusted identity-provider integration can issue these tokens.
-      if (process.env.NODE_ENV === 'production' && !user) {
-        return { status: 401, error: 'Unauthorized: production API requires a verified identity token', timestamp };
+      // The current route handlers still read/write SQLite and DurableStore rather than
+      // using the verified transactional Neon tenant context. A valid token is not enough
+      // to make those stores tenant-safe. Disable production data routes until persistence
+      // wiring and adversarial cross-tenant tests are complete. The auth diagnostics above
+      // remain available, but no business-data handler may run in production yet.
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          status: 503,
+          error: 'Production data API disabled until trusted Neon RLS and API persistence wiring are verified.',
+          timestamp
+        };
       }
 
       // 2. /api/tenants
