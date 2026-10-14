@@ -193,6 +193,7 @@ export class NeonStore {
     policy_count: number;
     current_role: string | null;
     current_role_bypass_rls: boolean | null;
+    auth_context_ready: boolean;
     tables_without_rls: string[];
     tables_without_policy: string[];
     tables_without_trusted_guard: string[];
@@ -208,6 +209,7 @@ export class NeonStore {
       policy_count: 0,
       current_role: null as string | null,
       current_role_bypass_rls: null as boolean | null,
+      auth_context_ready: false,
       tables_without_rls: [] as string[],
       tables_without_policy: [] as string[],
       tables_without_trusted_guard: [] as string[],
@@ -264,7 +266,13 @@ export class NeonStore {
         .map((p: any) => `${String(p.tablename)}.${String(p.policyname)}`)
         .sort();
 
+      // RLS metadata alone is not enough: the database must have the matching signing
+      // secret provisioned, otherwise every signed tenant context correctly fails closed.
+      const authReadyResult = await this.neonClient.query('SELECT solvex_private.auth_context_ready() AS ready');
+      const authContextReady = authReadyResult?.rows?.[0]?.ready === true;
+
       const success = tables.length > 0 &&
+        authContextReady &&
         withoutRls.length === 0 &&
         withoutPolicy.length === 0 &&
         withoutTrustedGuard.length === 0 &&
@@ -280,6 +288,7 @@ export class NeonStore {
         policy_count: policyCount,
         current_role: role,
         current_role_bypass_rls: bypass,
+        auth_context_ready: authContextReady,
         tables_without_rls: withoutRls,
         tables_without_policy: withoutPolicy,
         tables_without_trusted_guard: withoutTrustedGuard,
