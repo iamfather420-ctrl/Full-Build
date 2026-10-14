@@ -30,6 +30,7 @@ export interface DHFormalVerificationResult {
   domain: string;
   statement: string;
   formal_proposition: string;
+  z3_smt_assertion: string;
   assumptions: string[];
   axioms: string[];
   constraints: string[];
@@ -340,6 +341,7 @@ export class DHFormalVerifier {
       domain: contract.domain,
       statement: contract.statement,
       formal_proposition: contract.formal_proposition,
+      z3_smt_assertion: contract.z3_smt_assertion,
       assumptions: contract.assumptions,
       axioms: contract.axioms,
       constraints: contract.constraints,
