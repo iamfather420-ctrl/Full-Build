@@ -12,9 +12,14 @@ export interface UserContext {
 
 export class AuthService {
   private static instance: AuthService | null = null;
-  private secretSalt: string = 'SOVEREIGN_AUTH_SECRET_v1';
+  // Production must supply a high-entropy secret. The development fallback is never
+  // accepted in production, preventing a known default from minting trusted tokens.
+  private readonly secretSalt: string;
 
-  private constructor() {}
+  private constructor() {
+    const configured = (typeof process !== 'undefined' && process.env?.SOLVEX_AUTH_SECRET) || '';
+    this.secretSalt = configured.trim() || (process.env.NODE_ENV === 'production' ? '' : 'SOVEREIGN_AUTH_SECRET_v1');
+  }
 
   public static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -24,6 +29,9 @@ export class AuthService {
   }
 
   public createSignedToken(userId: string, tenantId: string, email: string, role: SovereignRole): string {
+    if (!this.secretSalt) {
+      throw new Error('SOLVEX_AUTH_SECRET is required to issue tokens in production.');
+    }
     const payload = {
       user_id: userId,
       tenant_id: tenantId,
@@ -39,10 +47,16 @@ export class AuthService {
   }
 
   public verifyToken(token: string): { valid: boolean; user?: UserContext; error?: string } {
+    if (!this.secretSalt) {
+      return { valid: false, error: 'SOLVEX_AUTH_SECRET is not configured; authentication fails closed' };
+    }
     if (!token || !token.includes('.')) {
       return { valid: false, error: 'Malformed token structure' };
     }
-    const [b64, sig] = token.split('.');
+    const [b64, sig, ...extra] = token.split('.');
+    if (!b64 || !sig || extra.length > 0) {
+      return { valid: false, error: 'Malformed token structure' };
+    }
     const expectedSig = computeSha256(`${b64}:${this.secretSalt}`);
     if (sig !== expectedSig) {
       return { valid: false, error: 'Invalid token cryptographic signature' };
@@ -52,6 +66,16 @@ export class AuthService {
         ? decodeURIComponent(escape(atob(b64)))
         : Buffer.from(b64, 'base64').toString('utf8');
       const user = JSON.parse(json) as UserContext;
+      if (
+        !user ||
+        typeof user.user_id !== 'string' || !user.user_id ||
+        typeof user.tenant_id !== 'string' || !user.tenant_id ||
+        typeof user.email !== 'string' || !user.email ||
+        !['OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER'].includes(user.role) ||
+        !Number.isFinite(user.issued_at)
+      ) {
+        return { valid: false, error: 'Invalid token claims' };
+      }
       return { valid: true, user };
     } catch {
       return { valid: false, error: 'Failed to decode token payload' };
@@ -63,44 +87,22 @@ export class AuthService {
     action: string,
     targetTenantId?: string
   ): { authorized: boolean; reason?: string } {
-    // 1. Cross-tenant isolation check
-    if (targetTenantId && targetTenantId !== user.tenant_id) {
-      if (user.role !== 'OWNER') {
-        return {
-          authorized: false,
-          reason: `Cross-Tenant Access Violation: Role ${user.role} in tenant ${user.tenant_id} is blocked from partition ${targetTenantId}`
-        };
-      }
+    if (targetTenantId && targetTenantId !== user.tenant_id && user.role !== 'OWNER') {
+      return {
+        authorized: false,
+        reason: `Cross-Tenant Access Violation: Role ${user.role} in tenant ${user.tenant_id} is blocked from partition ${targetTenantId}`
+      };
     }
 
-    // 2. Role-based capability check
-    if (action === 'DEPLOY_RUNTIME') {
-      if (user.role !== 'OWNER' && user.role !== 'ADMIN') {
-        return {
-          authorized: false,
-          reason: `RBAC Violation: Role ${user.role} lacks permission DEPLOY_RUNTIME`
-        };
-      }
+    if (action === 'DEPLOY_RUNTIME' && user.role !== 'OWNER' && user.role !== 'ADMIN') {
+      return { authorized: false, reason: `RBAC Violation: Role ${user.role} lacks permission DEPLOY_RUNTIME` };
     }
-
-    if (action === 'PUBLISH_OFFER') {
-      if (user.role === 'CUSTOMER') {
-        return {
-          authorized: false,
-          reason: `RBAC Violation: Role CUSTOMER lacks permission PUBLISH_OFFER`
-        };
-      }
+    if (action === 'PUBLISH_OFFER' && user.role === 'CUSTOMER') {
+      return { authorized: false, reason: 'RBAC Violation: Role CUSTOMER lacks permission PUBLISH_OFFER' };
     }
-
-    if (action === 'RUN_PIPELINE') {
-      if (user.role === 'CUSTOMER') {
-        return {
-          authorized: false,
-          reason: `RBAC Violation: Role CUSTOMER lacks permission RUN_PIPELINE`
-        };
-      }
+    if (action === 'RUN_PIPELINE' && user.role === 'CUSTOMER') {
+      return { authorized: false, reason: 'RBAC Violation: Role CUSTOMER lacks permission RUN_PIPELINE' };
     }
-
     return { authorized: true };
   }
 }
