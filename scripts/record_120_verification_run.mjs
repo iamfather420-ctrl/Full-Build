@@ -56,6 +56,25 @@ const checks = {
     formal.dh.expected_result_matches === 32 &&
     formal.dh.replay_matches === 32 &&
     formal.dh.blocked === 0,
+  per_case_dfrl_receipts: formal.dfrl.results.length === 88 &&
+    formal.dfrl.results.every(result => result.proved === true &&
+      result.solver_result === result.expected_solver_result &&
+      (result.solver_result === "sat" || result.solver_result === "unsat")) &&
+    formal.dfrl.replays.length === 88 &&
+    formal.dfrl.replays.every(replay => replay.replay_match === true &&
+      replay.original_result === replay.replay_result),
+  per_case_dh_receipts: formal.dh.results.length === 32 &&
+    formal.dh.results.every(result => result.verified === true &&
+      result.actual_result === result.expected_result &&
+      result.replay_match === true &&
+      result.source_integrity === "PASS" &&
+      result.evidence_integrity === "PASS" &&
+      result.evidence_hash === crypto.createHash("sha256").update(
+        `${result.case_id}:${result.contract_hash}:${result.source_hash}:${result.actual_result}:${result.replay_result}:${result.commit_sha}`
+      ).digest("hex")),
+  combined_root_recomputed: total.combined_root_sha256 === crypto.createHash("sha256").update(
+    `${formal.dfrl.root_hash}:${formal.dh.root_hash}:${currentCommit}`
+  ).digest("hex"),
   summary_root_matches: summary.combined_root_sha256 === total.combined_root_sha256,
   forensic_root_matches: forensic.executive_summary.combined_root_sha256 === total.combined_root_sha256,
   summary_counts_match: summary.total_z3_executions === 120 &&
