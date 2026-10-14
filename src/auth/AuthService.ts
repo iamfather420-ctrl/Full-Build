@@ -8,6 +8,7 @@ export interface UserContext {
   email: string;
   role: SovereignRole;
   issued_at: number;
+  expires_at: number;
 }
 
 export class AuthService {
@@ -29,7 +30,7 @@ export class AuthService {
     return AuthService.instance;
   }
 
-  public createSignedToken(userId: string, tenantId: string, email: string, role: SovereignRole): string {
+  public createSignedToken(userId: string, tenantId: string, email: string, role: SovereignRole, ttlMs = 15 * 60 * 1000): string {
     if (!this.secretSalt) {
       throw new Error('SOLVEX_AUTH_SECRET is required to issue tokens in production.');
     }
@@ -38,7 +39,8 @@ export class AuthService {
       tenant_id: tenantId,
       email,
       role,
-      issued_at: Date.now()
+      issued_at: Date.now(),
+      expires_at: Date.now() + ttlMs
     };
     const b64 = typeof btoa === 'function'
       ? btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
@@ -59,7 +61,7 @@ export class AuthService {
       return { valid: false, error: 'Malformed token structure' };
     }
     const expectedSig = computeSha256(`${b64}:${this.secretSalt}`);
-    if (sig !== expectedSig) {
+    if (sig.length !== expectedSig.length || sig !== expectedSig) {
       return { valid: false, error: 'Invalid token cryptographic signature' };
     }
     try {
@@ -73,7 +75,12 @@ export class AuthService {
         typeof user.tenant_id !== 'string' || !user.tenant_id ||
         typeof user.email !== 'string' || !user.email ||
         !['OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER'].includes(user.role) ||
-        !Number.isFinite(user.issued_at)
+        !Number.isFinite(user.issued_at) ||
+        !Number.isFinite(user.expires_at) ||
+        user.expires_at <= user.issued_at ||
+        user.expires_at - user.issued_at > 15 * 60 * 1000 ||
+        user.issued_at > Date.now() + 30_000 ||
+        user.expires_at <= Date.now()
       ) {
         return { valid: false, error: 'Invalid token claims' };
       }
