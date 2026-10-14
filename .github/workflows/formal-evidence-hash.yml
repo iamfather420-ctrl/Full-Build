@@ -1,0 +1,30 @@
+name: Formal evidence hash stability
+
+on:
+  push:
+    branches:
+      - fix/stable-formal-evidence-hash
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  formal-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --ignore-scripts
+      - name: Test deterministic corpus roots and run-specific receipts
+        run: npm run test:formal-hash
+      - name: Typecheck
+        run: npm run lint
+      - name: Execute the original 120-case verifier
+        run: npm run verify:120
