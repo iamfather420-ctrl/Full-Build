@@ -10,8 +10,9 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # PR validation uses a non-production environment; production checks remain protected.
     environment:
-      name: production
+      name: ${{ github.event_name == 'pull_request' && 'ci' || 'production' }}
       deployment: false
     env:
       SOLVEX_ENV: production
@@ -47,15 +48,19 @@ jobs:
         run: npm run preflight
 
       - name: Production runtime wiring verification
+        if: github.event_name != 'pull_request'
         run: npm run verify:production-runtime
 
       - name: PayPal dual-environment verification
+        if: github.event_name != 'pull_request'
         run: npm run verify:paypal
 
       - name: Type-check
-        run: npx tsc --noEmit || true
+        if: always()
+        run: npm run lint
 
       - name: Run Unified 120-Case Reproducible Verification Corpus
+        if: always()
         id: verify
         run: |
           echo "Starting authoritative verification against commit $(git rev-parse HEAD)"
@@ -95,8 +100,10 @@ jobs:
           fi
           ls -la artifacts/ >> $GITHUB_STEP_SUMMARY || true
 
-      - name: Assert Daisy Brain activation gate
+      - name: Assert formal corpus and production activation gate
         if: always()
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ ! -f artifacts/daisy-brain-activation-gate.json ]; then
             echo "Missing Daisy activation gate"
@@ -104,9 +111,15 @@ jobs:
           fi
           node -e '
             const g = require("./artifacts/daisy-brain-activation-gate.json");
-            if (g.status !== "ACTIVE") { console.error("DAISY BRAIN ACTIVATION GATE BLOCKED", g); process.exit(1); }
-            if (g.corpus?.total_required !== 120 || g.corpus?.executed !== 120 || g.corpus?.deterministic_replays !== 120 || g.corpus?.unknown !== 0 || g.corpus?.errors !== 0) { console.error("DAISY BRAIN CORPUS ACCOUNTING FAILED", g); process.exit(1); }
-            console.log("DAISY BRAIN ACTIVATION GATE ACTIVE: 120/120 corpus verified and replayed");
+            const corpusOk = g.corpus?.total_required === 120 && g.corpus?.executed === 120 && g.corpus?.deterministic_replays === 120 && g.corpus?.unknown === 0 && g.corpus?.errors === 0;
+            if (!corpusOk) { console.error("DAISY BRAIN CORPUS ACCOUNTING FAILED", g); process.exit(1); }
+            if (process.env.EVENT_NAME === "pull_request") {
+              console.log("PR verification: formal corpus passed; production activation is evaluated only by the protected production run.");
+              console.log("Current activation status:", g.status, "— not a production-readiness approval.");
+            } else {
+              if (g.status !== "ACTIVE") { console.error("PRODUCTION ACTIVATION GATE BLOCKED", g); process.exit(1); }
+              console.log("PRODUCTION ACTIVATION GATE ACTIVE: all gates and 120-case corpus passed");
+            }
           '
 
       - name: Upload verification artifacts
