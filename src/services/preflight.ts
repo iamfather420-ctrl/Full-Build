@@ -244,7 +244,7 @@ export class PreflightService {
     items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', paymentsEnabled, (v) => v.length >= 8));
 
     // 3. NEON_DATABASE_URL
-    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://'), ['DATABASE_URL']));
+    items.push(checkVar('NEON_RUNTIME_DATABASE_URL', true, (v) => /^postgres(?:ql)?:\/\//i.test(v)));
 
     // 4. PayPal active environment must explicitly select live in production
     items.push(checkVar('PAYPAL_ACTIVE_ENVIRONMENT', paymentsEnabled, (v) => v.toLowerCase() === 'live' || v.toLowerCase() === 'production'));

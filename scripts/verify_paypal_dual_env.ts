@@ -84,7 +84,7 @@ export async function runPayPalDualEnvForensicTest(): Promise<{
   const sbId = process.env.PAYPAL_SANDBOX_CLIENT_ID || process.env.PAYPAL_SANDBOX_ID;
   const sbSec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET || process.env.PAYPAL_SANDBOX_KEY;
   const lvId = process.env.PAYPAL_LIVE_CLIENT_ID;
-  const lvSec = process.env.PAYPAL_LIVE_CLIENT_SECRET || process.env.PAYPAL_LIVE_LIVE_NT_SECRET;
+  const lvSec = process.env.PAYPAL_LIVE_CLIENT_SECRET;
   const activeEnvRaw = process.env.PAYPAL_ACTIVE_ENVIRONMENT || process.env.PAYPAL_ENVIRONMENT || process.env.SOLVEX_ENV || 'sandbox';
 
   const sbIdVars: string[] = [];
@@ -100,7 +100,6 @@ export async function runPayPalDualEnvForensicTest(): Promise<{
 
   const lvSecVars: string[] = [];
   if (process.env.PAYPAL_LIVE_CLIENT_SECRET) lvSecVars.push('PAYPAL_LIVE_CLIENT_SECRET');
-  if (process.env.PAYPAL_LIVE_LIVE_NT_SECRET) lvSecVars.push('PAYPAL_LIVE_LIVE_NT_SECRET');
 
   const configSection: DualEnvForensicResult['configuration'] = {
     sandbox_client_id: sbId ? (sbId.length >= 10 ? 'PRESENT' : 'INVALID_FORMAT') : 'MISSING',
@@ -188,7 +187,6 @@ export async function runPayPalDualEnvForensicTest(): Promise<{
       process.env.PAYPAL_ACTIVE_ENVIRONMENT = 'live';
       delete process.env.PAYPAL_LIVE_CLIENT_ID;
       delete process.env.PAYPAL_LIVE_CLIENT_SECRET;
-      delete process.env.PAYPAL_LIVE_LIVE_NT_SECRET;
       const effective = adapter.getEffectiveCredentials();
       if (effective && effective.environment === 'sandbox') {
         liveToSandboxCrossover = 'FAIL';
@@ -211,7 +209,6 @@ export async function runPayPalDualEnvForensicTest(): Promise<{
     try {
       delete process.env.PAYPAL_LIVE_CLIENT_ID;
       delete process.env.PAYPAL_LIVE_CLIENT_SECRET;
-      delete process.env.PAYPAL_LIVE_LIVE_NT_SECRET;
       delete process.env.PAYPAL_SANDBOX_ID;
       delete process.env.PAYPAL_SANDBOX_KEY;
       delete process.env.PAYPAL_SANDBOX_CLIENT_ID;

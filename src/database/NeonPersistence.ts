@@ -39,7 +39,13 @@ export class NeonStore {
   }
 
   private constructor() {
-    this.databaseUrl = (typeof process !== 'undefined' && (process.env?.NEON_DATABASE_URL || process.env?.DATABASE_URL)) || null;
+    const env = typeof process !== 'undefined' ? process.env : undefined;
+    const production = (env?.SOLVEX_ENV || env?.NODE_ENV || '').toLowerCase() === 'production';
+    // Production must use the explicitly restricted runtime credential. Never
+    // silently fall back to a potentially privileged owner DATABASE_URL.
+    this.databaseUrl = production
+      ? (env?.NEON_RUNTIME_DATABASE_URL || null)
+      : (env?.NEON_RUNTIME_DATABASE_URL || env?.NEON_DATABASE_URL || env?.DATABASE_URL || null);
   }
 
   public static getInstance(): NeonStore {
@@ -60,17 +66,17 @@ export class NeonStore {
     this.restartReadbackVerified = false;
     if (!this.isConfigured()) {
       this.isConnected = false;
-      this.lastError = 'NEON_DATABASE_URL or DATABASE_URL not configured';
+      this.lastError = 'NEON_RUNTIME_DATABASE_URL is not configured for the active environment';
       return false;
     }
 
     try {
       const neonMod = await import('@neondatabase/serverless');
-      if (neonMod && typeof neonMod.neon === 'function') {
-        this.neonClient = neonMod.neon(this.databaseUrl!);
-        // Test lightweight query
-        const testRes = await this.neonClient`SELECT 1 as connected;`;
-        if (testRes && testRes[0]?.connected === 1) {
+      if (neonMod && typeof neonMod.Pool === 'function') {
+        // Pool exposes the .query API used throughout this persistence adapter.
+        this.neonClient = new neonMod.Pool({ connectionString: this.databaseUrl! });
+        const testRes = await this.neonClient.query('SELECT 1 as connected');
+        if (testRes?.rows?.[0]?.connected === 1) {
           this.isConnected = true;
           this.lastError = null;
           return true;
@@ -90,14 +96,14 @@ export class NeonStore {
     const isConf = this.isConfigured();
     if (!isConf) {
       return {
-        backend: 'SQLITE_LOCAL',
+        backend: 'PERSISTENCE_UNAVAILABLE',
         configured: false,
         connected: false,
         tables_verified: 0,
         total_required_tables: this.totalRequiredTables,
         tenant_isolation_verified: false,
         restart_readback_verified: false,
-        notes: 'NEON_DATABASE_URL and DATABASE_URL are not configured. Cloud persistence is unverified; local fallback selection must be reported separately by the caller.'
+        notes: 'No Neon runtime credential is configured. Persistence is unavailable; no local SQLite fallback is claimed by this adapter.'
       };
     }
 
@@ -168,7 +174,8 @@ export class NeonStore {
       return { verified: 0, required: required27.length, missing: required27 };
     }
     try {
-      const rows = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
+      const result = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
+      const rows = Array.isArray(result?.rows) ? result.rows : [];
       const present = new Set(rows.map((r: any) => r.table_name));
       const missing = required27.filter(t => !present.has(t));
       this.tablesVerified = required27.length - missing.length;
@@ -212,7 +219,7 @@ export class NeonStore {
       return { ...empty, error: this.lastError || 'Neon not connected' };
     }
     try {
-      const rows = await this.neonClient.query(`
+      const result = await this.neonClient.query(`
         SELECT c.relname AS table_name,
                c.relrowsecurity AS rls_enabled,
                c.relforcerowsecurity AS rls_forced,
@@ -226,7 +233,7 @@ export class NeonStore {
           AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
         ORDER BY c.relname
       `);
-      const tables = Array.isArray(rows) ? rows : [];
+      const tables = Array.isArray(result?.rows) ? result.rows : [];
       const withoutRls = tables.filter((r: any) => r.rls_enabled !== true).map((r: any) => String(r.table_name));
       const withoutPolicy = tables.filter((r: any) => Number(r.policy_count) < 1).map((r: any) => String(r.table_name));
       const forced = tables.filter((r: any) => r.rls_forced === true).length;
@@ -273,15 +280,20 @@ export class NeonStore {
         payload_json: JSON.stringify(data)
       };
 
-      await this.neonClient.query(`
+      const result = await this.neonClient.query(`
         INSERT INTO ${tableName} (id, tenant_id, created_at, updated_at, status, version, payload_json)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (id) DO UPDATE SET
           updated_at = EXCLUDED.updated_at,
           status = EXCLUDED.status,
           payload_json = EXCLUDED.payload_json
+        WHERE ${tableName}.tenant_id = EXCLUDED.tenant_id
+        RETURNING id
       `, [payload.id, payload.tenant_id, payload.created_at, payload.updated_at, payload.status, payload.version, payload.payload_json]);
-      return true;
+      // A record already owned by another tenant must never be reassigned or
+      // silently treated as a successful write. No returned row means the tenant
+      // ownership predicate rejected the conflict.
+      return Array.isArray(result?.rows) && result.rows.length === 1;
     } catch {
       return false;
     }
@@ -295,9 +307,10 @@ export class NeonStore {
     }
     const safeLimit = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 500)) : 100;
     try {
-      const rows = await this.neonClient.query(`
+      const result = await this.neonClient.query(`
         SELECT * FROM ${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2
       `, [tenantId.trim(), safeLimit]);
+      const rows = Array.isArray(result?.rows) ? result.rows : [];
       return rows.map((r: any) => ({ ...r, ...r.payload_json }));
     } catch {
       return [];

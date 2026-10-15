@@ -97,7 +97,7 @@ export class PayPalAdapter {
   public getLiveCredentials(): PayPalCredentials | null {
     if (typeof process === 'undefined' || !process.env) return null;
     const cid = process.env.PAYPAL_LIVE_CLIENT_ID || process.env.PAYPAL_LIVE_ID || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_ID : undefined);
-    const sec = process.env.PAYPAL_LIVE_CLIENT_SECRET || process.env.PAYPAL_LIVE_SECRET || process.env.PAYPAL_LIVE_LIVE_NT_SECRET || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_SECRET : undefined);
+    const sec = process.env.PAYPAL_LIVE_CLIENT_SECRET || process.env.PAYPAL_LIVE_SECRET || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_SECRET : undefined);
     if (cid && sec) {
       return {
         clientId: cid.trim(),
@@ -324,6 +324,19 @@ export class PayPalAdapter {
         gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
         payment: paymentRecord,
         error: 'PayPal credentials missing from runtime environment. Server-authoritative fail-closed enforced; zero fake receipts.'
+      };
+    }
+
+    // Live money movement is intentionally disabled until trusted tenant/order authorization,
+    // amount/currency validation, and durable capture reconciliation have independent verification.
+    // Sandbox credentials remain available for non-production integration testing.
+    if (creds.environment === 'live') {
+      return {
+        success: false,
+        status: 'EXTERNAL_PROVIDER_REQUIRED',
+        claim_scope: 'PRODUCTION',
+        gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
+        error: 'Live PayPal capture is disabled by the production safety gate. Use sandbox for testing; do not collect real funds.'
       };
     }
 

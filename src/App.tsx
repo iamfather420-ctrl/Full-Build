@@ -46,10 +46,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('OVERVIEW');
   const [activeTenant, setActiveTenant] = useState('TENANT_ENTERPRISE_DEMO');
   const [currentUser, setCurrentUser] = useState<UserContext>({
-    user_id: 'usr_enterprise_master',
+    user_id: 'unauthenticated-local-context',
     tenant_id: 'TENANT_ENTERPRISE_DEMO',
-    email: 'operator@sovereign-agate.io',
-    role: 'OWNER',
+    email: 'unverified-session@invalid.local',
+    // Client-rendered state is not proof of identity or authority.
+    // Start with the least-privileged role until a server-verified session exists.
+    role: 'CUSTOMER',
     issued_at: Date.now()
   });
 
@@ -72,12 +74,21 @@ export default function App() {
   };
 
   const handleRoleChange = (role: SovereignRole) => {
-    setCurrentUser(prev => ({ ...prev, role }));
+    // Never allow a browser control to grant privileges. Real role changes must
+    // come from a server-verified identity/session, not client state.
+    const rank: Record<SovereignRole, number> = {
+      CUSTOMER: 0,
+      VERIFIER: 1,
+      ADMIN: 2,
+      OWNER: 3
+    };
+    setCurrentUser(prev => rank[role] <= rank[prev.role] ? { ...prev, role } : prev);
   };
 
   const handleTenantChange = (tenant: string) => {
+    // Tenant selection is a view preference only; it must not rewrite the
+    // tenant bound to the current identity. The server remains authoritative.
     setActiveTenant(tenant);
-    setCurrentUser(prev => ({ ...prev, tenant_id: tenant }));
   };
 
   return (
