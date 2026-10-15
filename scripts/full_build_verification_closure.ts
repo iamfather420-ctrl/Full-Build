@@ -1151,10 +1151,12 @@ export async function runFullBuildVerificationClosure() {
 
   // Determine algorithmic gate status
   let finalGateStatus: 'PROVEN_CLOSURE' | 'BLOCKED_BY_FAILURES' | 'PARTIAL_EXTERNAL_REQUIRED' = 'PROVEN_CLOSURE';
-  if (counts.fail > 1) { // 1 known fail is the sandbox 401 when sandbox creds are rejected by PayPal
+  // Any failed verification blocks closure. External dependencies or intended-but-unavailable
+  // capabilities are partial closure, never a proven end-to-end release.
+  if (counts.fail > 0 || counts.hold > 0 || counts.unknown > 0) {
     finalGateStatus = 'BLOCKED_BY_FAILURES';
-  } else if (counts.external_provider_required > 0 || counts.intended > 0) {
-    finalGateStatus = 'PROVEN_CLOSURE'; // Local & formal model closure proven; external boundaries faithfully identified
+  } else if (counts.external_provider_required > 0 || counts.intended > 0 || counts.partial > 0 || counts.claim > 0) {
+    finalGateStatus = 'PARTIAL_EXTERNAL_REQUIRED';
   }
 
   const finalProofGate = {
