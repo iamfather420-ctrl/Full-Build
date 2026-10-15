@@ -238,10 +238,10 @@ export class PreflightService {
 
     // 2. PayPal Live Credentials (Required in Production)
     items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8));
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_LIVE_NT_SECRET']));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8));
 
     // 3. NEON_DATABASE_URL
-    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
+    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://'), ['DATABASE_URL']));
 
     // 4. PayPal active environment must explicitly select live in production
     items.push(checkVar('PAYPAL_ACTIVE_ENVIRONMENT', true, (v) => v.toLowerCase() === 'live' || v.toLowerCase() === 'production'));
