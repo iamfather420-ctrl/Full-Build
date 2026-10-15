@@ -12,6 +12,7 @@ Updated: 2026-10-15
 - `c3de7ea1492e0da8f75ac40c659e6bbc5baaf522`: PayPal live credentials and active-environment selection are production preflight blockers only when `PAYMENTS_ENABLED=true`, preserving the intended no-payment release path.
 - `d4d392fd86b9ef6ad3a8b74122d8e3697be65c69`: verification closure now records the actual checked-out `GITHUB_SHA` or `git rev-parse HEAD`, instead of stamping fresh evidence with a stale hard-coded commit.
 - `38706224b17dbe0cac6e71a29502cd3dcba2fef9`: Neon runtime accepts the deployed `DATABASE_URL` as a configuration alias for `NEON_DATABASE_URL`.
+- `699367b185330bebc4f0d31f1df660440db2217d`: corrected final verification gate semantics. Any failed, held, or unknown check now blocks closure; external-provider, intended, partial, or claim-only entries produce `PARTIAL_EXTERNAL_REQUIRED`, not `PROVEN_CLOSURE`.
 - CI/status queries did not return checks for these direct-main commits. These edits remain **unverified by CI**. The commit-stamping fix improves provenance, but the closure script still requires careful test review; no production certification is implied.
 
 ## Release status
