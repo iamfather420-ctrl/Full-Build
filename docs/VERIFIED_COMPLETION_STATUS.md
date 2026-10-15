@@ -34,3 +34,5 @@ Updated: 2026-10-15
 - A skipped check is **SKIPPED**, not passed.
 - A preview deployment is not a production deployment.
 - Do not put credentials or secret values in source control, reports, browser code, or logs.
+
+- `246488434c149c023b211c4aff1c14febf6e076e`: CI proof-closure validation now hashes every receipt in the integrity manifest rather than sampling only the first 50.
