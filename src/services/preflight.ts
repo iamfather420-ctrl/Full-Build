@@ -228,12 +228,12 @@ export class PreflightService {
     };
 
     // 1. PayPal Sandbox / Default Credentials
-    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_ID', 'PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_KEY', 'PAYPAL_CLIENT_SECRET']));
+    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_ID']));
+    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_KEY']));
 
     // 2. PayPal Live Credentials (Required in Production)
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8, ['PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_LIVE_NT_SECRET', 'PAYPAL_CLIENT_SECRET']));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_LIVE_NT_SECRET']));
 
     // 3. NEON_DATABASE_URL
     items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
