@@ -280,8 +280,13 @@ export class NeonStore {
           updated_at = EXCLUDED.updated_at,
           status = EXCLUDED.status,
           payload_json = EXCLUDED.payload_json
+        WHERE ${tableName}.tenant_id = EXCLUDED.tenant_id
+        RETURNING id
       `, [payload.id, payload.tenant_id, payload.created_at, payload.updated_at, payload.status, payload.version, payload.payload_json]);
-      return true;
+      // A record already owned by another tenant must never be reassigned or
+      // silently treated as a successful write. No returned row means the tenant
+      // ownership predicate rejected the conflict.
+      return Array.isArray(rows) && rows.length === 1;
     } catch {
       return false;
     }
