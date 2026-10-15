@@ -327,6 +327,19 @@ export class PayPalAdapter {
       };
     }
 
+    // Live money movement is intentionally disabled until trusted tenant/order authorization,
+    // amount/currency validation, and durable capture reconciliation have independent verification.
+    // Sandbox credentials remain available for non-production integration testing.
+    if (creds.environment === 'live') {
+      return {
+        success: false,
+        status: 'EXTERNAL_PROVIDER_REQUIRED',
+        claim_scope: 'PRODUCTION',
+        gateway_state: 'EXTERNAL_PROVIDER_REQUIRED',
+        error: 'Live PayPal capture is disabled by the production safety gate. Use sandbox for testing; do not collect real funds.'
+      };
+    }
+
     // Step 1: Real OAuth2 Authentication
     const oauth = await this.acquireOAuthToken(creds);
     if (!oauth.access_token) {
