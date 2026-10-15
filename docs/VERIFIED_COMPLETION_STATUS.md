@@ -2,6 +2,11 @@
 
 Updated: 2026-10-15
 
+### Additional preflight hardening (latest main commits)
+- Commit `fbc429b31512aa50cdd9856173bc4e6b13560bcb` removes generic PayPal credential aliases from sandbox and live credential checks, preventing one environment's generic credentials from satisfying the other environment's preflight.
+- Commit `84fc7c6bc76f9188ab58941ed1399dbbf4afb975` makes unknown non-empty `SOLVEX_ENV` labels fail closed as production instead of silently downgrading to local mode.
+- CI status for these direct-main commits was not returned by the available workflow/status queries. These edits are **not yet independently CI-validated**; rerun build, TypeScript, formal-hash, and relevant PayPal/preflight checks before release.
+
 ## Current verified evidence
 
 ### Full-Build formal verification
