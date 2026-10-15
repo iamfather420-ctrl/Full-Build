@@ -209,7 +209,6 @@ export async function runPayPalDualEnvForensicTest(): Promise<{
     try {
       delete process.env.PAYPAL_LIVE_CLIENT_ID;
       delete process.env.PAYPAL_LIVE_CLIENT_SECRET;
-      delete process.env.PAYPAL_LIVE_LIVE_NT_SECRET;
       delete process.env.PAYPAL_SANDBOX_ID;
       delete process.env.PAYPAL_SANDBOX_KEY;
       delete process.env.PAYPAL_SANDBOX_CLIENT_ID;
