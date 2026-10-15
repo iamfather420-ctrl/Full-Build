@@ -26,7 +26,7 @@ async function startServer() {
   // owner DATABASE_URL. The deployment must provide the restricted runtime URL.
   app.get('/readyz', async (_req, res) => {
     const runtimeUrl = process.env.NEON_RUNTIME_DATABASE_URL;
-    if (!runtimeUrl || !/^postgres(?:ql)?:\\/\\//i.test(runtimeUrl)) {
+    if (!runtimeUrl || !/^postgres(?:ql)?:\/\//i.test(runtimeUrl)) {
       res.status(503).json({
         status: 'not_ready',
         reason: 'NEON_RUNTIME_DATABASE_URL is not configured with a PostgreSQL URL'
