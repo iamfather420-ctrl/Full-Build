@@ -45,11 +45,16 @@ export class PreflightService {
   }
 
   public getEnvironmentMode(): EnvironmentMode {
-    const raw = (typeof process !== 'undefined' && process.env?.SOLVEX_ENV) || 'local';
+    const raw = (typeof process !== 'undefined' && process.env?.SOLVEX_ENV) || '';
     const lower = raw.toLowerCase().trim();
+    if (!lower || lower === 'local' || lower === 'development' || lower === 'test') return 'local';
     if (lower === 'production') return 'production';
     if (lower === 'sandbox') return 'sandbox';
-    return 'local';
+
+    // Unknown non-empty environment labels must never downgrade preflight to
+    // local mode. Treat them as production so missing production requirements
+    // fail closed until the deployment label is corrected.
+    return 'production';
   }
 
   public async runDependencyPreflight(): Promise<DependencyCheckItem[]> {
