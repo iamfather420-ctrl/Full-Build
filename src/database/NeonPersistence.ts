@@ -39,7 +39,13 @@ export class NeonStore {
   }
 
   private constructor() {
-    this.databaseUrl = (typeof process !== 'undefined' && (process.env?.NEON_DATABASE_URL || process.env?.DATABASE_URL)) || null;
+    const env = typeof process !== 'undefined' ? process.env : undefined;
+    const production = (env?.SOLVEX_ENV || env?.NODE_ENV || '').toLowerCase() === 'production';
+    // Production must use the explicitly restricted runtime credential. Never
+    // silently fall back to a potentially privileged owner DATABASE_URL.
+    this.databaseUrl = production
+      ? (env?.NEON_RUNTIME_DATABASE_URL || null)
+      : (env?.NEON_RUNTIME_DATABASE_URL || env?.NEON_DATABASE_URL || env?.DATABASE_URL || null);
   }
 
   public static getInstance(): NeonStore {
