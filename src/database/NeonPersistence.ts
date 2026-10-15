@@ -273,7 +273,7 @@ export class NeonStore {
         payload_json: JSON.stringify(data)
       };
 
-      await this.neonClient.query(`
+      const rows = await this.neonClient.query(`
         INSERT INTO ${tableName} (id, tenant_id, created_at, updated_at, status, version, payload_json)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (id) DO UPDATE SET
