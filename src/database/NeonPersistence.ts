@@ -66,7 +66,7 @@ export class NeonStore {
     this.restartReadbackVerified = false;
     if (!this.isConfigured()) {
       this.isConnected = false;
-      this.lastError = 'NEON_DATABASE_URL or DATABASE_URL not configured';
+      this.lastError = 'NEON_RUNTIME_DATABASE_URL is not configured for the active environment';
       return false;
     }
 
@@ -96,14 +96,14 @@ export class NeonStore {
     const isConf = this.isConfigured();
     if (!isConf) {
       return {
-        backend: 'SQLITE_LOCAL',
+        backend: 'PERSISTENCE_UNAVAILABLE',
         configured: false,
         connected: false,
         tables_verified: 0,
         total_required_tables: this.totalRequiredTables,
         tenant_isolation_verified: false,
         restart_readback_verified: false,
-        notes: 'NEON_DATABASE_URL and DATABASE_URL are not configured. Cloud persistence is unverified; local fallback selection must be reported separately by the caller.'
+        notes: 'No Neon runtime credential is configured. Persistence is unavailable; no local SQLite fallback is claimed by this adapter.'
       };
     }
 
