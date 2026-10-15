@@ -82,7 +82,15 @@ export async function runFullBuildVerificationClosure() {
   const timestampUtc = new Date().toISOString();
   const repoName = 'iamfather420-ctrl/Full-Build';
   const branchName = 'main';
-  const targetCommitSha = '728625581c2f89210c752d03fda0a154812b2366';
+  // Bind evidence to the actual checked-out source revision; never label current output with a stale hard-coded SHA.
+  let targetCommitSha = (process.env.GITHUB_SHA || '').trim();
+  if (!/^[0-9a-f]{40}$/i.test(targetCommitSha)) {
+    try {
+      targetCommitSha = cp.execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    } catch {
+      targetCommitSha = 'UNKNOWN';
+    }
+  }
   const runtime = `Node.js ${process.version} (${process.platform} ${process.arch})`;
   const artifactsDir = path.resolve(process.cwd(), 'artifacts');
   const receiptsDir = path.resolve(artifactsDir, 'proof-receipts');
