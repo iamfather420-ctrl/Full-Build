@@ -3,7 +3,6 @@ import { db } from "@workspace/db";
 import { ordersTable, paradoxProductsTable, vaultEntriesTable, auditLogTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import crypto from "crypto";
 import { requireOwner } from "../middlewares/requireOwner";
 
 const WALLET_ADDRESSES: Record<string, string> = {
@@ -21,8 +20,9 @@ router.post("/orders", async (req, res) => {
     const { productId, paymentMethod } = req.body;
     const userId = req.user?.id;
     if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
-    if (!productId || !paymentMethod) {
-      res.status(400).json({ error: "productId and paymentMethod required" });
+    if (typeof productId !== "string" || !productId.trim() ||
+        typeof paymentMethod !== "string" || !["eth", "usdc", "btc"].includes(paymentMethod)) {
+      res.status(400).json({ error: "A valid productId and supported paymentMethod (eth, usdc, btc) are required" });
       return;
     }
     const [product] = await db.select().from(paradoxProductsTable).where(eq(paradoxProductsTable.id, productId)).limit(1);
@@ -34,7 +34,11 @@ router.post("/orders", async (req, res) => {
 
     const orderId = nanoid();
     const holdUntil = new Date(Date.now() + HOLD_HOURS * 60 * 60 * 1000);
-    const walletAddress = WALLET_ADDRESSES[paymentMethod] ?? WALLET_ADDRESSES.eth;
+    const walletAddress = WALLET_ADDRESSES[paymentMethod];
+    if (!walletAddress) {
+      res.status(503).json({ error: "Payment method is not configured" });
+      return;
+    }
 
     await db.insert(ordersTable).values({ id: orderId, userId, productId, status: "pending", paymentMethod, amount, walletAddress });
     await db.insert(vaultEntriesTable).values({ id: nanoid(), orderId, userId, amount, paymentMethod, status: "pending", holdUntil });
@@ -50,7 +54,7 @@ router.post("/orders", async (req, res) => {
 router.get("/orders/mine", async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) { res.json([]); return; }
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     const orders = await db.select().from(ordersTable).where(eq(ordersTable.userId, userId)).orderBy(desc(ordersTable.createdAt));
     res.json(orders);
   } catch (err) {
@@ -71,8 +75,10 @@ router.get("/orders/all", requireOwner, async (req, res) => {
 
 router.get("/orders/:id", async (req, res) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, req.params.id)).limit(1);
-    if (!order) { res.status(404).json({ error: "Order not found" }); return; }
+    if (!order || order.userId !== userId) { res.status(404).json({ error: "Order not found" }); return; }
     res.json(order);
   } catch (err) {
     req.log.error({ err }, "Failed to get order");
@@ -82,32 +88,30 @@ router.get("/orders/:id", async (req, res) => {
 
 router.post("/orders/:id/confirm", async (req, res) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     const { transactionHash } = req.body;
+    if (typeof transactionHash !== "string" || !/^(0x)?[a-fA-F0-9]{64}$/.test(transactionHash)) {
+      res.status(400).json({ error: "A valid transaction hash is required" });
+      return;
+    }
     const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, req.params.id)).limit(1);
-    if (!order) { res.status(404).json({ error: "Order not found" }); return; }
-
-    // Generate real cryptographic license key: SHA-256 of orderId + productId + nonce
-    const licenseNonce = crypto.randomBytes(16).toString("hex");
-    const licenseKey = crypto
-      .createHash("sha256")
-      .update(`${order.id}:${order.productId}:${licenseNonce}:${Date.now()}`)
-      .digest("hex")
-      .toUpperCase()
-      .match(/.{1,8}/g)!
-      .join("-"); // Format: XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX
-
-    await db.update(ordersTable).set({ status: "confirmed", transactionHash, confirmedAt: new Date(), licenseKey }).where(eq(ordersTable.id, order.id));
-    await db.update(vaultEntriesTable).set({ status: "held" }).where(eq(vaultEntriesTable.orderId, order.id));
-
-    const [prod] = await db.select().from(paradoxProductsTable).where(eq(paradoxProductsTable.id, order.productId)).limit(1);
-    if (prod) {
-      await db.update(paradoxProductsTable).set({ salesCount: prod.salesCount + 1 }).where(eq(paradoxProductsTable.id, order.productId));
+    if (!order || order.userId !== userId) { res.status(404).json({ error: "Order not found" }); return; }
+    if (order.status !== "pending") {
+      res.status(409).json({ error: "Only pending orders can be submitted for verification" });
+      return;
     }
 
-    await db.insert(auditLogTable).values({ id: nanoid(), eventType: "order_confirmed", userId: order.userId, orderId: order.id, details: JSON.stringify({ transactionHash, licenseKey }), status: "success" });
-    res.json({ success: true, message: "Order confirmed", licenseKey });
+    // A submitted hash is not proof of settlement. Keep the order unconfirmed
+    // until an independent verifier checks chain, recipient, asset, amount and depth.
+    await db.update(ordersTable).set({ status: "pending_verification", transactionHash }).where(eq(ordersTable.id, order.id));
+    await db.insert(auditLogTable).values({
+      id: nanoid(), eventType: "order_submitted_for_verification", userId,
+      orderId: order.id, details: JSON.stringify({ transactionHash }), status: "pending"
+    });
+    res.status(202).json({ success: true, status: "pending_verification", message: "Transaction submitted; independent verification is required before confirmation." });
   } catch (err) {
-    req.log.error({ err }, "Failed to confirm order");
+    req.log.error({ err }, "Failed to submit order for verification");
     res.status(500).json({ error: "Internal server error" });
   }
 });
