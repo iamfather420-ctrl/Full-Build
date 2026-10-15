@@ -192,6 +192,9 @@ export class PreflightService {
   public runConfigurationPreflight(): ConfigurationCheckItem[] {
     const env = this.getEnvironmentMode();
     const items: ConfigurationCheckItem[] = [];
+    // Payment credentials are production blockers only when payment collection is explicitly enabled.
+    // This preserves the evidence-gated, no-payment release path.
+    const paymentsEnabled = (typeof process !== 'undefined' && process.env?.PAYMENTS_ENABLED || '').toLowerCase() === 'true';
 
     // Helper: never print secret values
     const checkVar = (
@@ -237,14 +240,14 @@ export class PreflightService {
     items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_KEY']));
 
     // 2. PayPal Live Credentials (Required in Production)
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8));
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', paymentsEnabled, (v) => v.length >= 8));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', paymentsEnabled, (v) => v.length >= 8));
 
     // 3. NEON_DATABASE_URL
     items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://'), ['DATABASE_URL']));
 
     // 4. PayPal active environment must explicitly select live in production
-    items.push(checkVar('PAYPAL_ACTIVE_ENVIRONMENT', true, (v) => v.toLowerCase() === 'live' || v.toLowerCase() === 'production'));
+    items.push(checkVar('PAYPAL_ACTIVE_ENVIRONMENT', paymentsEnabled, (v) => v.toLowerCase() === 'live' || v.toLowerCase() === 'production'));
 
     // 5. GEMINI_API_KEY
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
