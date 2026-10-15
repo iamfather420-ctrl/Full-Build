@@ -5,27 +5,8 @@ Updated: 2026-10-15
 ### Additional preflight hardening (latest main commits)
 - Commit `fbc429b31512aa50cdd9856173bc4e6b13560bcb` removes generic PayPal credential aliases from sandbox and live credential checks, preventing one environment's generic credentials from satisfying the other environment's preflight.
 - Commit `84fc7c6bc76f9188ab58941ed1399dbbf4afb975` makes unknown non-empty `SOLVEX_ENV` labels fail closed as production instead of silently downgrading to local mode.
-- CI status for these direct-main commits was not returned by the available workflow/status queries. These edits are **not yet independently CI-validated**; rerun build, TypeScript, formal-hash, and relevant PayPal/preflight checks before release.
-
-## Current verified evidence
-
-### Full-Build formal verification
-- Repository: `iamfather420-ctrl/Full-Build`
-- Workflow: [Authoritative 120-case verification](https://github.com/iamfather420-ctrl/Full-Build/actions/runs/38643939910)
-- Result: workflow succeeded; the original 120-case verification step passed.
-- Artifact: `authoritative-verification-2e5eade980b2555238b355a66c607702dc53e8c0`
-- Artifact ID: `11931043843`
-- SHA-256: `6df761809c8e3aa8418fb653baf64b966fcb65c4a8b2657ae8153e02f1c53d43`
-- Expiry: 2026-11-13 21:55:54 UTC.
-- Important limitation: the same workflow explicitly skipped production preflight, production runtime wiring, and PayPal dual-environment verification. The 120-case result is not production certification.
-
-### Uarefake proof-before-power integration
-- Repository: `iamfather420-ctrl/Uarefake-1`
-- Branch: `integration/proof-before-power-gate`
-- Latest security-test commit: `44453e77a61ca7b7ac18fec36122232ad8b479f1`
-- Latest CI: [run 38664717079](https://github.com/iamfather420-ctrl/Uarefake-1/actions/runs/38664717079) — build, TypeScript, tests, and lint succeeded.
-- The adapter intentionally refuses every tool invocation until trusted server-side identity and tenant authorization are wired. Caller-provided flags cannot grant execution.
-- Vercel reported successful preview status for the commit; this is not evidence of production promotion or production health.
+- Commit `34c7ae95ff63b5a06622c665fc0d453f9287abd0` aligns production database preflight with the Vercel variable name by accepting `DATABASE_URL` as an alias for `NEON_DATABASE_URL`; it also removes a misspelled live-PayPal secret alias.
+- The available workflow/status query returned no CI runs for these direct-main commits. These changes remain **unverified by CI** and must be tested before release.
 
 ## Release status
 
