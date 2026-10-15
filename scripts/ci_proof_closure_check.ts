@@ -50,7 +50,7 @@ export function runCiProofClosureCheck() {
   // 3. Verify that individual proof receipts match their recorded hashes
   const receiptsDir = path.join(artifactsDir, 'proof-receipts');
   let checked = 0;
-  for (const entry of manifest.entries.slice(0, 50)) { // Sample-check top 50 in fast CI
+  for (const entry of manifest.entries) { // Verify every receipt; sampled validation cannot establish full manifest integrity
     const receiptFile = path.resolve(process.cwd(), entry.receipt_file);
     if (!fs.existsSync(receiptFile)) {
       console.error(`[CI-FAIL] Receipt file missing: ${entry.receipt_file}`);
@@ -64,7 +64,7 @@ export function runCiProofClosureCheck() {
     }
     checked++;
   }
-  console.log(`[CI-PASS] Cryptographic receipt hash signatures verified (${checked} sampled).`);
+  console.log(`[CI-PASS] Cryptographic receipt hash signatures verified (${checked} of ${manifest.entries.length} manifest entries).`);
 
   // 4. Validate Final Proof Gate
   const gateRaw = fs.readFileSync(path.join(artifactsDir, 'final-proof-gate.json'), 'utf8');
