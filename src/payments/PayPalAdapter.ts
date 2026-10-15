@@ -97,7 +97,7 @@ export class PayPalAdapter {
   public getLiveCredentials(): PayPalCredentials | null {
     if (typeof process === 'undefined' || !process.env) return null;
     const cid = process.env.PAYPAL_LIVE_CLIENT_ID || process.env.PAYPAL_LIVE_ID || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_ID : undefined);
-    const sec = process.env.PAYPAL_LIVE_CLIENT_SECRET || process.env.PAYPAL_LIVE_SECRET || process.env.PAYPAL_LIVE_LIVE_NT_SECRET || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_SECRET : undefined);
+    const sec = process.env.PAYPAL_LIVE_CLIENT_SECRET || process.env.PAYPAL_LIVE_SECRET || (this.getActiveEnvironment() === 'live' ? process.env.PAYPAL_CLIENT_SECRET : undefined);
     if (cid && sec) {
       return {
         clientId: cid.trim(),
