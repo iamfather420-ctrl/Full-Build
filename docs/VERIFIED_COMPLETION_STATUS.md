@@ -8,6 +8,12 @@ Updated: 2026-10-15
 - Commit `34c7ae95ff63b5a06622c665fc0d453f9287abd0` aligns production database preflight with the Vercel variable name by accepting `DATABASE_URL` as an alias for `NEON_DATABASE_URL`; it also removes a misspelled live-PayPal secret alias.
 - The available workflow/status query returned no CI runs for these direct-main commits. These changes remain **unverified by CI** and must be tested before release.
 
+### Additional preflight and evidence-integrity fixes (latest main commits)
+- `c3de7ea1492e0da8f75ac40c659e6bbc5baaf522`: PayPal live credentials and active-environment selection are production preflight blockers only when `PAYMENTS_ENABLED=true`, preserving the intended no-payment release path.
+- `d4d392fd86b9ef6ad3a8b74122d8e3697be65c69`: verification closure now records the actual checked-out `GITHUB_SHA` or `git rev-parse HEAD`, instead of stamping fresh evidence with a stale hard-coded commit.
+- `38706224b17dbe0cac6e71a29502cd3dcba2fef9`: Neon runtime accepts the deployed `DATABASE_URL` as a configuration alias for `NEON_DATABASE_URL`.
+- CI/status queries did not return checks for these direct-main commits. These edits remain **unverified by CI**. The commit-stamping fix improves provenance, but the closure script still requires careful test review; no production certification is implied.
+
 ## Release status
 
 **Production release remains BLOCKED.** Do not mark the build complete or enable consequential execution based on CI alone.
