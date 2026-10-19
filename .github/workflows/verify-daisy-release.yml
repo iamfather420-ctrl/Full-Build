@@ -1,0 +1,190 @@
+name: Verify and inventory Daisy AI OS release
+
+on:
+  push:
+    branches:
+      - audit/reconstruct-daisy-release-2026-10-19
+    paths:
+      - .github/workflows/verify-daisy-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daisy-release-verification
+  cancel-in-progress: false
+
+jobs:
+  reconstruct-verify-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Download published release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work
+          cd work
+          base="https://github.com/iamfather420-ctrl/Full-Build/releases/download/v0.1.0-daisy-ai-os"
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 "$base/Daisy-AI-OS-Complete-With-ISO.tar.part-00" -o part-00
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 "$base/Daisy-AI-OS-Complete-With-ISO.tar.part-01" -o part-01
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 "$base/Daisy-AI-OS-Complete-With-ISO.tar.sha256" -o archive.sha256
+          curl --fail --location --retry 5 --retry-all-errors --connect-timeout 30 "$base/README.txt" -o release-README.txt
+          printf '%s\n' 'Downloaded sizes:'
+          wc -c part-00 part-01 archive.sha256 release-README.txt
+          printf '%s  %s\n' 'f1b21db8275a9663b90dfaf799d28afb757b0549f0fcf4dbcd8923d3b07b2886' part-00 | sha256sum -c -
+          printf '%s  %s\n' '9d875510837c23f05688edd239808e5c4e188ca828588c51af95db2488c70a7d' part-01 | sha256sum -c -
+          printf '%s  %s\n' '72be9404d8beb754a6593356d2be2629128f9b62e06b7a66afd176f2b5cc06f4' archive.sha256 | sha256sum -c -
+          cat part-00 part-01 > Daisy-AI-OS-Complete-With-ISO.tar
+          expected_size=$((1887436800 + 528199680))
+          actual_size=$(wc -c < Daisy-AI-OS-Complete-With-ISO.tar)
+          test "$actual_size" -eq "$expected_size"
+          sha256sum -c archive.sha256
+          echo "Verified concatenated archive size: $actual_size bytes"
+          echo "Verified concatenated archive SHA-256:"
+          sha256sum Daisy-AI-OS-Complete-With-ISO.tar
+          echo "Archive SHA verification passed." > verification-status.txt
+          {
+            echo "Expected bytes: $expected_size"
+            echo "Actual bytes: $actual_size"
+            echo "Part 00 SHA-256: $(sha256sum part-00 | cut -d' ' -f1)"
+            echo "Part 01 SHA-256: $(sha256sum part-01 | cut -d' ' -f1)"
+            echo "Published checksum file SHA-256: $(sha256sum archive.sha256 | cut -d' ' -f1)"
+            echo "Combined archive SHA-256: $(sha256sum Daisy-AI-OS-Complete-With-ISO.tar | cut -d' ' -f1)"
+          } > verification-report.txt
+          cp release-README.txt README-release-copy.txt
+
+      - name: Validate TAR structure and create inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd work
+          python3 - <<'PY'
+          import json, os, tarfile
+          archive = "Daisy-AI-OS-Complete-With-ISO.tar"
+          report = {
+              "archive": archive,
+              "tar_opened": False,
+              "member_count": 0,
+              "regular_files": 0,
+              "directories": 0,
+              "symlinks": 0,
+              "hardlinks": 0,
+              "other_types": 0,
+              "declared_uncompressed_bytes": 0,
+              "unsafe_paths": [],
+              "iso_candidates": [],
+              "largest_members": [],
+              "member_listing": "archive-members.txt",
+          }
+          members = []
+          with tarfile.open(archive, mode="r:") as tf:
+              report["tar_opened"] = True
+              for m in tf:
+                  members.append(m)
+                  name = m.name
+                  if name.startswith("/") or any(p == ".." for p in name.split("/")):
+                      report["unsafe_paths"].append(name)
+                  if m.isfile():
+                      report["regular_files"] += 1
+                      report["declared_uncompressed_bytes"] += m.size
+                  elif m.isdir():
+                      report["directories"] += 1
+                  elif m.issym():
+                      report["symlinks"] += 1
+                  elif m.islnk():
+                      report["hardlinks"] += 1
+                  else:
+                      report["other_types"] += 1
+                  if name.lower().endswith(".iso") and m.isfile():
+                      report["iso_candidates"].append({"name": name, "size": m.size})
+          report["member_count"] = len(members)
+          largest = sorted(
+              [{"name": m.name, "size": m.size, "type": (
+                  "file" if m.isfile() else "dir" if m.isdir() else
+                  "symlink" if m.issym() else "hardlink" if m.islnk() else "other"
+              )} for m in members],
+              key=lambda x: x["size"], reverse=True
+          )[:100]
+          report["largest_members"] = largest
+          with open("archive-members.txt", "w", encoding="utf-8") as f:
+              for m in members:
+                  f.write(f"{m.size}\t{m.name}\n")
+          with open("archive-inventory.json", "w", encoding="utf-8") as f:
+              json.dump(report, f, indent=2)
+          with open("archive-inventory-summary.txt", "w", encoding="utf-8") as f:
+              f.write(json.dumps(report, indent=2) + "\n")
+          if not report["tar_opened"] or report["member_count"] == 0:
+              raise SystemExit("TAR structure validation failed: archive is empty or unreadable")
+          if report["unsafe_paths"]:
+              raise SystemExit("TAR inventory found unsafe paths; see archive-inventory.json")
+          print(json.dumps({k: report[k] for k in (
+              "tar_opened", "member_count", "regular_files", "directories",
+              "symlinks", "hardlinks", "other_types", "declared_uncompressed_bytes",
+              "iso_candidates", "unsafe_paths"
+          )}, indent=2))
+          PY
+
+      - name: Inspect bundled ISO without executing its contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd work
+          python3 - <<'PY'
+          import json, tarfile
+          with open("archive-inventory.json", encoding="utf-8") as f:
+              inv = json.load(f)
+          if len(inv["iso_candidates"]) == 0:
+              print("No .iso file found in TAR; ISO inspection skipped.")
+              open("iso-inspection.txt", "w").write("No .iso file found in TAR.\n")
+          elif len(inv["iso_candidates"]) > 1:
+              print("Multiple ISO candidates found; not extracting automatically.")
+              open("iso-inspection.txt", "w").write(
+                  "Multiple ISO candidates found; no ISO extracted automatically.\n" +
+                  "\n".join(f'{x["name"]}\t{x["size"]}' for x in inv["iso_candidates"]) + "\n"
+              )
+          else:
+              item = inv["iso_candidates"][0]
+              print(f'Extracting ISO payload for read-only inspection: {item["name"]} ({item["size"]} bytes)')
+              with tarfile.open("Daisy-AI-OS-Complete-With-ISO.tar", "r:") as tf:
+                  src = tf.extractfile(item["name"])
+                  if src is None:
+                      raise SystemExit("Unable to read ISO member")
+                  with open("bundled.iso", "wb") as dst:
+                      while True:
+                          chunk = src.read(8 * 1024 * 1024)
+                          if not chunk:
+                              break
+                          dst.write(chunk)
+          PY
+          if [ -f bundled.iso ]; then
+            file bundled.iso | tee iso-inspection.txt
+            sha256sum bundled.iso >> iso-inspection.txt
+            if command -v xorriso >/dev/null 2>&1; then
+              xorriso -indev bundled.iso -pvd_info >> iso-inspection.txt 2>&1 || true
+              xorriso -indev bundled.iso -find / -type f -exec lsdl >> iso-file-inventory.txt 2>&1 || true
+            elif command -v isoinfo >/dev/null 2>&1; then
+              isoinfo -d -i bundled.iso >> iso-inspection.txt 2>&1 || true
+              isoinfo -f -i bundled.iso > iso-file-inventory.txt 2>&1 || true
+            else
+              echo "No ISO filesystem inspection utility preinstalled; format signature and SHA-256 recorded." >> iso-inspection.txt
+            fi
+          fi
+
+      - name: Upload verification and inventory report
+        uses: actions/upload-artifact@v4
+        with:
+          name: daisy-ai-os-release-verification
+          path: |
+            work/verification-report.txt
+            work/verification-status.txt
+            work/archive.sha256
+            work/README-release-copy.txt
+            work/archive-inventory.json
+            work/archive-inventory-summary.txt
+            work/archive-members.txt
+            work/iso-inspection.txt
+            work/iso-file-inventory.txt
+          if-no-files-found: error
+          retention-days: 30
