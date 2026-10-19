@@ -21,12 +21,28 @@ const goal = NOPOTEngine.verifyTermination({
   terminal_state: 0,
   transition_function: n => n - 2,
   variant_function: n => n,
-  max_bounded_steps: 3
+  max_bounded_steps: 3,
+  smt_transition_expression: '(- s 2)',
+  smt_variant_expression: 's',
+  smt_state_invariant: '(= (mod s 2) 0)'
 });
 assert.equal(goal.termination_proved, true);
 assert.equal(goal.actual_measured_steps, 3);
 assert.equal(goal.formal_smt_verification?.verified_by_z3, false);
 assert.equal(goal.verification_scope, 'BOUNDED_TRACE_ONLY');
+const customZ3 = await NOPOTEngine.verifyWithZ3({
+  goal_id: 'custom-even-countdown', initial_state: 6, terminal_state: 0,
+  transition_function: n => n - 2, variant_function: n => n, max_bounded_steps: 3,
+  smt_transition_expression: '(- s 2)', smt_variant_expression: 's', smt_state_invariant: '(= (mod s 2) 0)'
+});
+assert.equal(customZ3.z3Result.solver_result, 'unsat');
+assert.equal(customZ3.certificate.formal_smt_verification?.verified_by_z3, true);
+assert.equal(customZ3.certificate.verification_scope, 'CUSTOM_GOAL_SMT_AND_BOUNDED_REACHABILITY');
+const missingSpec = await assert.rejects(() => NOPOTEngine.verifyWithZ3({
+  goal_id: 'missing-smt-spec', initial_state: 2, terminal_state: 0,
+  transition_function: n => n - 1, variant_function: n => n, max_bounded_steps: 2
+}), /requires smt_transition_expression/);
+void missingSpec;
 
 const protocol = MMTAIProtocol.getInstance();
 const token = protocol.issueAuthorizationToken('ROLE_OPERATOR', 'CAP_READ', 'tenant-a');
@@ -42,7 +58,7 @@ assert.throws(
   /Authority Violation/
 );
 
-console.log('PASS: NOPOT bounded trace honesty, bounded input validation, goal variant enforcement, MMTAI crypto token, context binding, and replay protection');
+console.log('PASS: NOPOT bounded trace honesty, bounded input validation, goal variant enforcement, goal-specific Z3 SMT verification, MMTAI crypto token, context binding, and replay protection');
 
 const z3 = Z3FormalProofEngine.getInstance();
 const actualUnsat = await z3.verifyCustomSmtScript(
