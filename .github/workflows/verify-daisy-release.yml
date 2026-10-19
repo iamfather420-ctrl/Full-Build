@@ -40,7 +40,8 @@ jobs:
           expected_size=$((1887436800 + 528199680))
           actual_size=$(wc -c < Daisy-AI-OS-Complete-With-ISO.tar)
           test "$actual_size" -eq "$expected_size"
-          sha256sum -c archive.sha256
+          expected_archive_sha=$(awk 'NF {print $1; exit}' archive.sha256)
+          printf '%s  %s\\n' "$expected_archive_sha" Daisy-AI-OS-Complete-With-ISO.tar | sha256sum -c -
           echo "Verified concatenated archive size: $actual_size bytes"
           echo "Verified concatenated archive SHA-256:"
           sha256sum Daisy-AI-OS-Complete-With-ISO.tar
