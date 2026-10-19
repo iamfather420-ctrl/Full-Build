@@ -169,13 +169,13 @@ export class NOPOTEngine {
     const variant = safeSmtExpression(goal.smt_variant_expression, 'smt_variant_expression');
     const invariant = safeSmtExpression(goal.smt_state_invariant, 'smt_state_invariant');
     const nextVariant = variant.replace(/\bs\b/g, transition);
+    const nextInvariant = invariant.replace(/\bs\b/g, transition);
     const script = [
       '(set-logic QF_LIA)',
       '(declare-const s Int)',
-      `(assert (>= s ${goal.terminal_state}))`,
-      `(assert (not (= s ${goal.terminal_state})))`,
+      `(assert (> s ${goal.terminal_state}))`,
       `(assert ${invariant})`,
-      `(assert (not (and (>= ${transition} ${goal.terminal_state}) (< ${nextVariant} ${variant}))))`,
+      `(assert (not (and (>= ${transition} ${goal.terminal_state}) ${nextInvariant} (>= ${variant} 0) (>= ${nextVariant} 0) (< ${nextVariant} ${variant}))))`,
       '(check-sat)'
     ].join(' ');
     const z3Result = await Z3FormalProofEngine.getInstance().verifyCustomSmtScript(
