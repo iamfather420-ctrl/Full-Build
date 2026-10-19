@@ -139,7 +139,7 @@ jobs:
           with open("archive-inventory.json", encoding="utf-8") as f:
               inv = json.load(f)
           if not inv["iso_candidates"]:
-              open("iso-inspection.txt", "w").write("No .iso files found in TAR.\\n")
+              open("iso-inspection.txt", "w").write("No .iso files found in TAR.\n")
               raise SystemExit(0)
           archive = "Daisy-AI-OS-Complete-With-ISO.tar"
           with tarfile.open(archive, "r:") as tf:
@@ -164,12 +164,12 @@ jobs:
                   if written != item["size"]:
                       raise SystemExit(f'ISO size mismatch for {item["name"]}: {written} != {item["size"]}')
                   with open(f"iso-inspection-{stem}.txt", "w", encoding="utf-8") as out:
-                      out.write(f"Archive member: {item['name']}\\n")
-                      out.write(f"Size: {written} bytes\\n")
-                      out.write(f"SHA-256: {h.hexdigest()}\\n")
+                      out.write(f"Archive member: {item['name']}\n")
+                      out.write(f"Size: {written} bytes\n")
+                      out.write(f"SHA-256: {h.hexdigest()}\n")
                       out.write(subprocess.run(["file", current], text=True, capture_output=True, check=False).stdout)
                       p = subprocess.run(["xorriso", "-indev", current, "-pvd_info"], text=True, capture_output=True, check=False)
-                      out.write("\\n--- xorriso PVD inspection ---\\n")
+                      out.write("\n--- xorriso PVD inspection ---\n")
                       out.write(p.stdout + p.stderr)
                       if p.returncode != 0:
                           raise SystemExit(f"xorriso could not validate ISO structure: {item['name']}")
@@ -180,9 +180,9 @@ jobs:
                       raise SystemExit(f"xorriso could not enumerate ISO files: {item['name']}")
                   os.remove(current)
           with open("iso-inspection.txt", "w", encoding="utf-8") as out:
-              out.write("Inspected all bundled ISO candidates using xorriso (read-only; no ISO content executed).\\n")
+              out.write("Inspected all bundled ISO candidates using xorriso (read-only; no ISO content executed).\n")
               for item in inv["iso_candidates"]:
-                  out.write(f"{item['name']}\\t{item['size']} bytes\\n")
+                  out.write(f"{item['name']}\\t{item['size']} bytes\n")
           PY
 
       - name: Upload verification and inventory report
