@@ -37,7 +37,9 @@
     "verify:native-security-fixes": "tsx scripts/verify_native_security_fixes.ts",
     "os:build:x86": "bash packaging/os/build-image.sh amd64 dist/os/Daisy-AI-OS-amd64.iso",
     "os:build:arm64": "bash packaging/os/build-image.sh arm64 dist/os/Daisy-AI-OS-arm64.iso",
-    "os:check": "bash packaging/os/check.sh"
+    "os:check": "bash packaging/os/check.sh",
+    "verify:nopot-custom-z3": "tsx scripts/verify_native_security_fixes.ts",
+    "verify:nopot-custom-z3:strict": "npm run verify:native-security-fixes"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
