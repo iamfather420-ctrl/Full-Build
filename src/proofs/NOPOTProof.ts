@@ -160,7 +160,7 @@ export class NOPOTEngine {
       throw new TypeError('Custom NOPOT Z3 proof requires smt_transition_expression, smt_variant_expression, and smt_state_invariant; catalog proofs cannot stand in for a custom goal');
     }
     const safeSmtExpression = (value: string, field: string): string => {
-      if (typeof value !== 'string' || value.length > 1000 || /\\b(check-sat|declare-const|declare-fun|assert|reset|exit)\\b/i.test(value)) {
+      if (typeof value !== 'string' || value.length > 1000 || /\b(check-sat|declare-const|declare-fun|assert|reset|exit)\b/i.test(value)) {
         throw new TypeError(`${field} must be a single SMT expression, not a complete script or command`);
       }
       return value;
@@ -168,7 +168,7 @@ export class NOPOTEngine {
     const transition = safeSmtExpression(goal.smt_transition_expression, 'smt_transition_expression');
     const variant = safeSmtExpression(goal.smt_variant_expression, 'smt_variant_expression');
     const invariant = safeSmtExpression(goal.smt_state_invariant, 'smt_state_invariant');
-    const nextVariant = variant.replace(/\\bs\\b/g, `(${transition})`);
+    const nextVariant = variant.replace(/\bs\b/g, `(${transition})`);
     const script = [
       '(set-logic QF_LIA)',
       '(declare-const s Int)',
