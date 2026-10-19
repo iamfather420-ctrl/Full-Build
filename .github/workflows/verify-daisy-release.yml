@@ -127,51 +127,63 @@ jobs:
           )}, indent=2))
           PY
 
-      - name: Inspect bundled ISO without executing its contents
+      - name: Inspect every bundled ISO without executing its contents
         shell: bash
         run: |
           set -euo pipefail
           cd work
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xorriso
           python3 - <<'PY'
-          import json, tarfile
+          import json, os, subprocess, tarfile
           with open("archive-inventory.json", encoding="utf-8") as f:
               inv = json.load(f)
-          if len(inv["iso_candidates"]) == 0:
-              print("No .iso file found in TAR; ISO inspection skipped.")
-              open("iso-inspection.txt", "w").write("No .iso file found in TAR.\n")
-          elif len(inv["iso_candidates"]) > 1:
-              print("Multiple ISO candidates found; not extracting automatically.")
-              open("iso-inspection.txt", "w").write(
-                  "Multiple ISO candidates found; no ISO extracted automatically.\n" +
-                  "\n".join(f'{x["name"]}\t{x["size"]}' for x in inv["iso_candidates"]) + "\n"
-              )
-          else:
-              item = inv["iso_candidates"][0]
-              print(f'Extracting ISO payload for read-only inspection: {item["name"]} ({item["size"]} bytes)')
-              with tarfile.open("Daisy-AI-OS-Complete-With-ISO.tar", "r:") as tf:
+          if not inv["iso_candidates"]:
+              open("iso-inspection.txt", "w").write("No .iso files found in TAR.\\n")
+              raise SystemExit(0)
+          archive = "Daisy-AI-OS-Complete-With-ISO.tar"
+          with tarfile.open(archive, "r:") as tf:
+              for n, item in enumerate(inv["iso_candidates"], 1):
+                  basename = os.path.basename(item["name"])
+                  stem = os.path.splitext(basename)[0]
+                  current = "iso-current.iso"
+                  print(f'Inspecting ISO {n}/{len(inv["iso_candidates"])}: {item["name"]} ({item["size"]} bytes)')
                   src = tf.extractfile(item["name"])
                   if src is None:
-                      raise SystemExit("Unable to read ISO member")
-                  with open("bundled.iso", "wb") as dst:
+                      raise SystemExit(f'Cannot read ISO member: {item["name"]}')
+                  h = __import__("hashlib").sha256()
+                  written = 0
+                  with open(current, "wb") as dst:
                       while True:
                           chunk = src.read(8 * 1024 * 1024)
                           if not chunk:
                               break
                           dst.write(chunk)
+                          h.update(chunk)
+                          written += len(chunk)
+                  if written != item["size"]:
+                      raise SystemExit(f'ISO size mismatch for {item["name"]}: {written} != {item["size"]}')
+                  with open(f"iso-inspection-{stem}.txt", "w", encoding="utf-8") as out:
+                      out.write(f"Archive member: {item['name']}\\n")
+                      out.write(f"Size: {written} bytes\\n")
+                      out.write(f"SHA-256: {h.hexdigest()}\\n")
+                      out.write(subprocess.run(["file", current], text=True, capture_output=True, check=False).stdout)
+                      p = subprocess.run(["xorriso", "-indev", current, "-pvd_info"], text=True, capture_output=True, check=False)
+                      out.write("\\n--- xorriso PVD inspection ---\\n")
+                      out.write(p.stdout + p.stderr)
+                      if p.returncode != 0:
+                          raise SystemExit(f"xorriso could not validate ISO structure: {item['name']}")
+                  p = subprocess.run(["xorriso", "-indev", current, "-find", "/", "-type", "f", "-exec", "lsdl"], text=True, capture_output=True, check=False)
+                  with open(f"iso-files-{stem}.txt", "w", encoding="utf-8") as out:
+                      out.write(p.stdout + p.stderr)
+                  if p.returncode != 0:
+                      raise SystemExit(f"xorriso could not enumerate ISO files: {item['name']}")
+                  os.remove(current)
+          with open("iso-inspection.txt", "w", encoding="utf-8") as out:
+              out.write("Inspected all bundled ISO candidates using xorriso (read-only; no ISO content executed).\\n")
+              for item in inv["iso_candidates"]:
+                  out.write(f"{item['name']}\\t{item['size']} bytes\\n")
           PY
-          if [ -f bundled.iso ]; then
-            file bundled.iso | tee iso-inspection.txt
-            sha256sum bundled.iso >> iso-inspection.txt
-            if command -v xorriso >/dev/null 2>&1; then
-              xorriso -indev bundled.iso -pvd_info >> iso-inspection.txt 2>&1 || true
-              xorriso -indev bundled.iso -find / -type f -exec lsdl >> iso-file-inventory.txt 2>&1 || true
-            elif command -v isoinfo >/dev/null 2>&1; then
-              isoinfo -d -i bundled.iso >> iso-inspection.txt 2>&1 || true
-              isoinfo -f -i bundled.iso > iso-file-inventory.txt 2>&1 || true
-            else
-              echo "No ISO filesystem inspection utility preinstalled; format signature and SHA-256 recorded." >> iso-inspection.txt
-            fi
-          fi
 
       - name: Upload verification and inventory report
         uses: actions/upload-artifact@v4
@@ -186,6 +198,7 @@ jobs:
             work/archive-inventory-summary.txt
             work/archive-members.txt
             work/iso-inspection.txt
-            work/iso-file-inventory.txt
+            work/iso-inspection-*.txt
+            work/iso-files-*.txt
           if-no-files-found: error
           retention-days: 30
