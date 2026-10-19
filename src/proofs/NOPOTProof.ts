@@ -168,7 +168,7 @@ export class NOPOTEngine {
     const transition = safeSmtExpression(goal.smt_transition_expression, 'smt_transition_expression');
     const variant = safeSmtExpression(goal.smt_variant_expression, 'smt_variant_expression');
     const invariant = safeSmtExpression(goal.smt_state_invariant, 'smt_state_invariant');
-    const nextVariant = variant.replace(/\bs\b/g, `(${transition})`);
+    const nextVariant = variant.replace(/\bs\b/g, transition);
     const script = [
       '(set-logic QF_LIA)',
       '(declare-const s Int)',
