@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { NOPOTEngine, NOPOTVerifier } from '../src/proofs/NOPOTProof';
 import { MMTAIProtocol } from '../src/mmtai/MMTAIProtocol';
+import { Z3FormalProofEngine } from '../src/proofs/Z3FormalProofEngine';
 
 const bounded = NOPOTVerifier.verifyAlgorithmTermination('decrement', n => n - 1, 5, 5);
 assert.equal(bounded.termination_proved, true);
@@ -42,3 +43,35 @@ assert.throws(
 );
 
 console.log('PASS: NOPOT bounded trace honesty, bounded input validation, goal variant enforcement, MMTAI crypto token, context binding, and replay protection');
+
+const z3 = Z3FormalProofEngine.getInstance();
+const actualUnsat = await z3.verifyCustomSmtScript(
+  'actual-unsat-check',
+  '(set-logic QF_LIA) (declare-const x Int) (assert (> x 5)) (assert (< x 3)) (check-sat)',
+  'unsat'
+);
+assert.equal(actualUnsat.solver_result, 'unsat');
+assert.equal(actualUnsat.proved, true);
+assert.match(actualUnsat.solver_engine, /actual solver invocation/);
+
+const actualSat = await z3.verifyCustomSmtScript(
+  'actual-sat-check',
+  '(set-logic QF_LIA) (declare-const x Int) (assert (= x 7)) (check-sat)',
+  'sat'
+);
+assert.equal(actualSat.solver_result, 'sat');
+assert.equal(actualSat.proved, true);
+assert.ok(actualSat.counterexample_model?.model);
+
+const mismatchedExpectation = await z3.verifyCustomSmtScript(
+  'expectation-mismatch-check',
+  '(set-logic QF_LIA) (declare-const x Int) (assert (= x 7)) (check-sat)',
+  'unsat'
+);
+assert.equal(mismatchedExpectation.solver_result, 'sat');
+assert.equal(mismatchedExpectation.proved, false);
+
+const catalogResults = await z3.proveAllCatalogTheorems();
+assert.equal(catalogResults.length, z3.getCatalog().length);
+assert.ok(catalogResults.every(result => result.proved && result.solver_result === 'unsat'));
+console.log('PASS: real Z3 custom SAT/UNSAT, model output, expected-result mismatch, and full theorem catalog');
