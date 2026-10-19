@@ -11,7 +11,7 @@ export interface NOPOTCertificate {
   well_founded_domain: string;
   termination_proved: boolean;
   mathematical_proof_hash: string;
-  verification_scope?: 'BOUNDED_TRACE_ONLY' | 'CATALOG_THEOREM_ONLY';
+  verification_scope?: 'BOUNDED_TRACE_ONLY' | 'CATALOG_THEOREM_ONLY' | 'CUSTOM_GOAL_SMT_AND_BOUNDED_REACHABILITY';
   formal_smt_verification?: {
     verified_by_z3: boolean;
     z3_result: string;
@@ -173,7 +173,7 @@ export class NOPOTEngine {
       '(set-logic QF_LIA)',
       '(declare-const s Int)',
       `(assert (>= s ${goal.terminal_state}))`,
-      `(assert (not (= s ${goal.terminal_state}))`,
+      `(assert (not (= s ${goal.terminal_state})))`,
       `(assert ${invariant})`,
       `(assert (not (and (>= (${transition}) ${goal.terminal_state}) (< (${nextVariant}) (${variant})))) )`,
       '(check-sat)'
@@ -188,7 +188,7 @@ export class NOPOTEngine {
     const updatedCertificate: NOPOTCertificate = {
       ...certificate,
       termination_proved: formalVerified,
-      verification_scope: formalVerified ? 'CATALOG_THEOREM_ONLY' : 'BOUNDED_TRACE_ONLY',
+      verification_scope: formalVerified ? 'CUSTOM_GOAL_SMT_AND_BOUNDED_REACHABILITY' : 'BOUNDED_TRACE_ONLY',
       well_founded_domain: 'SMT-verified non-negative integer ranking under caller-supplied invariant; bounded trace must also reach terminal',
       formal_smt_verification: {
         verified_by_z3: formalVerified,
