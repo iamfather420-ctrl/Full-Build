@@ -175,7 +175,7 @@ export class NOPOTEngine {
       `(assert (>= s ${goal.terminal_state}))`,
       `(assert (not (= s ${goal.terminal_state})))`,
       `(assert ${invariant})`,
-      `(assert (not (and (>= (${transition}) ${goal.terminal_state}) (< (${nextVariant}) (${variant})))) )`,
+      `(assert (not (and (>= ${transition} ${goal.terminal_state}) (< ${nextVariant} ${variant}))) )`,
       '(check-sat)'
     ].join(' ');
     const z3Result = await Z3FormalProofEngine.getInstance().verifyCustomSmtScript(
