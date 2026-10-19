@@ -27,6 +27,12 @@ export interface TerminationGoal {
   transition_function: (s: number) => number;
   variant_function: (s: number) => number;
   max_bounded_steps: number;
+  /** SMT-LIB integer expression for the next state in terms of `s`; must match transition_function. */
+  smt_transition_expression?: string;
+  /** SMT-LIB integer expression for the ranking variant in terms of `s`; must match variant_function. */
+  smt_variant_expression?: string;
+  /** SMT-LIB Boolean invariant for reachable non-terminal states, in terms of `s`. */
+  smt_state_invariant?: string;
 }
 
 export class NOPOTVerifier {
@@ -150,7 +156,46 @@ export class NOPOTEngine {
 
   public static async verifyWithZ3(goal: TerminationGoal): Promise<{ certificate: NOPOTCertificate; z3Result: Z3ProofResult }> {
     const certificate = NOPOTEngine.verifyTermination(goal);
-    const z3Result = await Z3FormalProofEngine.getInstance().proveCatalogTheorem('THM-INDUCTIVE-TERMINATION-05');
-    return { certificate: { ...certificate, formal_smt_verification: { verified_by_z3: false, z3_result: `Custom goal was not encoded in SMT. Separate catalog result: ${z3Result.solver_result.toUpperCase()}`, theorem_id: 'NONE' } }, z3Result };
+    if (!goal.smt_transition_expression || !goal.smt_variant_expression || !goal.smt_state_invariant) {
+      throw new TypeError('Custom NOPOT Z3 proof requires smt_transition_expression, smt_variant_expression, and smt_state_invariant; catalog proofs cannot stand in for a custom goal');
+    }
+    const safeSmtExpression = (value: string, field: string): string => {
+      if (typeof value !== 'string' || value.length > 1000 || /\\b(check-sat|declare-const|declare-fun|assert|reset|exit)\\b/i.test(value)) {
+        throw new TypeError(`${field} must be a single SMT expression, not a complete script or command`);
+      }
+      return value;
+    };
+    const transition = safeSmtExpression(goal.smt_transition_expression, 'smt_transition_expression');
+    const variant = safeSmtExpression(goal.smt_variant_expression, 'smt_variant_expression');
+    const invariant = safeSmtExpression(goal.smt_state_invariant, 'smt_state_invariant');
+    const nextVariant = variant.replace(/\\bs\\b/g, `(${transition})`);
+    const script = [
+      '(set-logic QF_LIA)',
+      '(declare-const s Int)',
+      `(assert (>= s ${goal.terminal_state}))`,
+      `(assert (not (= s ${goal.terminal_state}))`,
+      `(assert ${invariant})`,
+      `(assert (not (and (>= (${transition}) ${goal.terminal_state}) (< (${nextVariant}) (${variant})))) )`,
+      '(check-sat)'
+    ].join(' ');
+    const z3Result = await Z3FormalProofEngine.getInstance().verifyCustomSmtScript(
+      `NOPOT custom goal ${goal.goal_id}`,
+      script,
+      'unsat'
+    );
+    const traceReachedTerminal = certificate.termination_proved && certificate.strictly_decreasing;
+    const formalVerified = z3Result.proved && z3Result.solver_result === 'unsat' && traceReachedTerminal;
+    const updatedCertificate: NOPOTCertificate = {
+      ...certificate,
+      termination_proved: formalVerified,
+      verification_scope: formalVerified ? 'CATALOG_THEOREM_ONLY' : 'BOUNDED_TRACE_ONLY',
+      well_founded_domain: 'SMT-verified non-negative integer ranking under caller-supplied invariant; bounded trace must also reach terminal',
+      formal_smt_verification: {
+        verified_by_z3: formalVerified,
+        z3_result: `Custom goal SMT ${z3Result.solver_result.toUpperCase()}; bounded reachability ${traceReachedTerminal ? 'reached terminal' : 'did not establish terminal'}`,
+        theorem_id: z3Result.theorem_id
+      }
+    };
+    return { certificate: updatedCertificate, z3Result };
   }
 }
