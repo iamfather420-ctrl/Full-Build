@@ -24,7 +24,7 @@ const goal = NOPOTEngine.verifyTermination({
   max_bounded_steps: 3,
   smt_transition_expression: '(- s 2)',
   smt_variant_expression: 's',
-  smt_state_invariant: '(= (mod s 2) 0)'
+  smt_state_invariant: '(and (>= s 0) (= (mod s 2) 0))'
 });
 assert.equal(goal.termination_proved, true);
 assert.equal(goal.actual_measured_steps, 3);
@@ -33,7 +33,7 @@ assert.equal(goal.verification_scope, 'BOUNDED_TRACE_ONLY');
 const customZ3 = await NOPOTEngine.verifyWithZ3({
   goal_id: 'custom-even-countdown', initial_state: 6, terminal_state: 0,
   transition_function: n => n - 2, variant_function: n => n, max_bounded_steps: 3,
-  smt_transition_expression: '(- s 2)', smt_variant_expression: 's', smt_state_invariant: '(= (mod s 2) 0)'
+  smt_transition_expression: '(- s 2)', smt_variant_expression: 's', smt_state_invariant: '(and (>= s 0) (= (mod s 2) 0))'
 });
 assert.equal(customZ3.z3Result.solver_result, 'unsat');
 assert.equal(customZ3.certificate.formal_smt_verification?.verified_by_z3, true);
