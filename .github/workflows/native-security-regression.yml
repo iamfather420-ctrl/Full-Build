@@ -3,9 +3,11 @@ on:
   pull_request:
     paths:
       - 'src/proofs/NOPOTProof.ts'
+      - 'src/proofs/Z3FormalProofEngine.ts'
       - 'src/mmtai/MMTAIProtocol.ts'
       - 'scripts/verify_native_security_fixes.ts'
       - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
 permissions:
   contents: read
