@@ -45,6 +45,9 @@ jobs:
           npx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
 
+      - name: Test fail-closed activation decision
+        run: npm run test:activation-gate
+
       - name: Production preflight
         if: github.event_name != 'pull_request'
         run: npm run preflight
