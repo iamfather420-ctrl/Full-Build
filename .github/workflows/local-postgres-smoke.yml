@@ -1,0 +1,53 @@
+name: Local PostgreSQL GATE-11 Smoke
+
+on:
+  pull_request:
+    paths:
+      - "docker-compose.local-postgres.yml"
+      - "scripts/local-postgres/**"
+      - "scripts/verify_local_postgres.sh"
+      - ".github/workflows/local-postgres-smoke.yml"
+  push:
+    branches:
+      - "feat/local-postgres-gate11-20261019"
+    paths:
+      - "docker-compose.local-postgres.yml"
+      - "scripts/local-postgres/**"
+      - "scripts/verify_local_postgres.sh"
+      - ".github/workflows/local-postgres-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-postgres-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  local-postgres-rls:
+    name: Local PostgreSQL schema and tenant RLS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Start isolated local PostgreSQL
+        run: docker compose -f docker-compose.local-postgres.yml up -d --wait
+
+      - name: Verify restricted runtime role, 27 tables, and tenant RLS
+        env:
+          LOCAL_POSTGRES_VERIFY: "1"
+          NODE_ENV: test
+        run: sh scripts/verify_local_postgres.sh
+
+      - name: Show database logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.local-postgres.yml logs --no-color
+
+      - name: Remove local database and test volume
+        if: always()
+        run: docker compose -f docker-compose.local-postgres.yml down --volumes --remove-orphans
