@@ -27,6 +27,43 @@ export interface EnterpriseTestResult {
   error?: string;
 }
 
+/**
+ * Run a fail-closed PayPal test without risking a real provider request.
+ * All PayPal environment aliases are removed for the duration of the callback
+ * and restored byte-for-byte afterward. Session credentials are cleared too.
+ */
+async function withPayPalCredentialsDisabled<T>(fn: () => Promise<T>): Promise<T> {
+  const paypal = PayPalAdapter.getInstance();
+  const originalSessionCredentials =
+    paypal.getMaskedCredentialsInfo().source === 'SESSION'
+      ? paypal.getEffectiveCredentials()
+      : null;
+  const savedEnvironment = new Map<string, string>();
+  for (const key of Object.keys(process.env)) {
+    if (key.startsWith('PAYPAL_')) {
+      savedEnvironment.set(key, process.env[key] ?? '');
+      delete process.env[key];
+    }
+  }
+  paypal.clearSessionCredentials();
+  try {
+    return await fn();
+  } finally {
+    for (const key of Object.keys(process.env)) {
+      if (key.startsWith('PAYPAL_')) delete process.env[key];
+    }
+    for (const [key, value] of savedEnvironment) process.env[key] = value;
+    paypal.clearSessionCredentials();
+    if (originalSessionCredentials) {
+      paypal.setSessionCredentials(
+        originalSessionCredentials.clientId,
+        originalSessionCredentials.clientSecret,
+        originalSessionCredentials.environment
+      );
+    }
+  }
+}
+
 export async function runEnterpriseVerification() {
   const testResults: EnterpriseTestResult[] = [];
   const testQueue: Array<() => Promise<void>> = [];
@@ -320,33 +357,16 @@ export async function runEnterpriseVerification() {
 
   // 18. Server-Authoritative PayPal DN-35 Fail-Closed Execution
   runTest('PayPal DN-35 Server-Authoritative Fail-Closed Enforcement', 'PAYMENTS', async () => {
-    const paypal = PayPalAdapter.getInstance();
-    const origSbId = process.env.PAYPAL_SANDBOX_ID;
-    const origSbKey = process.env.PAYPAL_SANDBOX_KEY;
-    const origSbClientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
-    const origSbClientSec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-    const origClientId = process.env.PAYPAL_CLIENT_ID;
-    const origClientSec = process.env.PAYPAL_CLIENT_SECRET;
-    try {
-      delete process.env.PAYPAL_SANDBOX_ID;
-      delete process.env.PAYPAL_SANDBOX_KEY;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_ID;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-      delete process.env.PAYPAL_CLIENT_ID;
-      delete process.env.PAYPAL_CLIENT_SECRET;
-      paypal.clearSessionCredentials();
-      const res = await paypal.captureOrderPayment('ORD_TEST_123', 2500, 'IDEMP_KEY_001');
+    await withPayPalCredentialsDisabled(async () => {
+      const res = await PayPalAdapter.getInstance().captureOrderPayment(
+        'ORD_TEST_123',
+        2500,
+        'IDEMP_KEY_001'
+      );
       if (res.status !== 'EXTERNAL_PROVIDER_REQUIRED') {
         throw new Error(`Expected EXTERNAL_PROVIDER_REQUIRED without credentials, received ${res.status}`);
       }
-    } finally {
-      if (origSbId) process.env.PAYPAL_SANDBOX_ID = origSbId;
-      if (origSbKey) process.env.PAYPAL_SANDBOX_KEY = origSbKey;
-      if (origSbClientId) process.env.PAYPAL_SANDBOX_CLIENT_ID = origSbClientId;
-      if (origSbClientSec) process.env.PAYPAL_SANDBOX_CLIENT_SECRET = origSbClientSec;
-      if (origClientId) process.env.PAYPAL_CLIENT_ID = origClientId;
-      if (origClientSec) process.env.PAYPAL_CLIENT_SECRET = origClientSec;
-    }
+    });
   });
 
   // 19. External Provider Inventory Transparency
@@ -459,16 +479,16 @@ export async function runEnterpriseVerification() {
 
   // 28. Fail-Closed: Missing PayPal Credentials Evaluated
   runTest('Fail-Closed: Missing PayPal Credentials Evaluated', 'ADAPTERS', async () => {
-    const paypal = PayPalAdapter.getInstance();
-    const orig = paypal.getEffectiveCredentials();
-    paypal.clearSessionCredentials();
-    const captureResult = await paypal.captureOrderPayment('ORD_TEST_99', 5000, 'IDEMP_99');
-    if (orig) {
-      paypal.setSessionCredentials(orig.clientId, orig.clientSecret, orig.environment);
-    }
-    if (captureResult.success) {
-      throw new Error('PayPal payment captured without credentials! Fail-closed breached.');
-    }
+    await withPayPalCredentialsDisabled(async () => {
+      const captureResult = await PayPalAdapter.getInstance().captureOrderPayment(
+        'ORD_TEST_99',
+        5000,
+        'IDEMP_99'
+      );
+      if (captureResult.status !== 'EXTERNAL_PROVIDER_REQUIRED' || captureResult.success) {
+        throw new Error('PayPal did not fail closed with all credentials absent.');
+      }
+    });
   });
 
   // 29. Order Lifecycle State Machine Validates Transitions & Failures

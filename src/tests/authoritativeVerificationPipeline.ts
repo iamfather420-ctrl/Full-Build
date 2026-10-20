@@ -248,7 +248,21 @@ export class AuthoritativeVerificationPipeline {
       'LOCAL',
       entRes.allPassed ? 'PASSED' : 'FAILED',
       performance.now() - g5Start,
-      { total_tests: entRes.totalTests, passed_tests: entRes.passedTests, pass_rate: '100%' },
+      {
+        total_tests: entRes.totalTests,
+        passed_tests: entRes.passedTests,
+        pass_rate: entRes.totalTests === 0
+          ? '0%'
+          : `${((entRes.passedTests / entRes.totalTests) * 100).toFixed(2)}%`,
+        failed_tests: entRes.results
+          .filter(test => !test.passed)
+          .map(test => ({
+            test_number: test.test_number,
+            name: test.name,
+            category: test.category,
+            error: test.error || test.details?.status || 'No failure detail recorded'
+          }))
+      },
       entRes.allPassed ? undefined : 'Enterprise invariant failure'
     );
 
