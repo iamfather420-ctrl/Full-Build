@@ -26,5 +26,7 @@ jobs:
         run: npm run build
       - name: TypeScript
         run: npm run lint
+      - name: Actual Z3 engine tests
+        run: npm run test:z3-engine
       - name: Enterprise invariants
         run: npm run verify:enterprise
