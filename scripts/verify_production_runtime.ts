@@ -28,7 +28,7 @@ async function main() {
   };
 
   if (env !== 'production') issues.push('SOLVEX_ENV must be production.');
-  if (!neon.isConfigured()) issues.push('NEON_DATABASE_URL is missing from the runtime environment.');
+  if (!neon.isConfigured()) issues.push('NEON_DATABASE_URL or DATABASE_URL is missing from the runtime environment.');
 
   if (issues.length === 0) {
     report.neon_connected = await neon.connect();
