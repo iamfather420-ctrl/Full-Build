@@ -5,6 +5,7 @@ import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { buildFormalEvidenceHashes } from '../src/proofs/formalEvidenceHash';
 import { System46Gates } from '../src/proofs/System46Gates';
+import { isBrainActivationAllowed } from './activationGateDecision';
 
 async function main() {
   console.log('================================================================');
@@ -142,8 +143,13 @@ async function main() {
   fs.writeFileSync(path.join(artifactsDir, 'system-46-gates.json'), JSON.stringify(gatesReport, null, 2), 'utf8');
 
   const nonPassedGates = gatesReport.gates.filter(g => g.status !== 'PASSED');
-  const brainActive = passed120 && adversarialVerificationPassed &&
-    gatesReport.gates.length === 46 && nonPassedGates.length === 0;
+  const brainActive = isBrainActivationAllowed({
+    corpusPassed: passed120,
+    adversarialPassed: adversarialVerificationPassed,
+    observedGateCount: gatesReport.gates.length,
+    requiredGateCount: 46,
+    nonPassedGateCount: nonPassedGates.length
+  });
 
   const activationGate = {
     schema_version: '1.0.0',
