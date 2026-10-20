@@ -72,6 +72,9 @@ jobs:
           npm run verify:120
         env:
           CI: true
+          # Only PR validation may finish green when formal proofs pass but
+          # production activation gates remain blocked; production still fails closed.
+          SOLVEX_ALLOW_BLOCKED_ACTIVATION: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
 
       - name: Print final accounting summary
         if: always()
