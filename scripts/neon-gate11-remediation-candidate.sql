@@ -132,6 +132,33 @@ BEGIN
     ) THEN
       RAISE EXCEPTION 'No policy exists for public.%', t;
     END IF;
+
+    -- Verify policy semantics as well as RLS metadata: no OWNER bypass,
+    -- and the unclassified event table remains deny-all.
+    IF t IN ('payment_orders', 'payment_fulfillments', 'payment_refunds') THEN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies p
+        WHERE p.schemaname = 'public'
+          AND p.tablename = t
+          AND p.policyname = 'solvex_tenant_access'
+          AND position('tenant_id' IN coalesce(p.qual, '')) > 0
+          AND position('tenant_id' IN coalesce(p.with_check, '')) > 0
+          AND position('OWNER' IN coalesce(p.qual, '') || coalesce(p.with_check, '')) = 0
+      ) THEN
+        RAISE EXCEPTION 'Tenant policy semantics are unsafe for public.%', t;
+      END IF;
+    ELSIF t = 'payment_events' THEN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_policies p
+        WHERE p.schemaname = 'public'
+          AND p.tablename = t
+          AND p.policyname = 'solvex_deny_unclassified'
+          AND lower(coalesce(p.qual, '')) = 'false'
+          AND lower(coalesce(p.with_check, '')) = 'false'
+      ) THEN
+        RAISE EXCEPTION 'Unclassified payment_events must remain deny-all';
+      END IF;
+    END IF;
   END LOOP;
 END
 $verify$;
