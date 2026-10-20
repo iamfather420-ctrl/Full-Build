@@ -1,0 +1,109 @@
+-- GATE-11 REMEDIATION CANDIDATE — NOT AUTO-EXECUTED.
+-- Requires a current backup/recovery point, owner review, and application-path testing.
+-- Apply only to the verified SolveX production branch after an approved change window.
+-- This preserves the existing login role name/password and its membership in solvex_app_runtime,
+-- but removes its elevated Neon administrator membership and direct elevated role flags.
+-- payment_events has no tenant_id, so it is deny-all until a tenant-safe event model is approved.
+-- Do not enable payments/PayPal as part of this migration.
+
+BEGIN;
+
+REVOKE neon_superuser FROM solvex_runtime_login;
+ALTER ROLE solvex_runtime_login
+  NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+
+-- Tenant-scoped payment records use the existing signed claim contract.
+ALTER TABLE public.payment_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_orders FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS solvex_tenant_access ON public.payment_orders;
+DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.payment_orders;
+CREATE POLICY solvex_tenant_access ON public.payment_orders
+  USING (
+    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
+    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+  )
+  WITH CHECK (
+    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
+    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+  );
+
+ALTER TABLE public.payment_fulfillments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_fulfillments FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS solvex_tenant_access ON public.payment_fulfillments;
+DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.payment_fulfillments;
+CREATE POLICY solvex_tenant_access ON public.payment_fulfillments
+  USING (
+    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
+    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+  )
+  WITH CHECK (
+    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
+    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+  );
+
+ALTER TABLE public.payment_refunds ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_refunds FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS solvex_tenant_access ON public.payment_refunds;
+DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.payment_refunds;
+CREATE POLICY solvex_tenant_access ON public.payment_refunds
+  USING (
+    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
+    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+  )
+  WITH CHECK (
+    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
+    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+  );
+
+-- Webhook/event table lacks tenant_id. Fail closed while payments remain disabled.
+ALTER TABLE public.payment_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_events FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS solvex_deny_unclassified ON public.payment_events;
+DROP POLICY IF EXISTS solvex_tenant_access ON public.payment_events;
+DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.payment_events;
+CREATE POLICY solvex_deny_unclassified ON public.payment_events
+  USING (false)
+  WITH CHECK (false);
+
+DO $verify$
+DECLARE
+  r RECORD;
+  t TEXT;
+BEGIN
+  SELECT rolcanlogin, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
+    INTO r FROM pg_roles WHERE rolname = 'solvex_runtime_login';
+  IF NOT FOUND OR NOT r.rolcanlogin OR r.rolsuper OR r.rolcreatedb
+     OR r.rolcreaterole OR r.rolreplication OR r.rolbypassrls THEN
+    RAISE EXCEPTION 'solvex_runtime_login privilege flags are not least-privilege';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_auth_members am
+    JOIN pg_roles parent ON parent.oid = am.roleid
+    JOIN pg_roles member ON member.oid = am.member
+    WHERE parent.rolname = 'neon_superuser'
+      AND member.rolname = 'solvex_runtime_login'
+  ) THEN
+    RAISE EXCEPTION 'solvex_runtime_login still inherits neon_superuser';
+  END IF;
+
+  FOREACH t IN ARRAY ARRAY['payment_orders','payment_fulfillments','payment_refunds','payment_events'] LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public' AND c.relname = t
+        AND c.relrowsecurity AND c.relforcerowsecurity
+    ) THEN
+      RAISE EXCEPTION 'RLS is not enabled and forced for public.%', t;
+    END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies p
+      WHERE p.schemaname = 'public' AND p.tablename = t
+    ) THEN
+      RAISE EXCEPTION 'No policy exists for public.%', t;
+    END IF;
+  END LOOP;
+END
+$verify$;
+
+COMMIT;
