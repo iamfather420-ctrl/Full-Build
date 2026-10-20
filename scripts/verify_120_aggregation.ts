@@ -131,7 +131,7 @@ async function main() {
   console.log(`Combined Root Hash:        ${combinedRootSha256}`);
   console.log(`Commit SHA:                ${commitSha}`);
   console.log(`Duration:                  ${duration}ms`);
-  console.log(`Activation Gate Verdict:   ${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}`);
+  console.log(`Formal Corpus Verdict:     ${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}`);
   console.log('================================================================');
 
   const artifactsDir = path.resolve(process.cwd(), 'artifacts');
@@ -291,7 +291,10 @@ async function main() {
     combined_root_sha256: combinedRootSha256,
     corpus_root_sha256: combinedRootSha256,
     run_evidence_sha256: runEvidenceSha256,
-    activation_gate: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'
+    activation_gate: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED', // Legacy field; means formal corpus closure only.
+    formal_corpus_closure: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED',
+    production_activation_gate_status: activationGate.status,
+    production_activation_gate_reason: activationGate.reason
   };
 
   fs.writeFileSync(
@@ -312,7 +315,9 @@ async function main() {
 - **Stable Corpus Root Hash:** \`${combinedRootSha256}\`
 - **Run-Specific Evidence Hash:** \`${runEvidenceSha256}\`
 - **Distribution:** UNSAT: ${totalUnsat} (DFRL ${dfrlReport.results.filter(r => r.solver_result === 'unsat').length} + DH ${dhReport.unsat_count}), SAT: ${totalSat} (${dhReport.sat_count} DH), UNKNOWN: ${totalUnknown}, ERROR: ${totalError}
-- **Activation Gate Status:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}**
+- **Formal Corpus Closure:** **${passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'}**
+- **Production Activation Gate:** **${activationGate.status}**
+- **Production Gate Reason:** ${activationGate.reason}
 
 ---
 
