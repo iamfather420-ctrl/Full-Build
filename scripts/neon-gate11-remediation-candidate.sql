@@ -8,9 +8,27 @@
 
 BEGIN;
 
-REVOKE neon_superuser FROM solvex_runtime_login;
-ALTER ROLE solvex_runtime_login
-  NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+-- Do not try to revoke Neon-managed neon_superuser membership from the existing
+-- login: Neon correctly rejects that operation for this connection. Instead,
+-- create a new SQL-native role with no elevated membership and preserve the
+-- existing login untouched for rollback until the application is switched.
+CREATE ROLE solvex_runtime_v2
+  NOLOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+GRANT solvex_app_runtime TO solvex_runtime_v2;
+ALTER ROLE solvex_runtime_v2
+  LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+
+-- Assign an unexposed random initial password. After this transaction is
+-- applied in an approved change window, rotate it via the Neon role-password
+-- API and place the returned value into the deployment secret store.
+DO $password$
+BEGIN
+  EXECUTE format(
+    'ALTER ROLE solvex_runtime_v2 PASSWORD %L',
+    encode(public.gen_random_bytes(32), 'hex')
+  );
+END
+$password$;
 
 -- Tenant-scoped payment records use the existing signed claim contract.
 ALTER TABLE public.payment_orders ENABLE ROW LEVEL SECURITY;
@@ -71,10 +89,10 @@ DECLARE
   t TEXT;
 BEGIN
   SELECT rolcanlogin, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
-    INTO r FROM pg_roles WHERE rolname = 'solvex_runtime_login';
+    INTO r FROM pg_roles WHERE rolname = 'solvex_runtime_v2';
   IF NOT FOUND OR NOT r.rolcanlogin OR r.rolsuper OR r.rolcreatedb
      OR r.rolcreaterole OR r.rolreplication OR r.rolbypassrls THEN
-    RAISE EXCEPTION 'solvex_runtime_login privilege flags are not least-privilege';
+    RAISE EXCEPTION 'solvex_runtime_v2 privilege flags are not least-privilege';
   END IF;
 
   IF EXISTS (
@@ -82,9 +100,18 @@ BEGIN
     JOIN pg_roles parent ON parent.oid = am.roleid
     JOIN pg_roles member ON member.oid = am.member
     WHERE parent.rolname = 'neon_superuser'
-      AND member.rolname = 'solvex_runtime_login'
+      AND member.rolname = 'solvex_runtime_v2'
   ) THEN
-    RAISE EXCEPTION 'solvex_runtime_login still inherits neon_superuser';
+    RAISE EXCEPTION 'solvex_runtime_v2 must not inherit neon_superuser';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_auth_members am
+    JOIN pg_roles parent ON parent.oid = am.roleid
+    JOIN pg_roles member ON member.oid = am.member
+    WHERE parent.rolname = 'solvex_app_runtime'
+      AND member.rolname = 'solvex_runtime_v2'
+  ) THEN
+    RAISE EXCEPTION 'solvex_runtime_v2 is missing the application runtime role';
   END IF;
 
   FOREACH t IN ARRAY ARRAY['payment_orders','payment_fulfillments','payment_refunds','payment_events'] LOOP
