@@ -76,6 +76,40 @@ CREATE POLICY solvex_tenant_access ON public.payment_refunds
     tenant_id = NULLIF(solvex_private.current_claims() ->> 'tenant_id', '')
   );
 
+-- Harden every other tenant-scoped public table as well. The existing
+-- production policies on these tables included an OWNER shortcut that bypassed
+-- tenant boundaries. Cross-tenant administration must use a separately audited
+-- path; an OWNER claim alone is not sufficient authorization.
+DO $tenant_policies$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN
+    SELECT n.nspname AS schema_name, c.relname AS table_name
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relkind = 'r'
+      AND c.relname NOT IN ('payment_orders', 'payment_fulfillments', 'payment_refunds')
+      AND EXISTS (
+        SELECT 1 FROM information_schema.columns col
+        WHERE col.table_schema = n.nspname
+          AND col.table_name = c.relname
+          AND col.column_name = 'tenant_id'
+      )
+  LOOP
+    EXECUTE format('ALTER TABLE %I.%I ENABLE ROW LEVEL SECURITY', r.schema_name, r.table_name);
+    EXECUTE format('ALTER TABLE %I.%I FORCE ROW LEVEL SECURITY', r.schema_name, r.table_name);
+    EXECUTE format('DROP POLICY IF EXISTS solvex_signed_tenant_context ON %I.%I', r.schema_name, r.table_name);
+    EXECUTE format('DROP POLICY IF EXISTS solvex_tenant_access ON %I.%I', r.schema_name, r.table_name);
+    EXECUTE format(
+      'CREATE POLICY solvex_tenant_access ON %I.%I USING (tenant_id = NULLIF(solvex_private.current_claims() ->> ''tenant_id'', '''')) WITH CHECK (tenant_id = NULLIF(solvex_private.current_claims() ->> ''tenant_id'', ''''))',
+      r.schema_name, r.table_name
+    );
+  END LOOP;
+END
+$tenant_policies$;
+
 -- Webhook/event table lacks tenant_id. Fail closed while payments remain disabled.
 ALTER TABLE public.payment_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payment_events FORCE ROW LEVEL SECURITY;
@@ -89,6 +123,7 @@ CREATE POLICY solvex_deny_unclassified ON public.payment_events
 DO $verify$
 DECLARE
   r RECORD;
+  tenant_table RECORD;
   t TEXT;
 BEGIN
   SELECT rolcanlogin, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
@@ -158,6 +193,51 @@ BEGIN
       ) THEN
         RAISE EXCEPTION 'Unclassified payment_events must remain deny-all';
       END IF;
+    END IF;
+  END LOOP;
+
+  -- Verify strict tenant matching across every public tenant-scoped table,
+  -- not only the four payment-related tables.
+  FOR tenant_table IN
+    SELECT n.nspname AS schema_name, c.relname AS table_name
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relkind = 'r'
+      AND EXISTS (
+        SELECT 1 FROM information_schema.columns col
+        WHERE col.table_schema = n.nspname
+          AND col.table_name = c.relname
+          AND col.column_name = 'tenant_id'
+      )
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = tenant_table.schema_name
+        AND c.relname = tenant_table.table_name
+        AND c.relrowsecurity AND c.relforcerowsecurity
+    ) THEN
+      RAISE EXCEPTION 'RLS is not enabled and forced for %.%', tenant_table.schema_name, tenant_table.table_name;
+    END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies p
+      WHERE p.schemaname = tenant_table.schema_name
+        AND p.tablename = tenant_table.table_name
+        AND p.policyname = 'solvex_tenant_access'
+        AND position('tenant_id' IN coalesce(p.qual, '')) > 0
+        AND position('tenant_id' IN coalesce(p.with_check, '')) > 0
+        AND position('OWNER' IN coalesce(p.qual, '') || coalesce(p.with_check, '')) = 0
+    ) THEN
+      RAISE EXCEPTION 'Strict tenant policy missing or unsafe for %.%', tenant_table.schema_name, tenant_table.table_name;
+    END IF;
+    IF EXISTS (
+      SELECT 1 FROM pg_policies p
+      WHERE p.schemaname = tenant_table.schema_name
+        AND p.tablename = tenant_table.table_name
+        AND (coalesce(p.qual, '') ILIKE '%OWNER%' OR coalesce(p.with_check, '') ILIKE '%OWNER%')
+    ) THEN
+      RAISE EXCEPTION 'OWNER bypass remains on %.%', tenant_table.schema_name, tenant_table.table_name;
     END IF;
   END LOOP;
 END
