@@ -32,3 +32,6 @@ jobs:
         run: npm run verify:enterprise
       - name: Execute the original 120-case verifier
         run: npm run verify:120
+        env:
+          # PR checks validate formal evidence while production-only activation gates remain blocked.
+          SOLVEX_ALLOW_BLOCKED_ACTIVATION: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}

@@ -5,6 +5,7 @@ import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { buildFormalEvidenceHashes } from '../src/proofs/formalEvidenceHash';
 import { System46Gates } from '../src/proofs/System46Gates';
+import { isBrainActivationAllowed } from './activationGateDecision';
 
 async function main() {
   console.log('================================================================');
@@ -142,8 +143,13 @@ async function main() {
   fs.writeFileSync(path.join(artifactsDir, 'system-46-gates.json'), JSON.stringify(gatesReport, null, 2), 'utf8');
 
   const nonPassedGates = gatesReport.gates.filter(g => g.status !== 'PASSED');
-  const brainActive = passed120 && adversarialVerificationPassed &&
-    gatesReport.gates.length === 46 && nonPassedGates.length === 0;
+  const brainActive = isBrainActivationAllowed({
+    corpusPassed: passed120,
+    adversarialPassed: adversarialVerificationPassed,
+    observedGateCount: gatesReport.gates.length,
+    requiredGateCount: 46,
+    nonPassedGateCount: nonPassedGates.length
+  });
 
   const activationGate = {
     schema_version: '1.0.0',
@@ -450,8 +456,18 @@ ${reconciliationTable.map(row => {
   console.log(` - ${artifactsDir}/z3-120-formal-verification-summary.json & .md`);
   console.log(` - ${artifactsDir}/final-forensic-report.json & .md`);
 
-  if (!passed120) {
+  // Production execution fails closed on any activation gate. Pull-request CI may
+  // validate formal correctness while production-only readiness gates remain blocked;
+  // the workflow separately asserts 120-case accounting and records this status.
+  const allowBlockedActivationForPullRequest =
+    process.env.SOLVEX_ALLOW_BLOCKED_ACTIVATION === 'true';
+  if (!brainActive &&
+      (!allowBlockedActivationForPullRequest || !passed120 || !adversarialVerificationPassed)) {
+    console.error('[BLOCKED] Full activation requirements were not satisfied; inspect system-46-gates.json and daisy-brain-activation-gate.json.');
     process.exit(1);
+  }
+  if (!brainActive && allowBlockedActivationForPullRequest) {
+    console.warn('[PR-ONLY] Formal corpus and adversarial checks passed; activation remains BLOCKED by one or more system gates. This is not production approval.');
   }
 }
 
