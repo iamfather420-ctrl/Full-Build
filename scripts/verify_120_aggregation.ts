@@ -450,7 +450,10 @@ ${reconciliationTable.map(row => {
   console.log(` - ${artifactsDir}/z3-120-formal-verification-summary.json & .md`);
   console.log(` - ${artifactsDir}/final-forensic-report.json & .md`);
 
-  if (!passed120) {
+  // Exit status reflects the complete activation decision, not only the 120-case corpus.
+  // Any failed corpus, adversarial check, evidence-integrity check, or mandatory gate fails closed.
+  if (!brainActive) {
+    console.error('[BLOCKED] Full activation requirements were not satisfied; inspect system-46-gates.json and daisy-brain-activation-gate.json.');
     process.exit(1);
   }
 }
