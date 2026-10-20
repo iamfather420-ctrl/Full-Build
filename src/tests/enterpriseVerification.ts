@@ -34,6 +34,10 @@ export interface EnterpriseTestResult {
  */
 async function withPayPalCredentialsDisabled<T>(fn: () => Promise<T>): Promise<T> {
   const paypal = PayPalAdapter.getInstance();
+  const originalSessionCredentials =
+    paypal.getMaskedCredentialsInfo().source === 'SESSION'
+      ? paypal.getEffectiveCredentials()
+      : null;
   const savedEnvironment = new Map<string, string>();
   for (const key of Object.keys(process.env)) {
     if (key.startsWith('PAYPAL_')) {
@@ -50,6 +54,13 @@ async function withPayPalCredentialsDisabled<T>(fn: () => Promise<T>): Promise<T
     }
     for (const [key, value] of savedEnvironment) process.env[key] = value;
     paypal.clearSessionCredentials();
+    if (originalSessionCredentials) {
+      paypal.setSessionCredentials(
+        originalSessionCredentials.clientId,
+        originalSessionCredentials.clientSecret,
+        originalSessionCredentials.environment
+      );
+    }
   }
 }
 
