@@ -36,13 +36,14 @@ ALTER TABLE public.payment_orders FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS solvex_tenant_access ON public.payment_orders;
 DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.payment_orders;
 CREATE POLICY solvex_tenant_access ON public.payment_orders
+  -- Authorization roles never bypass tenant boundaries. Even OWNER claims
+  -- must carry the matching tenant_id; cross-tenant administration needs a
+  -- separate, explicit audited pathway rather than an RLS policy bypass.
   USING (
-    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
-    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+    tenant_id = NULLIF(solvex_private.current_claims() ->> 'tenant_id', '')
   )
   WITH CHECK (
-    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
-    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+    tenant_id = NULLIF(solvex_private.current_claims() ->> 'tenant_id', '')
   );
 
 ALTER TABLE public.payment_fulfillments ENABLE ROW LEVEL SECURITY;
@@ -50,13 +51,14 @@ ALTER TABLE public.payment_fulfillments FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS solvex_tenant_access ON public.payment_fulfillments;
 DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.payment_fulfillments;
 CREATE POLICY solvex_tenant_access ON public.payment_fulfillments
+  -- Authorization roles never bypass tenant boundaries. Even OWNER claims
+  -- must carry the matching tenant_id; cross-tenant administration needs a
+  -- separate, explicit audited pathway rather than an RLS policy bypass.
   USING (
-    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
-    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+    tenant_id = NULLIF(solvex_private.current_claims() ->> 'tenant_id', '')
   )
   WITH CHECK (
-    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
-    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+    tenant_id = NULLIF(solvex_private.current_claims() ->> 'tenant_id', '')
   );
 
 ALTER TABLE public.payment_refunds ENABLE ROW LEVEL SECURITY;
@@ -64,13 +66,14 @@ ALTER TABLE public.payment_refunds FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS solvex_tenant_access ON public.payment_refunds;
 DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.payment_refunds;
 CREATE POLICY solvex_tenant_access ON public.payment_refunds
+  -- Authorization roles never bypass tenant boundaries. Even OWNER claims
+  -- must carry the matching tenant_id; cross-tenant administration needs a
+  -- separate, explicit audited pathway rather than an RLS policy bypass.
   USING (
-    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
-    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+    tenant_id = NULLIF(solvex_private.current_claims() ->> 'tenant_id', '')
   )
   WITH CHECK (
-    tenant_id = (solvex_private.current_claims() ->> 'tenant_id')
-    OR (solvex_private.current_claims() ->> 'role') = 'OWNER'
+    tenant_id = NULLIF(solvex_private.current_claims() ->> 'tenant_id', '')
   );
 
 -- Webhook/event table lacks tenant_id. Fail closed while payments remain disabled.
