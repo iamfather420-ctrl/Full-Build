@@ -346,13 +346,14 @@ export class PayPalAdapter {
       return {
         success: false,
         status: 'AUTHENTICATION_FAILED',
-        claim_scope: creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX',
+        claim_scope: 'SANDBOX',
         gateway_state: 'PAYPAL_API_ERROR',
         error: `PayPal OAuth2 failed: ${oauth.error}. Refusing execution; fail-closed active.`
       };
     }
 
-    const host = creds.environment === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+    // The live-capture guard above narrows this path to sandbox-only execution.
+    const host = 'https://api-m.sandbox.paypal.com';
     const amountFormatted = (amountCents / 100).toFixed(2);
 
     // Production money movement is fail-closed on durable persistence.
@@ -440,7 +441,7 @@ export class PayPalAdapter {
         return {
           success: false,
           status: 'PAYPAL_API_ERROR',
-          claim_scope: creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX',
+          claim_scope: 'SANDBOX',
           gateway_state: 'PAYPAL_API_ERROR',
           error: `PayPal order creation rejected (${createOrderRes.status}): ${orderBody.message || JSON.stringify(orderBody)}`
         };
@@ -464,8 +465,8 @@ export class PayPalAdapter {
 
       if (captureRes.ok && (captureBody.status === 'COMPLETED' || primaryCapture?.status === 'COMPLETED')) {
         const captureId = primaryCapture?.id || paypalOrderId;
-        const confirmedScope = creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX';
-        const confirmedState = creds.environment === 'live' ? 'PRODUCTION_VERIFIED' : 'SANDBOX_VERIFIED';
+        const confirmedScope = 'SANDBOX';
+        const confirmedState = 'SANDBOX_VERIFIED';
 
         const paymentRecord = {
           order_id: orderId,
@@ -520,7 +521,7 @@ export class PayPalAdapter {
         return {
           success: false,
           status: 'PAYPAL_API_ERROR',
-          claim_scope: creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX',
+          claim_scope: 'SANDBOX',
           gateway_state: 'PAYPAL_API_ERROR',
           error: `PayPal capture was not completed (${captureRes.status}): status=${captureBody.status}, message=${captureBody.message || 'Capture not confirmed'}`
         };
@@ -529,7 +530,7 @@ export class PayPalAdapter {
       return {
         success: false,
         status: 'PAYPAL_API_ERROR',
-        claim_scope: creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX',
+        claim_scope: 'SANDBOX',
         gateway_state: 'PAYPAL_API_ERROR',
         error: `Network failure executing PayPal REST capture: ${netErr.message}`
       };
