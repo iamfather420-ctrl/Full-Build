@@ -1,0 +1,25 @@
+# LOCAL DEVELOPMENT ONLY. Never point production at these credentials.
+services:
+  local-postgres:
+    image: postgres:16
+    container_name: solvex-local-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: solvex
+      POSTGRES_USER: solvex_admin
+      POSTGRES_PASSWORD: local_admin_change_me
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - solvex_local_pgdata:/var/lib/postgresql/data
+      - ./scripts/local-postgres/001-schema-and-rls.sql:/docker-entrypoint-initdb.d/001-schema-and-rls.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U solvex_admin -d solvex"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  solvex_local_pgdata:
