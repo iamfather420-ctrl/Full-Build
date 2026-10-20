@@ -49,14 +49,14 @@ BEGIN
   END IF;
 
   SELECT array_agg(x) INTO missing
-  FROM unnest(expected) AS x
+  FROM unnest(expected) AS u(table_name)
   WHERE NOT EXISTS (
     SELECT 1 FROM information_schema.tables t
-    WHERE t.table_schema = 'public' AND t.table_name = x
+    WHERE t.table_schema = 'public' AND t.table_name = u.table_name
   );
   IF missing IS NOT NULL THEN RAISE EXCEPTION 'missing required tables: %', missing; END IF;
 
-  SELECT array_agg(t.table_name) INTO unsafe
+  SELECT array_agg(req.table_name) INTO unsafe
   FROM unnest(expected) AS req(table_name)
   JOIN pg_class c ON c.relname = req.table_name
   JOIN pg_namespace ns ON ns.oid = c.relnamespace AND ns.nspname = 'public'
