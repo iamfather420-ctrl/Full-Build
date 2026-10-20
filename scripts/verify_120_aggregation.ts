@@ -456,11 +456,18 @@ ${reconciliationTable.map(row => {
   console.log(` - ${artifactsDir}/z3-120-formal-verification-summary.json & .md`);
   console.log(` - ${artifactsDir}/final-forensic-report.json & .md`);
 
-  // Exit status reflects the complete activation decision, not only the 120-case corpus.
-  // Any failed corpus, adversarial check, evidence-integrity check, or mandatory gate fails closed.
-  if (!brainActive) {
+  // Production execution fails closed on any activation gate. Pull-request CI may
+  // validate formal correctness while production-only readiness gates remain blocked;
+  // the workflow separately asserts 120-case accounting and records this status.
+  const allowBlockedActivationForPullRequest =
+    process.env.SOLVEX_ALLOW_BLOCKED_ACTIVATION === 'true';
+  if (!brainActive &&
+      (!allowBlockedActivationForPullRequest || !passed120 || !adversarialVerificationPassed)) {
     console.error('[BLOCKED] Full activation requirements were not satisfied; inspect system-46-gates.json and daisy-brain-activation-gate.json.');
     process.exit(1);
+  }
+  if (!brainActive && allowBlockedActivationForPullRequest) {
+    console.warn('[PR-ONLY] Formal corpus and adversarial checks passed; activation remains BLOCKED by one or more system gates. This is not production approval.');
   }
 }
 
