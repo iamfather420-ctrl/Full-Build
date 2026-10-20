@@ -21,6 +21,6 @@ assert.equal(isBrainActivationAllowed({ ...passing, nonPassedGateCount: 46 }), f
 
 // Guard against regression to the previous corpus-only process exit.
 const verifierSource = readFileSync(new URL('./verify_120_aggregation.ts', import.meta.url), 'utf8');
-assert.match(verifierSource, /if\\s*\\(!brainActive\\s*&&[\\s\\S]*?process\\.exit\\(1\\)/, 'verifier must exit nonzero on production activation failure');
+assert.match(verifierSource, /if\s*\(!brainActive\s*&&[\s\S]*?process\.exit\(1\)/, 'verifier must exit nonzero on production activation failure');
 
 console.log('Activation gate regression tests passed (8 assertions).');
