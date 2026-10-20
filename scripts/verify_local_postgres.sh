@@ -48,7 +48,7 @@ BEGIN
     RAISE EXCEPTION 'runtime role has elevated privilege flags';
   END IF;
 
-  SELECT array_agg(x) INTO missing
+  SELECT array_agg(u.table_name) INTO missing
   FROM unnest(expected) AS u(table_name)
   WHERE NOT EXISTS (
     SELECT 1 FROM information_schema.tables t
