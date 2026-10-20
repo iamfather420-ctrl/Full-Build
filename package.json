@@ -25,7 +25,8 @@
     "verify:proof-closure": "tsx scripts/full_build_verification_closure.ts",
     "verify:ci": "tsx scripts/ci_proof_closure_check.ts",
     "verify:all": "tsx scripts/verify_authoritative.ts",
-    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts"
+    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
+    "test:z3-engine": "tsx scripts/test_z3_formal_proof_engine.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
