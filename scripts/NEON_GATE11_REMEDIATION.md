@@ -16,7 +16,7 @@ A read-only probe as `solvex_runtime_login` confirmed SELECT privileges on tenan
 ## Files
 
 - `neon-gate11-readonly-audit.sql` is read-only.
-- `neon-gate11-remediation-candidate.sql` is a candidate change, not executed against production. It creates a new SQL-native login `solvex_runtime_v2` with no elevated membership, grants only the existing `solvex_app_runtime` role, forces RLS and installs tenant policies for the three tenant-scoped payment tables, and denies all access to unclassified `payment_events` while PayPal remains disabled. The existing elevated login remains untouched for rollback until the application is switched.
+- `neon-gate11-remediation-candidate.sql` is a candidate change, not executed against production. It creates a new SQL-native login `solvex_runtime_v2` with no elevated membership, grants only the existing `solvex_app_runtime` role, forces RLS and installs tenant policies for the three tenant-scoped payment tables, and denies all access to unclassified `payment_events` while PayPal remains disabled. The payment-table policies require an exact signed `tenant_id` match; even an `OWNER` claim does not bypass tenant boundaries. Any cross-tenant operator workflow must use a separate explicitly audited authorization path. The existing elevated login remains untouched for rollback until the application is switched.
 
 ## Safety and rollout
 
