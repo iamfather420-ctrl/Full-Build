@@ -268,5 +268,46 @@
       "The one public table without RLS is _migrations; runtime_v2 has no direct table privileges. solvex_private.auth_secrets is also without RLS but is in the private schema and runtime_v2 has no direct table privileges.",
       "Production remains untouched."
     ]
+  },
+  "formal_verification_followup": {
+    "commit_tested": "6f0e6e4e2b959f8547c37d051248f4d27cf7bdc9",
+    "workflow_run_id": 39548379890,
+    "workflow_run_url": "https://github.com/iamfather420-ctrl/Full-Build/actions/runs/39548379890",
+    "artifact_name": "solvex-formal-120-and-gates-39548379890",
+    "artifact_id": 12322073817,
+    "artifact_sha256": "f28d5b3c6edf6e7787038f8f4f78b41cc85926e632c2e0e771d13a3020450330",
+    "artifact_expires": "2026-11-20T05:14:15Z",
+    "total_formal_cases": 120,
+    "formal_cases_proved": 120,
+    "aggregate_120_root_hash": "7bb1f65e2111ddc65157996f62e5548a96b01847ca40c3da4abebba198508db1",
+    "system_46_gates": {
+      "gates_passed": 43,
+      "total_gates": 46,
+      "external_provider_required": 1,
+      "blocked": 1,
+      "failed": 1,
+      "overall_verdict": "BLOCKED",
+      "non_passed": [
+        {
+          "gate_number": 12,
+          "gate_id": "GATE-11",
+          "name": "External Provider Gateways (Neon, PayPal)",
+          "status": "EXTERNAL_PROVIDER_REQUIRED"
+        },
+        {
+          "gate_number": 15,
+          "gate_id": "GATE-14",
+          "name": "Final Truth-Boundary Audit & Production Gate",
+          "status": "BLOCKED"
+        },
+        {
+          "gate_number": 46,
+          "gate_id": "GATE-46",
+          "name": "Master Truth-Boundary & Proof Closure Gate",
+          "status": "FAIL"
+        }
+      ]
+    },
+    "report_commit_status": "The JSON was generated and archived as a successful CI artifact. A follow-up CI change was added to commit the generated JSON to this candidate branch; commit completion has not yet been confirmed."
   }
 }
