@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -43,3 +45,24 @@ jobs:
             artifacts/system-46-gates.md
           if-no-files-found: warn
           retention-days: 30
+      - name: Commit fresh 46-gate JSON to the candidate branch
+        if: success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'chore/production-readiness-next-steps-20261020'
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s artifacts/system-46-gates.json
+          cp artifacts/system-46-gates.json /tmp/system-46-gates.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$GITHUB_HEAD_REF"
+          git checkout -B "$GITHUB_HEAD_REF" "origin/$GITHUB_HEAD_REF"
+          cp /tmp/system-46-gates.json artifacts/system-46-gates.json
+          git add -f artifacts/system-46-gates.json
+          if git diff --cached --quiet; then
+            echo "Fresh 46-gate JSON is unchanged; no commit needed."
+          else
+            git commit -m "test: refresh system 46 gate evidence"
+            git push origin "HEAD:$GITHUB_HEAD_REF"
+          fi
