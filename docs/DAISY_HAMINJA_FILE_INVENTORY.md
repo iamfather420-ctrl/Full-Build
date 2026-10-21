@@ -7,7 +7,7 @@
 
 ## SOLVEX governance lifecycle — test coverage report
 
-The source `src/lib/lifecycle.ts` defines 12 states and 26 legal directed transitions. The verification script `scripts/verify_governance_lifecycle.ts` exercises reachable paths via the public API and lists every edge it cannot exercise as an implementation gap. It does not mutate state directly or mark unimplemented paths as passed.
+The source `src/lib/lifecycle.ts` defines 12 states and 25 legal directed transitions. The verification script `scripts/verify_governance_lifecycle.ts` exercises reachable paths via the public API and lists every edge it cannot exercise as an implementation gap. It does not mutate state directly or mark unimplemented paths as passed.
 
 - Expected reachable paths covered by the script: PROPOSED → REVIEWED → AUTHORIZED → RUNNING → VALIDATING → COMPLETED; PROPOSED → REJECTED; REVIEWED → REJECTED; AUTHORIZED → BLOCKED → AUTHORIZED; VALIDATING → FAILED.
 - Guardrails checked: Daisy cannot authorize HIGH-risk work; human review/owner authorization required; unavailable tools remain BLOCKED with a reason; failed validation is not completed; audit-chain integrity stays valid.
@@ -86,6 +86,23 @@ The source `src/lib/lifecycle.ts` defines 12 states and 26 legal directed transi
 | `app/src/main/assets/index.html` | same | Android WebView app shell. |
 | `app/src/main/assets/style.css` | same | Android WebView styling. |
 | `app/src/main/AndroidManifest.xml` | same | Android application manifest and declared capabilities. |
+
+## Source archives identified in the repository manifest
+
+The checked-in `sources/smash-archive-manifest.txt` records the following Daisy-related archive inputs. The inventory above describes files actually present in repository trees; these archive members are provenance inputs, not individually inventoried internal files because the archives are not checked in as extracted trees here.
+
+| Archive/member | Origin | Inventory finding |
+|---|---|---|
+| `Full-Build-SAT-Witness-Fix-production-hardening.zip` (21,599,543 bytes) | Smash transfer `TADA.zip`, transfer ID `MzTZDszljz-ft` | Manifest identifies this as the archive used to rebuild the current Full-Build, with newer commits subsequently merged on `main`. |
+| `Daisy-Himinja-AI-UI-OS-v3-main.zip` (2,814,970 bytes) | Same `TADA.zip` | Daisy AI/UI/OS archive; internal file list and exact file-to-archive provenance have not been re-extracted/verified in this audit. |
+| `daisy-haminja-solvex-brain.zip` (1,713,515 bytes) | Same `TADA.zip` | Daisy/SOLVEX brain archive; internal file list and version relationship remain unverified. |
+| `Haminja-AI-main.zip` (91,892 bytes) | Same `TADA.zip` | Additional Haminja AI source archive; internal files not individually compared here. |
+| `Daisy-Haminja-AI---UAREFAKE-Registry-Problem-Solving-Engine-main.zip` (95,079 bytes) | Same `TADA.zip` | Daisy/UAREFAKE registry/problem-solving archive; internal files not individually compared here. |
+| `Solvex-Daisy-Haminja-Kernel-Update.zip` (21,734,559 bytes) and `Solvex-Daisy-Haminja-Kernel-Update (1).zip` (15,043,231 bytes) | Same `TADA.zip` | Kernel update archives; whether they are identical, incremental, or divergent must be checked by archive hashes and manifests. |
+| `Daisy-AI-OS-Complete-With-ISO.tar.part-00` (1,887,436,800 bytes) | Smash transfer `2 x 2.zip`, transfer ID `YBKjTiquq2-ft` | Only split part 00 is recorded; later `.part-01+` pieces are absent from this transfer manifest. The full tar cannot be extracted or validated from this part alone. |
+| `Daisy Haminja SolveX Brain _ Google AI Studio.mht` (5,741,575 bytes) | Same `TADA.zip` | Captured AI Studio page/archive; contents are a source artifact, not a repository with verified build lineage. |
+
+Manifest links: [Smash source README](../sources/README.md) and [archive manifest](../sources/smash-archive-manifest.txt).
 
 ## Missing or unverified components
 
