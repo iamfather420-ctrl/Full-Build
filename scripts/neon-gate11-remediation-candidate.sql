@@ -1,8 +1,9 @@
--- GATE-11 REMEDIATION CANDIDATE — NOT AUTO-EXECUTED.
--- Requires a current backup/recovery point, owner review, and application-path testing.
--- Apply only to the verified SolveX production branch after an approved change window.
--- This preserves the existing login role name/password and its membership in solvex_app_runtime,
--- but removes its elevated Neon administrator membership and direct elevated role flags.
+-- GATE-11 REMEDIATION CANDIDATE — NON-PRODUCTION VALIDATION ONLY.
+-- DO NOT apply this script to the production database.
+-- Requires a disposable Neon branch, a current recovery point, and owner review.
+-- This creates a new SQL-native login solvex_runtime_v2 with only solvex_app_runtime
+-- membership and no elevated flags. The existing elevated login is left untouched
+-- for rollback.
 -- payment_events has no tenant_id, so it is deny-all until a tenant-safe event model is approved.
 -- Do not enable payments/PayPal as part of this migration.
 
@@ -19,8 +20,8 @@ ALTER ROLE solvex_runtime_v2
   LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
 
 -- Assign an unexposed random initial password. After this transaction is
--- applied in an approved change window, rotate it via the Neon role-password
--- API and place the returned value into the deployment secret store.
+-- applied on a validation branch, rotate it via the Neon role-password
+-- API and place the returned value into the validation secret store only.
 DO $password$
 BEGIN
   EXECUTE format(
