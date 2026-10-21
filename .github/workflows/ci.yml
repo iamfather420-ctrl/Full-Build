@@ -11,7 +11,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,3 +28,18 @@ jobs:
         run: npm run lint
       - name: Enterprise invariants
         run: npm run verify:enterprise
+      - name: Run fresh 120-case Z3 and 46-gate evidence pipeline
+        run: npx tsx scripts/verify_120_z3_and_46_gates.ts
+      - name: Archive fresh formal and gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solvex-formal-120-and-gates-${{ github.run_id }}
+          path: |
+            artifacts/unified-120-z3-report.json
+            artifacts/unified-120-z3-report.md
+            artifacts/dh-32-z3-verification.json
+            artifacts/system-46-gates.json
+            artifacts/system-46-gates.md
+          if-no-files-found: warn
+          retention-days: 30
