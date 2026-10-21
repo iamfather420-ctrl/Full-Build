@@ -368,11 +368,36 @@ export async function runEnterpriseVerification() {
   // 22. Machine-Readable /api/system/status Endpoint
   runTest('System Status API Endpoint Computes Real State', 'API', async () => {
     const router = SovereignApiRouter.getInstance();
-    const res = await router.handleRequest('/api/system/status', 'GET');
-    if (res.status !== 200) throw new Error('Status API returned non-200');
+    const anonymous = await router.handleRequest('/api/system/status', 'GET');
+    if (anonymous.status !== 403) {
+      throw new Error(`Expected anonymous system-status request to be forbidden, got ${anonymous.status}`);
+    }
+
+    // Verify the protected endpoint using an authenticated owner test identity.
+    const auth = AuthService.getInstance();
+    const token = auth.createSignedToken(
+      'system-status-test-owner',
+      'TENANT_SYSTEM_STATUS_TEST',
+      'system-status-test-owner@example.invalid',
+      'OWNER'
+    );
+    const res = await router.handleRequest('/api/system/status', 'GET', undefined, {
+      authorization: `Bearer ${token}`
+    });
+    if (res.status !== 200) throw new Error(`Authenticated status API returned ${res.status}: ${res.error || 'no error detail'}`);
     const s = res.data;
+    const liveNodeCount = NodeRegistry.getInstance().getAllNodes().length;
+    if (!s || s.registered_nodes !== liveNodeCount) {
+      throw new Error('Status API registered_nodes does not match the live node registry');
+    }
     if (s.registered_nodes !== 54) throw new Error(`Expected 54 registered nodes, got ${s.registered_nodes}`);
-    if (s.chain_valid !== true) throw new Error('Status reported invalid chain');
+    const liveChainValid = DurableStore.getInstance().verifyChain().valid;
+    if (s.chain_valid !== liveChainValid || s.chain_valid !== true) {
+      throw new Error('Status API chain_valid does not match the live audit-chain verification');
+    }
+    if (!Number.isFinite(s.timestamp) || s.timestamp <= 0) {
+      throw new Error('Status API timestamp is missing or invalid');
+    }
   });
 
   // 23. SqliteStore Multi-Tenant Persistence & 27 Tables Integrity
