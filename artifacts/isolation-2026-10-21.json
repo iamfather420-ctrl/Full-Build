@@ -177,5 +177,96 @@
     "Signed auth context is false after test cleanup and must be provisioned through the approved non-production app/auth path for a full repeatable run.",
     "Payment service-path and indirect-access testing remain outstanding.",
     "The legacy elevated runtime_login remains on this validation branch; application wiring must not use it."
-  ]
+  ],
+  "followup_probe": {
+    "checked_date_utc": "2026-10-21",
+    "executed_as": "solvex_runtime_v2",
+    "branch_id": "br-raspy-mountain-b4d774eg",
+    "auth_context_ready": false,
+    "current_claims": null,
+    "role_rechecked": {
+      "login": true,
+      "superuser": false,
+      "createdb": false,
+      "createrole": false,
+      "replication": false,
+      "bypassrls": false,
+      "memberships": [
+        "solvex_app_runtime"
+      ]
+    },
+    "no_claim_reads": [
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.users",
+        "result": "0",
+        "status": "PASS_FAIL_CLOSED"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.orders",
+        "result": "0",
+        "status": "PASS_FAIL_CLOSED"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_orders",
+        "result": "permission denied for table payment_orders",
+        "status": "DENIED_BY_PRIVILEGE"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_fulfillments",
+        "result": "permission denied for table payment_fulfillments",
+        "status": "DENIED_BY_PRIVILEGE"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_refunds",
+        "result": "permission denied for table payment_refunds",
+        "status": "DENIED_BY_PRIVILEGE"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_events",
+        "result": "permission denied for table payment_events",
+        "status": "DENIED_BY_PRIVILEGE"
+      }
+    ],
+    "rls_exceptions_rechecked": [
+      {
+        "table": "public._migrations",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "policy_count": 0,
+        "runtime_v2_direct_select_insert_update_delete": false,
+        "classification": "non-tenant migration metadata; no direct runtime privileges"
+      },
+      {
+        "table": "solvex_private.auth_secrets",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "policy_count": 0,
+        "runtime_v2_direct_select_insert_update_delete": false,
+        "classification": "private secret table; direct runtime privileges denied"
+      }
+    ],
+    "security_definer_functions_reviewed": [
+      {
+        "name": "solvex_private.auth_context_ready",
+        "security_definer": true,
+        "search_path": "pg_catalog, solvex_private",
+        "runtime_execute": true,
+        "observed_result": false
+      },
+      {
+        "name": "solvex_private.current_claims",
+        "security_definer": true,
+        "search_path": "pg_catalog, solvex_private",
+        "runtime_execute": true,
+        "observed_result": null
+      }
+    ],
+    "verdict": "PARTIAL_BLOCKED",
+    "notes": [
+      "No tenant-A/tenant-B test was claimed as passed because auth_context_ready() is false and current_claims() is NULL.",
+      "Payment table direct access is denied by table grants. That is a safe fail-closed result for the current runtime role, but does not validate any approved payment service path.",
+      "The one public table without RLS is _migrations; runtime_v2 has no direct table privileges. solvex_private.auth_secrets is also without RLS but is in the private schema and runtime_v2 has no direct table privileges.",
+      "Production remains untouched."
+    ]
+  }
 }
