@@ -1,6 +1,6 @@
 {
-  "execution_id": "gate46_exec_1792561365575",
-  "timestamp": "2026-10-21T05:42:45.575Z",
+  "execution_id": "gate46_exec_1792561402755",
+  "timestamp": "2026-10-21T05:43:22.755Z",
   "total_gates": 46,
   "authoritative_gates_count": 15,
   "enterprise_gates_count": 30,
@@ -18,11 +18,11 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 73.65,
-      "evidence_hash": "a5d36113e4e275fef75c51793c23d17658f62ec74b11867289dcfcdea30200e7",
+      "duration_ms": 112.79,
+      "evidence_hash": "0512dee67b8d9c152493166a39d1918f4ca3af554bb2644c15e0a3853dbba85f",
       "details": {
-        "execution_id": "exec_pipeline_1792561365575",
-        "commit_sha": "9f47d6216c1652402f87c054576b07c0f66540cc",
+        "execution_id": "exec_pipeline_1792561402756",
+        "commit_sha": "6cb87727c98f2dc8f48d0208686de8c22b8e0aa9",
         "modified_files_count": 3,
         "runtime_mode": "NODE_RUNTIME",
         "provenance_verified": true
@@ -35,8 +35,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0.01,
-      "evidence_hash": "33092ab9cc30d034a78eebdd118863284047f328e08026bd7fb00f9fe9c887db",
+      "duration_ms": 0.02,
+      "evidence_hash": "090210c61d0b9b461e58d6c9f7f50fbd49707c17ff2449f07c14e54cd29d7295",
       "details": {
         "total_dependencies": 8,
         "present": 7,
@@ -80,8 +80,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 430.77,
-      "evidence_hash": "227ea3a39ea66e74053459c302d3d1ab0fd2956960ae22c8ea643bbb4f851a40",
+      "duration_ms": 737.81,
+      "evidence_hash": "3e5bd24a9f0cd5c28e397ea0c40d25c506b49c59a9f9bf87c726f51ef5340bb9",
       "details": {
         "typecheck": "CLEAN",
         "mode": "CLI_TYPECHECK"
@@ -94,8 +94,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 5.2,
-      "evidence_hash": "73cee5d614efcb864a037915ee4b4d69f205ed1856fa648f3edf987f1cbfccfa",
+      "duration_ms": 8.75,
+      "evidence_hash": "af80ca816eb874de4a678761095b8fa4cdb55334233fbd30fd3e0d9a467a0b0d",
       "details": {
         "total_tests": 30,
         "passed_tests": 30,
@@ -109,8 +109,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "MODEL",
-      "duration_ms": 943.02,
-      "evidence_hash": "69273d99fd48e68a4330b22d5aea86926fadd701fdda4d26e0b6bcedc2e79064",
+      "duration_ms": 1495.64,
+      "evidence_hash": "e817e03f56916437da92c24087a5dc6669a3acbbc31bcfcacb49e842a6982c7d",
       "details": {
         "total_propositions": 88,
         "attempted": 88,
@@ -120,7 +120,7 @@
         "generated_models_count": 68,
         "solver_engine": "Microsoft Research Z3 WASM (z3-solver)",
         "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-        "root_sha256": "8318859fb5335c2c97ff793fe9ca2749eb7fb6fd6e448fa6275dadbb384bf650"
+        "root_sha256": "2e76551cbeb7636faacc9cdfbd272ab6ecc2e0e519d093b233ee936c952223bf"
       }
     },
     {
@@ -146,8 +146,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 21.09,
-      "evidence_hash": "7c80b842d808bc301ca0193210cadddb5a036820bf5dbe3e3881701379d205e5",
+      "duration_ms": 33.74,
+      "evidence_hash": "b86c220a70c0294d910005a2b0341b32e5d8d17640a823936298fce3bef72da0",
       "details": {
         "smt_mutation_detected": true,
         "smt_mutation_transition": "unsat -> sat",
@@ -163,8 +163,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 3.8,
-      "evidence_hash": "e82ce91fa0a028d86bf03ce7f4749ee0aaa4e2395ee78be7cd959782f22f8d60",
+      "duration_ms": 6.34,
+      "evidence_hash": "c93f2a6e09ae8f5c8cb8912821c625e6892bf609e4817d125d36bbbdae3a9b00",
       "details": {
         "total_nodes": 54,
         "registered_nodes": 54,
@@ -187,8 +187,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0.7,
-      "evidence_hash": "de146bd8671b6d65b1c1e8a5c96eb5fce3ce6d581dd9ae46eed2095f66e1a753",
+      "duration_ms": 1.18,
+      "evidence_hash": "6c77c39baadc1e89d5c7d2d6ffd627b354eb0961e62500634b2804e41dff9baf",
       "details": {
         "sqlite_tables_count": 27,
         "required_tables": 27,
@@ -241,17 +241,17 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0.26,
-      "evidence_hash": "043984b05ac181dc07cb36f69e4c50a9398f89e9a196f495d555645a658f2312",
+      "duration_ms": 0.44,
+      "evidence_hash": "704d556cda3b121128b13dc546dbf1fb052624217c7f84df75ef4dcd46c5e77f",
       "details": {
         "solution_pipeline": {
           "success": true,
           "completed_stages": 21,
           "total_stages": 21,
-          "solution_id": "DH-S-MVHOR6ZP"
+          "solution_id": "DH-S-MVHOS0E9"
         },
         "order_lifecycle": {
-          "order_id": "e2e_order_1792561367077",
+          "order_id": "e2e_order_1792561405185",
           "transitions_executed": [
             "ORDER_CREATED",
             "ESCROW_FUNDED",
@@ -262,8 +262,8 @@
           "final_status": "DEPLOYED"
         },
         "merkle_audit_append": {
-          "record_id": "audit_1792561367077_15",
-          "record_hash": "9e9f1de4b98086111b57aee523102a3d3190f93dea31fea3bd8f61b208a1b436"
+          "record_id": "audit_1792561405185_15",
+          "record_hash": "5527bba75c030757b3038268243caca5b04fd4aafd0fe0acb281171de5fd181f"
         }
       }
     },
@@ -274,8 +274,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 3.25,
-      "evidence_hash": "016193c6f2a048962d6af4c01f56c55370a9ae47b476191bfa94240c1a7e8716",
+      "duration_ms": 3.41,
+      "evidence_hash": "4df40d17d80997ee7a057d81d3114858511fcfef623fdd0b36678c0185912823",
       "details": {
         "artifacts_generated": [
           "DFRL-88-MACHINE-VERIFICATION-AUDIT.md",
@@ -296,10 +296,10 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "BLOCKED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0.01,
-      "evidence_hash": "38636fbf10b6020dffcfff5fe096beeec21c60ca18e419b08b06f9ce00a646af",
+      "duration_ms": 0.04,
+      "evidence_hash": "d194b3da8340cb1cd199fc8cc9624f64572d4a9fe11119d932f9c8d97dfc7924",
       "details": {
-        "execution_id": "exec_pipeline_1792561365575",
+        "execution_id": "exec_pipeline_1792561402756",
         "verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
         "claim_scope": "LOCAL_VERIFIED / MODEL_VERIFIED",
         "blockers_count": 1,
@@ -588,7 +588,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0,
+      "duration_ms": 1,
       "evidence_hash": "66958523ee2de79de5ecfae695eaffdb757d3121ef3d2088624202b50096f0ad",
       "details": {
         "status": "PASSED"
@@ -692,7 +692,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 1,
+      "duration_ms": 0,
       "evidence_hash": "b91d27e408bebe55b4c88d478eac00c7dcf57b4359e3b549226050b90cb8df1b",
       "details": {
         "status": "PASSED"
