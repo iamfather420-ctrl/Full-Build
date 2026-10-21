@@ -96,7 +96,8 @@ export class SovereignApiRouter {
         return { status: 200, data: problems, timestamp };
       }
       if (path === '/api/problems' && method === 'POST') {
-        const targetTenant = user ? user.tenant_id : (payload?.tenant_id || 'TENANT_ENTERPRISE_DEMO');
+        if (!user) return { status: 401, error: 'Authentication required to create a problem', timestamp };
+        const targetTenant = user.tenant_id;
         const { raw_problem, title, domain = 'COMPUTATIONAL' } = payload || {};
         if (!raw_problem) return { status: 400, error: 'raw_problem is required', timestamp };
         const problemId = `prob_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
