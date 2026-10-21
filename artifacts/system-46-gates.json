@@ -1,6 +1,6 @@
 {
-  "execution_id": "gate46_exec_1792559285200",
-  "timestamp": "2026-10-21T05:08:05.200Z",
+  "execution_id": "gate46_exec_1792559338936",
+  "timestamp": "2026-10-21T05:08:58.936Z",
   "total_gates": 46,
   "authoritative_gates_count": 15,
   "enterprise_gates_count": 30,
@@ -12,15 +12,15 @@
   "all_local_and_model_passed": false,
   "overall_verdict": "BLOCKED",
   "source": {
-    "workflow_run_id": 39547806870,
-    "workflow_run_url": "https://github.com/iamfather420-ctrl/Full-Build/actions/runs/39547806870",
-    "workflow_head_sha": "570e6eeda12935cddfd498eeb1b17a185aec7c83",
-    "artifact_name": "authoritative-verification-3ba3ecfea24a2093504273de6c3ba5221a3bd891",
-    "artifact_sha256": "9c9d8ae49dde983bac4930313cf3ab72d9299084b251e97cd48b02092c2abc6e",
-    "raw_generated_report_sha256": "20be79ff2575943efb30957ce199d60b3eea76366512458326a037de5d22b1f8",
+    "workflow_run_id": 39547887857,
+    "workflow_run_url": "https://github.com/iamfather420-ctrl/Full-Build/actions/runs/39547887857",
+    "workflow_head_sha": "46d1cae138d6eb3895a499e040a1d7d87a3e9e0d",
+    "artifact_name": "authoritative-verification-44c4734ae14168bfedfccbc8ada057f0fc9bcfe0",
+    "artifact_sha256": "4946b9b7eece506af5a1b09bfd8a34a388978c375db2070c62787bd0b6fb6a6a",
+    "raw_generated_report_sha256": "c62d5c2a8b331ed502792dd9c5fd67ec2174410b60900869e9cf74a54538c706",
     "reported_gate00_commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
     "reported_gate00_runtime_mode": "BROWSER_RUNTIME",
-    "provenance_warning": "Fresh evaluator output generated on workflow HEAD 570e6eeda12935cddfd498eeb1b17a185aec7c83, but Gate 00 reports BROWSER_RUNTIME and commit 728625581c2f89210c752d03fda0a154812b2366. The report is archived as generated, but its current-commit provenance is not trustworthy until this mismatch is resolved. The complete raw report is retained in the linked workflow artifact."
+    "provenance_warning": "Fresh evaluator output was generated on workflow HEAD 46d1cae138d6eb3895a499e040a1d7d87a3e9e0d, but Gate 00 reports BROWSER_RUNTIME and commit 728625581c2f89210c752d03fda0a154812b2366. The report is archived as generated, but its current-commit provenance is not trustworthy until this mismatch is resolved. The complete raw report is retained in the linked workflow artifact."
   },
   "gates": [
     {
