@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create dated backup archive
+      - name: Create dated code backup archive
         run: |
           DATE=$(date -u +%Y-%m-%d)
           ARCHIVE="solvex-backup-${DATE}.tar.gz"
@@ -27,16 +27,49 @@ jobs:
             --exclude='build' \
             .
           echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+          echo "DATE=$DATE" >> "$GITHUB_ENV"
           ls -lh "$ARCHIVE"
 
-      - name: Upload backup artifact
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump Neon database
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          if [ -z "$NEON_DATABASE_URL" ]; then
+            echo "NEON_DATABASE_URL secret is not set. Skipping database dump."
+            echo "SKIP_DB=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          DUMP="neon-dump-${DATE}.sql.gz"
+          echo "Creating Neon dump: $DUMP"
+          pg_dump "$NEON_DATABASE_URL" --no-owner --no-acl --clean --if-exists | gzip > "$DUMP"
+          ls -lh "$DUMP"
+          echo "DUMP=$DUMP" >> "$GITHUB_ENV"
+          echo "SKIP_DB=false" >> "$GITHUB_ENV"
+
+      - name: Upload code backup artifact
         uses: actions/upload-artifact@v4
         with:
           name: solvex-daily-backup-${{ github.run_id }}
           path: solvex-backup-*.tar.gz
           retention-days: 30
 
+      - name: Upload Neon dump artifact
+        if: env.SKIP_DB != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-daily-dump-${{ github.run_id }}
+          path: neon-dump-*.sql.gz
+          retention-days: 30
+
       - name: Summary
         run: |
-          echo "Daily backup completed: ${{ env.ARCHIVE }}"
-          echo "Artifact retained for 30 days."
+          echo "Code backup completed: ${{ env.ARCHIVE }}"
+          if [ "${{ env.SKIP_DB }}" = "true" ]; then
+            echo "Neon dump skipped (NEON_DATABASE_URL secret not set)."
+          else
+            echo "Neon dump completed: ${{ env.DUMP }}"
+          fi
+          echo "Artifacts retained for 30 days."
