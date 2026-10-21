@@ -57,7 +57,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin "$GITHUB_HEAD_REF"
-          git checkout -B "$GITHUB_HEAD_REF" "origin/$GITHUB_HEAD_REF"
+          git checkout -f -B "$GITHUB_HEAD_REF" "origin/$GITHUB_HEAD_REF"
           cp /tmp/system-46-gates.json artifacts/system-46-gates.json
           git add -f artifacts/system-46-gates.json
           if git diff --cached --quiet; then
