@@ -104,6 +104,30 @@ The checked-in `sources/smash-archive-manifest.txt` records the following Daisy-
 
 Manifest links: [Smash source README](../sources/README.md) and [archive manifest](../sources/smash-archive-manifest.txt).
 
+## Newly uploaded source archive examined: `solvex-daisy-haminja-os.zip`
+
+- Archive SHA-256 and exact path-level manifest should be retained with the release evidence; this examination counted **669 ZIP entries** totaling **17,017,380 uncompressed bytes** (ZIP size 17,157,362 bytes).
+- Root-level app files include `src/App.tsx`, `src/lib/lifecycle.ts`, `scripts/test-solvex-governance.mjs`, and verification artifacts under `artifacts/`.
+- Nested source snapshots include **404 files** under `authentic_sources/Full-Build`, **58** under `authentic_sources/Daisy-Himinja-AI-UI-OS-v3`, **34** under `authentic_sources/Daisy-Haminja-AI-Registry`, and **11** under `authentic_sources/Daisy-Haminja-App-Forge`. The ZIP therefore carries several versions/source trees, not one unambiguous canonical source.
+- Daisy OS v3 includes Android app code, engine components (`ConsensusEngine.kt`, `DiscoveryEngine.kt`, `VoiceCoPilot.kt`, `IngressParser.kt`, `TetherManager.kt`, `GeminiClient.kt`), Compose UI/theme resources, Gradle configuration, and basic unit/instrumented test scaffolding.
+- Daisy Haminja AI Registry includes a React app, registry viewer, autonomous communication panel, B2B economic dashboard, compliance dashboard, conflict analysis, mesh telemetry, solver dashboard, knowledge-graph and verified-corpus modules, and a server entry point.
+- Daisy Haminja App Forge includes an app shell, server, ledger/tethers data files, and build configuration.
+- The archive root has `metadata.json` declaring `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API`; its README also instructs setting `GEMINI_API_KEY`. This conflicts with the nested Full-Build `DAISY_AI_OS.md` statement “Gemini removed. Daisy only.” Provider removal is therefore **not verified across the uploaded archive**.
+
+### Governance tests run against the uploaded archive
+
+I extracted only the archive's `src/lib/lifecycle.ts` and `scripts/test-solvex-governance.mjs` into a temporary test directory and ran:
+
+```bash
+node --experimental-strip-types --test scripts/test-solvex-governance.mjs
+```
+
+**Observed result: 6 tests passed, 0 failed, 0 skipped.** Tests cover the standard completion path, rejection, NEEDS_REVIEW and resolution, BLOCKED and unblock/retry, FAILED → RECOVERY_REQUIRED → reauthorization, and illegal state skips.
+
+**Important provenance distinction:** this passing result is for the lifecycle implementation inside the uploaded ZIP, **not** the current `main` version in GitHub. The uploaded implementation exposes `flagNeedsReview`, `resolveNeedsReview`, `unblock`, `flagRecoveryRequired`, and `authorizeRecovery`; the current GitHub `main` lifecycle file does not expose those methods. The archive also has a `TRANSITIONS` matrix that is not exported in current `main`. Therefore the six passing tests do not establish that current `main` supports these paths. The test labels the audit digest “cryptographically sound,” but the implementation uses an 8-hex-digit FNV-style digest; that is **not cryptographic integrity protection**. The run also used demo result strings and is not evidence of live tool execution.
+
+The uploaded archive gives us an authentic candidate source for filling current lifecycle gaps, but merging it must be a reviewed, path-specific reconciliation rather than copying the whole ZIP over current code. Preserve the current repository as a separate provenance source and do not mix duplicate app trees blindly.
+
 ## Missing or unverified components
 
 1. **Lifecycle transition completeness:** the source declares cancellation, needs-review, and recovery transitions without public methods to drive all of them. The new verifier documents exact uncovered edges; implement explicit, permission-checked transition APIs and tests before claiming full state coverage.
