@@ -64,14 +64,9 @@ export class SovereignApiRouter {
     try {
       // 1. /api/auth
       if (path === '/api/auth/login' && method === 'POST') {
-        const { email, role = 'CUSTOMER', tenant_id = 'TENANT_ENTERPRISE_DEMO' } = payload || {};
-        if (!email) return { status: 400, error: 'Email is required for authentication', timestamp };
-        const token = this.authService.createSignedToken(`usr_${Date.now()}`, tenant_id, email, role as SovereignRole);
-        return {
-          status: 200,
-          data: { token, user: this.authService.verifyToken(token).user },
-          timestamp
-        };
+        // Fail closed until trusted identity-provider verification is configured.
+        // Never mint credentials from caller-supplied email, role, or tenant claims.
+        return { status: 503, error: 'Authentication unavailable: trusted identity-provider verification is not configured', timestamp };
       }
       if (path === '/api/auth/me' && method === 'GET') {
         if (!user) return { status: 401, error: 'Unauthorized: Missing or invalid token', timestamp };
