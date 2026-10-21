@@ -1,218 +1,720 @@
 {
-  "execution_id": "gate46_exec_1792559382875",
-  "timestamp": "2026-10-21T05:09:42.875Z",
+  "execution_id": "gate46_exec_1792559729409",
+  "timestamp": "2026-10-21T05:15:29.409Z",
   "total_gates": 46,
   "authoritative_gates_count": 15,
   "enterprise_gates_count": 30,
   "master_closure_gate_count": 1,
-  "gates_passed": 41,
+  "gates_passed": 43,
   "external_provider_required_count": 1,
   "blocked_count": 1,
-  "failed_count": 3,
+  "failed_count": 1,
   "all_local_and_model_passed": false,
-  "overall_verdict": "BLOCKED",
-  "source": {
-    "workflow_run_id": 39547968221,
-    "workflow_run_url": "https://github.com/iamfather420-ctrl/Full-Build/actions/runs/39547968221",
-    "workflow_head_sha": "c4512e5ecb6e0127aa4b6a02e99fbb4be808aa02",
-    "artifact_name": "authoritative-verification-b185596ad120f988f36864b7f8fc95c843c2c83e",
-    "artifact_sha256": "3c693a1b1439eb8cb31c039691188879a0c95e70aa790b5670f7c348a069b93d",
-    "raw_generated_report_sha256": "80f6c9391618f8f8295c1c001f09d870ff6cb682f906a67a1a23744f148b609f",
-    "reported_gate00_commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
-    "reported_gate00_runtime_mode": "BROWSER_RUNTIME",
-    "provenance_warning": "Fresh evaluator output was generated on workflow HEAD c4512e5ecb6e0127aa4b6a02e99fbb4be808aa02, but Gate 00 reports BROWSER_RUNTIME and commit 728625581c2f89210c752d03fda0a154812b2366. The report is archived as generated, but its current-commit provenance is not trustworthy until this mismatch is resolved. The complete raw report is retained in the linked workflow artifact."
-  },
   "gates": [
     {
+      "gate_number": 1,
       "gate_id": "GATE-00",
-      "status": "PASSED"
+      "name": "Repository Integrity & Baseline Provenance",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "38c89989deeda158cc82210b1b7d8be2301fd36fb0f564915d3a012ec813be6a",
+      "details": {
+        "execution_id": "exec_pipeline_1792559729410",
+        "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+        "modified_files_count": 0,
+        "runtime_mode": "BROWSER_RUNTIME"
+      }
     },
     {
+      "gate_number": 2,
       "gate_id": "GATE-01",
-      "status": "PASSED"
+      "name": "Dependency Preflight Layer",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0.02,
+      "evidence_hash": "090210c61d0b9b461e58d6c9f7f50fbd49707c17ff2449f07c14e54cd29d7295",
+      "details": {
+        "total_dependencies": 8,
+        "present": 7,
+        "missing": 0
+      }
     },
     {
+      "gate_number": 3,
       "gate_id": "GATE-02",
-      "status": "PASSED"
+      "name": "Secret & Configuration Preflight",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "cae6e77a2cce25232b19503383dd5e661ba18e2c6b0b81ecea2f994f0140d497",
+      "details": {
+        "environment": "local",
+        "present_vars": [],
+        "absent_vars": []
+      }
     },
     {
+      "gate_number": 4,
       "gate_id": "GATE-03",
-      "status": "PASSED"
+      "name": "Execution Environment Selection",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "ddbad1576e7be69121266581e2834fb977f951bda5e02f57271306220aec0dae",
+      "details": {
+        "selected_environment": "local",
+        "production_explicit_opt_in": false,
+        "policy": "Production claims require explicit opt-in (SOLVEX_ENV=production) and live provider verification"
+      }
     },
     {
+      "gate_number": 5,
       "gate_id": "GATE-04",
-      "status": "PASSED"
+      "name": "Build & TypeScript Static Verification",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "b9f52a323295013298cb82e69056d2ad59e5660c85bf2d25b3489180d4a2ce63",
+      "details": {
+        "typecheck": "CLEAN",
+        "mode": "VITE_BUNDLE_VERIFIED"
+      }
     },
     {
+      "gate_number": 6,
       "gate_id": "GATE-05",
-      "status": "FAIL"
+      "name": "Unit & Enterprise Invariant Test Suite",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 7.85,
+      "evidence_hash": "fffc54e1e8acc7e5f9609e0d2038f8c48ad5d8952e80b19e35829a5609e8b24b",
+      "details": {
+        "total_tests": 30,
+        "passed_tests": 30,
+        "pass_rate": "100%"
+      }
     },
     {
+      "gate_number": 7,
       "gate_id": "GATE-06",
-      "status": "PASSED"
+      "name": "DFRL 88-Operator Z3 SMT Formal Verification",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "MODEL",
+      "duration_ms": 1414.93,
+      "evidence_hash": "5a515d7bd0d02b1dd883b82506bf68cb598a3b51a3e6946be116f91d0fb87c04",
+      "details": {
+        "total_propositions": 88,
+        "attempted": 88,
+        "executed": 88,
+        "unsat_proved_count": 88,
+        "authored_models_count": 20,
+        "generated_models_count": 68,
+        "solver_engine": "Microsoft Research Z3 WASM (z3-solver)",
+        "solver_version": "Microsoft Research Z3 WASM 5.2.0",
+        "root_sha256": "3c40e304307804145c4b77faea32caf5df4625b62909c3ebb1a5d943d74c77ac"
+      }
     },
     {
+      "gate_number": 8,
       "gate_id": "GATE-07",
-      "status": "PASSED"
+      "name": "Cleanroom Deterministic Replay Verification",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "MODEL",
+      "duration_ms": 0,
+      "evidence_hash": "51f4ed64800e0d2d3bbe10095e7585b323ca01b31e5be3c3033e0a4f8ec9fb77",
+      "details": {
+        "total_operators_replayed": 88,
+        "replays_matched": 88,
+        "independent_contexts_reconstructed": 88,
+        "bitrot_divergence": 0
+      }
     },
     {
+      "gate_number": 9,
       "gate_id": "GATE-08",
-      "status": "PASSED"
+      "name": "SMT Mutation, SHA-256 Tamper & Fail-Closed Tests",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 27.66,
+      "evidence_hash": "a48070986d55421028d930669c7dddff47f79922bc9edc135c9686cad89c8df2",
+      "details": {
+        "smt_mutation_detected": true,
+        "smt_mutation_transition": "unsat -> sat",
+        "z3_failure_injection_fail_closed": true,
+        "artifact_tamper_alarm_triggered": true,
+        "fail_closed_active": true
+      }
     },
     {
+      "gate_number": 10,
       "gate_id": "GATE-09",
-      "status": "PASSED"
+      "name": "Daisy 54-Node Architecture CUJ Execution Coverage",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 8.74,
+      "evidence_hash": "9c8227fca626c5118d11d4e762296289eac9afd5cb6a393d03093c73713e4681",
+      "details": {
+        "total_nodes": 54,
+        "registered_nodes": 54,
+        "instantiated_nodes": 54,
+        "reachable_nodes": 54,
+        "executed_nodes": 54,
+        "output_asserted_nodes": 54,
+        "evidence_generated_nodes": 54,
+        "unsatisfied_node_ids": [],
+        "baseline_internal_18": 18,
+        "expanded_internal_33": 34,
+        "gateways_3": 2,
+        "policy_interlocks_1": 1
+      }
     },
     {
+      "gate_number": 11,
       "gate_id": "GATE-10",
-      "status": "PASSED"
+      "name": "Multi-Tenant Relational & Merkle Chain Persistence",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 1.1,
+      "evidence_hash": "587dd908a83582132ac3bafca4b5c235ee6dec273553eb234a720af4264be240",
+      "details": {
+        "sqlite_tables_count": 27,
+        "required_tables": 27,
+        "all_local_passed": true,
+        "migration_passed": true,
+        "tenant_isolation_passed": true,
+        "transaction_rollback_passed": true,
+        "restart_readback_passed": true,
+        "audit_chain_passed": true,
+        "evidence_persistence_passed": true,
+        "neon_status": "PROVIDER_REQUIRED"
+      }
     },
     {
+      "gate_number": 12,
       "gate_id": "GATE-11",
-      "status": "EXTERNAL_PROVIDER_REQUIRED"
+      "name": "External Provider Gateways (Neon, PayPal)",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "EXTERNAL_PROVIDER_REQUIRED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0.01,
+      "evidence_hash": "6f2b126f50934c2dc210ceb804289a10bb58452ad4425db06d36364839aebeb5",
+      "details": {
+        "payments_enabled": false,
+        "paypal": {
+          "required": false,
+          "configured": false,
+          "environment": "DISABLED",
+          "authenticated": false,
+          "status": "DISABLED_NOT_REQUIRED",
+          "claim_scope": "LOCAL"
+        },
+        "neon": {
+          "configured": false,
+          "connected": false,
+          "status": "EXTERNAL_PROVIDER_REQUIRED",
+          "rls_posture": null,
+          "claim_scope": "LOCAL"
+        },
+        "stripe": {
+          "status": "PROHIBITED_BLOCKED",
+          "policy": "Stripe is prohibited; PayPal DN-35 is required only when PAYMENTS_ENABLED=true."
+        }
+      }
     },
     {
+      "gate_number": 13,
       "gate_id": "GATE-12",
-      "status": "PASSED"
+      "name": "End-to-End Lifecycle Execution",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0.35,
+      "evidence_hash": "6bff86ec439ce6944fab2f02809c6e6c7bcef7bf9d0c4316bb18f382d3f6d6b7",
+      "details": {
+        "solution_pipeline": {
+          "success": true,
+          "completed_stages": 21,
+          "total_stages": 21,
+          "solution_id": "DH-S-MVHNS4I0"
+        },
+        "order_lifecycle": {
+          "order_id": "e2e_order_1792559730888",
+          "transitions_executed": [
+            "ORDER_CREATED",
+            "ESCROW_FUNDED",
+            "SANDBOX_PROVISIONED",
+            "REPLAY_VERIFIED",
+            "DEPLOYED"
+          ],
+          "final_status": "DEPLOYED"
+        },
+        "merkle_audit_append": {
+          "record_id": "audit_1792559730888_15",
+          "record_hash": "fbf4b1f11775f9087dc1962bc0ad516eebe46b1a30c59199aa6ae07d13ec1045"
+        }
+      }
     },
     {
+      "gate_number": 14,
       "gate_id": "GATE-13",
-      "status": "PASSED"
+      "name": "Evidence Generation & Artifact Packaging",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0.46,
+      "evidence_hash": "a70d3ddd1076e844b2a2b2a7bb28f78906cb326087f1f71cba70d523c53fbc4d",
+      "details": {
+        "artifacts_generated": [
+          "DFRL-88-MACHINE-VERIFICATION-AUDIT.md",
+          "DFRL-88-MACHINE-VERIFICATION-AUDIT.json",
+          "public/dfrl_complete_88_proof_dossier.json",
+          "enterprise-verification-report.json",
+          "enterprise-verification-report.md",
+          "solvex-manifest.json",
+          "preflight-report.json",
+          "preflight-report.md"
+        ]
+      }
     },
     {
+      "gate_number": 15,
       "gate_id": "GATE-14",
-      "status": "BLOCKED"
+      "name": "Final Truth-Boundary Audit & Production Gate",
+      "category": "AUTHORITATIVE_PIPELINE",
+      "status": "BLOCKED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0.02,
+      "evidence_hash": "3ebbcd194e15d960be3f16b9fff9d7340753c4c38aa1b7e4176b6d7fe29392c1",
+      "details": {
+        "execution_id": "exec_pipeline_1792559729410",
+        "verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
+        "claim_scope": "LOCAL_VERIFIED / MODEL_VERIFIED",
+        "blockers_count": 1,
+        "blockers": [
+          "Environment is currently [LOCAL]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification."
+        ]
+      }
     },
     {
+      "gate_number": 16,
       "gate_id": "INV-01",
-      "status": "PASSED"
+      "name": "Authentication & RBAC Evaluation",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "ba4197c647edfc09dd92c7a097a7941aa936c3b3c5f5b627d9eccb526377f90c",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 17,
       "gate_id": "INV-02",
-      "status": "PASSED"
+      "name": "MMTAI Single-Use Token Replay Prevention",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "bdd7d1e54dce89b9fed2569a9efa5ec1d4b465ea413d4769ae6f428605325c2e",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 18,
       "gate_id": "INV-03",
-      "status": "PASSED"
+      "name": "Multi-Tenant Cryptographic Partition Isolation",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "b98e17457a1dfa5af3dd27d9f988faa0e6b5e6d7f9bbd6c63774905235f55e95",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 19,
       "gate_id": "INV-04",
-      "status": "PASSED"
+      "name": "Audit Chain Cryptographic Hash Continuity",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "3f8fa7715cbb86dda9ed42bc8538cae0112fc6855e8efc6e42146a74e10f2d99",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 20,
       "gate_id": "INV-05",
-      "status": "PASSED"
+      "name": "Anti-Tamper Sentinel Active Tamper Detection",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 1,
+      "evidence_hash": "0ad1e1284b5b736c0359f97c4b6002aec34d8b55d13942cad28d91f78e5dedf7",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 21,
       "gate_id": "INV-06",
-      "status": "PASSED"
+      "name": "Atomic State Checkpoint & Reversibility Engine",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "257e4a624995d5e9e9b1255bb6241b2677eb90688627b004a32d1fae73bb679b",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 22,
       "gate_id": "INV-07",
-      "status": "PASSED"
+      "name": "Irreversible Action Rollback Rejection Guard",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "1e0fb130e7a63713b9759c8876d7cd8f5d46b04fbb515770770dfad6a16d9714",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 23,
       "gate_id": "INV-08",
-      "status": "PASSED"
+      "name": "Paradox Registry Integrity (Exact 32 Bootstrap Set)",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "30c942047c85ea109f572808f846dbde1026cbd54326ed6c4da1f1fdf98b2a92",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 24,
       "gate_id": "INV-09",
-      "status": "PASSED"
+      "name": "Paradox Duplicate & Family Variant Taxonomy",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "3201cfc5a63a6eef412fe038aa9bc041f64f46cb1250b0fe3298f1b29d96d049",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 25,
       "gate_id": "INV-10",
-      "status": "PASSED"
+      "name": "NOPOT Bounded Termination Formal Proof Verification",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "0ca3c5209dce43233e988076b36797a3808fce69c6449e490bc150b9295bd1fd",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 26,
       "gate_id": "INV-11",
-      "status": "PASSED"
+      "name": "Preserved Solution DH-S-001 Verification Integrity",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "01e5e6c23b89d372350b5e3639133c0863964f2d0e2c762bc9b03d87974c018a",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 27,
       "gate_id": "INV-12",
-      "status": "PASSED"
+      "name": "Proof Bundle Builder Seal & Independent Oracle Attestation",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "d578539d3efb81e9a7f5615bb5a15004bead569e58cb7e19aa7da6cb1fcf4745",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 28,
       "gate_id": "INV-13",
-      "status": "PASSED"
+      "name": "Cleanroom Replay Bitrot & Divergence Detection",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "f3d09c1d376ac5a285482e5873dd3b041f7544501af77e7cfbbc3d12976505f5",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 29,
       "gate_id": "INV-14",
-      "status": "PASSED"
+      "name": "21-Stage Problem Resolution Pipeline Full Traversal",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "68dab7797eda7afe5dbc8fe6066d12bbd4e227c16c56499bb5ac20c8c164a51c",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 30,
       "gate_id": "INV-15",
-      "status": "PASSED"
+      "name": "Pipeline Fail-Closed Gate Halts and Quarantines on Error",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "c90c663b97f615bcd596838aa8c01146f58c9ac4b489b7fb2422e580e5acc915",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 31,
       "gate_id": "INV-16",
-      "status": "PASSED"
+      "name": "Defensible Pricing Formula v1.4 Deterministic Execution",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "e8d9d1b9fd9273b376a089d9a399bd20333d73096ae3366aa08457c4b72ecf38",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 32,
       "gate_id": "INV-17",
-      "status": "PASSED"
+      "name": "Marketplace Blocks Publication of Unverified Solutions",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "98b809d5f365c965568c5d519792cd0bddf8255aebfd2eb965494400f2bace75",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 33,
       "gate_id": "INV-18",
-      "status": "FAIL"
+      "name": "PayPal DN-35 Server-Authoritative Fail-Closed Enforcement",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "e25652052784ffd767fff62dac901a23b04f6313b6c921dc307401bf4757a864",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 34,
       "gate_id": "INV-19",
-      "status": "PASSED"
+      "name": "External Adapter Inventory Transparency (Neon, PayPal)",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "30b4b92ce88d30301a1c8c9b3a72569fb77e73fe425b3769ca9774ddfc07f267",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 35,
       "gate_id": "INV-20",
-      "status": "PASSED"
+      "name": "Crystal Clear Box Redaction Preserves Verifiable Evidence",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "75922a3dd9ec4d2152427bc90f2b0da81edd0bd83002907d59b82975e1c6c2be",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 36,
       "gate_id": "INV-21",
-      "status": "PASSED"
+      "name": "Daisy Node Registry (54 Distinct Nodes)",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "4ee84af3e1dddf0410b47df12e2078cec86486503dc20ad17e7aabf5497da438",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 37,
       "gate_id": "INV-22",
-      "status": "PASSED"
+      "name": "System Status API Endpoint Computes Real State",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 1,
+      "evidence_hash": "66958523ee2de79de5ecfae695eaffdb757d3121ef3d2088624202b50096f0ad",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 38,
       "gate_id": "INV-23",
-      "status": "PASSED"
+      "name": "SqliteStore Multi-Tenant Persistence & 27 Tables Integrity",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "5f0b50eb7a2d741cd2f3c0b5ef9925e768f3726eeb9a83d24a2e337206f298aa",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 39,
       "gate_id": "INV-24",
-      "status": "PASSED"
+      "name": "Fail-Closed: CLAIM_ONLY / UNVERIFIED Offer Publication Blocked",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "d1200ba68872cd1302c8f9487b7e57316a7d36bd82a760327a4879f1d5aa1b85",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 40,
       "gate_id": "INV-25",
-      "status": "PASSED"
+      "name": "Fail-Closed: UNKNOWN / UNVERIFIED Order Creation Blocked",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "8fc8f60ccfe8903efbf440b2bb286a2b291f5c09221e7c5ad40e537619e57ed5",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 41,
       "gate_id": "INV-26",
-      "status": "PASSED"
+      "name": "Fail-Closed: Unauthorized Runtime Deployment Blocked",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "6ec4b9597d8e7572e6809d4dad2104d8be9f1460c3fce2aa5f41cbf8ffaa8217",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 42,
       "gate_id": "INV-27",
-      "status": "PASSED"
+      "name": "Fail-Closed: Cross-Tenant Data Access Blocked",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "7b69706e27cae96cadfe82daba485db7a5377ff896c41621af5ba59e80d18639",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 43,
       "gate_id": "INV-28",
-      "status": "PASSED"
+      "name": "Fail-Closed: Missing PayPal Credentials Evaluated",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "c5893172dfcc69f87230472c1f26ba29e9fe9fd1d863318d4b32383ebb6788ad",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 44,
       "gate_id": "INV-29",
-      "status": "PASSED"
+      "name": "Order Lifecycle State Machine Validates Transitions & Failures",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "13f70bf4224adf2dc92fb6c5a48bce9dfcb827b12100c44466897aa516d850af",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 45,
       "gate_id": "INV-30",
-      "status": "PASSED"
+      "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
+      "category": "ENTERPRISE_INVARIANT",
+      "status": "PASSED",
+      "claim_scope": "LOCAL",
+      "duration_ms": 0,
+      "evidence_hash": "b91d27e408bebe55b4c88d478eac00c7dcf57b4359e3b549226050b90cb8df1b",
+      "details": {
+        "status": "PASSED"
+      }
     },
     {
+      "gate_number": 46,
       "gate_id": "GATE-46",
-      "status": "FAIL"
+      "name": "Master Truth-Boundary & Proof Closure Gate",
+      "category": "MASTER_PROOF_CLOSURE",
+      "status": "FAIL",
+      "claim_scope": "LOCAL",
+      "duration_ms": 1,
+      "evidence_hash": "2740a8b2a9ee294ba73e5d11686bdb35d1f024a51c5c8f0a851504fe5715d9e3",
+      "details": {
+        "total_preceding_gates": 45,
+        "preceding_passed": 43,
+        "preceding_failed": 0,
+        "preceding_non_passed": 2,
+        "external_boundaries_preserved": true,
+        "fail_closed_active": true
+      }
     }
   ],
-  "failed_gate_notes": {
-    "GATE-05": "Reported FAIL; details state 29 of 30 tests passed but also claim 100% pass rate. Inconsistent and requires investigation.",
-    "GATE-11": "External provider required in this evaluator report; its Neon details say not connected in the evaluator environment. This does not override the separate direct Neon branch audit recorded in the isolation transcript.",
-    "GATE-14": "Production gate blocked by failed invariant test, evaluator-side Neon connection missing, and isolation proof not bound to production.",
-    "INV-18": "PayPal enforcement invariant reported FAIL even though PayPal/live payments are intentionally disabled for this release; investigate whether the test expectation matches the approved disabled-payment policy.",
-    "GATE-46": "Master closure gate failed because preceding gates are not all passed."
-  }
+  "overall_verdict": "BLOCKED"
 }
