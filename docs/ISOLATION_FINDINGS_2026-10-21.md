@@ -2,16 +2,33 @@
 
 ## Confirmed
 - Production read-only audit: `solvex_runtime_login` remains elevated (`BYPASSRLS`, `CREATEDB`, `CREATEROLE`, `REPLICATION`, inherits `neon_superuser`).
-- On at least one non-production branch, `solvex_runtime_login_v2` exists with `rolbypassrls = false` and membership only in `solvex_app_runtime`.
-- `neondb_owner` cannot `SET ROLE` or `GRANT` that role (Neon permission restriction).
+- On non-production branch `solvex-runtime-role-validation-2026-10-19` (branch ID `br-raspy-mountain-b4d774eg`):
+  - Least-privilege role `solvex_iso_test` created with membership only in `solvex_app_runtime`.
+  - Isolation test executed as `solvex_iso_test` (not `neondb_owner`).
 
-## Not yet proven
-- Cross-tenant reads return zero under a least-privilege login session.
-- Cross-tenant writes are rejected by RLS under that session.
-- Auth context ready (`solvex_private.auth_context_ready()` was false on the production audit).
-- Restore rehearsal on a scratch branch followed by re-isolation.
+## Isolation test transcript (2026-10-21)
+Session confirmation:
+```json
+{"current_user": "solvex_iso_test", "rolbypassrls": false}
+```
 
-## Required next action
-Connect a SQL session **as** `solvex_runtime_login_v2` or `solvex_iso_test` (not as `neondb_owner`) and run `scripts/neon-isolation-test.sql`. Record the full output.
+Reads:
+```json
+{"users_visible": "0"}
+{"orders_visible": "0"}
+```
 
-Production login remains disabled. GATE-11 remains BLOCKED.
+Unauthorized insert:
+```text
+NeonDbError: new row violates row-level security policy for table "users"
+```
+
+Verdict: **PASS** for no-claim fail-closed behavior under a least-privilege role.
+
+## Still required before GATE-11 can be considered
+- Provision signing secret on the validation branch (`auth_context_ready()` must return true).
+- Tenant-A vs tenant-B read/write tests with valid signed claims.
+- Restore rehearsal on a non-production target followed by re-isolation.
+- Application still uses the elevated production login; production login remains disabled.
+
+Production was not touched.
