@@ -54,7 +54,58 @@
       "member_of_neon_superuser": true
     },
     "auth_context_ready_after_cleanup": false,
-    "test_secret_present_after_cleanup": false
+    "test_secret_present_after_cleanup": false,
+    "views_in_public_schema": [],
+    "security_definer_functions": [
+      {
+        "schema": "solvex_private",
+        "name": "auth_context_ready",
+        "reviewed": "Returns whether a >=32-character SOLVEX_AUTH_SECRET exists; it was false after test cleanup."
+      },
+      {
+        "schema": "solvex_private",
+        "name": "current_claims",
+        "reviewed": "Validates signed token, required user/tenant/email/role fields, issued/expiry window, and fails closed when secret or token is absent."
+      }
+    ],
+    "runtime_v2_table_privileges": {
+      "users": {
+        "select": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "orders": {
+        "select": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "payment_orders": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      "payment_fulfillments": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      "payment_refunds": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      "payment_events": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      }
+    }
   },
   "tests": [
     {
@@ -101,6 +152,16 @@
       "case": "indirect views/security-definer paths",
       "status": "NOT_COMPLETED",
       "evidence": "Static function/view path analysis was not fully exercised in this run."
+    },
+    {
+      "case": "indirect-access static catalog review",
+      "status": "PARTIAL_PASS",
+      "evidence": "No public views found; only solvex_private.auth_context_ready and solvex_private.current_claims were found as SECURITY DEFINER functions and their definitions were reviewed. Runtime path tests of all indirect joins/callers were not completed."
+    },
+    {
+      "case": "strict policy coverage",
+      "status": "PASS",
+      "evidence": "Post-apply audit found 34 tenant-scoped public tables and zero missing the strict solvex_tenant_access policy; the only public table without RLS was non-tenant _migrations."
     }
   ],
   "cleanup": {
