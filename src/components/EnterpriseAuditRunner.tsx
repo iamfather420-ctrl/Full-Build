@@ -25,7 +25,7 @@ import { DFRLFormalVerifier, DFRL88VerificationReport, SMTMutationTestResult, Ar
 import { runDaisy54NodeCoverage, NodeCoverageReport } from '../tests/daisy54NodeCoverage';
 import { AuthoritativeVerificationPipeline, PipelineExecutionReport } from '../tests/authoritativeVerificationPipeline';
 import { DHFormalVerifier, DH32VerificationReport, DHSmtMutationResult, DHTamperTestResult, DHFailureInjectionResult } from '../proofs/DHFormalVerifier';
-import { REAL_32_DH_FORMAL_REGISTRY, DHFormalContract } from '../data/dhParadoxFormalRegistry';
+import { AUTHORITATIVE_DH_CONTRACTS, DHFormalContract } from '../data/dhParadoxFormalRegistry';
 
 type AuditTab =
   | 'FORMAL_120_AGGREGATION'
@@ -209,10 +209,10 @@ export const EnterpriseAuditRunner: React.FC = () => {
   };
 
   // Distinct domains in 32 DH contracts
-  const allDomains = ['ALL', ...Array.from(new Set(REAL_32_DH_FORMAL_REGISTRY.map((c) => c.domain)))];
+  const allDomains = ['ALL', ...Array.from(new Set(AUTHORITATIVE_DH_CONTRACTS.map((c) => c.domain)))];
   const filteredDhContracts = selectedDomain === 'ALL'
-    ? REAL_32_DH_FORMAL_REGISTRY
-    : REAL_32_DH_FORMAL_REGISTRY.filter((c) => c.domain === selectedDomain);
+    ? AUTHORITATIVE_DH_CONTRACTS
+    : AUTHORITATIVE_DH_CONTRACTS.filter((c) => c.domain === selectedDomain);
 
   return (
     <div className="space-y-6">
