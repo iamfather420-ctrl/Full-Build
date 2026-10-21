@@ -29,7 +29,8 @@
     "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
     "verify:release-safety": "node scripts/verify_release_safety.mjs && npm run verify:payments-disabled",
     "verify:api-security": "tsx scripts/verify_api_security.ts",
-    "verify:auth-contract": "tsx scripts/verify_auth_contract.ts"
+    "verify:auth-contract": "tsx scripts/verify_auth_contract.ts",
+    "verify:lifecycle": "tsx scripts/verify_governance_lifecycle.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -51,7 +52,7 @@
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.28.0",
-    "tailwindcss": "^4.3.3",
+    "tailwindcss": "^4.4.0",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",
     "@types/express": "^4.17.21"
