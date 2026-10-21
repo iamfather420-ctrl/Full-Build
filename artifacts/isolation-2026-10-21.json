@@ -308,6 +308,16 @@
         }
       ]
     },
-    "report_commit_status": "The JSON was generated and archived as a successful CI artifact. A follow-up CI change was added to commit the generated JSON to this candidate branch; commit completion has not yet been confirmed."
+    "report_commit_status": "The JSON was generated and archived as a successful CI artifact. A follow-up CI change was added to commit the generated JSON to this candidate branch; commit completion has not yet been confirmed.",
+    "provenance_correction": {
+      "change_commits": [
+        "2eff0878864e871e81000042c4f490d958394e75",
+        "85aa301db272387db39b4806676ed5ad59d36552",
+        "3d6402896deca0464a5f72c00a3b7f4836700d92"
+      ],
+      "change": "Removed the hard-coded fallback commit SHA. The 120/46 runner now injects real Node Git context, and GATE-00 fails closed if a valid 40-character Git commit SHA cannot be read.",
+      "note": "The prior report referenced 728625581c2f89210c752d03fda0a154812b2366, which GitHub could not resolve. That report is superseded; the corrected pipeline must generate and commit a fresh report with verified commit provenance.",
+      "status": "CORRECTED_PIPELINE_RERUN_REQUESTED"
+    }
   }
 }
