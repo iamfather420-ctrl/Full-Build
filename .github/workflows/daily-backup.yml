@@ -2,13 +2,22 @@ name: Daily Backup
 
 on:
   schedule:
-    # Runs once per day at 03:00 UTC
     - cron: '0 3 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solvex-daily-backup
+  cancel-in-progress: false
 
 jobs:
   backup:
     runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,72 +25,87 @@ jobs:
           fetch-depth: 0
 
       - name: Create dated code backup archive
+        shell: bash
         run: |
-          set +e
+          set -euo pipefail
           DATE=$(date -u +%Y-%m-%d)
           ARCHIVE="solvex-backup-${DATE}.tar.gz"
+
           tar -czf "$ARCHIVE" \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='.next' \
-            --exclude='dist' \
-            --exclude='build' \
+            --exclude='./.git' \
+            --exclude='./node_modules' \
+            --exclude='./.next' \
+            --exclude='./dist' \
+            --exclude='./build' \
             .
-          TAR_EXIT=$?
-          set -e
-          # tar exit 1 is the common "file changed as we read it" warning; treat as success
-          if [ $TAR_EXIT -gt 1 ]; then
-            echo "tar failed with exit code $TAR_EXIT"
-            exit $TAR_EXIT
-          fi
-          if [ ! -f "$ARCHIVE" ]; then
-            echo "Archive was not created"
-            exit 1
-          fi
-          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+
+          test -s "$ARCHIVE"
+          gzip -t "$ARCHIVE"
+          sha256sum "$ARCHIVE"
+
           echo "DATE=$DATE" >> "$GITHUB_ENV"
-          ls -lh "$ARCHIVE"
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
 
       - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
 
-      - name: Dump Neon database
+      - name: Create and verify Neon database dump
+        shell: bash
         env:
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
         run: |
-          if [ -z "$NEON_DATABASE_URL" ]; then
-            echo "NEON_DATABASE_URL secret is not set. Skipping database dump."
-            echo "SKIP_DB=true" >> "$GITHUB_ENV"
-            exit 0
+          set -euo pipefail
+
+          if [[ -z "${NEON_DATABASE_URL:-}" ]]; then
+            echo "::error::NEON_DATABASE_URL is unavailable. Check the job environment and secret configuration."
+            exit 1
           fi
-          DUMP="neon-dump-${DATE}.sql.gz"
-          echo "Creating Neon dump: $DUMP"
-          pg_dump "$NEON_DATABASE_URL" --no-owner --no-acl --clean --if-exists | gzip > "$DUMP"
+
+          DUMP="neon-dump-${DATE}.dump"
+          echo "Creating PostgreSQL custom-format backup..."
+
+          pg_dump \
+            --dbname="$NEON_DATABASE_URL" \
+            --format=custom \
+            --no-owner \
+            --no-acl \
+            --file="$DUMP"
+
+          test -s "$DUMP"
+          echo "Checking backup archive..."
+          pg_restore --list "$DUMP" > /tmp/solvex-restore-list.txt
+          test -s /tmp/solvex-restore-list.txt
+
+          echo "Backup SHA-256:"
+          sha256sum "$DUMP"
+          echo "Backup size:"
           ls -lh "$DUMP"
+
           echo "DUMP=$DUMP" >> "$GITHUB_ENV"
-          echo "SKIP_DB=false" >> "$GITHUB_ENV"
 
-      - name: Upload code backup artifact
+      - name: Upload code backup
         uses: actions/upload-artifact@v4
         with:
-          name: solvex-daily-backup-${{ github.run_id }}
+          name: solvex-code-backup-${{ github.run_id }}
           path: solvex-backup-*.tar.gz
+          if-no-files-found: error
           retention-days: 30
 
-      - name: Upload Neon dump artifact
-        if: env.SKIP_DB != 'true'
+      - name: Upload verified Neon database dump
         uses: actions/upload-artifact@v4
         with:
-          name: neon-daily-dump-${{ github.run_id }}
-          path: neon-dump-*.sql.gz
+          name: solvex-neon-backup-${{ github.run_id }}
+          path: neon-dump-*.dump
+          if-no-files-found: error
           retention-days: 30
 
-      - name: Summary
+      - name: Backup summary
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
         run: |
-          echo "Code backup completed: ${{ env.ARCHIVE }}"
-          if [ "${{ env.SKIP_DB }}" = "true" ]; then
-            echo "Neon dump skipped (NEON_DATABASE_URL secret not set)."
-          else
-            echo "Neon dump completed: ${{ env.DUMP }}"
-          fi
-          echo "Artifacts retained for 30 days."
+          echo "SOLVEX daily backup job status: $JOB_STATUS"
+          echo "Scheduled daily at 03:00 UTC."
+          echo "GitHub artifact retention: 30 days."
