@@ -11,6 +11,7 @@ import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { ExternalAdapterRegistry } from '../adapters/ExternalAdapters';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { SovereignApiRouter } from '../api/ApiRouter';
+import { SystemStatusService } from '../api/SystemStatus';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { SqliteStore } from '../database/SqliteStore';
 import { AuthService } from '../auth/AuthService';
@@ -373,30 +374,42 @@ export async function runEnterpriseVerification() {
       throw new Error(`Expected anonymous system-status request to require authentication, got ${anonymous.status}`);
     }
 
-    // Verify the protected endpoint using an authenticated owner test identity.
-    const auth = AuthService.getInstance();
-    const token = auth.createSignedToken(
-      'system-status-test-owner',
-      'TENANT_SYSTEM_STATUS_TEST',
-      'system-status-test-owner@example.invalid',
-      'OWNER'
-    );
-    const res = await router.handleRequest('/api/system/status', 'GET', undefined, {
-      authorization: `Bearer ${token}`
-    });
-    if (res.status !== 200) throw new Error(`Authenticated status API returned ${res.status}: ${res.error || 'no error detail'}`);
-    const s = res.data;
+    // Production CI intentionally has no trusted OIDC test issuer configured.
+    // Do not weaken the production auth path by minting a local token here.
+    // Validate the actual state computation independently, and exercise the
+    // authenticated route only in non-production local-HMAC test mode.
+    const status = SystemStatusService.computeStatus();
     const liveNodeCount = NodeRegistry.getInstance().getAllNodes().length;
-    if (!s || s.registered_nodes !== liveNodeCount) {
-      throw new Error('Status API registered_nodes does not match the live node registry');
+    if (status.registered_nodes !== liveNodeCount || liveNodeCount !== 54) {
+      throw new Error(`System status node count mismatch: status=${status.registered_nodes}, live=${liveNodeCount}`);
     }
-    if (s.registered_nodes !== 54) throw new Error(`Expected 54 registered nodes, got ${s.registered_nodes}`);
     const liveChainValid = DurableStore.getInstance().verifyChain().valid;
-    if (s.chain_valid !== liveChainValid || s.chain_valid !== true) {
-      throw new Error('Status API chain_valid does not match the live audit-chain verification');
+    if (status.chain_valid !== liveChainValid || status.chain_valid !== true) {
+      throw new Error('System status chain_valid does not match live audit-chain verification');
     }
-    if (!Number.isFinite(s.timestamp) || s.timestamp <= 0) {
-      throw new Error('Status API timestamp is missing or invalid');
+    if (!Number.isFinite(status.timestamp) || status.timestamp <= 0) {
+      throw new Error('System status timestamp is missing or invalid');
+    }
+
+    if (process.env.NODE_ENV !== 'production' &&
+        (process.env.AUTH_MODE || 'local_hs256').toLowerCase() === 'local_hs256') {
+      const auth = AuthService.getInstance();
+      const token = auth.createSignedToken(
+        'system-status-test-owner',
+        'TENANT_SYSTEM_STATUS_TEST',
+        'system-status-test-owner@example.invalid',
+        'OWNER'
+      );
+      const response = await router.handleRequest('/api/system/status', 'GET', undefined, {
+        authorization: `Bearer ${token}`
+      });
+      if (response.status !== 200) {
+        throw new Error(`Authenticated local test status route returned ${response.status}: ${response.error || 'no error detail'}`);
+      }
+      if (response.data?.registered_nodes !== status.registered_nodes ||
+          response.data?.chain_valid !== status.chain_valid) {
+        throw new Error('Authenticated status route differs from the live computed system state');
+      }
     }
   });
 
