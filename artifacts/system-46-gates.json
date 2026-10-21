@@ -1,6 +1,6 @@
 {
-  "execution_id": "gate46_exec_1792560549767",
-  "timestamp": "2026-10-21T05:29:09.767Z",
+  "execution_id": "gate46_exec_1792560594276",
+  "timestamp": "2026-10-21T05:29:54.276Z",
   "total_gates": 46,
   "authoritative_gates_count": 15,
   "enterprise_gates_count": 30,
@@ -18,11 +18,11 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 38.48,
-      "evidence_hash": "15e795eec4a854da64bf70110616d431c97f6c47f2fdbfbed3129e5b6a2a2791",
+      "duration_ms": 98.12,
+      "evidence_hash": "7dbba53b5ed0e2f247da1aafaabd471091541f74bca3542f5fabdc4056d536d2",
       "details": {
-        "execution_id": "exec_pipeline_1792560549768",
-        "commit_sha": "44a339d1e0e53e7d067c4e7bce6a85f016038921",
+        "execution_id": "exec_pipeline_1792560594277",
+        "commit_sha": "24b0af08c01393ed3c8cd5abe0669e2f5ff0292b",
         "modified_files_count": 3,
         "runtime_mode": "NODE_RUNTIME",
         "provenance_verified": true
@@ -35,8 +35,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0.03,
-      "evidence_hash": "cb4a46457732f299424cf5ab8515653371d5f4295450c91cef2c5020410ff1a0",
+      "duration_ms": 0.01,
+      "evidence_hash": "33092ab9cc30d034a78eebdd118863284047f328e08026bd7fb00f9fe9c887db",
       "details": {
         "total_dependencies": 8,
         "present": 7,
@@ -80,8 +80,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 676.47,
-      "evidence_hash": "bfd513b417a42cb12def730d8996e841e6229535fe1d39be58decfbe66e8c8f0",
+      "duration_ms": 497.59,
+      "evidence_hash": "51a25dfa1e130261afe62d324a38f94d977cf85799282ee75f6553c9f67966b8",
       "details": {
         "typecheck": "CLEAN",
         "mode": "CLI_TYPECHECK"
@@ -94,8 +94,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 8.69,
-      "evidence_hash": "f28a7f1e8e3e08a3da4289c8da8ca53351b66f3e4961269ec4cee06883f409a9",
+      "duration_ms": 6.37,
+      "evidence_hash": "017241b218a2c3ba346289417803bb917961ed90ebd3ebb7f830412fcb798a1c",
       "details": {
         "total_tests": 30,
         "passed_tests": 30,
@@ -109,8 +109,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "MODEL",
-      "duration_ms": 1430.59,
-      "evidence_hash": "ffcb2b7b780e17f57f75d9e05cefe6d11d47b7609331b016f2712880b42f6327",
+      "duration_ms": 1111.18,
+      "evidence_hash": "6da3c5a29294b454433c4565a53936795d3f6897981bcab2491ced05caed6c5d",
       "details": {
         "total_propositions": 88,
         "attempted": 88,
@@ -120,7 +120,7 @@
         "generated_models_count": 68,
         "solver_engine": "Microsoft Research Z3 WASM (z3-solver)",
         "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-        "root_sha256": "b26b17ceda90733655317b1f4fd7cd2d0a8351c032ce90f854e8ac0faee7f33d"
+        "root_sha256": "a8405f4903b18e70bf8d56885bfab4c8ca4bca28e458ae05fec41acc6a964bf1"
       }
     },
     {
@@ -130,8 +130,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "MODEL",
-      "duration_ms": 0,
-      "evidence_hash": "51f4ed64800e0d2d3bbe10095e7585b323ca01b31e5be3c3033e0a4f8ec9fb77",
+      "duration_ms": 0.01,
+      "evidence_hash": "53817ab19cdebcee507614cc344e3e23f77775aa063e1f0b62f6aa7dfdb7811b",
       "details": {
         "total_operators_replayed": 88,
         "replays_matched": 88,
@@ -146,8 +146,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 31.87,
-      "evidence_hash": "5bf9d963a9205d316a6ee6470b11aad701215b230b9fead817e01897c368cacb",
+      "duration_ms": 19.84,
+      "evidence_hash": "bd2819ba1725cd06c3182b824c3161d2d1433667df1ad0706d38fdb769d87a95",
       "details": {
         "smt_mutation_detected": true,
         "smt_mutation_transition": "unsat -> sat",
@@ -163,8 +163,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 6.44,
-      "evidence_hash": "5b0d7ecf90804e1f04b4a2c556a20aad378c377cf305e689ab9eb34f4a5cffaa",
+      "duration_ms": 6.05,
+      "evidence_hash": "aa6897a7b16ec9c002ca0341783feb8e4f5db3387b770d67adb598b59f257442",
       "details": {
         "total_nodes": 54,
         "registered_nodes": 54,
@@ -187,8 +187,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 1.1,
-      "evidence_hash": "587dd908a83582132ac3bafca4b5c235ee6dec273553eb234a720af4264be240",
+      "duration_ms": 1.43,
+      "evidence_hash": "af990155328eb9ec7e506427349f37593b467a4979a183fd13c90030335420ea",
       "details": {
         "sqlite_tables_count": 27,
         "required_tables": 27,
@@ -248,10 +248,10 @@
           "success": true,
           "completed_stages": 21,
           "total_stages": 21,
-          "solution_id": "DH-S-MVHO9Q2F"
+          "solution_id": "DH-S-MVHOAOCE"
         },
         "order_lifecycle": {
-          "order_id": "e2e_order_1792560551992",
+          "order_id": "e2e_order_1792560596414",
           "transitions_executed": [
             "ORDER_CREATED",
             "ESCROW_FUNDED",
@@ -262,8 +262,8 @@
           "final_status": "DEPLOYED"
         },
         "merkle_audit_append": {
-          "record_id": "audit_1792560551992_15",
-          "record_hash": "ab27aa5a55a4a83b2fda9ab02afef8c7c3d0c47fa44192407d99b098a65b70a5"
+          "record_id": "audit_1792560596414_15",
+          "record_hash": "58b982f5df702a3330de356b9e034c741154d27169e0c301d97b53f464a3e142"
         }
       }
     },
@@ -274,8 +274,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 2.23,
-      "evidence_hash": "9bb33de4284ad0e7d4e722df7cf30f142f450f88a3c176598c68d576b6dbc214",
+      "duration_ms": 104.75,
+      "evidence_hash": "bd2a02d2aa140af2abf73943acf719de84b2e0f95b2e5984418dcd21dfdb9031",
       "details": {
         "artifacts_generated": [
           "DFRL-88-MACHINE-VERIFICATION-AUDIT.md",
@@ -299,7 +299,7 @@
       "duration_ms": 0.04,
       "evidence_hash": "d194b3da8340cb1cd199fc8cc9624f64572d4a9fe11119d932f9c8d97dfc7924",
       "details": {
-        "execution_id": "exec_pipeline_1792560549768",
+        "execution_id": "exec_pipeline_1792560594277",
         "verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
         "claim_scope": "LOCAL_VERIFIED / MODEL_VERIFIED",
         "blockers_count": 1,
@@ -471,7 +471,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 1,
+      "duration_ms": 0,
       "evidence_hash": "f3d09c1d376ac5a285482e5873dd3b041f7544501af77e7cfbbc3d12976505f5",
       "details": {
         "status": "PASSED"
@@ -523,7 +523,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0,
+      "duration_ms": 1,
       "evidence_hash": "98b809d5f365c965568c5d519792cd0bddf8255aebfd2eb965494400f2bace75",
       "details": {
         "status": "PASSED"
@@ -679,7 +679,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 1,
+      "duration_ms": 0,
       "evidence_hash": "13f70bf4224adf2dc92fb6c5a48bce9dfcb827b12100c44466897aa516d850af",
       "details": {
         "status": "PASSED"
@@ -692,7 +692,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0,
+      "duration_ms": 1,
       "evidence_hash": "b91d27e408bebe55b4c88d478eac00c7dcf57b4359e3b549226050b90cb8df1b",
       "details": {
         "status": "PASSED"
