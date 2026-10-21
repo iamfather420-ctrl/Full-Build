@@ -59,7 +59,7 @@ SELECT json_build_object(
     ) ORDER BY c.relname), '[]'::json)
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p') AND c.relname LIKE '\\_%' ESCAPE '\\'
+    WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p') AND left(c.relname, 1) = '_'
   ),
   'rls_exceptions', (
     SELECT coalesce(json_agg(json_build_object(
@@ -81,7 +81,7 @@ SELECT json_build_object(
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = 'public' AND c.relkind = 'r'
-      AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
+      AND left(c.relname, 1) <> '_'
       AND (
         NOT c.relrowsecurity
         OR NOT c.relforcerowsecurity
