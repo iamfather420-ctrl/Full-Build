@@ -1,4 +1,3 @@
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 
 export interface ExternalAdapterInfo {
   adapter_id: string;
@@ -13,8 +12,6 @@ export interface ExternalAdapterInfo {
 
 export class ExternalAdapterRegistry {
   public static getInventory(): ExternalAdapterInfo[] {
-    const paypalAdapter = PayPalAdapter.getInstance();
-    const hasPayPal = paypalAdapter.hasActiveCredentials();
     const hasNeon = Boolean(typeof process !== 'undefined' && process.env?.NEON_DATABASE_URL);
 
     return [
@@ -32,11 +29,11 @@ export class ExternalAdapterRegistry {
         adapter_id: 'DN-35',
         name: 'PayPal Enterprise Gateway',
         category: 'PAYMENTS',
-        status: hasPayPal ? 'AVAILABLE' : 'EXTERNAL_PROVIDER_REQUIRED',
-        required_env_vars: ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'],
-        provided_env_vars: hasPayPal ? ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'] : [],
-        live_connected: hasPayPal,
-        notes: 'Server-authoritative payment capture. Enforces fail-closed: refuses to fabricate synthetic payment receipts.'
+        status: 'DEGRADED',
+        required_env_vars: [],
+        provided_env_vars: [],
+        live_connected: false,
+        notes: 'DISABLED IN THIS RELEASE. No capture, payment request, or receipt is permitted until a separately approved release.'
       },
       {
         adapter_id: 'DN-36',
@@ -46,7 +43,7 @@ export class ExternalAdapterRegistry {
         required_env_vars: [],
         provided_env_vars: [],
         live_connected: true,
-        notes: 'Stripe prohibited per Sovereign Security Directive. Fiat payments and escrow settle exclusively via PayPal DN-35.'
+        notes: 'Payment and escrow flows are disabled in this release; no alternative payment provider is active.'
       },
       {
         adapter_id: 'DN-37',

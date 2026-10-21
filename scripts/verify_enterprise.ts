@@ -1,6 +1,8 @@
+import { configureTestAuthEnvironment } from './testAuthEnvironment';
 import { runEnterpriseVerification } from '../src/tests/enterpriseVerification';
 
 async function main() {
+  configureTestAuthEnvironment();
   console.log('===========================================================');
   console.log(' PROJECT AGATE 30-STAGE ENTERPRISE INVARIANT VERIFICATION');
   console.log('===========================================================');

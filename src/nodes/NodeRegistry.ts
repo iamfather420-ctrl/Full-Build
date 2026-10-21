@@ -60,7 +60,7 @@ export class NodeRegistry {
       { id: 'DN-33', name: 'Central Failure Diversion Router', category: 'SECURITY', mode: 'CODE_EXECUTED', purpose: 'Captures and isolates tripped pipeline invariants' },
       { id: 'DN-34', name: 'Neon Postgres Adapter', category: 'ADAPTERS', mode: 'EXTERNAL_PROVIDER_REQUIRED', purpose: 'Serverless cloud PostgreSQL synchronization' },
       { id: 'DN-35', name: 'PayPal Enterprise Payment Gateway', category: 'PAYMENTS', mode: 'EXTERNAL_PROVIDER_REQUIRED', purpose: 'Server-authoritative fiat payment capture and escrow' },
-      { id: 'DN-36', name: 'Fiat Settlement Policy Guard (Stripe Prohibited)', category: 'SECURITY', mode: 'CODE_EXECUTED', purpose: 'Enforces strict prohibition of Stripe per Sovereign Core directive; fiat settlement routed exclusively to PayPal DN-35' },
+      { id: 'DN-36', name: 'Fiat Settlement Policy Guard (Stripe Prohibited)', category: 'SECURITY', mode: 'CODE_EXECUTED', purpose: 'Payment processing disabled by release policy; no payment provider is active' },
       { id: 'DN-37', name: 'Coinbase Commerce Gateway', category: 'ADAPTERS', mode: 'CODE_EXECUTED', purpose: 'Crypto settlement gateway adapter' },
       { id: 'DN-38', name: 'Sovereign Settlement Escrow Program', category: 'SETTLEMENT', mode: 'CODE_EXECUTED', purpose: 'Native verifiable cryptographic escrow settlement state engine' },
       { id: 'DN-39', name: 'Ethereum EVM Escrow Bridge', category: 'ADAPTERS', mode: 'CODE_EXECUTED', purpose: 'Smart contract proof token settlement' },

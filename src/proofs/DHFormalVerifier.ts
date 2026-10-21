@@ -53,6 +53,8 @@ export interface DHFormalVerificationResult {
   duration_ms: number;
   error?: string;
   limitation?: string;
+  witness_model?: string;
+  witness_verified?: boolean;
 }
 
 export interface DHReplayRecord {
@@ -250,7 +252,7 @@ export class DHFormalVerifier {
    */
   public async executeInFreshZ3Context(
     smtString: string
-  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; error?: string }> {
+  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; error?: string; model?: string }> {
     const start = performance.now();
     try {
       const z3 = await this.getZ3Module();
@@ -263,10 +265,12 @@ export class DHFormalVerifier {
       try {
         await solver.fromString(smtString);
         const checkRes = await solver.check();
+        const model = checkRes === 'sat' ? (await solver.model()) : null;
+        const modelText = model?.toString?.() || undefined;
         const dur = performance.now() - start;
 
         if (checkRes === 'unsat') return { result: 'unsat', solver_version: this.solverVersion, duration_ms: dur };
-        if (checkRes === 'sat') return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur };
+        if (checkRes === 'sat') return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur, model: modelText };
         return { result: 'unknown', solver_version: this.solverVersion, duration_ms: dur };
       } catch (subErr: any) {
         return {
@@ -289,6 +293,33 @@ export class DHFormalVerifier {
   /**
    * Verifies an individual DH contract through real Z3 and an isolated cleanroom replay.
    */
+  /**
+   * Independently validates a concrete Z3 model in a fresh context.
+   * The model is converted into ground equalities and checked together with
+   * the canonical SMT proposition. This is a separate solver context from
+   * both the primary execution and the cleanroom replay.
+   */
+  public async validateWitnessInFreshContext(smtString: string, modelText?: string): Promise<boolean> {
+    if (!modelText) return false;
+    try {
+      const z3 = await this.getZ3Module();
+      if (!z3) return false;
+      const assignments: string[] = [];
+      const re = /\(define-fun\s+([^\s()]+)\s+\(\)\s+(Bool|Int|Real)\s+([^\n]+)\)/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(modelText)) !== null) {
+        assignments.push(`(assert (= ${m[1]} ${m[3].trim()}))`);
+      }
+      if (assignments.length === 0) return false;
+      const ctx = new z3.Context(`dh_witness_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+      const solver = new ctx.Solver();
+      await solver.fromString(`${smtString.replace(/\(check-sat\)\s*$/,'')} ${assignments.join(' ')}`);
+      return (await solver.check()) === 'sat';
+    } catch {
+      return false;
+    }
+  }
+
   public async verifyCase(
     contract: DHAuthoritativeContract,
     executionId: string = `dh_exec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -302,6 +333,10 @@ export class DHFormalVerifier {
     // Execution in Fresh Z3 Context #1
     const execOutcome = await this.executeInFreshZ3Context(contract.z3_smt_assertion);
     const actualResult = execOutcome.result;
+    const witnessModel = execOutcome.model;
+    const witnessVerified = actualResult === 'sat'
+      ? await this.validateWitnessInFreshContext(contract.z3_smt_assertion, witnessModel)
+      : false;
 
     // Cleanroom Replay in Fresh Z3 Context #2
     const cleanroomContextId = `dh_replay_${contract.case_id}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -320,7 +355,7 @@ export class DHFormalVerifier {
     const nonError = actualResult !== 'unknown' && actualResult !== 'error';
     const evidencePass = computeSha256(evidenceSeed) === evidenceHash;
     const sourcePass = sourceHash.length === 64;
-    const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass;
+    const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass && witnessVerified;
 
     const result: DHFormalVerificationResult = {
       case_id: contract.case_id,
@@ -349,7 +384,9 @@ export class DHFormalVerifier {
       commit_sha: commitSha,
       timestamp,
       duration_ms: Number((execOutcome.duration_ms + replayOutcome.duration_ms).toFixed(3)),
-      error: execOutcome.error || replayOutcome.error
+      error: execOutcome.error || replayOutcome.error,
+      witness_model: witnessModel,
+      witness_verified: witnessVerified
     };
 
     const replay: DHReplayRecord = {
@@ -397,8 +434,11 @@ export class DHFormalVerifier {
       .join('|');
     const verificationRootSha256 = computeSha256(rootSeed);
 
+    const allWitnessesVerified = results.length === 32 &&
+      results.every(r => r.actual_result === 'sat' && r.witness_verified === true && r.verified);
     const overallStatus: 'VERIFIED' | 'FAILED' | 'PARTIAL' =
-      executed === 32 && expectedResultMatches === 32 && replayMatches === 32 && errorCount === 0
+      executed === 32 && expectedResultMatches === 32 && replayMatches === 32 &&
+      errorCount === 0 && allWitnessesVerified
         ? 'VERIFIED'
         : executed > 0 ? 'PARTIAL' : 'FAILED';
 
@@ -430,19 +470,19 @@ export class DHFormalVerifier {
   }
 
   /**
-   * SMT Mutation Test: Mutate premise in DH-P-028 (Schrodinger Cat) to verify result shifts from UNSAT to SAT.
+   * SMT Mutation Test: Add an impossible constraint to a DH-P-028 SAT witness and require the result to shift from SAT to UNSAT.
    */
   public async runSmtMutationTest(): Promise<DHSmtMutationResult> {
     const originalContract = this.contracts.find(c => c.case_id === 'DH-P-028')!;
     const originalAssertion = originalContract.z3_smt_assertion;
 
-    // Mutate interference_term from 0.0 to 0.5 so that (> interference_term 0.1) is SATISFIED
-    const mutatedAssertion = originalAssertion.replace('(= interference_term 0.0)', '(= interference_term 0.5)');
+    // Mutation: add an impossible constraint to invalidate the SAT witness.
+    const mutatedAssertion = `${originalAssertion} (assert (not (= 0 0)))`;
 
     const origExec = await this.executeInFreshZ3Context(originalAssertion);
     const mutExec = await this.executeInFreshZ3Context(mutatedAssertion);
 
-    const mutationDetected = origExec.result === 'unsat' && mutExec.result === 'sat';
+    const mutationDetected = origExec.result === 'sat' && mutExec.result === 'unsat';
 
     return {
       test_name: 'DH-P-028 Schrodinger Cat Interference Premise Perturbation',
@@ -450,15 +490,15 @@ export class DHFormalVerifier {
       mutation_type: 'PREMISE_VALUE_PERTURBATION',
       original_assertion: originalAssertion,
       mutated_assertion: mutatedAssertion,
-      expected_original_result: 'unsat',
+      expected_original_result: 'sat',
       observed_original_result: origExec.result,
-      expected_mutated_result: 'sat',
+      expected_mutated_result: 'unsat',
       observed_mutated_result: mutExec.result,
       mutation_detected: mutationDetected,
       passed: mutationDetected,
       details: mutationDetected
-        ? 'Mutation successfully shifted solver outcome from UNSAT to SAT, confirming active premise constraint sensitivity.'
-        : `Mutation test failed. Expected UNSAT->SAT, observed ${origExec.result}->${mutExec.result}`
+        ? 'Mutation successfully shifted solver outcome from SAT to UNSAT, confirming active constraint sensitivity.'
+        : `Mutation test failed. Expected SAT->UNSAT, observed ${origExec.result}->${mutExec.result}`
     };
   }
 

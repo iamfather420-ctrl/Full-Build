@@ -1,3 +1,4 @@
+import { configureTestAuthEnvironment } from './testAuthEnvironment';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -10,6 +11,7 @@ function readJson(file: string): Json {
 }
 
 async function main() {
+  configureTestAuthEnvironment();
   const started = new Date().toISOString();
   const root = process.cwd();
   const artifacts = path.join(root, 'artifacts');

@@ -126,23 +126,18 @@ function ProductDetail() {
           </div>
         </div>
 
-        {/* Payment */}
+        {/* Payments are intentionally disabled; displayed prices are metadata only. */}
         <div style={{
-          border: `1px solid #0070BA`, background: 'rgba(0,112,186,0.06)', padding: 24, marginBottom: 32,
+          border: `1px solid #92400E`, background: 'rgba(120,53,15,0.12)', padding: 24, marginBottom: 32,
           display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between',
-        }}>
+        }} role="status">
           <div>
-            <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.2em', marginBottom: 6 }}>SECURE PAYMENT</div>
-            <div style={{ fontFamily: SERIF, fontSize: 22, color: '#0070BA', fontWeight: 700 }}>PayPal</div>
+            <div style={{ fontFamily: MONO, fontSize: 8, color: '#FBBF24', letterSpacing: '0.2em', marginBottom: 6 }}>CONTROLLED ACCESS</div>
+            <div style={{ fontFamily: SERIF, fontSize: 20, color: 'white', fontWeight: 700 }}>Payment processing is disabled</div>
+            <p style={{ fontFamily: MONO, fontSize: 10, color: '#A0ABC0', lineHeight: 1.7, marginTop: 8 }}>
+              Displayed prices are informational metadata only. This page is a catalog preview only. No access request is submitted and no purchase or payment is initiated here.
+            </p>
           </div>
-          <a href="https://paypal.me/tjites" target="_blank" rel="noopener noreferrer" style={{
-            display: 'inline-block', padding: '14px 36px',
-            background: '#0070BA', color: '#FFFFFF',
-            fontFamily: MONO, fontSize: 11, fontWeight: 900, letterSpacing: '0.15em',
-            textDecoration: 'none', border: 'none', cursor: 'pointer',
-          }}>
-            PAY WITH PAYPAL →
-          </a>
         </div>
 
         {/* Compliance */}

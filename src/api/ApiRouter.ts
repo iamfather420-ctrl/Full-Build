@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'node:crypto';
 import { SystemStatusService } from './SystemStatus';
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
@@ -6,14 +7,13 @@ import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
 import { ProofEngine } from '../proofs/ProofEngine';
 import { MarketplaceEngine } from '../marketplace/MarketplaceEngine';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { ExternalAdapterRegistry } from '../adapters/ExternalAdapters';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { AuthService, UserContext, SovereignRole } from '../auth/AuthService';
+import { NeonStore } from '../database/NeonPersistence';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { DaisyBrain } from '../brain/DaisyBrain';
-import { computeSha256 } from '../database/DatabaseSchema';
 import { Z3FormalProofEngine } from '../proofs/Z3FormalProofEngine';
 
 export interface ApiResponse<T = any> {
@@ -42,13 +42,20 @@ export class SovereignApiRouter {
     return SovereignApiRouter.instance;
   }
 
-  private extractAuthUser(headers: Record<string, string | string[] | undefined>): UserContext | null {
+  private async extractAuthUser(headers: Record<string, string | string[] | undefined>): Promise<UserContext | null> {
     const authHeader = headers['authorization'] || headers['Authorization'];
-    if (!authHeader || typeof authHeader !== 'string') {
-      return null;
+    if (!authHeader || typeof authHeader !== 'string') return null;
+    const match = /^Bearer\s+(\S+)$/i.exec(authHeader.trim());
+    if (!match) return null;
+    const token = match[1];
+    const mode = (process.env.AUTH_MODE || (process.env.NODE_ENV === 'production' ? 'oidc' : 'local_hs256')).toLowerCase();
+    // Local HMAC tokens are explicitly development/test-only. Production accepts
+    // only tokens validated against the configured trusted OIDC issuer and JWKS.
+    if (mode === 'local_hs256' && process.env.NODE_ENV !== 'production') {
+      const verified = this.authService.verifyToken(token);
+      return verified.valid && verified.user ? verified.user : null;
     }
-    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-    const verified = this.authService.verifyToken(token);
+    const verified = await this.authService.verifyOidcAccessToken(token);
     return verified.valid && verified.user ? verified.user : null;
   }
 
@@ -59,19 +66,27 @@ export class SovereignApiRouter {
     headers: Record<string, string | string[] | undefined> = {}
   ): Promise<ApiResponse> {
     const timestamp = Date.now();
-    const user = this.extractAuthUser(headers);
+    const user = await this.extractAuthUser(headers);
 
     try {
-      // 1. /api/auth
+      // Public role-selecting login was an authentication bypass: callers could
+      // mint arbitrary roles and tenant IDs. Login is provided only by the trusted
+      // external OIDC authorization-code flow, never by this JSON endpoint.
       if (path === '/api/auth/login' && method === 'POST') {
-        const { email, role = 'CUSTOMER', tenant_id = 'TENANT_ENTERPRISE_DEMO' } = payload || {};
-        if (!email) return { status: 400, error: 'Email is required for authentication', timestamp };
-        const token = this.authService.createSignedToken(`usr_${Date.now()}`, tenant_id, email, role as SovereignRole);
-        return {
-          status: 200,
-          data: { token, user: this.authService.verifyToken(token).user },
-          timestamp
-        };
+        return { status: 410, error: 'Passwordless role-selecting login is retired. Use the configured trusted OIDC provider.', timestamp };
+      }
+
+      // Payment routes are unconditionally disabled, including anonymous attempts.
+      if (path.startsWith('/api/payments') && ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        return { status: 410, error: 'Payment processing is disabled in this release. No payment request was processed.', timestamp };
+      }
+
+      // Only intentionally public, read-only catalog/health routes bypass identity.
+      const publicRead = method === 'GET' && (
+        path === '/api/offers' || path === '/api/paradoxes' || path === '/api/system/health'
+      );
+      if (!user && !publicRead && path !== '/api/auth/me') {
+        return { status: 401, error: 'Authentication required. Configure trusted OIDC before production use.', timestamp };
       }
       if (path === '/api/auth/me' && method === 'GET') {
         if (!user) return { status: 401, error: 'Unauthorized: Missing or invalid token', timestamp };
@@ -80,28 +95,33 @@ export class SovereignApiRouter {
 
       // 2. /api/tenants
       if (path === '/api/tenants' && method === 'GET') {
+        if (!user || !this.authService.authorize(user, 'MANAGE_TENANTS').authorized) {
+          return { status: 403, error: 'Tenant inventory requires MANAGE_TENANTS permission', timestamp };
+        }
         const tenants = this.sqlite.getRawDb().all('SELECT id, name, tier, status, created_at FROM tenants');
         return { status: 200, data: tenants, timestamp };
       }
       if (path === '/api/tenants' && method === 'POST') {
-        if (!user || user.role !== 'OWNER') {
+        if (!user || !this.authService.authorize(user, 'MANAGE_TENANTS').authorized) {
           return { status: 403, error: 'Forbidden: Only OWNER can create tenants', timestamp };
         }
         const { id, name, tier = 'ENTERPRISE' } = payload || {};
         if (!id || !name) return { status: 400, error: 'Tenant id and name required', timestamp };
-        const key = computeSha256(`KEY_${id}`);
+        if (this.sqlite.getRawDb().get('SELECT id FROM tenants WHERE id = ?', [id])) return { status: 409, error: 'Tenant ID already exists; existing tenant was not modified.', timestamp };
+        const key = randomBytes(32).toString('hex');
         this.sqlite.insertRecord('tenants', { id, name, tier, isolated_storage_key: key, status: 'ACTIVE' });
         return { status: 201, data: { id, name, tier }, timestamp };
       }
 
       // 3. /api/problems
       if (path === '/api/problems' && method === 'GET') {
-        const targetTenant = user ? user.tenant_id : 'TENANT_ENTERPRISE_DEMO';
+        const targetTenant = user!.tenant_id;
         const problems = this.sqlite.findTenantRecords('problems', targetTenant);
         return { status: 200, data: problems, timestamp };
       }
       if (path === '/api/problems' && method === 'POST') {
-        const targetTenant = user ? user.tenant_id : (payload?.tenant_id || 'TENANT_ENTERPRISE_DEMO');
+        if (!user || !this.authService.authorize(user, 'INTAKE_PROBLEM').authorized) return { status: 403, error: 'INTAKE_PROBLEM permission required', timestamp };
+        const targetTenant = user!.tenant_id;
         const { raw_problem, title, domain = 'COMPUTATIONAL' } = payload || {};
         if (!raw_problem) return { status: 400, error: 'raw_problem is required', timestamp };
         const problemId = `prob_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
@@ -133,42 +153,81 @@ export class SovereignApiRouter {
 
       // 5. /api/invariants
       if (path === '/api/invariants' && method === 'GET') {
-        const targetTenant = user ? user.tenant_id : 'TENANT_SOVEREIGN_ROOT';
+        const targetTenant = user!.tenant_id;
         const invariants = this.sqlite.findTenantRecords('invariants', targetTenant);
         return { status: 200, data: invariants, timestamp };
       }
 
       // 6. /api/solutions
       if (path === '/api/solutions' && method === 'GET') {
-        const solutions = Object.values(this.durableStore.getState().solutions);
+        if (!user) return { status: 401, error: 'Authentication required', timestamp };
+        const allSolutions = Object.values(this.durableStore.getState().solutions) as any[];
+        const solutions = this.authService.authorize(user, 'SYS_ADMIN').authorized
+          ? allSolutions
+          : allSolutions.filter((solution) => solution?.tenant_id === user.tenant_id);
         return { status: 200, data: solutions, timestamp };
       }
       if (path === '/api/solutions/pipeline' && method === 'POST') {
-        if (user) {
-          const auth = this.authService.authorize(user, 'RUN_PIPELINE');
-          if (!auth.authorized) return { status: 403, error: auth.reason, timestamp };
-        }
+        if (!user) return { status: 401, error: 'Authentication required', timestamp };
+        const auth = this.authService.authorize(user, 'RUN_PIPELINE');
+        if (!auth.authorized) return { status: 403, error: auth.reason, timestamp };
         const { paradox_code = 'DH-P-001', code_solution } = payload || {};
+        if (typeof paradox_code !== 'string' || !paradox_code.trim() || paradox_code.length > 200) {
+          return { status: 400, error: 'paradox_code must be a non-empty string of at most 200 characters', timestamp };
+        }
+        if (code_solution !== undefined && (typeof code_solution !== 'string' || code_solution.length > 65536)) {
+          return { status: 400, error: 'code_solution must be a string no larger than 65536 characters', timestamp };
+        }
+        const referencedProblem = this.sqlite.getRawDb().get(
+          'SELECT id, tenant_id FROM problems WHERE id = ?', [paradox_code]
+        );
+        if (referencedProblem && referencedProblem.tenant_id !== user.tenant_id && !this.authService.authorize(user, 'SYS_ADMIN').authorized) {
+          return { status: 403, error: "Cannot run a pipeline against another tenant\'s problem", timestamp };
+        }
         const pipeline = SolutionPipeline.getInstance();
         const res = pipeline.runPipeline(paradox_code, code_solution || 'export function defaultSolve() { return true; }');
-        return { status: 200, data: res, timestamp };
+        // Pipeline stages are deterministic simulations, not independent proof of production correctness.
+        if (res.overall_success && res.solution_id) {
+          const created = this.durableStore.getState().solutions[res.solution_id] as any;
+          if (created) {
+            created.tenant_id = user.tenant_id;
+            created.verification_status = 'CANDIDATE';
+            created.status = 'CANDIDATE';
+            created.production_verified = false;
+            created.execution_mode = 'deterministic_simulation';
+            this.sqlite.insertRecord('solutions', created);
+            this.durableStore.persist();
+          }
+        }
+        return { status: res.overall_success ? 202 : 400, data: { ...res, execution_mode: 'deterministic_simulation', production_verified: false }, timestamp };
       }
 
       // 7. /api/verification
       if (path === '/api/verification' && method === 'GET') {
-        const runs = this.sqlite.getRawDb().all('SELECT * FROM verification_runs ORDER BY created_at DESC LIMIT 20');
+        if (!user) return { status: 401, error: 'Authentication required', timestamp };
+        const runs = this.authService.authorize(user, 'SYS_ADMIN').authorized
+          ? this.sqlite.getRawDb().all('SELECT * FROM verification_runs ORDER BY created_at DESC LIMIT 20')
+          : this.sqlite.findTenantRecords('verification_runs', user.tenant_id, 20);
         return { status: 200, data: runs, timestamp };
       }
 
       // 8. /api/proofs
       if (path === '/api/proofs' && method === 'GET') {
-        const bundles = ProofEngine.getInstance().getAllBundles();
+        if (!user || !this.authService.authorize(user, 'VIEW_EVIDENCE').authorized) return { status: 403, error: 'VIEW_EVIDENCE permission required', timestamp };
+        const allBundles = ProofEngine.getInstance().getAllBundles() as any[];
+        const bundles = this.authService.authorize(user, 'SYS_ADMIN').authorized
+          ? allBundles
+          : allBundles.filter((bundle) => bundle?.tenant_id === user.tenant_id);
         return { status: 200, data: bundles, timestamp };
       }
       if (path.startsWith('/api/proofs/evidence/') && method === 'GET') {
+        if (!user || (!this.authService.authorize(user, 'VIEW_EVIDENCE').authorized && !this.authService.authorize(user, 'VIEW_CUSTOMER_EVIDENCE').authorized)) return { status: 403, error: 'Evidence permission required', timestamp };
         const proofId = path.replace('/api/proofs/evidence/', '');
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         if (!bundle) return { status: 404, error: 'Proof bundle not found', timestamp };
+        if (!this.authService.authorize(user, 'SYS_ADMIN').authorized && (bundle as any).tenant_id !== user.tenant_id) {
+          return { status: 403, error: 'Cross-tenant proof evidence access denied', timestamp };
+        }
         const evidence = CrystalClearBox.projectCustomerEvidence(bundle);
         return { status: 200, data: evidence, timestamp };
       }
@@ -179,7 +238,10 @@ export class SovereignApiRouter {
         return { status: 200, data: engine.getCatalog(), timestamp };
       }
       if (path === '/api/proofs/z3/prove' && method === 'POST') {
+        if (!user || !this.authService.authorize(user, 'VERIFY_PROOFS').authorized) return { status: 403, error: 'VERIFY_PROOFS permission required', timestamp };
         const { theorem_id, custom_name, custom_smt_script, expected_result } = payload || {};
+        if (custom_smt_script !== undefined && (typeof custom_smt_script !== 'string' || custom_smt_script.length > 32768)) return { status: 400, error: 'custom_smt_script must be a string no larger than 32768 characters', timestamp };
+        if (expected_result !== undefined && !['sat', 'unsat'].includes(expected_result)) return { status: 400, error: 'expected_result must be sat or unsat', timestamp };
         const engine = Z3FormalProofEngine.getInstance();
         if (custom_smt_script) {
           const res = await engine.verifyCustomSmtScript(custom_name || 'CustomTheorem', custom_smt_script, expected_result || 'unsat');
@@ -194,7 +256,15 @@ export class SovereignApiRouter {
 
       // 9. /api/offers
       if (path === '/api/offers' && method === 'GET') {
-        const offers = Object.values(this.durableStore.getState().offers);
+        // Public catalogue exposes only explicitly published offers and never internal cost basis.
+        const offers = Object.values(this.durableStore.getState().offers)
+          .filter((offer: any) => offer && (offer.status === 'PUBLISHED' || offer.status === 'ACTIVE'))
+          .map((offer: any) => ({
+            id: offer.id || offer.offer_id || offer.code,
+            title: offer.title, description: offer.description,
+            price_display: offer.price_display ?? offer.display_price ?? null,
+            status: offer.status, version: offer.version,
+          }));
         return { status: 200, data: offers, timestamp };
       }
       if (path === '/api/offers/publish' && method === 'POST') {
@@ -208,14 +278,54 @@ export class SovereignApiRouter {
         return { status: 201, data: res.offer, timestamp };
       }
 
-      // 10. /api/orders
+      // 10. /api/access-requests — evidence-gated, no-payment workflow persisted to the existing Neon orders table.
+      if (path === '/api/access-requests' && method === 'GET') {
+        if (!user || (!this.authService.authorize(user, 'VIEW_CUSTOMER_EVIDENCE').authorized && !this.authService.authorize(user, 'VIEW_EVIDENCE').authorized && !this.authService.authorize(user, 'SYS_ADMIN').authorized)) {
+          return { status: 403, error: 'Access-request read permission required', timestamp };
+        }
+        const neon = NeonStore.getInstance();
+        if (!neon.isConfigured() || !(await neon.connect())) return { status: 503, error: 'Persistent access-request storage is unavailable; no local-only fallback was written.', timestamp };
+        const schema = await neon.verifyAccessRequestSchema();
+        if (!schema.ready) return { status: 503, error: 'Access-request schema migration is not installed; no schema changes were attempted.', timestamp };
+        const requests = await neon.listAccessRequests(user.tenant_id, 100);
+        return { status: 200, data: requests, timestamp };
+      }
+      if (path === '/api/access-requests' && method === 'POST') {
+        if (!user || !this.authService.authorize(user, 'CREATE_ORDER').authorized) return { status: 403, error: 'CREATE_ORDER permission required', timestamp };
+        const { offer_id, request_text, idempotency_key } = payload || {};
+        if (typeof offer_id !== 'string' || !offer_id.trim() || offer_id.length > 200) return { status: 400, error: 'offer_id is required and must be at most 200 characters', timestamp };
+        if (typeof request_text !== 'string' || request_text.trim().length < 10 || request_text.length > 4000) return { status: 400, error: 'request_text must contain 10–4000 characters', timestamp };
+        if (typeof idempotency_key !== 'string' || idempotency_key.length < 12 || idempotency_key.length > 128) return { status: 400, error: 'A 12–128 character idempotency_key is required', timestamp };
+        const neon = NeonStore.getInstance();
+        if (!neon.isConfigured() || !(await neon.connect())) return { status: 503, error: 'Persistent access-request storage is unavailable; request was not accepted.', timestamp };
+        const schema = await neon.verifyAccessRequestSchema();
+        if (!schema.ready) return { status: 503, error: 'Access-request schema migration is not installed; request was not accepted and no schema changes were attempted.', timestamp };
+        const requestId = `ar_${createHash('sha256').update(`${user.tenant_id}:${idempotency_key}`).digest('hex').slice(0, 40)}`;
+        const record = {
+          id: requestId, tenant_id: user.tenant_id, offer_id: offer_id.trim(),
+          request_text: request_text.trim(), requested_by: user.user_id, idempotency_key,
+          status: 'ACCESS_REQUEST_PENDING', authorization_state: 'HUMAN_REVIEW_REQUIRED', payment_state: 'DISABLED' as const,
+        };
+        const saved = await neon.createAccessRequest(record);
+        if (!saved) return { status: 503, error: 'Access request could not be persisted in Neon; no local-only fallback was written.', timestamp };
+        if (saved.requested_by !== user.user_id) return { status: 409, error: 'The idempotency key is already associated with another request in this tenant.', timestamp };
+        const message = saved.status === 'ACCESS_REQUEST_PENDING'
+          ? 'Access request recorded for human review. No payment or deployment occurred.'
+          : 'Existing idempotent access request returned; review its current status. No payment or deployment occurred.';
+        return { status: 201, data: { ...saved, message }, timestamp };
+      }
+
+      // 11. /api/orders
       if (path === '/api/orders' && method === 'GET') {
-        const targetTenant = user ? user.tenant_id : 'TENANT_ENTERPRISE_DEMO';
+        if (!user) return { status: 401, error: 'Authentication required to read orders', timestamp };
+        const targetTenant = user.tenant_id;
         const orders = this.sqlite.findTenantRecords('orders', targetTenant);
         return { status: 200, data: orders, timestamp };
       }
       if (path === '/api/orders' && method === 'POST') {
-        const targetTenant = user ? user.tenant_id : (payload?.tenant_id || 'TENANT_ENTERPRISE_DEMO');
+        if (!user) return { status: 401, error: 'Authentication required to create an order', timestamp };
+        if (!this.authService.authorize(user, 'CREATE_ORDER').authorized) return { status: 403, error: 'CREATE_ORDER permission required', timestamp };
+        const targetTenant = user.tenant_id;
         const { offer_id } = payload || {};
         if (!offer_id) return { status: 400, error: 'offer_id is required', timestamp };
         const market = MarketplaceEngine.getInstance();
@@ -233,57 +343,35 @@ export class SovereignApiRouter {
         return { status: 200, data: res.order, timestamp };
       }
 
-      // 11. /api/payments
-      if (path === '/api/payments/capture' && method === 'POST') {
-        const { order_id, amount_cents, idempotency_key } = payload || {};
-        if (!order_id || !amount_cents) return { status: 400, error: 'order_id and amount_cents required', timestamp };
-        const paypal = PayPalAdapter.getInstance();
-        const res = paypal.captureOrderPayment(order_id, amount_cents, idempotency_key || `idemp_${Date.now()}`);
-        return { status: 200, data: res, timestamp };
-      }
-      if (path === '/api/payments/paypal/status' && method === 'GET') {
-        const paypal = PayPalAdapter.getInstance();
-        const info = paypal.getMaskedCredentialsInfo();
-        return { status: 200, data: info, timestamp };
-      }
-      if (path === '/api/payments/paypal/test' && method === 'POST') {
-        const { client_id, client_secret, environment } = payload || {};
-        const paypal = PayPalAdapter.getInstance();
-        const res = await paypal.testLiveCredentials(client_id, client_secret, environment);
-        return { status: 200, data: res, timestamp };
-      }
-      if (path === '/api/payments/paypal/configure' && method === 'POST') {
-        const { client_id, client_secret, environment = 'sandbox' } = payload || {};
-        if (!client_id || !client_secret) return { status: 400, error: 'client_id and client_secret required', timestamp };
-        const paypal = PayPalAdapter.getInstance();
-        const configured = paypal.setSessionCredentials(client_id, client_secret, environment);
-        if (!configured) return { status: 403, error: 'Production PayPal credentials are deployment-authoritative and cannot be overridden at runtime.', timestamp };
-        return { status: 200, data: { success: true, message: 'PayPal credentials updated in active session.' }, timestamp };
-      }
-
+      // 11. /api/payments — deliberately disabled until payment credentials and production controls are approved.
+      // Catalog prices are presentation metadata only; this build never captures or configures payments.
       // 12. /api/deployments
       if (path === '/api/deployments' && method === 'GET') {
-        const targetTenant = user ? user.tenant_id : 'TENANT_ENTERPRISE_DEMO';
+        if (!user || (!this.authService.authorize(user, 'VIEW_DEPLOYMENTS').authorized && !this.authService.authorize(user, 'SYS_ADMIN').authorized)) return { status: 403, error: 'VIEW_DEPLOYMENTS permission required', timestamp };
+        const targetTenant = user!.tenant_id;
         const deployments = this.sqlite.findTenantRecords('deployments', targetTenant);
         return { status: 200, data: deployments, timestamp };
       }
 
       // 13. /api/telemetry
       if (path === '/api/telemetry' && method === 'GET') {
-        const targetTenant = user ? user.tenant_id : 'TENANT_SOVEREIGN_ROOT';
+        if (!user || !this.authService.authorize(user, 'VIEW_TELEMETRY').authorized) return { status: 403, error: 'VIEW_TELEMETRY permission required', timestamp };
+        const targetTenant = user!.tenant_id;
         const telemetry = this.sqlite.findTenantRecords('telemetry', targetTenant, 50);
         return { status: 200, data: telemetry, timestamp };
       }
 
       // 14. /api/audit
       if (path === '/api/audit' && method === 'GET') {
-        const targetTenant = user ? user.tenant_id : 'TENANT_SOVEREIGN_ROOT';
+        if (!user || (!this.authService.authorize(user, 'AUDIT_CHAIN').authorized && !this.authService.authorize(user, 'VIEW_EVIDENCE').authorized)) return { status: 403, error: 'Audit permission required', timestamp };
+        const targetTenant = user!.tenant_id;
         const records = this.sqlite.findTenantRecords('audit_records', targetTenant, 50);
         return { status: 200, data: records, timestamp };
       }
 
       // 15. /api/audit/chain
       if (path === '/api/audit/chain' && method === 'GET') {
+        if (!user || !this.authService.authorize(user, 'SYS_ADMIN').authorized) return { status: 403, error: 'Global audit chain requires SYS_ADMIN permission', timestamp };
         const verification = this.durableStore.verifyChain();
         return {
           status: 200,
@@ -296,14 +384,15 @@ export class SovereignApiRouter {
         };
       }
       if (path === '/api/audit/chain/verify' && method === 'POST') {
+        if (!user || !this.authService.authorize(user, 'AUDIT_CHAIN').authorized) return { status: 403, error: 'AUDIT_CHAIN permission required', timestamp };
         const verification = this.durableStore.verifyChain();
         return { status: 200, data: verification, timestamp };
       }
 
       // 16. /api/rollback
       if (path === '/api/rollback' && method === 'POST') {
-        if (!user || (user.role !== 'OWNER' && user.role !== 'ADMIN')) {
-          return { status: 403, error: 'Forbidden: Insufficient privileges for rollback', timestamp };
+        if (!user || !this.authService.authorize(user, 'EXECUTE_ROLLBACK').authorized) {
+          return { status: 403, error: 'EXECUTE_ROLLBACK permission required', timestamp };
         }
         const { checkpoint_id, reason = 'Operator triggered rollback' } = payload || {};
         if (!checkpoint_id) return { status: 400, error: 'checkpoint_id required', timestamp };
@@ -315,18 +404,21 @@ export class SovereignApiRouter {
 
       // 17. /api/nodes
       if (path === '/api/nodes' && method === 'GET') {
+        if (!user || (!this.authService.authorize(user, 'EXECUTE_NODES').authorized && !this.authService.authorize(user, 'SYS_ADMIN').authorized)) return { status: 403, error: 'System node inventory is restricted', timestamp };
         const nodes = NodeRegistry.getInstance().getAllNodes();
         return { status: 200, data: nodes, timestamp };
       }
 
       // 18. /api/adapters
       if (path === '/api/adapters' && method === 'GET') {
+        if (!user || !this.authService.authorize(user, 'SYS_ADMIN').authorized) return { status: 403, error: 'Adapter inventory requires SYS_ADMIN permission', timestamp };
         const inventory = ExternalAdapterRegistry.getInventory();
         return { status: 200, data: inventory, timestamp };
       }
 
       // 19. /api/system/status
       if (path === '/api/system/status' && method === 'GET') {
+        if (!user || !this.authService.authorize(user, 'SYS_ADMIN').authorized) return { status: 403, error: 'System status requires SYS_ADMIN permission', timestamp };
         const status = SystemStatusService.computeStatus();
         return { status: 200, data: status, timestamp };
       }
@@ -350,6 +442,7 @@ export class SovereignApiRouter {
 
       // 21. /api/system/readiness
       if (path === '/api/system/readiness' && method === 'GET') {
+        if (!user || !this.authService.authorize(user, 'SYS_ADMIN').authorized) return { status: 403, error: 'System readiness details require SYS_ADMIN permission', timestamp };
         const nodes = NodeRegistry.getInstance().getAllNodes();
         const executed = nodes.filter(n => n.execution_mode === 'CODE_EXECUTED').length;
         const ready = executed > 0;
@@ -366,6 +459,7 @@ export class SovereignApiRouter {
 
       // 22. /api/brain/state
       if (path === '/api/brain/state' && method === 'GET') {
+        if (!user || !this.authService.authorize(user, 'SYS_ADMIN').authorized) return { status: 403, error: 'Daisy brain state requires SYS_ADMIN permission', timestamp };
         const brain = DaisyBrain.getInstance();
         return { status: 200, data: brain.getLiveBrainState(), timestamp };
       }
@@ -381,21 +475,45 @@ export class SovereignApiRouter {
     const url = new URL(req.url, `http://${req.headers?.host || 'localhost'}`);
     const pathname = url.pathname;
     const method = req.method as any;
-    let bodyData = '';
-
-    req.on('data', (chunk: any) => { bodyData += chunk; });
-    req.on('end', async () => {
-      let payload: any = undefined;
-      if (bodyData) {
-        try { payload = JSON.parse(bodyData); } catch (e) {}
-      }
-      const response = await this.handleRequest(pathname, method, payload, req.headers || {});
+    const finish = async (payload: any) => {
+      const headers = { ...(req.headers || {}) };
+      // Browser cookies are not accepted as API credentials in this build; the
+      // trusted OIDC integration must explicitly map a validated session to Bearer.
+      const response = await this.handleRequest(pathname, method, payload, headers);
       res.writeHead(response.status, {
-        'Content-Type': 'application/json',
-        'X-Sovereign-Version': '1.0.0-PROD',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Sovereign-Version': '1.0.0',
         'X-Sovereign-Audit-Hash': this.durableStore.getState().audit_chain.slice(-1)[0]?.record_hash || '0'.repeat(64)
       });
-      res.end(JSON.stringify(response.data || { error: response.error, status: response.status }));
+      res.end(JSON.stringify(response.data ?? { error: response.error, status: response.status }));
+    };
+
+    if (req.body !== undefined) {
+      void finish(req.body).catch(() => {
+        if (!res.headersSent) { res.writeHead(500, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify({ error: 'Internal server error.' })); }
+      });
+      return;
+    }
+
+    let bodyData = '';
+    req.on('data', (chunk: any) => {
+      bodyData += chunk;
+      if (Buffer.byteLength(bodyData) > 256 * 1024) {
+        res.writeHead(413, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+        res.end(JSON.stringify({ error: 'Request body too large.' }));
+        req.destroy();
+      }
+    });
+    req.on('end', () => {
+      let payload: any = {};
+      if (bodyData) {
+        try { payload = JSON.parse(bodyData); }
+        catch { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify({ error: 'Malformed JSON.' })); return; }
+      }
+      void finish(payload).catch(() => {
+        if (!res.headersSent) { res.writeHead(500, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify({ error: 'Internal server error.' })); }
+      });
     });
   }
 }

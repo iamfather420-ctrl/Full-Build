@@ -110,7 +110,7 @@ export const DaisyBrainView: React.FC = () => {
                 54-Node Sovereign Mesh Topology
               </h3>
               <p className="text-xs text-slate-400">
-                52 Code Executed Nodes • 2 External Adapters (PayPal DN-35, Neon DN-34)
+                52 Code Executed Nodes • Neon adapter subject to deployment verification • Payments disabled
               </p>
             </div>
 

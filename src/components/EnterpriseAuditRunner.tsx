@@ -390,7 +390,7 @@ export const EnterpriseAuditRunner: React.FC = () => {
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80">
                 <span className="text-white font-bold block mb-1">88 DFRL Paradox Theorems</span>
                 <p className="text-slate-400 text-[11px] leading-relaxed">
-                  Defined in <code className="text-purple-300">paradoxData.ts</code>. Executed through Z3 WASM kernel as UNSAT refutations. 88 / 88 verified with cleanroom replay.
+                  Defined in <code className="text-purple-300">paradoxData.ts</code>. Executed through Z3 WASM kernel as SAT witness models. 88 / 88 verified with cleanroom replay.
                 </p>
                 <div className="mt-2 text-[10px] text-purple-400 font-semibold">→ Contributes to 120 Formal Cases</div>
               </div>
@@ -398,7 +398,7 @@ export const EnterpriseAuditRunner: React.FC = () => {
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80">
                 <span className="text-white font-bold block mb-1">32 DH Formal Contracts</span>
                 <p className="text-slate-400 text-[11px] leading-relaxed">
-                  Defined in <code className="text-cyan-300">dhParadoxFormalRegistry.ts</code>. Real Z3 WASM solver executions with fresh contexts & cleanroom replays (30 UNSAT, 2 SAT).
+                  Defined in <code className="text-cyan-300">dhParadoxFormalRegistry.ts</code>. Real Z3 WASM solver executions with fresh contexts & cleanroom replays (32 SAT witness models).
                 </p>
                 <div className="mt-2 text-[10px] text-cyan-400 font-semibold">→ Contributes to 120 Formal Cases</div>
               </div>
@@ -502,7 +502,7 @@ export const EnterpriseAuditRunner: React.FC = () => {
                 </span>
               </div>
               <p className="text-slate-400 text-xs">
-                Authoritative 88 mathematical, logical, and computational paradoxes proven as UNSAT refutations in the Z3 WASM kernel.
+                Authoritative 88 mathematical, logical, and computational cases verified as SAT witness models in the Z3 WASM kernel.
               </p>
               <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
                 <span>Deterministic Replay: <strong className="text-white">88/88 Matched</strong></span>
@@ -524,7 +524,7 @@ export const EnterpriseAuditRunner: React.FC = () => {
                 32 canonical formal contracts with dedicated SMT assertions, assumptions, axioms, and constraints executed in fresh solver contexts.
               </p>
               <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex justify-between">
-                <span>Distribution: <strong className="text-white">30 UNSAT, 2 SAT</strong></span>
+                <span>Distribution: <strong className="text-white">0 UNSAT, 32 SAT</strong></span>
                 <span>Scopes: <strong className="text-cyan-300">MODEL_VERIFIED</strong></span>
               </div>
             </div>

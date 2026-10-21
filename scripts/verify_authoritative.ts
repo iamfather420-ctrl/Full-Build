@@ -1,3 +1,4 @@
+import { configureTestAuthEnvironment } from './testAuthEnvironment';
 import cp from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -5,6 +6,7 @@ import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVer
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
 
 async function main() {
+  configureTestAuthEnvironment();
   AuthoritativeVerificationPipeline.setNodePlatform({
     execSync: cp.execSync,
     fs,

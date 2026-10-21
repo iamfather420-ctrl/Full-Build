@@ -309,33 +309,10 @@ object UarefakeEngine {
         var paypalId: String? = null
         var status = "STABLE"
 
-        // 3. 100% REAL PAYPAL KINETIC MOVEMENT
+        // 3. Payment processing is disabled in this release. Never request a token or create a provider order.
         if (isKinetic) {
-            val clientId = paypalClientId.value.trim()
-            val clientSecret = paypalClientSecret.value.trim()
-            val mode = paypalMode.value
-
-            if (clientId.isNotEmpty() && clientSecret.isNotEmpty()) {
-                repository.log("Executing Kinetic Action: Creating PayPal API Order...", "SYSTEM")
-                val token = getPayPalAccessToken(clientId, clientSecret, mode)
-                if (token != null) {
-                    val orderId = createPayPalOrder(token, amountStr, mode)
-                    if (orderId != null) {
-                        paypalId = orderId
-                        status = "KINETIC_EXECUTED"
-                        repository.log("Kinetic order constructed successfully! PayPal Order ID: $orderId", "COMPLIANCE")
-                    } else {
-                        status = "PAYPAL_ORDER_ERROR"
-                        repository.log("PayPal Order placement failed.", "WARN")
-                    }
-                } else {
-                    status = "PAYPAL_AUTH_ERROR"
-                    repository.log("PayPal OAuth token retrieval failed.", "WARN")
-                }
-            } else {
-                status = "CREDENTIALS_MISSING"
-                repository.log("PayPal hook execution bypassed: PayPal client credentials not configured in settings.", "WARN")
-            }
+            status = "PAYMENTS_DISABLED"
+            repository.log("Payment/kinetic external action blocked by release policy; no payment was attempted.", "INFO")
         }
 
         // 4. SYNAPTIC CROSS-MATCHING PIPELINE

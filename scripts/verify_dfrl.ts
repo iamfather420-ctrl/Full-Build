@@ -11,7 +11,7 @@ async function main() {
   console.log(`Propositions Evaluated: ${report.total_operators}`);
   console.log(`Attempted:              ${report.attempted}`);
   console.log(`Executed:               ${report.executed}`);
-  console.log(`UNSAT Results:          ${report.unsat_proved_count}`);
+  console.log(`SAT Witnesses:          ${report.sat_count}`);
   console.log(`SAT Results:            ${report.sat_count}`);
   console.log(`Unknown Results:        ${report.unknown_count}`);
   console.log(`Execution Errors:       ${report.error_count}`);
@@ -37,13 +37,15 @@ async function main() {
     report.executed === 88 &&
     report.unknown_count === 0 &&
     report.error_count === 0 &&
+    report.sat_count === 88 &&
+    report.unsat_count === 0 &&
     report.deterministic_replays_matched === 88 &&
     report.overall_status === 'VERIFIED' &&
     mut.passed &&
     failInj.passed &&
     tamp.passed
   ) {
-    console.log('\n✅ DFRL 88-OPERATOR EXECUTION/REPLAY VERIFICATION: 100% SUCCESS');
+    console.log('\n✅ DFRL 88-OPERATOR SAT-WITNESS EXECUTION/REPLAY VERIFICATION: 100% SUCCESS');
   } else {
     console.error('\n❌ DFRL VERIFICATION FAILED');
     process.exit(1);

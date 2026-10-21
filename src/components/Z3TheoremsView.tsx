@@ -15,9 +15,10 @@ export const Z3TheoremsView: React.FC = () => {
   const [customSmtScript, setCustomSmtScript] = useState(`; Enter SMT-LIB 2.0 expressions
 (declare-const p Bool)
 (declare-const q Bool)
-(assert (and p (not p)))
+(assert p)
+(assert q)
 (check-sat)`);
-  const [customName, setCustomName] = useState('PropositionalContradiction');
+  const [customName, setCustomName] = useState('BoundedWitness');
   const [customResult, setCustomResult] = useState<Z3ProofResult | null>(null);
 
   const handleProveSingle = async (thmId: string) => {
@@ -47,7 +48,7 @@ export const Z3TheoremsView: React.FC = () => {
   const handleRunCustom = async () => {
     setIsRunning(true);
     try {
-      const res = await engine.verifyCustomSmtScript(customName, customSmtScript, 'unsat');
+      const res = await engine.verifyCustomSmtScript(customName, customSmtScript, 'sat');
       setCustomResult(res);
     } finally {
       setIsRunning(false);
@@ -121,7 +122,7 @@ export const Z3TheoremsView: React.FC = () => {
                     <div>
                       {res ? (
                         <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-300 font-mono text-[10px] flex items-center gap-1 font-bold">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" /> UNSAT
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" /> {res.solver_result.toUpperCase()}
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-500 font-mono text-[10px]">

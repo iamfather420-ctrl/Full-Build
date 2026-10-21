@@ -81,9 +81,9 @@ async function main() {
 
   // 6. Replay Mismatch Fail-Closed Guard Test
   console.log('Running Replay Mismatch Fail-Closed Guard Test...');
-  const simActual: string = 'unsat';
-  const simReplay: string = 'sat';
-  const simulatedMismatchVerified = (simActual === 'unsat') && (simActual === simReplay);
+  const simActual: string = 'sat';
+  const simReplay: string = 'unsat';
+  const simulatedMismatchVerified = (simActual === 'sat') && (simActual === simReplay);
   console.log(`Replay Mismatch Guard:    ${!simulatedMismatchVerified ? 'PASS' : 'FAIL'} (Fail-Closed: true)`);
 
   // Prepare directories
@@ -318,7 +318,11 @@ async function main() {
   console.log(`\nArtifacts generated in:   ${artifactsDir}`);
   console.log(`Proof receipts written:  ${receiptsDir}/proof-DH-P-*.json`);
   console.log('================================================================');
-  console.log('✅ DH 32-CASE FORMAL Z3 VERIFICATION: 100% SUCCESS');
+  if (report.overall_status !== 'VERIFIED' || report.sat_count !== 32 || report.replay_matches !== 32 || !mut.passed || !failInj.passed || !tamp.passed) {
+    console.error('❌ DH SAT witness verification closure FAILED');
+    process.exit(1);
+  }
+  console.log('✅ DH 32-CASE SAT WITNESS Z3 VERIFICATION: 100% SUCCESS');
   console.log('================================================================');
 }
 

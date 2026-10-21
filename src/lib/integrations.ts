@@ -107,7 +107,7 @@ export const integrations = {
         '</table></td></tr></table>',
         '<p style="margin:20px 0 0;font-size:12px;color:#666;text-align:center">IRS-First Rule &bull; EFTPS Sequestered &bull; SOC 2 Type II<br>U.A.R.E.F.A.K.E. Pipeline &mdash; Autonomous &amp; Sovereign</p>',
         '</td></tr>',
-        '<tr><td style="padding:16px 40px 32px;text-align:center"><p style="margin:0;font-size:11px;color:#444">SolveX Paradox Box · gods.battle.axe.88@gmail.com · paypal.me/tjites</p></td></tr>',
+        '<tr><td style="padding:16px 40px 32px;text-align:center"><p style="margin:0;font-size:11px;color:#444">SolveX Paradox Box · controlled access requests only; payment processing disabled</p></td></tr>',
         '</table></td></tr></table></body></html>',
       ].join(''),
     })

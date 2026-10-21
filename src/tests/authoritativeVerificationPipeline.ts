@@ -13,7 +13,6 @@ import { runDaisy54NodeCoverage } from './daisy54NodeCoverage';
 import { runPersistenceVerification } from './persistenceVerification';
 import { SqliteStore } from '../database/SqliteStore';
 import { NeonStore } from '../database/NeonPersistence';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
@@ -260,7 +259,10 @@ export class AuthoritativeVerificationPipeline {
     const g6Start = performance.now();
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
     const dfrlReport = await dfrlVerifier.verifyAll88();
-    const dfrlOk = dfrlReport.unsat_count === 88 && dfrlReport.overall_status === 'VERIFIED';
+    const dfrlOk = dfrlReport.sat_count === 88 &&
+      dfrlReport.unsat_count === 0 &&
+      dfrlReport.overall_status === 'VERIFIED' &&
+      dfrlReport.results.every(r => r.proved && r.witness_verified === true);
     recordGate(
       6,
       'GATE-06',
@@ -272,7 +274,8 @@ export class AuthoritativeVerificationPipeline {
         total_propositions: dfrlReport.total_propositions,
         attempted: dfrlReport.attempted,
         executed: dfrlReport.executed,
-        unsat_proved_count: dfrlReport.unsat_count,
+        sat_witnesses_verified: dfrlReport.results.filter(r => r.proved && r.witness_verified === true).length,
+        unsat_count: dfrlReport.unsat_count,
         authored_models_count: dfrlReport.authored_models_count,
         generated_models_count: dfrlReport.generated_models_count,
         solver_engine: dfrlReport.solver_engine,
@@ -408,52 +411,41 @@ export class AuthoritativeVerificationPipeline {
     // GATE 11: External Provider Verification (Neon, PayPal)
     // ==========================================
     const g11Start = performance.now();
-    const paymentsEnabled = (typeof process !== 'undefined' && process.env?.PAYMENTS_ENABLED) === 'true';
-    const pp = PayPalAdapter.getInstance();
-    const hasPayPal = paymentsEnabled && pp.hasActiveCredentials();
-    const ppCreds = paymentsEnabled ? pp.getEffectiveCredentials() : null;
-    let ppAuth = false;
-    if (paymentsEnabled && hasPayPal && ppCreds) {
-      const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
-      ppAuth = testPP.valid;
-    }
-
+    // PayPal is outside this release's deployable path. Do not read credentials or
+    // contact the provider; GATE-11 now evaluates persistence only.
     const neon = NeonStore.getInstance();
     const hasNeon = neon.isConfigured();
     let neonConn = false;
     if (hasNeon) {
       neonConn = await neon.connect();
     }
-    const neonRlsPosture = neonConn ? await neon.verifyRlsPosture() : null;
-    const gate11Ready = (!paymentsEnabled || ppAuth) && neonConn && (env !== 'production' || neonRlsPosture?.success === true);
 
     recordGate(
       11,
       'GATE-11',
-      'External Provider Gateways (Neon, PayPal)',
+      'Neon Persistence Gateway (payments excluded by release policy)',
       'LOCAL',
-      gate11Ready ? 'PASSED' : 'EXTERNAL_PROVIDER_REQUIRED',
+      neonConn ? 'PASSED' : 'EXTERNAL_PROVIDER_REQUIRED',
       performance.now() - g11Start,
       {
-        payments_enabled: paymentsEnabled,
         paypal: {
-          required: paymentsEnabled,
-          configured: hasPayPal,
-          environment: ppCreds?.environment || (paymentsEnabled ? 'NOT_CONFIGURED' : 'DISABLED'),
-          authenticated: ppAuth,
-          status: !paymentsEnabled ? 'DISABLED_NOT_REQUIRED' : (hasPayPal ? (ppAuth ? 'AUTHENTICATED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED'),
+          enabled: false,
+          configured: false,
+          authenticated: false,
+          status: 'DISABLED_BY_RELEASE_POLICY',
+          network_requests_made: 0,
+          credentials_required: false,
           claim_scope: 'LOCAL'
         },
         neon: {
           configured: hasNeon,
           connected: neonConn,
           status: hasNeon ? (neonConn ? 'CONNECTED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED',
-          rls_posture: neonRlsPosture,
           claim_scope: 'LOCAL'
         },
         stripe: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Stripe is prohibited; PayPal DN-35 is required only when PAYMENTS_ENABLED=true.'
+          policy: 'Payment processing disabled in this release; catalog prices are metadata only'
         }
       }
     );
@@ -566,11 +558,11 @@ export class AuthoritativeVerificationPipeline {
 - **Commit SHA:** \`${commitSha}\`
 - **Solver Engine:** \`${dfrlReport.solver_engine}\`
 - **Verification Root Hash:** \`${dfrlReport.verification_root_sha256}\`
-- **Propositions Evaluated:** 88 / 88 (Z3 WASM UNSAT)
+- **Propositions Evaluated:** 88 / 88 (Z3 WASM SAT witnesses)
 - **Authored Models:** ${dfrlReport.authored_models_count} (DFRL-P-001 to P-020)
 - **Generated Models:** ${dfrlReport.generated_models_count} (DFRL-P-021 to P-088)
 - **Deterministic Cleanroom Replays:** ${dfrlReport.deterministic_replays_matched} / 88
-- **SMT Mutation Detection:** ${mutTest.passed ? 'PASSED (UNSAT -> SAT confirmed)' : 'FAILED'}
+- **SMT Mutation Detection:** ${mutTest.passed ? 'PASSED (SAT -> UNSAT confirmed)' : 'FAILED'}
 - **Z3 Fault Injection (Fail-Closed):** ${failInjTest.passed ? 'PASSED (error, proved=false, never unsat)' : 'FAILED'}
 - **Tamper Detection Alarm:** ${tampTest.passed ? 'PASSED (Alarm Triggered)' : 'FAILED'}
 
@@ -635,7 +627,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       },
       gateways: {
         neon: hasNeon ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
-        paypal: hasPayPal ? 'CONFIGURED' : 'CONFIGURATION_REQUIRED',
+        paypal: 'DISABLED_BY_RELEASE_POLICY',
         stripe: 'PROHIBITED_BLOCKED'
       }
     };
@@ -692,17 +684,19 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     // Production credential gates
     if (env === 'production') {
-      if (paymentsEnabled && (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth)) {
-        productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
-      }
+      // PayPal is deliberately disabled and is not a production gate for this release.
       if (!hasNeon || !neonConn) {
         productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production persistence requires NEON_DATABASE_URL.');
       }
-      if (!neonRlsPosture?.success) {
-        productionBlockers.push('GATE-11 Neon tenant isolation is not verified: public tables require enabled/forced RLS policies and a runtime role without BYPASSRLS.');
+      const oidcVars = ['AUTH_ISSUER', 'AUTH_AUDIENCE', 'AUTH_JWKS_URL', 'AUTH_CLIENT_ID', 'AUTH_CLIENT_SECRET', 'AUTH_REDIRECT_URI'];
+      const missingOidc = oidcVars.filter((key) => !process.env[key]);
+      if (missingOidc.length || process.env.OIDC_SINGLE_REPLICA_MODE !== 'true') {
+        productionBlockers.push(`Trusted OIDC login configuration incomplete: ${[...missingOidc, ...(process.env.OIDC_SINGLE_REPLICA_MODE === 'true' ? [] : ['OIDC_SINGLE_REPLICA_MODE'])].join(', ')}.`);
       }
+      productionBlockers.push('Core API still uses SQLite/DurableStore for most domain operations; Neon repository integration is not complete.');
+      productionBlockers.push('Domain schema compatibility, access-request migration, tenant isolation, backup/restore, and rollback are not independently verified.');
     } else {
-      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
+      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in, trusted OIDC, verified Neon schema/persistence, and operational recovery evidence. PayPal is disabled and is not required.`);
     }
 
     const prodPassed = productionBlockers.length === 0;
@@ -715,8 +709,6 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    } else if (env === 'sandbox' && paymentsEnabled && hasPayPal && ppCreds?.environment === 'sandbox') {
-      claimScopeVerdict = 'SANDBOX_VERIFIED';
     } else {
       claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     }
@@ -812,7 +804,7 @@ ${report.production_blockers.map(b => `- ${b}`).join('\n')}
 }
 
 ### Formal Model & Subsystem Verification Metrics
-- **DFRL Operators Proved:** 88 / 88 (Z3 WASM UNSAT)
+- **DFRL Operators Proved:** 88 / 88 (Z3 WASM SAT witnesses)
   - Authored Models: 20
   - Generated Generalized Models: 68
 - **Deterministic Replay Match:** 88 / 88 (Independent cleanroom execution)
@@ -820,9 +812,9 @@ ${report.production_blockers.map(b => `- ${b}`).join('\n')}
 - **Z3 Failure Injection Enforced:** YES (error, proved=false, never unsat)
 - **Daisy Nodes Subsystems:** 54 / 54 (Registered, Instantiated, Reachable, Executed, Output Asserted, Evidence Generated)
 - **Persistence Verification:** 9 / 9 Local SQLite invariants verified; Neon reports PROVIDER_REQUIRED.
-- **External Gateways:** 2 (DN-34 Neon PostgreSQL, DN-35 PayPal Gateway)
-- **Settlement Escrow:** DN-38 Sovereign Settlement Escrow Program (Native cryptographic state verification)
-- **Policy Guard:** DN-36 (Stripe Prohibited Interlock; Exclusive PayPal DN-35 routing)
+- **External Gateways:** Neon PostgreSQL (deployment verification required); payment gateway disabled
+- **Access Control:** evidence-gated access requests; payment and escrow disabled
+- **Policy Guard:** DN-36 (payment processing disabled; no provider is active)
 
 ---
 *Evidence Artifact generated automatically by AuthoritativeVerificationPipeline. Zero synthetic receipts, zero mock claims.*

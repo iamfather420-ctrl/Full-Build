@@ -225,7 +225,7 @@ export class DaisyBrain {
         },
         stripe_dn36: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Stripe prohibited per Sovereign Directive; fiat settlements exclusively route via PayPal DN-35'
+          policy: 'Payment processing is disabled; catalog prices are metadata and access requires human authorization'
         }
       },
       activation_status: brainActive ? 'ACTIVE' : 'BLOCKED',

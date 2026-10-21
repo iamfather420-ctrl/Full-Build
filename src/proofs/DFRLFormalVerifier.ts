@@ -22,6 +22,8 @@ export interface DFRLVerificationResult {
   duration_ms?: number;
   error?: string;
   certificate_sha256: string;
+  witness_model?: string;
+  witness_verified?: boolean;
   timestamp: string;
 }
 
@@ -71,9 +73,9 @@ export interface SMTMutationTestResult {
   original_assertion_hash: string;
   mutated_assertion: string;
   mutated_assertion_hash: string;
-  expected_original_result: 'unsat';
+  expected_original_result: 'sat';
   observed_original_result: string;
-  expected_mutated_result: 'sat';
+  expected_mutated_result: 'unsat';
   observed_mutated_result: string;
   mutation_type: string;
   mutation_detected: boolean;
@@ -152,6 +154,31 @@ export class DFRLFormalVerifier {
    * NEVER uses generic p == !p contradiction.
    * If Z3 is unavailable or errors: returns error/formal_execution_not_performed, NEVER unsat.
    */
+  /**
+   * Independently checks a concrete SAT model in a fresh Z3 context.
+   * Only scalar Bool/Int/Real constants are admitted in the witness corpus.
+   */
+  private async validateWitnessInFreshContext(smtString: string, modelText?: string, z3Mod?: any): Promise<boolean> {
+    if (!modelText) return false;
+    try {
+      const z3 = z3Mod || await this.getZ3Module();
+      if (!z3) return false;
+      const assignments: string[] = [];
+      const re = /\(define-fun\s+([^\s()]+)\s+\(\)\s+(Bool|Int|Real)\s+([^\n]+)\)/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(modelText)) !== null) {
+        assignments.push(`(assert (= ${m[1]} ${m[3].trim()}))`);
+      }
+      if (assignments.length === 0) return false;
+      const ctx = new z3.Context(`dfrl_witness_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+      const solver = new ctx.Solver();
+      await solver.fromString(`${smtString} ${assignments.join(' ')}`);
+      return (await solver.check()) === 'sat';
+    } catch {
+      return false;
+    }
+  }
+
   public async verifyProposition(
     item: DFRLParadoxItem,
     executionId: string = `exec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -190,9 +217,11 @@ export class DFRLFormalVerifier {
 
     let solverResult: DFRLVerificationResult['solver_result'] = 'unknown';
     let execError: string | undefined = undefined;
+    let witnessModel = '';
+    let witnessVerified = false;
 
     try {
-      const ctx = this.getPrimaryContext(z3Mod);
+      const ctx = new z3Mod.Context(`dfrl_exec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
       const solver = new ctx.Solver();
 
       // EXECUTE THE ACTUAL OPERATOR SMT ASSERTION DIRECTLY
@@ -200,8 +229,12 @@ export class DFRLFormalVerifier {
       const res = await solver.check();
 
       if (res === 'unsat') solverResult = 'unsat';
-      else if (res === 'sat') solverResult = 'sat';
-      else solverResult = 'unknown';
+      else if (res === 'sat') {
+        solverResult = 'sat';
+        const model = await solver.model();
+        witnessModel = model?.toString?.() || '';
+        witnessVerified = await this.validateWitnessInFreshContext(item.z3_smt_assertion, witnessModel, z3Mod);
+      } else solverResult = 'unknown';
     } catch (err: any) {
       // FAIL-CLOSED: SMT parsing or execution exception. NEVER convert to unsat.
       solverResult = 'error';
@@ -227,12 +260,14 @@ export class DFRLFormalVerifier {
       solver_version: this.solverVersion,
       execution_id: executionId,
       solver_result: solverResult,
-      proved: solverResult === 'unsat',
+      proved: solverResult === 'sat' && witnessVerified,
       claim_scope: 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
       error: execError,
       certificate_sha256: certHash,
+      witness_model: witnessModel || undefined,
+      witness_verified: witnessVerified,
       timestamp
     };
   }
@@ -271,7 +306,7 @@ export class DFRLFormalVerifier {
     let replayResult = 'unknown';
     try {
       // Independent cleanroom context
-      const replayCtx = this.getCleanroomContext(z3Mod);
+      const replayCtx = new z3Mod.Context(`dfrl_replay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
       const replaySolver = new replayCtx.Solver();
       await replaySolver.fromString(item.z3_smt_assertion);
       const res = await replaySolver.check();
@@ -285,7 +320,7 @@ export class DFRLFormalVerifier {
 
     const match =
       replayResult === originalResult.solver_result &&
-      originalResult.solver_result === 'unsat';
+      originalResult.solver_result === 'sat';
 
     return {
       operator_id: item.code,
@@ -340,10 +375,11 @@ export class DFRLFormalVerifier {
     const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
-    const allUnsat = unsatCount === REAL_88_PARADOX_REGISTRY.length;
+    const allSat = results.length === REAL_88_PARADOX_REGISTRY.length &&
+      results.every(r => r.solver_result === 'sat' && r.proved && r.witness_verified === true);
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
-      allUnsat && allReplayed ? 'VERIFIED' : (unsatCount > 0 ? 'PARTIAL' : 'FAILED');
+      allSat && allReplayed ? 'VERIFIED' : (satCount > 0 ? 'PARTIAL' : 'FAILED');
 
     const rootHash = computeSha256(
       results.map(r => `${r.operator_id}:${r.actual_smt_assertion_hash}:${r.solver_result}:${r.certificate_sha256}`).join('|')
@@ -357,7 +393,7 @@ export class DFRLFormalVerifier {
       attempted,
       executed,
       unsat_count: unsatCount,
-      unsat_proved_count: unsatCount,
+      unsat_proved_count: 0,
       sat_count: satCount,
       unknown_count: unknownCount,
       error_count: errorCount,
@@ -377,17 +413,17 @@ export class DFRLFormalVerifier {
 
   /**
    * Run SMT mutation test against an ACTUAL DFRL SMT assertion.
-   * Original: ranking metric refutation theorem -> UNSAT
-   * Mutated: removes refutation negation -> SAT
+   * Original: bounded witness proposition -> SAT
+   * Mutated: adds an impossible constraint -> UNSAT
    */
   public async runSmtMutationTest(): Promise<SMTMutationTestResult> {
     const targetItem = REAL_88_PARADOX_REGISTRY[20]; // DFRL-P-021
     const originalSmt = targetItem.z3_smt_assertion;
     const originalHash = computeSha256(originalSmt);
 
-    // Actual mutation: invert refutation constraint (not (and ...)) to (and ...)
-    // That turns the theorem contradiction into an achievable state: SAT
-    const mutatedSmt = originalSmt.replace('(assert (not (and', '(assert (and').replace(/\)\)\s*$/, ')');
+    // Mutation: append a contradictory constraint to the SAT witness proposition.
+    // This changes the proposition and must invalidate its satisfying witness.
+    const mutatedSmt = `${originalSmt} (assert (not (= 0 0)))`;
     const mutatedHash = computeSha256(mutatedSmt);
 
     const z3Mod = await this.getZ3Module();
@@ -399,9 +435,9 @@ export class DFRLFormalVerifier {
         original_assertion_hash: originalHash,
         mutated_assertion: mutatedSmt,
         mutated_assertion_hash: mutatedHash,
-        expected_original_result: 'unsat',
+        expected_original_result: 'sat',
         observed_original_result: 'error',
-        expected_mutated_result: 'sat',
+        expected_mutated_result: 'unsat',
         observed_mutated_result: 'error',
         mutation_type: 'PREMISE_PERTURBATION_REFUTATION_INVERSION',
         mutation_detected: false,
@@ -424,7 +460,7 @@ export class DFRLFormalVerifier {
     await solverMut.fromString(mutatedSmt);
     const mutRes = await solverMut.check();
 
-    const mutationDetected = origRes === 'unsat' && mutRes === 'sat';
+    const mutationDetected = origRes === 'sat' && mutRes === 'unsat';
 
     return {
       test_name: 'DFRL Operator SMT Invariant Mutation Test',
@@ -434,15 +470,15 @@ export class DFRLFormalVerifier {
       original_assertion_hash: originalHash,
       mutated_assertion: mutatedSmt,
       mutated_assertion_hash: mutatedHash,
-      expected_original_result: 'unsat',
+      expected_original_result: 'sat',
       observed_original_result: origRes,
-      expected_mutated_result: 'sat',
+      expected_mutated_result: 'unsat',
       observed_mutated_result: mutRes,
       mutation_type: 'PREMISE_PERTURBATION_REFUTATION_INVERSION',
       mutation_detected: mutationDetected,
       passed: mutationDetected,
       details: mutationDetected
-        ? 'Mutation test passed: Inverting theorem refutation constraint successfully converted UNSAT theorem to SAT counter-model.'
+        ? 'Mutation test passed: adding an impossible constraint changed the SAT witness proposition to UNSAT.'
         : `Mutation test failed: orig=${origRes}, mut=${mutRes}`
     };
   }

@@ -1,45 +1,39 @@
 // ============================================================================
 // SOVEREIGN CORE PROTECTION & SINGLE-PRICE TIER MODULE (BLACK BOX)
-// Immutable Build Integrity, Obfuscation, and PayPal.me Direct Routing
+// Immutable Build Integrity and Controlled Access Metadata
 // ============================================================================
 
 export interface SovereignTierConfig {
   name: string;
   priceUSD: number;
   buildLimit: number;
-  paypalUrl: string;
 }
 
 export const SOVEREIGN_TIERS: Record<string, SovereignTierConfig> = {
   FREE: {
     name: 'Sovereign Trial',
     priceUSD: 0,
-    buildLimit: 1,
-    paypalUrl: 'https://paypal.me/tjites'
+    buildLimit: 1
   },
   STARTER: {
     name: 'Sovereign Starter Grid',
     priceUSD: 5,
-    buildLimit: 1,
-    paypalUrl: 'https://paypal.me/tjites/5'
+    buildLimit: 1
   },
   BASIC: {
     name: 'Sovereign Basic Grid',
     priceUSD: 10,
-    buildLimit: 3,
-    paypalUrl: 'https://paypal.me/tjites/10'
+    buildLimit: 3
   },
   PRO: {
     name: 'Sovereign Pro Grid',
     priceUSD: 29.99,
-    buildLimit: 10,
-    paypalUrl: 'https://paypal.me/tjites/29.99'
+    buildLimit: 10
   },
   LIFETIME_EXCLUSIVE: {
     name: 'Sovereign Lifetime Elite Core',
     priceUSD: 499.99,
-    buildLimit: 100, // Strictly limited build pool for lifetime exclusivity
-    paypalUrl: 'https://paypal.me/tjites/499.99'
+    buildLimit: 100 // Strictly limited build pool for lifetime exclusivity
   }
 };
 
@@ -180,14 +174,11 @@ export class SovereignIntegrityShield {
   }
 
   /**
-   * Generates the direct-to-checkout redirect URL using PayPal.me/tjites
+   * Payment processing is disabled in this release. Prices are display metadata only.
+   * Return null rather than a checkout URL so callers cannot initiate a payment redirect.
    */
-  public static resolveCheckoutURL(tierKey: string): string {
-    const tier = SOVEREIGN_TIERS[tierKey];
-    if (!tier || tier.priceUSD === 0) {
-      return 'javascript:void(0);'; // Free tier or invalid tier bypasses payment gateway
-    }
-    return tier.paypalUrl;
+  public static resolveCheckoutURL(_tierKey: string): null {
+    return null;
   }
 }
 

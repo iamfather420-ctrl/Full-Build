@@ -24,7 +24,7 @@ export interface SandboxVerificationSummary {
   claim_scope: 'LOCAL' | 'SANDBOX' | 'PRODUCTION';
   production_verdict: 'BLOCKED';
   paypal: {
-    status: 'CONFIGURATION_REQUIRED' | 'AUTHENTICATED' | 'SANDBOX_VERIFIED' | 'AUTHENTICATION_FAILED';
+    status: 'CONFIGURATION_REQUIRED' | 'AUTHENTICATED' | 'SANDBOX_VERIFIED' | 'AUTHENTICATION_FAILED' | 'PAYMENTS_DISABLED';
     configured: boolean;
     environment: 'sandbox';
     oauth_attempted: boolean;
@@ -35,7 +35,7 @@ export interface SandboxVerificationSummary {
     idempotency_tested: boolean;
     idempotency_passed: boolean;
     failure_injection: {
-      missing_creds_fail_closed: boolean;
+      payment_disabled_fail_closed: boolean;
       invalid_creds_rejected_401: boolean;
       invalid_creds_observed_error: string;
     };
@@ -167,18 +167,18 @@ export class SandboxVerificationPipeline {
         },
         {
           key: 'PAYPAL_SANDBOX_CLIENT_ID',
-          value: (process.env.PAYPAL_SANDBOX_CLIENT_ID || process.env.PAYPAL_SANDBOX_ID || process.env.PAYPAL_CLIENT_ID) ? 'CONFIGURED' : 'MISSING',
-          status: (process.env.PAYPAL_SANDBOX_CLIENT_ID || process.env.PAYPAL_SANDBOX_ID || process.env.PAYPAL_CLIENT_ID) ? 'PRESENT' : 'OPTIONAL_MISSING'
+          value: 'DISABLED_BY_RELEASE_POLICY',
+          status: 'NOT_REQUIRED'
         },
         {
           key: 'PAYPAL_SANDBOX_CLIENT_SECRET',
-          value: (process.env.PAYPAL_SANDBOX_CLIENT_SECRET || process.env.PAYPAL_SANDBOX_KEY || process.env.PAYPAL_CLIENT_SECRET) ? 'CONFIGURED' : 'MISSING',
-          status: (process.env.PAYPAL_SANDBOX_CLIENT_SECRET || process.env.PAYPAL_SANDBOX_KEY || process.env.PAYPAL_CLIENT_SECRET) ? 'PRESENT' : 'OPTIONAL_MISSING'
+          value: 'DISABLED_BY_RELEASE_POLICY',
+          status: 'NOT_REQUIRED'
         },
         {
           key: 'PAYPAL_ENVIRONMENT',
-          value: 'sandbox',
-          status: 'CONFIGURED'
+          value: 'DISABLED_BY_RELEASE_POLICY',
+          status: 'NOT_REQUIRED'
         },
         {
           key: 'NEON_DATABASE_URL',
@@ -202,9 +202,9 @@ export class SandboxVerificationPipeline {
 | Setting | State | Status |
 |:---|:---|:---:|
 | \`SOLVEX_ENV\` | \`sandbox\` | CONFIGURED |
-| \`PAYPAL_SANDBOX_CLIENT_ID\` | \`${process.env.PAYPAL_SANDBOX_CLIENT_ID || process.env.PAYPAL_SANDBOX_ID ? 'CONFIGURED' : 'MISSING'}\` | ${process.env.PAYPAL_SANDBOX_CLIENT_ID || process.env.PAYPAL_SANDBOX_ID ? 'PRESENT' : 'MISSING'} |
-| \`PAYPAL_SANDBOX_CLIENT_SECRET\` | \`${process.env.PAYPAL_SANDBOX_CLIENT_SECRET || process.env.PAYPAL_SANDBOX_KEY ? 'CONFIGURED' : 'MISSING'}\` | ${process.env.PAYPAL_SANDBOX_CLIENT_SECRET || process.env.PAYPAL_SANDBOX_KEY ? 'PRESENT' : 'MISSING'} |
-| \`PAYPAL_ENVIRONMENT\` | \`sandbox\` | CONFIGURED |
+| \`PAYPAL_SANDBOX_CLIENT_ID\` | \`DISABLED_BY_RELEASE_POLICY\` | NOT_REQUIRED |
+| \`PAYPAL_SANDBOX_CLIENT_SECRET\` | \`DISABLED_BY_RELEASE_POLICY\` | NOT_REQUIRED |
+| \`PAYPAL_ENVIRONMENT\` | \`DISABLED_BY_RELEASE_POLICY\` | NOT_REQUIRED |
 | \`NEON_DATABASE_URL\` | \`${process.env.NEON_DATABASE_URL ? 'CONFIGURED' : 'MISSING'}\` | ${process.env.NEON_DATABASE_URL ? 'PRESENT' : 'NOT_REQUIRED'} |
 `;
     writeArtifact(
@@ -213,102 +213,36 @@ export class SandboxVerificationPipeline {
     );
 
     // -------------------------------------------------------------
-    // STEP 3: PAYPAL SANDBOX VERIFICATION & FAILURE INJECTION
+    // STEP 3: PAYMENT-DISABLED RELEASE POLICY VERIFICATION
     // -------------------------------------------------------------
+    // Do not read PayPal environment variables, credentials, or contact the provider.
     const ppAdapter = PayPalAdapter.getInstance();
-    const effectivePPCreds = ppAdapter.getSandboxCredentials();
-    const hasLivePPCreds = Boolean(effectivePPCreds && effectivePPCreds.clientId && effectivePPCreds.clientSecret);
-
-    let ppStatus: SandboxVerificationSummary['paypal']['status'] = 'CONFIGURATION_REQUIRED';
-    let ppOAuthAttempted = false;
-    let ppOAuthSuccess = false;
-    let ppOAuthStatusCode: number | undefined;
-    let ppTxAttempted = false;
-    let ppTxVerified = false;
-    let ppIdempotencyTested = false;
-    let ppIdempotencyPassed = false;
-
-    // Fail-Closed Failure Injection Test 1: Missing credentials
-    const origSbId = process.env.PAYPAL_SANDBOX_ID;
-    const origSbKey = process.env.PAYPAL_SANDBOX_KEY;
-    const origSbClientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
-    const origSbClientSec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-    const origClientId = process.env.PAYPAL_CLIENT_ID;
-    const origClientSec = process.env.PAYPAL_CLIENT_SECRET;
-    let missingCredsCapture: any;
-    try {
-      delete process.env.PAYPAL_SANDBOX_ID;
-      delete process.env.PAYPAL_SANDBOX_KEY;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_ID;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-      delete process.env.PAYPAL_CLIENT_ID;
-      delete process.env.PAYPAL_CLIENT_SECRET;
-      ppAdapter.clearSessionCredentials();
-      missingCredsCapture = await ppAdapter.captureOrderPayment(
-        'ORDER_FAIL_TEST_MISSING',
-        1000,
-        'IDEMPOTENCY_KEY_MISSING_CREDS_TEST'
-      );
-    } finally {
-      if (origSbId) process.env.PAYPAL_SANDBOX_ID = origSbId;
-      if (origSbKey) process.env.PAYPAL_SANDBOX_KEY = origSbKey;
-      if (origSbClientId) process.env.PAYPAL_SANDBOX_CLIENT_ID = origSbClientId;
-      if (origSbClientSec) process.env.PAYPAL_SANDBOX_CLIENT_SECRET = origSbClientSec;
-      if (origClientId) process.env.PAYPAL_CLIENT_ID = origClientId;
-      if (origClientSec) process.env.PAYPAL_CLIENT_SECRET = origClientSec;
-    }
-    const missingCredsFailClosed =
-      missingCredsCapture.status === 'EXTERNAL_PROVIDER_REQUIRED' &&
-      missingCredsCapture.success === false &&
-      missingCredsCapture.claim_scope === 'LOCAL';
-
-    // Fail-Closed Failure Injection Test 2: Real live PayPal endpoint rejection on invalid credentials
-    const invalidCredsOAuth = await ppAdapter.acquireOAuthToken({
-      clientId: 'DFRL_INVALID_CLIENT_ID_FAULT_TEST',
-      clientSecret: 'DFRL_INVALID_CLIENT_SECRET_FAULT_TEST',
-      environment: 'sandbox'
-    });
-    const invalidCredsRejected401 = invalidCredsOAuth.status_code === 401 && !invalidCredsOAuth.access_token;
-    const invalidCredsObservedError = invalidCredsOAuth.error || 'HTTP 401 Unauthorized';
-
-    if (hasLivePPCreds && effectivePPCreds) {
-      ppOAuthAttempted = true;
-      const liveOAuth = await ppAdapter.acquireOAuthToken({
-        ...effectivePPCreds,
-        environment: 'sandbox'
-      });
-      ppOAuthStatusCode = liveOAuth.status_code;
-      if (liveOAuth.access_token) {
-        ppOAuthSuccess = true;
-        ppStatus = 'AUTHENTICATED';
-
-        // Check non-destructive API reachability
-        try {
-          const apiRes = await fetch('https://api-m.sandbox.paypal.com/v1/notifications/webhooks', {
-            headers: { Authorization: `Bearer ${liveOAuth.access_token}` }
-          });
-          if (apiRes.ok) {
-            ppTxVerified = true;
-            ppStatus = 'SANDBOX_VERIFIED';
-          }
-        } catch {
-          // keep authenticated
-        }
-      } else {
-        ppStatus = 'AUTHENTICATION_FAILED';
-      }
-    } else {
-      ppStatus = 'CONFIGURATION_REQUIRED';
-    }
+    const ppStatus: SandboxVerificationSummary['paypal']['status'] = 'PAYMENTS_DISABLED';
+    const ppOAuthAttempted = false;
+    const ppOAuthSuccess = false;
+    const ppOAuthStatusCode: number | undefined = undefined;
+    const ppTxAttempted = false;
+    const ppTxVerified = false;
+    const ppIdempotencyTested = false;
+    const ppIdempotencyPassed = false;
+    const killSwitchResult = await ppAdapter.captureOrderPayment(
+      'ORDER_FAIL_TEST_PAYMENTS_DISABLED', 1000, 'IDEMPOTENCY_KEY_PAYMENTS_DISABLED'
+    );
+    const paymentDisabledFailClosed = killSwitchResult.status === 'PAYMENTS_DISABLED' &&
+      killSwitchResult.success === false && killSwitchResult.claim_scope === 'LOCAL';
+    const invalidCredsRejected401 = false;
+    const invalidCredsObservedError = 'NOT_TESTED: PayPal provider requests are disabled by release policy';
 
     const ppEvidence = {
       execution_id: executionId,
       commit_sha: commitSha,
       timestamp,
-      environment: 'sandbox',
-      claim_scope: ppTxVerified ? 'SANDBOX' : 'LOCAL',
-      status: ppStatus,
-      configured: hasLivePPCreds,
+      environment: 'disabled',
+      claim_scope: 'LOCAL',
+      status: 'PAYMENTS_DISABLED',
+      configured: false,
+      credentials_read: false,
+      network_requests_made: 0,
       oauth_attempted: ppOAuthAttempted,
       oauth_status_code: ppOAuthStatusCode,
       oauth_success: ppOAuthSuccess,
@@ -317,7 +251,7 @@ export class SandboxVerificationPipeline {
       idempotency_tested: ppIdempotencyTested,
       idempotency_passed: ppIdempotencyPassed,
       failure_injection: {
-        missing_creds_fail_closed: missingCredsFailClosed,
+        payment_disabled_fail_closed: paymentDisabledFailClosed,
         invalid_creds_rejected_401: invalidCredsRejected401,
         invalid_creds_observed_error: invalidCredsObservedError
       }
@@ -453,9 +387,8 @@ export class SandboxVerificationPipeline {
         sovereign_escrow: escrowEvidence,
         neon: neonEvidence
       },
-      failure_injections_passed:
-        missingCredsFailClosed &&
-        invalidCredsRejected401
+      payment_disabled_by_policy: true,
+      failure_injections_passed: paymentDisabledFailClosed
     };
     writeArtifact(
       'sandbox-provider-verification.json',
@@ -467,11 +400,9 @@ export class SandboxVerificationPipeline {
     // -------------------------------------------------------------
     const productionBlockers: string[] = [
       'Environment is currently set to [sandbox]. Production requires explicit SOLVEX_ENV=production opt-in.',
-      'Production external execution has not occurred. Sandbox provider validation does not equal production execution.'
+      'Production external execution has not occurred. Local formal verification does not equal production execution.'
     ];
-    if (ppStatus !== 'SANDBOX_VERIFIED') {
-      productionBlockers.push('PayPal enterprise production credentials have not been configured or executed in live mode.');
-    }
+    // Payment processing is intentionally disabled in this release; PayPal is not a production prerequisite.
     if (!hasNeonUrl) {
       productionBlockers.push('Neon PostgreSQL live production database has not been connected.');
     }
@@ -513,10 +444,10 @@ export class SandboxVerificationPipeline {
           details: 'Secrets checked for absence in client bundles. Zero leaks detected.'
         },
         {
-          name: 'GATE-SB-03: PayPal Live Sandbox & Fail-Closed',
-          scope: ppTxVerified ? 'SANDBOX' : 'LOCAL',
-          status: ppTxVerified ? 'PASSED' : 'CONFIGURATION_REQUIRED',
-          details: `Live 401 rejection confirmed on invalid creds (${invalidCredsObservedError}). Missing creds fail-closed confirmed.`
+          name: 'GATE-SB-03: Payment-Disabled Release Policy',
+          scope: 'LOCAL',
+          status: paymentDisabledFailClosed ? 'PASSED' : 'FAIL',
+          details: `PayPal is disabled by release policy; no credentials were used and no provider request was made. Invalid-credential 401 testing was skipped: ${invalidCredsObservedError}.`
         },
         {
           name: 'GATE-SB-04: Sovereign Settlement Escrow (DN-38)',
@@ -527,8 +458,8 @@ export class SandboxVerificationPipeline {
         {
           name: 'GATE-SB-05: External Failure Injections',
           scope: 'LOCAL',
-          status: 'PASSED',
-          details: 'PayPal missing creds, PayPal invalid creds 401, escrow timelock fail-closed verified.'
+          status: paymentDisabledFailClosed ? 'PASSED' : 'FAIL',
+          details: `Payment kill switch fail-closed: ${paymentDisabledFailClosed}. No PayPal request was made; invalid-credential provider testing is intentionally out of scope. Escrow timelock fail-closed is tested separately.`
         },
         {
           name: 'GATE-SB-06: Sandbox End-to-End Lifecycle',
@@ -559,7 +490,7 @@ export class SandboxVerificationPipeline {
       production_verdict: 'BLOCKED',
       paypal: {
         status: ppStatus,
-        configured: hasLivePPCreds,
+        configured: false,
         environment: 'sandbox',
         oauth_attempted: ppOAuthAttempted,
         oauth_status_code: ppOAuthStatusCode,
@@ -569,7 +500,7 @@ export class SandboxVerificationPipeline {
         idempotency_tested: ppIdempotencyTested,
         idempotency_passed: ppIdempotencyPassed,
         failure_injection: {
-          missing_creds_fail_closed: missingCredsFailClosed,
+          payment_disabled_fail_closed: paymentDisabledFailClosed,
           invalid_creds_rejected_401: invalidCredsRejected401,
           invalid_creds_observed_error: invalidCredsObservedError
         },

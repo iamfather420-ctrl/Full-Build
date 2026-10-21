@@ -688,7 +688,7 @@ export class DaisySubsystemExecutors {
 
       // 36. DN-36: Policy Guard (Stripe Prohibited / PayPal Exclusive)
       case 'DN-36': {
-        // Enforce strict Sovereign Directive: Stripe is strictly prohibited. Fiat route is exclusive to PayPal DN-35.
+        // Payment processing is intentionally disabled in this release; do not route or capture funds.
         const stripeRequested = testPayload?.attemptStripeExecution === true;
         const blocked = true; // Always blocked
         return {

@@ -318,34 +318,13 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // 18. Server-Authoritative PayPal DN-35 Fail-Closed Execution
-  runTest('PayPal DN-35 Server-Authoritative Fail-Closed Enforcement', 'PAYMENTS', async () => {
+  // 18. Payment capture is disabled by release policy; do not inspect credentials.
+  runTest('Payment Processing Disabled by Release Policy', 'PAYMENTS', async () => {
     const paypal = PayPalAdapter.getInstance();
-    const origSbId = process.env.PAYPAL_SANDBOX_ID;
-    const origSbKey = process.env.PAYPAL_SANDBOX_KEY;
-    const origSbClientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
-    const origSbClientSec = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-    const origClientId = process.env.PAYPAL_CLIENT_ID;
-    const origClientSec = process.env.PAYPAL_CLIENT_SECRET;
-    try {
-      delete process.env.PAYPAL_SANDBOX_ID;
-      delete process.env.PAYPAL_SANDBOX_KEY;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_ID;
-      delete process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
-      delete process.env.PAYPAL_CLIENT_ID;
-      delete process.env.PAYPAL_CLIENT_SECRET;
-      paypal.clearSessionCredentials();
-      const res = await paypal.captureOrderPayment('ORD_TEST_123', 2500, 'IDEMP_KEY_001');
-      if (res.status !== 'EXTERNAL_PROVIDER_REQUIRED') {
-        throw new Error(`Expected EXTERNAL_PROVIDER_REQUIRED without credentials, received ${res.status}`);
-      }
-    } finally {
-      if (origSbId) process.env.PAYPAL_SANDBOX_ID = origSbId;
-      if (origSbKey) process.env.PAYPAL_SANDBOX_KEY = origSbKey;
-      if (origSbClientId) process.env.PAYPAL_SANDBOX_CLIENT_ID = origSbClientId;
-      if (origSbClientSec) process.env.PAYPAL_SANDBOX_CLIENT_SECRET = origSbClientSec;
-      if (origClientId) process.env.PAYPAL_CLIENT_ID = origClientId;
-      if (origClientSec) process.env.PAYPAL_CLIENT_SECRET = origClientSec;
+    paypal.clearSessionCredentials();
+    const res = await paypal.captureOrderPayment('ORD_TEST_123', 2500, 'IDEMP_KEY_DISABLED_001');
+    if (res.status !== 'PAYMENTS_DISABLED' || res.success || res.payment) {
+      throw new Error(`Expected PAYMENT_DISABLED with no capture or receipt, received ${res.status}`);
     }
   });
 
@@ -457,8 +436,8 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // 28. Fail-Closed: Missing PayPal Credentials Evaluated
-  runTest('Fail-Closed: Missing PayPal Credentials Evaluated', 'ADAPTERS', async () => {
+  // 28. Payment Capture Kill Switch Remains Active
+  runTest('Payment Capture Kill Switch Remains Active', 'ADAPTERS', async () => {
     const paypal = PayPalAdapter.getInstance();
     const orig = paypal.getEffectiveCredentials();
     paypal.clearSessionCredentials();
@@ -466,8 +445,8 @@ export async function runEnterpriseVerification() {
     if (orig) {
       paypal.setSessionCredentials(orig.clientId, orig.clientSecret, orig.environment);
     }
-    if (captureResult.success) {
-      throw new Error('PayPal payment captured without credentials! Fail-closed breached.');
+    if (captureResult.success || captureResult.status !== 'PAYMENTS_DISABLED') {
+      throw new Error('Payment processing was not disabled by release policy.');
     }
   });
 

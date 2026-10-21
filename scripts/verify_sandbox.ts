@@ -1,8 +1,10 @@
+import { configureTestAuthEnvironment } from './testAuthEnvironment';
 import fs from 'fs';
 import path from 'path';
 import { SandboxVerificationPipeline } from '../src/tests/sandboxVerificationPipeline';
 
 async function main() {
+  configureTestAuthEnvironment();
   SandboxVerificationPipeline.setNodePlatform({ fs, path });
 
   console.log('===========================================================');
@@ -25,8 +27,8 @@ async function main() {
   console.log(`Status             : ${report.paypal.status}`);
   console.log(`Configured         : ${report.paypal.configured}`);
   console.log(`OAuth Attempted    : ${report.paypal.oauth_attempted}`);
-  console.log(`Missing Creds Guard: ${report.paypal.failure_injection.missing_creds_fail_closed ? 'PASSED (fail-closed enforced)' : 'FAILED'}`);
-  console.log(`Live 401 Rejection : ${report.paypal.failure_injection.invalid_creds_rejected_401 ? 'PASSED (live 401 confirmed)' : 'FAILED'}`);
+  console.log(`Payment Kill Switch: ${report.paypal.failure_injection.payment_disabled_fail_closed ? 'PASSED (disabled fail-closed)' : 'FAILED'}`);
+  console.log(`Invalid-Credential Test: ${report.paypal.failure_injection.invalid_creds_rejected_401 ? 'LIVE TESTED' : 'SKIPPED BY PAYMENT-DISABLED POLICY'}`);
   console.log(`Observed API Error : ${report.paypal.failure_injection.invalid_creds_observed_error}`);
   console.log(`Evidence Hash      : ${report.paypal.evidence_hash}`);
 

@@ -1,5 +1,6 @@
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DFRLFormalVerifier, DFRLVerificationResult, ReplayVerificationRecord } from './DFRLFormalVerifier';
+import { DHFormalVerifier } from './DHFormalVerifier';
 import { DH32_PARADOX_SPECS, DH32ParadoxSpec } from './DH32FormalSpecifications';
 
 export interface DH32VerificationResult {
@@ -18,6 +19,8 @@ export interface DH32VerificationResult {
   error?: string;
   assertion_hash: string;
   certificate_sha256: string;
+  witness_model?: string;
+  witness_verified?: boolean;
   timestamp: string;
 }
 
@@ -105,14 +108,24 @@ export class UnifiedZ3FormalProver {
 
     let actualResult: 'unsat' | 'sat' | 'unknown' | 'error' = 'unknown';
     let execError: string | undefined = undefined;
+    let witnessModel = '';
+    let witnessVerified = false;
 
     try {
       const solver = new ctx.Solver();
       await solver.fromString(spec.z3_smt_assertion);
       const res = await solver.check();
-
       if (res === 'unsat') actualResult = 'unsat';
-      else if (res === 'sat') actualResult = 'sat';
+      else if (res === 'sat') {
+        actualResult = 'sat';
+        witnessModel = (await solver.model())?.toString?.() || '';
+        // Independently re-check the extracted model against the original formula
+        // in a fresh Z3 context. A non-empty model string alone is not evidence.
+        witnessVerified = await DHFormalVerifier.getInstance().validateWitnessInFreshContext(
+          spec.z3_smt_assertion,
+          witnessModel
+        );
+      }
       else actualResult = 'unknown';
     } catch (err: any) {
       actualResult = 'error';
@@ -120,7 +133,8 @@ export class UnifiedZ3FormalProver {
     }
 
     const duration = performance.now() - start;
-    const proved = actualResult === spec.expected_result;
+    const proved = actualResult === spec.expected_result &&
+      (actualResult !== 'sat' || witnessVerified);
     const certSeed = `${spec.code}:${spec.name}:${assertionHash}:${actualResult}:${executionId}`;
     const certHash = computeSha256(certSeed);
 
@@ -140,7 +154,9 @@ export class UnifiedZ3FormalProver {
       error: execError,
       assertion_hash: assertionHash,
       certificate_sha256: certHash,
-      timestamp
+      timestamp,
+      witness_model: witnessModel || undefined,
+      witness_verified: actualResult === 'sat' && witnessVerified
     };
   }
 
@@ -205,18 +221,17 @@ export class UnifiedZ3FormalProver {
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
     const z3Mod = await (dfrlVerifier as any).getZ3Module();
 
-    let ctx: any = null;
-    let replayCtx: any = null;
-    if (z3Mod) {
-      const { Context } = z3Mod;
-      ctx = new Context('dh32_main_context');
-      replayCtx = new Context('dh32_replay_context');
-    }
-
     const results: DH32VerificationResult[] = [];
     const replays: DH32ReplayRecord[] = [];
 
     for (const spec of DH32_PARADOX_SPECS) {
+      let ctx: any = null;
+      let replayCtx: any = null;
+      if (z3Mod) {
+        const { Context } = z3Mod;
+        ctx = new Context(`dh32_${spec.code}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`);
+        replayCtx = new Context(`dh32_replay_${spec.code}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`);
+      }
       const res = await this.verifySingleDH(spec, ctx);
       results.push(res);
       const rep = await this.replaySingleDH(spec, res, replayCtx);
@@ -257,7 +272,10 @@ export class UnifiedZ3FormalProver {
     // 2. Execute or reuse the 32 DH records individually with fresh-context replays:
     const dhReport = existingDhReport || (await this.verifyAll32DH());
 
-    const totalProved = dfrlReport.unsat_proved_count + dhReport.proved_count;
+    const dfrlWitnessesProved = dfrlReport.results.filter(
+      r => r.solver_result === 'sat' && r.proved && r.witness_verified === true
+    ).length;
+    const totalProved = dfrlWitnessesProved + dhReport.proved_count;
     const aggregateSeed = `${dfrlReport.verification_root_sha256}:${dhReport.root_hash}`;
     const aggregateRootHash = computeSha256(aggregateSeed);
 
@@ -268,8 +286,8 @@ export class UnifiedZ3FormalProver {
       total_proved: totalProved,
       dfrl_88_cases: {
         total: 88,
-        unsat_proved: dfrlReport.unsat_proved_count,
-        sat: 0,
+        unsat_proved: 0,
+        sat: dfrlReport.sat_count,
         unknown: 0,
         error: 0,
         replays_matched: dfrlReport.deterministic_replays_matched,

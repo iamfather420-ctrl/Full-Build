@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "server.ts",
+    "src/App.tsx",
+    "src/components/Header.tsx",
+    "src/api/ApiRouter.ts",
+    "src/auth/AuthService.ts",
+    "src/database/NeonPersistence.ts",
+    "src/services/preflight.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "artifacts",
+    "src/converted_app/**",
+    "converted_app/**",
+    "archive/**",
+    "backups/**"
+  ]
+}

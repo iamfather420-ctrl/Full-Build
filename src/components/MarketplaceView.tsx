@@ -1,26 +1,20 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Calculator, ShieldCheck, CheckCircle2, AlertTriangle, ArrowRight, DollarSign, Lock, Play, FileCode, Check } from 'lucide-react';
+import { ShoppingCart, Calculator, ShieldCheck, ArrowRight, DollarSign, Lock, FileCode } from 'lucide-react';
 import { MarketplaceEngine, DefensiblePriceResult } from '../marketplace/MarketplaceEngine';
 import { DurableStore } from '../database/DurableStore';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
-import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 import { UserContext } from '../auth/AuthService';
 
 interface MarketplaceViewProps {
   currentUser: UserContext;
-  onNavigateToPayPal: () => void;
   onNavigateToEvidence: (proofId: string) => void;
 }
 
 export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
   currentUser,
-  onNavigateToPayPal,
   onNavigateToEvidence
 }) => {
   const market = MarketplaceEngine.getInstance();
   const durable = DurableStore.getInstance();
-  const paypal = PayPalAdapter.getInstance();
-  const lifecycle = OrderLifecycleManager.getInstance();
 
   // Pricing calculator state
   const [costBasisUsd, setCostBasisUsd] = useState(250);
@@ -41,15 +35,13 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
         proof_bundle_id: 'PB-DH-S-001',
         title: 'Bounded Zeno Geometric Convergence Algorithm',
         price_cents: 63281,
-        status: 'ORDER_CREATED',
+        status: 'ACCESS_REQUEST_DRAFT',
         payment_id: null,
         created_at: Date.now() - 3600000
       }
     ];
   });
 
-  const [activePaymentOrder, setActivePaymentOrder] = useState<string | null>(null);
-  const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleRecalculate = (cBasis: number, comp: number, risk: 'LOW' | 'MEDIUM' | 'HIGH') => {
     setCostBasisUsd(cBasis);
@@ -68,38 +60,13 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
       proof_bundle_id: proofId,
       title: title,
       price_cents: calculatedPrice.final_price_cents,
-      status: 'ORDER_CREATED',
+      status: 'ACCESS_REQUEST_DRAFT',
       payment_id: null,
       created_at: Date.now()
     };
     setOrders([newOrder, ...orders]);
   };
 
-  const handlePayPalCapture = async (orderId: string, amountCents: number) => {
-    setActivePaymentOrder(orderId);
-    setPaymentMessage(null);
-
-    const idempotencyKey = `idemp_${orderId}_${Date.now()}`;
-    const result = await paypal.captureOrderPayment(orderId, amountCents, idempotencyKey);
-
-    if (result.success && result.payment) {
-      setPaymentMessage({
-        type: 'success',
-        text: `PayPal Payment Captured Successfully! Capture ID: ${result.payment.paypal_capture_id || 'COMPLETED'}. Idempotency Key verified.`
-      });
-      // Transition order to ESCROW_FUNDED
-      setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'ESCROW_FUNDED', payment_id: result.payment?.receipt_hash } : o));
-    } else {
-      setPaymentMessage({
-        type: 'error',
-        text: result.error || 'Payment halted fail-closed: PayPal credentials required in active environment.'
-      });
-    }
-  };
-
-  const handleTransition = (orderId: string, nextState: string) => {
-    setOrders(orders.map(o => o.id === orderId ? { ...o, status: nextState } : o));
-  };
 
   const offers = Object.values(durable.getState().offers);
 
@@ -115,18 +82,14 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
             <h2 className="text-xl font-bold text-white tracking-tight">Enterprise B2B Solution Marketplace</h2>
           </div>
           <p className="text-sm text-slate-400 max-w-2xl">
-            Sovereign catalog of machine-checked, formally certified computational solutions.
-            Defensible Pricing Formula v1.4 computes deterministic valuation backed by empirical test receipts.
+            Catalog and pricing preview only. Displayed values are metadata, not an offer or payment request. Formal evidence and production acceptance must be reviewed separately.
           </p>
         </div>
 
-        <button
-          onClick={onNavigateToPayPal}
-          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 transition cursor-pointer shadow-lg shadow-blue-600/20"
-        >
+        <div className="px-4 py-2 rounded-xl border border-amber-800 bg-amber-950/30 text-amber-300 text-xs font-semibold flex items-center gap-2" role="status" aria-live="polite">
           <Lock className="w-3.5 h-3.5" />
-          <span>Manage PayPal DN-35 Gateway</span>
-        </button>
+          <span>No payment · local draft only</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -156,7 +119,7 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
                   Bounded Zeno Geometric Convergence Algorithm
                 </h4>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Machine-checked Archimedean geometric convergence solver. Decreases distance to zero in bounded O(log(1/eps)) iterations. Validated by NOPOT inductive variant and Lean4 kernel attestations.
+                  Catalog description only. Inspect the associated evidence bundle and verify the deployed implementation independently before relying on this solution.
                 </p>
               </div>
 
@@ -175,11 +138,11 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
               </div>
               <div className="bg-slate-950 p-2 rounded border border-slate-800">
                 <span className="text-slate-500 block">Reversibility:</span>
-                <span className="text-emerald-400 font-bold">Guaranteed (Rollbackable)</span>
+                <span className="text-amber-300 font-bold">Not production tested</span>
               </div>
               <div className="bg-slate-950 p-2 rounded border border-slate-800">
                 <span className="text-slate-500 block">Formal Status:</span>
-                <span className="text-emerald-400 font-bold">100% Machine Checked</span>
+                <span className="text-amber-300 font-bold">Evidence review required</span>
               </div>
             </div>
 
@@ -197,7 +160,7 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
                 className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-lg shadow-cyan-600/20"
               >
                 <ShoppingCart className="w-3.5 h-3.5" />
-                <span>Create B2B Escrow Order</span>
+                <span>Create Local Draft (Not Submitted)</span>
               </button>
             </div>
           </div>
@@ -206,27 +169,13 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
           <div className="pt-4 space-y-3">
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider font-mono flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-emerald-400" />
-              Active Enterprise Orders & Escrow Pipeline
+              Local Drafts & Controlled Delivery Preview
             </h3>
 
-            {paymentMessage && (
-              <div className={`p-4 rounded-xl text-xs font-mono border flex items-center gap-2.5 ${
-                paymentMessage.type === 'success'
-                  ? 'bg-emerald-950/60 border-emerald-700 text-emerald-200'
-                  : 'bg-rose-950/60 border-rose-700 text-rose-200'
-              }`}>
-                {paymentMessage.type === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-                )}
-                <span>{paymentMessage.text}</span>
-              </div>
-            )}
 
             {orders.length === 0 ? (
               <div className="p-8 text-center bg-slate-900/40 border border-slate-800 rounded-2xl text-slate-500 text-xs">
-                No orders created yet in current partition. Click &quot;Create B2B Escrow Order&quot; above.
+                No orders created yet in current partition. Click &quot;Create Local Draft (Not Submitted)&quot; above.
               </div>
             ) : (
               orders.map((order) => (
@@ -243,75 +192,16 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Lifecycle Steps Indicator */}
+                  {/* Preview-only status: no backend request, payment, or deployment is performed here. */}
                   <div className="grid grid-cols-5 gap-1 text-[10px] font-mono text-center">
-                    <div className={`p-1.5 rounded ${order.status !== 'OFFER' ? 'bg-cyan-900/40 text-cyan-300 border border-cyan-700' : 'bg-slate-950 text-slate-500'}`}>
-                      1. CREATED
-                    </div>
-                    <div className={`p-1.5 rounded ${['ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'].includes(order.status) ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700' : 'bg-slate-950 text-slate-500'}`}>
-                      2. ESCROW
-                    </div>
-                    <div className={`p-1.5 rounded ${['SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'].includes(order.status) ? 'bg-indigo-900/40 text-indigo-300 border border-indigo-700' : 'bg-slate-950 text-slate-500'}`}>
-                      3. SANDBOX
-                    </div>
-                    <div className={`p-1.5 rounded ${['REPLAY_VERIFIED', 'DEPLOYED'].includes(order.status) ? 'bg-purple-900/40 text-purple-300 border border-purple-700' : 'bg-slate-950 text-slate-500'}`}>
-                      4. REPLAY
-                    </div>
-                    <div className={`p-1.5 rounded ${order.status === 'DEPLOYED' ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-700' : 'bg-slate-950 text-slate-500'}`}>
-                      5. DEPLOYED
-                    </div>
+                    <div className="p-1.5 rounded bg-cyan-900/40 text-cyan-300 border border-cyan-700">1. LOCAL DRAFT</div>
+                    <div className="p-1.5 rounded bg-amber-950/30 text-amber-300 border border-amber-800">2. PAYMENT OFF</div>
+                    <div className="p-1.5 rounded bg-slate-950 text-slate-500">3. NOT PROVISIONED</div>
+                    <div className="p-1.5 rounded bg-slate-950 text-slate-500">4. NOT VERIFIED</div>
+                    <div className="p-1.5 rounded bg-slate-950 text-slate-500">5. NOT DEPLOYED</div>
                   </div>
-
-                  {/* Contextual Actions */}
-                  <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-800 gap-2">
-                    <div className="text-xs font-mono text-slate-400">
-                      Current Status: <span className="text-white font-bold">{order.status}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {order.status === 'ORDER_CREATED' && (
-                        <button
-                          onClick={() => handlePayPalCapture(order.id, order.price_cents)}
-                          className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-lg shadow-blue-600/20"
-                        >
-                          <Lock className="w-3.5 h-3.5" />
-                          <span>Pay & Capture with PayPal DN-35</span>
-                        </button>
-                      )}
-
-                      {order.status === 'ESCROW_FUNDED' && (
-                        <button
-                          onClick={() => handleTransition(order.id, 'SANDBOX_PROVISIONED')}
-                          className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition cursor-pointer"
-                        >
-                          Provision Hermetic Sandbox
-                        </button>
-                      )}
-
-                      {order.status === 'SANDBOX_PROVISIONED' && (
-                        <button
-                          onClick={() => handleTransition(order.id, 'REPLAY_VERIFIED')}
-                          className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs transition cursor-pointer"
-                        >
-                          Execute Cleanroom Replay
-                        </button>
-                      )}
-
-                      {order.status === 'REPLAY_VERIFIED' && (
-                        <button
-                          onClick={() => handleTransition(order.id, 'DEPLOYED')}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs transition cursor-pointer"
-                        >
-                          Deploy to Production Enclave
-                        </button>
-                      )}
-
-                      {order.status === 'DEPLOYED' && (
-                        <span className="px-3 py-1 rounded bg-emerald-950 border border-emerald-700 text-emerald-300 font-mono text-xs flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Live & Running
-                        </span>
-                      )}
-                    </div>
+                  <div className="pt-2 border-t border-slate-800 text-xs font-mono text-amber-300" role="status">
+                    Local preview only. Nothing has been submitted to the backend, authorized, paid, or deployed.
                   </div>
                 </div>
               ))

@@ -1,0 +1,78 @@
+TADA.zip  (Smash transfer MzTZDszljz-ft, title "3 x 2 ?")
+Size: 755,958,849 bytes
+Link: https://fromsmash.com/MzTZDszljz-ft
+
+  uncompressed  name
+       1080203  UAREFAKE-proof-before-power-demo.mp4
+      23380876  Solvex-UAREFAKE-hackathon-bundle-20261004.zip
+          3925  video_UAREFAKE-proof-before-power-demo_analysis_20261004_152940.md
+         27283  uarefake-proof-before-power.zip
+      21602066  Full-Build-main.zip
+      21698085  Full-Build-main-fixed.zip
+      21558701  Full-Build-SAT-Witness-Fix.zip
+      26772164  grok-workspace.zip
+      21634873  Solvex-Full-Real-Runtime.zip
+      21636450  Solvex-Full-Real-Runtime-1.zip
+      21734559  Solvex-Daisy-Merged.zip
+      21748042  Solvex-Daisy-Merged-1.zip
+      21769477  Solvex-Daisy-Haminja-Kernel-Update.zip
+      21718242  solvex-kernel-remediation-final.zip
+          1049  z3-120-formal-verification-summary.json
+         23119  system-46-gates.json
+          2085  daisy-brain-activation-gate.json
+      21720206  solvex-kernel-remediation-fixed.zip
+      14907138  solvex-kernel-ui-final8.zip
+      50054239  grok-workspace-1.zip
+        208982  new-database.sql
+        208982  new-database (1).sql
+        208982  new-database (2).sql
+       1713515  daisy-haminja-solvex-brain.zip
+       2814970  Daisy-Himinja-AI-UI-OS-v3-main.zip
+         91892  Haminja-AI-main.zip
+         95079  Daisy-Haminja-AI---UAREFAKE-Registry-Problem-Solving-Engine-main.zip
+         67244  uarefake-main.zip
+      50054239  grok-workspace-2.zip
+      52807002  grok-workspace-3.zip
+         36463  uarefake-repo-replacement.zip
+         36463  uarefake-repo-replacement-1.zip
+      53173684  grok-workspace-4.zip
+      15043231  Solvex-Daisy-Haminja-Kernel-Update (1).zip
+          3054  Daisy___Solvex_Kernel_Porting_Status.md
+          3989  Daisy_Haminja_bare-metal_kernel.md
+          2580  current-run-verification.json
+          4449  UAREFAKE___SOLVEX_Production_Handoff.md
+      46001591  Solvex-UAREFAKE-Replit-Hackathon-v6-production-han.zip
+      46001591  Solvex-UAREFAKE-Replit-Hackathon-v6-production-han (1).zip
+       5742915  Daisy Haminja SolveX Brain _ Google AI Studio.mht
+        813164  Uarefake Unified AI Platform _ Google AI Studio.mht
+        415633  Google AI Studio.mht
+        414520  Google AI Studio (1).mht
+        414520  Google AI Studio (2).mht
+        414520  Google AI Studio (3).mht
+        414520  Google AI Studio (4).mht
+        427723  Solvex Paradox Box - Autonomou _ Google AI Studio.mht
+        319097  swarmos-sovereign-freedom-sim.zip
+      33678023  swarmos-sovereign-freedom-sim (1).zip
+      21599543  Full-Build-SAT-Witness-Fix-production-hardening.zip
+        709283  grok_image_1791698346973.jpg
+        972145  grok_video_2026-10-11-00-59-13.mp4
+      74926317  grok-workspace-5.zip
+         12972  MMTAI Sovereign Core — Plain-Language Technical Explainer_1775076647190.docx
+         12972  MMTAI Sovereign Core — Plain-Language Technical Explainer_1775076647190-1.docx
+       4660468  ReplitExport-agatenft.tar.gz
+          7399  AGateLogs.txt
+         41667  AGate Civilizational Infrastructure and Global Prosperity Pillars.pdf
+           883  Agate Blockchain- New Modules Summary.txt
+       2883883  c9137023f_346f4495f_0807caca2_c6e7f2ef6_c8ab33bcd_97f4b22b2_Agate_Supreme_Sovereign1.apk
+      32853504  AI-Agents-Projects-Tutorials-main.zip
+         10412  applet_access_history.json
+
+2 x 2.zip  (Smash transfer YBKjTiquq2-ft, title "1 x 2")
+Size: 1,648,817,085 bytes
+Link: https://fromsmash.com/YBKjTiquq2-ft
+
+Single member:
+  1887436800  Daisy-AI-OS-Complete-With-ISO.tar.part-00
+
+This member is split-archive part 00 only. The transfer does not include
+later .part-01+ pieces, so the tar cannot be fully extracted from this link alone.

@@ -83,7 +83,7 @@ class CorporateViewModel(application: Application) : AndroidViewModel(applicatio
     val chatInput = MutableStateFlow("")
     val chatHistory = MutableStateFlow<List<Pair<String, Boolean>>>(
         listOf(
-            "Greetings. I am the SolveX Corporate Intelligence Co-Pilot, integrated with DAISY Core and Quantum Optimization modules. I am ready to help you analyze market trends, find real-world customers, write outbound sales sequences, and construct autonomous funnels pointing to your payment gate: paypal.me/tjites. What corporate strategy shall we blueprint today?" to false
+            "Greetings. I am the SolveX Corporate Intelligence Co-Pilot, integrated with DAISY Core and Quantum Optimization modules. I am ready to help you analyze market trends, find real-world customers, write outbound sales sequences, and construct autonomous funnels using evidence-gated access requests; payment processing is disabled. What corporate strategy shall we blueprint today?" to false
         )
     )
     val isChatLoading = MutableStateFlow(false)
@@ -243,7 +243,7 @@ class CorporateViewModel(application: Application) : AndroidViewModel(applicatio
                 // Populate default logs
                 repository.log("SolveX Autonomous Corporate Workspace instantiated. Protocol: MMTAI-v3.", "SYSTEM")
                 repository.log("Security Layer Active. AES-256 sovereign-gated transaction logs live.", "INFO")
-                repository.log("Treasury Destination Mapped: paypal.me/tjites.", "COMPLIANCE")
+                repository.log("Payment processing disabled; controlled access policy recorded.", "COMPLIANCE")
 
                 // Populate default consensus tasks
                 repository.insertTask(ConsensusTask(title = "EFTPS Corporate Tax 21% compliance gate test", state = "RESOLVED", progress = 1f, revenue = 12000.00))
@@ -359,11 +359,11 @@ class CorporateViewModel(application: Application) : AndroidViewModel(applicatio
                 2. SolveX B2B Solutions Marketplace (where corporate clients purchase high-integrity software components).
                 3. Quantum AI Optimizer (solves complex mathematical layouts and performs Neural Architecture Search).
                 
-                The user's official PayPal corporate checkout destination is: paypal.me/tjites.
+                Payment processing is disabled in this release. Do not generate payment links or claim checkout is available.
                 
                 Your purpose is to help the user strategize on how to find actual corporate customers, generate direct physical leads, design high-converting cold outbound outreach sequences, and explain how to piece their modular tools together into a highly lucrative autonomous B2B agency.
                 
-                Maintain an extremely sharp, highly professional, strategic, elite corporate consultant persona. Provide direct, actionable business solutions and copy-pasteable outbound templates tailored specifically to the user's queries. Always emphasize pointing payment routes to paypal.me/tjites.
+                Maintain an extremely sharp, highly professional, strategic, elite corporate consultant persona. Provide direct, actionable business solutions and copy-pasteable outbound templates tailored specifically to the user's queries. Never generate payment routes. Prices are metadata only; require authenticated evidence-gated human authorization for access.
             """.trimIndent()
 
             val response = GeminiService.generateContent(prompt = text, systemInstruction = systemInstruction)
