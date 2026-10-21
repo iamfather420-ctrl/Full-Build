@@ -31,6 +31,7 @@ jobs:
           DATE=$(date -u +%Y-%m-%d)
           ARCHIVE="solvex-backup-${DATE}.tar.gz"
 
+          set +e
           tar -czf "$ARCHIVE" \
             --exclude='./.git' \
             --exclude='./node_modules' \
@@ -38,6 +39,14 @@ jobs:
             --exclude='./dist' \
             --exclude='./build' \
             .
+          TAR_EXIT=$?
+          set -e
+
+          # exit 1 is the common "file changed as we read it" warning
+          if [ "$TAR_EXIT" -gt 1 ]; then
+            echo "tar failed with exit code $TAR_EXIT"
+            exit "$TAR_EXIT"
+          fi
 
           test -s "$ARCHIVE"
           gzip -t "$ARCHIVE"
