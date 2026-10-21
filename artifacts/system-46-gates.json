@@ -1,6 +1,6 @@
 {
-  "execution_id": "gate46_exec_1792559729409",
-  "timestamp": "2026-10-21T05:15:29.409Z",
+  "execution_id": "gate46_exec_1792559756088",
+  "timestamp": "2026-10-21T05:15:56.088Z",
   "total_gates": 46,
   "authoritative_gates_count": 15,
   "enterprise_gates_count": 30,
@@ -21,7 +21,7 @@
       "duration_ms": 0,
       "evidence_hash": "38c89989deeda158cc82210b1b7d8be2301fd36fb0f564915d3a012ec813be6a",
       "details": {
-        "execution_id": "exec_pipeline_1792559729410",
+        "execution_id": "exec_pipeline_1792559756089",
         "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
         "modified_files_count": 0,
         "runtime_mode": "BROWSER_RUNTIME"
@@ -93,8 +93,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 7.85,
-      "evidence_hash": "fffc54e1e8acc7e5f9609e0d2038f8c48ad5d8952e80b19e35829a5609e8b24b",
+      "duration_ms": 8.75,
+      "evidence_hash": "af80ca816eb874de4a678761095b8fa4cdb55334233fbd30fd3e0d9a467a0b0d",
       "details": {
         "total_tests": 30,
         "passed_tests": 30,
@@ -108,8 +108,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "MODEL",
-      "duration_ms": 1414.93,
-      "evidence_hash": "5a515d7bd0d02b1dd883b82506bf68cb598a3b51a3e6946be116f91d0fb87c04",
+      "duration_ms": 1360.29,
+      "evidence_hash": "0bcbbefd34de423bbcb9aebb43db02e1b62a0529b1812621cf9165a7094177b8",
       "details": {
         "total_propositions": 88,
         "attempted": 88,
@@ -119,7 +119,7 @@
         "generated_models_count": 68,
         "solver_engine": "Microsoft Research Z3 WASM (z3-solver)",
         "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-        "root_sha256": "3c40e304307804145c4b77faea32caf5df4625b62909c3ebb1a5d943d74c77ac"
+        "root_sha256": "a683d6ef89ced9286b5dcb19e5731b3c36423674e3d17906f2be9bfe59cf7d84"
       }
     },
     {
@@ -145,8 +145,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 27.66,
-      "evidence_hash": "a48070986d55421028d930669c7dddff47f79922bc9edc135c9686cad89c8df2",
+      "duration_ms": 24.96,
+      "evidence_hash": "f22a5ef556550c5984a4b2364e470660198b69d79bc56709b0be0c884827439c",
       "details": {
         "smt_mutation_detected": true,
         "smt_mutation_transition": "unsat -> sat",
@@ -162,8 +162,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 8.74,
-      "evidence_hash": "9c8227fca626c5118d11d4e762296289eac9afd5cb6a393d03093c73713e4681",
+      "duration_ms": 6.27,
+      "evidence_hash": "8de2ffedc6951660190bcff3851a2b8e904d89344f99758d027eeb39ae23d183",
       "details": {
         "total_nodes": 54,
         "registered_nodes": 54,
@@ -186,8 +186,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 1.1,
-      "evidence_hash": "587dd908a83582132ac3bafca4b5c235ee6dec273553eb234a720af4264be240",
+      "duration_ms": 1.07,
+      "evidence_hash": "d9648b47e84c182676f0cc48d0dc0b4c66181f5361a9b72ddfe0ed097977b504",
       "details": {
         "sqlite_tables_count": 27,
         "required_tables": 27,
@@ -240,17 +240,17 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0.35,
-      "evidence_hash": "6bff86ec439ce6944fab2f02809c6e6c7bcef7bf9d0c4316bb18f382d3f6d6b7",
+      "duration_ms": 0.39,
+      "evidence_hash": "60d3401edaaa07a6fd5f223e492aaf3418307a9de4cf58c4c7e18fc637613290",
       "details": {
         "solution_pipeline": {
           "success": true,
           "completed_stages": 21,
           "total_stages": 21,
-          "solution_id": "DH-S-MVHNS4I0"
+          "solution_id": "DH-S-MVHNSP1G"
         },
         "order_lifecycle": {
-          "order_id": "e2e_order_1792559730888",
+          "order_id": "e2e_order_1792559757508",
           "transitions_executed": [
             "ORDER_CREATED",
             "ESCROW_FUNDED",
@@ -261,8 +261,8 @@
           "final_status": "DEPLOYED"
         },
         "merkle_audit_append": {
-          "record_id": "audit_1792559730888_15",
-          "record_hash": "fbf4b1f11775f9087dc1962bc0ad516eebe46b1a30c59199aa6ae07d13ec1045"
+          "record_id": "audit_1792559757508_15",
+          "record_hash": "77a3af9a8a012d28a70e80f70ed716eb3f3018c11991b32e64222dcad130f359"
         }
       }
     },
@@ -273,8 +273,8 @@
       "category": "AUTHORITATIVE_PIPELINE",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0.46,
-      "evidence_hash": "a70d3ddd1076e844b2a2b2a7bb28f78906cb326087f1f71cba70d523c53fbc4d",
+      "duration_ms": 0.49,
+      "evidence_hash": "f43f7c992a7f291cc642f7aafa1bcf70e71f318a9c575a682811ada6219a6c9d",
       "details": {
         "artifacts_generated": [
           "DFRL-88-MACHINE-VERIFICATION-AUDIT.md",
@@ -298,7 +298,7 @@
       "duration_ms": 0.02,
       "evidence_hash": "3ebbcd194e15d960be3f16b9fff9d7340753c4c38aa1b7e4176b6d7fe29392c1",
       "details": {
-        "execution_id": "exec_pipeline_1792559729410",
+        "execution_id": "exec_pipeline_1792559756089",
         "verdict": "BLOCKED_MISSING_EXTERNAL_CREDENTIALS",
         "claim_scope": "LOCAL_VERIFIED / MODEL_VERIFIED",
         "blockers_count": 1,
@@ -353,7 +353,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0,
+      "duration_ms": 1,
       "evidence_hash": "3f8fa7715cbb86dda9ed42bc8538cae0112fc6855e8efc6e42146a74e10f2d99",
       "details": {
         "status": "PASSED"
@@ -366,7 +366,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 1,
+      "duration_ms": 0,
       "evidence_hash": "0ad1e1284b5b736c0359f97c4b6002aec34d8b55d13942cad28d91f78e5dedf7",
       "details": {
         "status": "PASSED"
@@ -379,7 +379,7 @@
       "category": "ENTERPRISE_INVARIANT",
       "status": "PASSED",
       "claim_scope": "LOCAL",
-      "duration_ms": 0,
+      "duration_ms": 1,
       "evidence_hash": "257e4a624995d5e9e9b1255bb6241b2677eb90688627b004a32d1fae73bb679b",
       "details": {
         "status": "PASSED"
