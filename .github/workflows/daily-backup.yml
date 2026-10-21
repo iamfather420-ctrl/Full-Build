@@ -17,6 +17,7 @@ jobs:
 
       - name: Create dated code backup archive
         run: |
+          set +e
           DATE=$(date -u +%Y-%m-%d)
           ARCHIVE="solvex-backup-${DATE}.tar.gz"
           tar -czf "$ARCHIVE" \
@@ -26,6 +27,17 @@ jobs:
             --exclude='dist' \
             --exclude='build' \
             .
+          TAR_EXIT=$?
+          set -e
+          # tar exit 1 is the common "file changed as we read it" warning; treat as success
+          if [ $TAR_EXIT -gt 1 ]; then
+            echo "tar failed with exit code $TAR_EXIT"
+            exit $TAR_EXIT
+          fi
+          if [ ! -f "$ARCHIVE" ]; then
+            echo "Archive was not created"
+            exit 1
+          fi
           echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
           echo "DATE=$DATE" >> "$GITHUB_ENV"
           ls -lh "$ARCHIVE"
