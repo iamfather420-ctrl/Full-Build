@@ -16,7 +16,7 @@ Use this to map every gate to current code, an automated test, and fresh evidenc
 | GATE-08 | Mutation / tamper | Historical PASSED | |
 | GATE-09 | Daisy 54-node | Historical PASSED | |
 | GATE-10 | Multi-tenant persistence | Historical PASSED (local) | Neon path not proven |
-| GATE-11 | External providers (Neon, PayPal) | CONFIGURED | Role/RLS candidate in PR #17; not applied |
+| GATE-11 | External providers / database boundary | BLOCKED | Least-privilege runtime role and end-to-end Neon isolation remain unproven; PayPal is excluded from this release |
 | GATE-12 | End-to-end lifecycle | Historical PASSED | |
 | GATE-13 | Evidence packaging | Historical PASSED | |
 | GATE-14 | Final production gate | BLOCKED | Missing external credentials & isolation proof |
