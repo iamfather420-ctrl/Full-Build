@@ -1,0 +1,42 @@
+name: Daily Backup
+
+on:
+  schedule:
+    # Runs once per day at 03:00 UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create dated backup archive
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          ARCHIVE="solvex-backup-${DATE}.tar.gz"
+          tar -czf "$ARCHIVE" \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            --exclude='dist' \
+            --exclude='build' \
+            .
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+          ls -lh "$ARCHIVE"
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: solvex-daily-backup-${{ github.run_id }}
+          path: solvex-backup-*.tar.gz
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "Daily backup completed: ${{ env.ARCHIVE }}"
+          echo "Artifact retained for 30 days."
