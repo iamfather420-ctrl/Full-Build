@@ -20,7 +20,7 @@ export interface DHFormalContract {
   assumptions: string[];
   axioms: string[];
   constraints: string[];
-  expected_result: 'sat';
+  expected_result: 'unsat' | 'sat';
   scope: DHScope;
   formalization_method: string;
   z3_smt_assertion: string;
@@ -31,9 +31,13 @@ export interface DHFormalContract {
 export const AUTHORITATIVE_DH_CONTRACTS: DHFormalContract[] =
   AUTHORITATIVE_32_DH_CONTRACTS.map(contract => ({
     ...contract,
-    expected_result: 'sat',
+    expected_result: contract.expected_result,
     source_hash: computeSha256(contract.source_file)
   }));
 
 export const DH_FORMAL_CONTRACTS = AUTHORITATIVE_DH_CONTRACTS;
 export const DH32_FORMAL_CONTRACTS = AUTHORITATIVE_DH_CONTRACTS;
+
+// Backward-compatible export consumed by the enterprise audit UI.
+// It aliases the authoritative contracts; it does not create a second registry.
+export const REAL_32_DH_FORMAL_REGISTRY = AUTHORITATIVE_DH_CONTRACTS;

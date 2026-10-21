@@ -303,4 +303,105 @@ export class NeonStore {
       return [];
     }
   }
+
+  /**
+   * Read-only check for the separately managed additive access-request migration.
+   * This method never creates or alters production schema.
+   */
+  public async verifyAccessRequestSchema(): Promise<{ ready: boolean; missing: string[]; error?: string }> {
+    const required = [
+      'id', 'tenant_id', 'offer_id', 'request_text', 'requested_by',
+      'idempotency_key', 'status', 'authorization_state', 'payment_state',
+      'created_at', 'updated_at'
+    ];
+    if (!this.isConnected || !this.neonClient) {
+      return { ready: false, missing: required, error: this.lastError || 'Neon not connected' };
+    }
+    try {
+      const rows = await this.neonClient.query(
+        "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'access_requests'"
+      );
+      const present = new Set((Array.isArray(rows) ? rows : []).map((row: any) => String(row.column_name)));
+      const missing = required.filter((column) => !present.has(column));
+      // Idempotency must be enforced by PostgreSQL, not by a race-prone application pre-check.
+      const indexes = await this.neonClient.query(
+        "SELECT indexdef FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'access_requests'"
+      );
+      const hasIdempotencyUnique = (Array.isArray(indexes) ? indexes : []).some((row: any) => {
+        const definition = String(row.indexdef || '').toLowerCase().replace(/\s+/g, ' ');
+        return definition.includes('unique') &&
+          definition.includes('(tenant_id, idempotency_key)');
+      });
+      if (!hasIdempotencyUnique) missing.push('UNIQUE(tenant_id, idempotency_key)');
+      return { ready: missing.length === 0, missing };
+    } catch (e: any) {
+      return { ready: false, missing: required, error: e?.message || 'Access-request schema verification failed' };
+    }
+  }
+
+  /** Persist an access request only to the migrated Neon table; never fall back locally. */
+  public async createAccessRequest(record: {
+    id: string;
+    tenant_id: string;
+    offer_id: string;
+    request_text: string;
+    requested_by: string;
+    idempotency_key: string;
+    status: string;
+    authorization_state: string;
+    payment_state: 'DISABLED';
+  }): Promise<any | false> {
+    if (!this.isConnected || !this.neonClient) return false;
+    if (!record.tenant_id?.trim() || !record.requested_by?.trim() ||
+        !record.idempotency_key?.trim() || record.payment_state !== 'DISABLED') {
+      this.lastError = 'Rejected invalid or payment-enabled access request';
+      return false;
+    }
+    try {
+      const now = Date.now();
+      const rows = await this.neonClient.query(
+        `INSERT INTO access_requests
+          (id, tenant_id, offer_id, request_text, requested_by, idempotency_key,
+           status, authorization_state, payment_state, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)
+         ON CONFLICT (tenant_id, idempotency_key) DO NOTHING
+         RETURNING id, tenant_id, offer_id, request_text, requested_by, idempotency_key,
+                   status, authorization_state, payment_state, created_at, updated_at`,
+        [record.id, record.tenant_id, record.offer_id, record.request_text, record.requested_by,
+          record.idempotency_key, record.status, record.authorization_state, record.payment_state, now]
+      );
+      if (Array.isArray(rows) && rows[0]) return rows[0];
+      // Conflict means an earlier request exists. Return it so the caller can enforce
+      // same-requester idempotency and reject keys reused by another requester.
+      const existing = await this.neonClient.query(
+        `SELECT id, tenant_id, offer_id, request_text, requested_by, idempotency_key,
+                status, authorization_state, payment_state, created_at, updated_at
+         FROM access_requests WHERE tenant_id = $1 AND idempotency_key = $2 LIMIT 1`,
+        [record.tenant_id, record.idempotency_key]
+      );
+      return Array.isArray(existing) && existing[0] ? existing[0] : false;
+    } catch (e: any) {
+      this.lastError = e?.message || 'Access request persistence failed';
+      return false;
+    }
+  }
+
+  /** Tenant-scoped access-request listing; no cross-tenant or local fallback. */
+  public async listAccessRequests(tenantId: string, limit: number = 100): Promise<any[]> {
+    if (!this.isConnected || !this.neonClient || typeof tenantId !== 'string' || !tenantId.trim()) return [];
+    const safeLimit = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 500)) : 100;
+    try {
+      const rows = await this.neonClient.query(
+        `SELECT id, tenant_id, offer_id, request_text, requested_by, idempotency_key,
+                status, authorization_state, payment_state, created_at, updated_at
+         FROM access_requests WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2`,
+        [tenantId.trim(), safeLimit]
+      );
+      return Array.isArray(rows) ? rows : [];
+    } catch (e: any) {
+      this.lastError = e?.message || 'Access-request listing failed';
+      return [];
+    }
+  }
+
 }
