@@ -369,8 +369,8 @@ export async function runEnterpriseVerification() {
   runTest('System Status API Endpoint Computes Real State', 'API', async () => {
     const router = SovereignApiRouter.getInstance();
     const anonymous = await router.handleRequest('/api/system/status', 'GET');
-    if (anonymous.status !== 403) {
-      throw new Error(`Expected anonymous system-status request to be forbidden, got ${anonymous.status}`);
+    if (anonymous.status !== 401) {
+      throw new Error(`Expected anonymous system-status request to require authentication, got ${anonymous.status}`);
     }
 
     // Verify the protected endpoint using an authenticated owner test identity.
