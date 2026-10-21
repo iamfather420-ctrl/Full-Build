@@ -1,6 +1,6 @@
 -- GATE-11 REMEDIATION CANDIDATE — NOT AUTO-EXECUTED.
 -- Requires a current backup/recovery point, owner review, and application-path testing.
--- Apply only to the verified SolveX production branch after an approved change window.
+-- Apply only to a disposable/non-production validation branch during review. Never apply via this PR to production.
 -- This preserves the existing login role name/password and its membership in solvex_app_runtime,
 -- but removes its elevated Neon administrator membership and direct elevated role flags.
 -- payment_events has no tenant_id, so it is deny-all until a tenant-safe event model is approved.
