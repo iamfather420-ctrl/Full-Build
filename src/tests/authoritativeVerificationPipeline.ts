@@ -94,12 +94,15 @@ export class AuthoritativeVerificationPipeline {
       }
     };
 
-    let commitSha = '728625581c2f89210c752d03fda0a154812b2366';
+    // Never substitute a remembered or synthetic commit hash. If the runner
+    // cannot provide Git provenance, record it as unavailable and fail this gate.
+    let commitSha = 'UNAVAILABLE';
     if (platform.execSync) {
       try {
-        commitSha = platform.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+        const observedSha = platform.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+        if (/^[0-9a-f]{40}$/i.test(observedSha)) commitSha = observedSha;
       } catch {
-        commitSha = '728625581c2f89210c752d03fda0a154812b2366';
+        commitSha = 'UNAVAILABLE';
       }
     }
 
@@ -144,14 +147,16 @@ export class AuthoritativeVerificationPipeline {
       'GATE-00',
       'Repository Integrity & Baseline Provenance',
       'LOCAL',
-      'PASSED',
+      /^[0-9a-f]{40}$/i.test(commitSha) && Boolean(platform.execSync) ? 'PASSED' : 'BLOCKED',
       performance.now() - g0Start,
       {
         execution_id: executionId,
         commit_sha: commitSha,
         modified_files_count: modCount,
-        runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME'
-      }
+        runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME',
+        provenance_verified: /^[0-9a-f]{40}$/i.test(commitSha) && Boolean(platform.execSync)
+      },
+      /^[0-9a-f]{40}$/i.test(commitSha) && Boolean(platform.execSync) ? undefined : 'Git commit provenance unavailable; no fallback hash is permitted.'
     );
 
     // ==========================================

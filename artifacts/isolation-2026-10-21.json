@@ -1,0 +1,323 @@
+{
+  "recorded_at": "2026-10-21T05:06:00Z",
+  "repository": "iamfather420-ctrl/Full-Build",
+  "branch": "chore/production-readiness-next-steps-20261020",
+  "neon_project_id": "flat-unit-34950816",
+  "neon_database": "neondb",
+  "target_branch": {
+    "name": "solvex-runtime-role-validation-2026-10-19",
+    "id": "br-raspy-mountain-b4d774eg",
+    "parent_branch": "production",
+    "id_of_parent": "br-soft-dawn-b4wkrjox",
+    "non_production": true
+  },
+  "branch_provisioning": {
+    "requested_new_branch": "solvex-gate11-isolation-dr-2026-10-21",
+    "result": "BLOCKED",
+    "reason": "Neon returned 'branches limit exceeded' (HTTP 422). An existing non-production runtime-role validation branch was used instead; no branch was deleted."
+  },
+  "remediation": {
+    "source_file": "scripts/neon-gate11-remediation-candidate.sql",
+    "source_commit": "a0d89d02ef7e70027acf1fc5cf8367ac4824e671",
+    "applied": true,
+    "application_method": "Neon transactional SQL tool, 26 statements, against the non-production branch only",
+    "adjustment": "The first attempt rolled back with 'permission denied to alter role'. Candidate SQL was revised to create solvex_runtime_v2 with LOGIN and least-privilege flags in one CREATE ROLE statement, with a generated password not returned in output.",
+    "production_modified": false,
+    "paypal_enabled": false
+  },
+  "post_apply_read_only_audit": {
+    "public_tables": 37,
+    "public_tables_with_rls_enabled": 36,
+    "public_tables_with_rls_forced": 36,
+    "tenant_scoped_public_tables": 34,
+    "tenant_scoped_tables_missing_strict_tenant_policy": [],
+    "non_tenant_tables_without_rls": [
+      "_migrations"
+    ],
+    "runtime_v2": {
+      "login": true,
+      "superuser": false,
+      "createdb": false,
+      "createrole": false,
+      "replication": false,
+      "bypassrls": false,
+      "member_of_neon_superuser": false,
+      "member_of_app_runtime": true
+    },
+    "legacy_runtime_login": {
+      "login": true,
+      "superuser": false,
+      "createdb": true,
+      "createrole": true,
+      "replication": true,
+      "bypassrls": true,
+      "member_of_neon_superuser": true
+    },
+    "auth_context_ready_after_cleanup": false,
+    "test_secret_present_after_cleanup": false,
+    "views_in_public_schema": [],
+    "security_definer_functions": [
+      {
+        "schema": "solvex_private",
+        "name": "auth_context_ready",
+        "reviewed": "Returns whether a >=32-character SOLVEX_AUTH_SECRET exists; it was false after test cleanup."
+      },
+      {
+        "schema": "solvex_private",
+        "name": "current_claims",
+        "reviewed": "Validates signed token, required user/tenant/email/role fields, issued/expiry window, and fails closed when secret or token is absent."
+      }
+    ],
+    "runtime_v2_table_privileges": {
+      "users": {
+        "select": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "orders": {
+        "select": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "payment_orders": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      "payment_fulfillments": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      "payment_refunds": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      },
+      "payment_events": {
+        "select": false,
+        "insert": false,
+        "update": false,
+        "delete": false
+      }
+    }
+  },
+  "tests": [
+    {
+      "case": "same-tenant users read",
+      "status": "PASS",
+      "evidence": "Under a temporary test-only signed claim for tenant A, runtime_v2 read the expected fixture user solvex-test-user-a."
+    },
+    {
+      "case": "cross-tenant users read",
+      "status": "NOT_VERIFIED",
+      "evidence": "Execution safety layer blocked the query before the database returned a result; do not count as a pass."
+    },
+    {
+      "case": "cross-tenant users write",
+      "status": "NOT_VERIFIED",
+      "evidence": "Execution safety layer blocked the write test before the database returned a result; do not count as a pass."
+    },
+    {
+      "case": "missing signed claim read",
+      "status": "PASS",
+      "evidence": "Runtime role saw zero rows when app.auth_token was empty."
+    },
+    {
+      "case": "missing signed claim write",
+      "status": "PASS",
+      "evidence": "Database rejected insert with 'new row violates row-level security policy for table users'."
+    },
+    {
+      "case": "payment_orders direct access",
+      "status": "DENIED_AS_DESIGNED",
+      "evidence": "Runtime role received permission denied for table payment_orders; direct app access is intentionally denied."
+    },
+    {
+      "case": "payment_events direct access",
+      "status": "DENIED_AS_DESIGNED",
+      "evidence": "Runtime role received permission denied for table payment_events; direct app access is intentionally denied."
+    },
+    {
+      "case": "payment service operation path",
+      "status": "NOT_TESTED",
+      "evidence": "No approved service-operation path was exercised; PayPal/live payments remain disabled."
+    },
+    {
+      "case": "indirect views/security-definer paths",
+      "status": "NOT_COMPLETED",
+      "evidence": "Static function/view path analysis was not fully exercised in this run."
+    },
+    {
+      "case": "indirect-access static catalog review",
+      "status": "PARTIAL_PASS",
+      "evidence": "No public views found; only solvex_private.auth_context_ready and solvex_private.current_claims were found as SECURITY DEFINER functions and their definitions were reviewed. Runtime path tests of all indirect joins/callers were not completed."
+    },
+    {
+      "case": "strict policy coverage",
+      "status": "PASS",
+      "evidence": "Post-apply audit found 34 tenant-scoped public tables and zero missing the strict solvex_tenant_access policy; the only public table without RLS was non-tenant _migrations."
+    }
+  ],
+  "cleanup": {
+    "temporary_test_tenants_users_payment_orders_removed": true,
+    "temporary_signing_secret_removed": true,
+    "temporary_neondb_owner_role_membership_revoked": true,
+    "remaining_test_fixture_rows": 0,
+    "note": "The candidate role and RLS policy changes remain on this non-production validation branch for team review. The production branch was not changed."
+  },
+  "overall_status": "PARTIAL_BLOCKED",
+  "blockers": [
+    "Cross-tenant read and write dynamic tests were blocked by the execution safety layer; no pass is claimed.",
+    "Signed auth context is false after test cleanup and must be provisioned through the approved non-production app/auth path for a full repeatable run.",
+    "Payment service-path and indirect-access testing remain outstanding.",
+    "The legacy elevated runtime_login remains on this validation branch; application wiring must not use it."
+  ],
+  "followup_probe": {
+    "checked_date_utc": "2026-10-21",
+    "executed_as": "solvex_runtime_v2",
+    "branch_id": "br-raspy-mountain-b4d774eg",
+    "auth_context_ready": false,
+    "current_claims": null,
+    "role_rechecked": {
+      "login": true,
+      "superuser": false,
+      "createdb": false,
+      "createrole": false,
+      "replication": false,
+      "bypassrls": false,
+      "memberships": [
+        "solvex_app_runtime"
+      ]
+    },
+    "no_claim_reads": [
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.users",
+        "result": "0",
+        "status": "PASS_FAIL_CLOSED"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.orders",
+        "result": "0",
+        "status": "PASS_FAIL_CLOSED"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_orders",
+        "result": "permission denied for table payment_orders",
+        "status": "DENIED_BY_PRIVILEGE"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_fulfillments",
+        "result": "permission denied for table payment_fulfillments",
+        "status": "DENIED_BY_PRIVILEGE"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_refunds",
+        "result": "permission denied for table payment_refunds",
+        "status": "DENIED_BY_PRIVILEGE"
+      },
+      {
+        "sql": "SELECT count(*)::bigint AS visible_rows FROM public.payment_events",
+        "result": "permission denied for table payment_events",
+        "status": "DENIED_BY_PRIVILEGE"
+      }
+    ],
+    "rls_exceptions_rechecked": [
+      {
+        "table": "public._migrations",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "policy_count": 0,
+        "runtime_v2_direct_select_insert_update_delete": false,
+        "classification": "non-tenant migration metadata; no direct runtime privileges"
+      },
+      {
+        "table": "solvex_private.auth_secrets",
+        "rls_enabled": false,
+        "rls_forced": false,
+        "policy_count": 0,
+        "runtime_v2_direct_select_insert_update_delete": false,
+        "classification": "private secret table; direct runtime privileges denied"
+      }
+    ],
+    "security_definer_functions_reviewed": [
+      {
+        "name": "solvex_private.auth_context_ready",
+        "security_definer": true,
+        "search_path": "pg_catalog, solvex_private",
+        "runtime_execute": true,
+        "observed_result": false
+      },
+      {
+        "name": "solvex_private.current_claims",
+        "security_definer": true,
+        "search_path": "pg_catalog, solvex_private",
+        "runtime_execute": true,
+        "observed_result": null
+      }
+    ],
+    "verdict": "PARTIAL_BLOCKED",
+    "notes": [
+      "No tenant-A/tenant-B test was claimed as passed because auth_context_ready() is false and current_claims() is NULL.",
+      "Payment table direct access is denied by table grants. That is a safe fail-closed result for the current runtime role, but does not validate any approved payment service path.",
+      "The one public table without RLS is _migrations; runtime_v2 has no direct table privileges. solvex_private.auth_secrets is also without RLS but is in the private schema and runtime_v2 has no direct table privileges.",
+      "Production remains untouched."
+    ]
+  },
+  "formal_verification_followup": {
+    "commit_tested": "6f0e6e4e2b959f8547c37d051248f4d27cf7bdc9",
+    "workflow_run_id": 39548379890,
+    "workflow_run_url": "https://github.com/iamfather420-ctrl/Full-Build/actions/runs/39548379890",
+    "artifact_name": "solvex-formal-120-and-gates-39548379890",
+    "artifact_id": 12322073817,
+    "artifact_sha256": "f28d5b3c6edf6e7787038f8f4f78b41cc85926e632c2e0e771d13a3020450330",
+    "artifact_expires": "2026-11-20T05:14:15Z",
+    "total_formal_cases": 120,
+    "formal_cases_proved": 120,
+    "aggregate_120_root_hash": "7bb1f65e2111ddc65157996f62e5548a96b01847ca40c3da4abebba198508db1",
+    "system_46_gates": {
+      "gates_passed": 43,
+      "total_gates": 46,
+      "external_provider_required": 1,
+      "blocked": 1,
+      "failed": 1,
+      "overall_verdict": "BLOCKED",
+      "non_passed": [
+        {
+          "gate_number": 12,
+          "gate_id": "GATE-11",
+          "name": "External Provider Gateways (Neon, PayPal)",
+          "status": "EXTERNAL_PROVIDER_REQUIRED"
+        },
+        {
+          "gate_number": 15,
+          "gate_id": "GATE-14",
+          "name": "Final Truth-Boundary Audit & Production Gate",
+          "status": "BLOCKED"
+        },
+        {
+          "gate_number": 46,
+          "gate_id": "GATE-46",
+          "name": "Master Truth-Boundary & Proof Closure Gate",
+          "status": "FAIL"
+        }
+      ]
+    },
+    "report_commit_status": "The JSON was generated and archived as a successful CI artifact. A follow-up CI change was added to commit the generated JSON to this candidate branch; commit completion has not yet been confirmed.",
+    "provenance_correction": {
+      "change_commits": [
+        "2eff0878864e871e81000042c4f490d958394e75",
+        "85aa301db272387db39b4806676ed5ad59d36552",
+        "3d6402896deca0464a5f72c00a3b7f4836700d92"
+      ],
+      "change": "Removed the hard-coded fallback commit SHA. The 120/46 runner now injects real Node Git context, and GATE-00 fails closed if a valid 40-character Git commit SHA cannot be read.",
+      "note": "The prior report referenced 728625581c2f89210c752d03fda0a154812b2366, which GitHub could not resolve. That report is superseded; the corrected pipeline must generate and commit a fresh report with verified commit provenance.",
+      "status": "CORRECTED_PIPELINE_RERUN_REQUESTED"
+    }
+  }
+}

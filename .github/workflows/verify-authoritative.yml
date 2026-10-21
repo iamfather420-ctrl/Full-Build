@@ -70,6 +70,11 @@ jobs:
         env:
           CI: true
 
+      - name: Run 46-gate evaluator and generate fresh JSON
+        if: always()
+        run: |
+          npx tsx scripts/verify_120_z3_and_46_gates.ts
+
       - name: Print final accounting summary
         if: always()
         run: |
