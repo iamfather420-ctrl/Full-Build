@@ -106,7 +106,7 @@ Manifest links: [Smash source README](../sources/README.md) and [archive manifes
 
 ## Newly uploaded source archive examined: `solvex-daisy-haminja-os.zip`
 
-- Archive SHA-256 and exact path-level manifest should be retained with the release evidence; this examination counted **669 ZIP entries** totaling **17,017,380 uncompressed bytes** (ZIP size 17,157,362 bytes).
+- SHA-256: `b349aaac55b605e62979a21414fd6475bcc80e0d80a5dd4a30b192894d1ca668`. This examination counted **669 ZIP entries** totaling **17,017,380 uncompressed bytes** (ZIP size 17,157,362 bytes).
 - Root-level app files include `src/App.tsx`, `src/lib/lifecycle.ts`, `scripts/test-solvex-governance.mjs`, and verification artifacts under `artifacts/`.
 - Nested source snapshots include **404 files** under `authentic_sources/Full-Build`, **58** under `authentic_sources/Daisy-Himinja-AI-UI-OS-v3`, **34** under `authentic_sources/Daisy-Haminja-AI-Registry`, and **11** under `authentic_sources/Daisy-Haminja-App-Forge`. The ZIP therefore carries several versions/source trees, not one unambiguous canonical source.
 - Daisy OS v3 includes Android app code, engine components (`ConsensusEngine.kt`, `DiscoveryEngine.kt`, `VoiceCoPilot.kt`, `IngressParser.kt`, `TetherManager.kt`, `GeminiClient.kt`), Compose UI/theme resources, Gradle configuration, and basic unit/instrumented test scaffolding.
