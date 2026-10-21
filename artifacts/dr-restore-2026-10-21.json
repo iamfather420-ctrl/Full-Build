@@ -1,0 +1,51 @@
+{
+  "recorded_at": "2026-10-21T05:06:30Z",
+  "repository": "iamfather420-ctrl/Full-Build",
+  "procedure": "docs/DR_RESTORE_PROCEDURE.md",
+  "backup_source": {
+    "workflow_run_id": 39545168678,
+    "workflow_run_url": "https://github.com/iamfather420-ctrl/Full-Build/actions/runs/39545168678",
+    "run_number": 7,
+    "run_status": "completed",
+    "conclusion": "success",
+    "artifact_name": "solvex-neon-backup-39545168678",
+    "artifact_id": 12320698207,
+    "artifact_size_bytes": 30648,
+    "artifact_sha256": "44872aab57018ba5c30bf8fdc92443f8bb0a92409616d808f69c92c929f5faf2",
+    "dump_filename": "neon-dump-2026-10-21.dump",
+    "dump_size_bytes": 158704,
+    "artifact_expiration": "2026-11-20T04:39:18Z",
+    "prior_validation": "The Daily Backup workflow's PostgreSQL 18 pg_restore --list validation step completed successfully. This validates archive readability, not a successful database restore."
+  },
+  "restore_target": {
+    "requested": "Disposable non-production Neon branch",
+    "new_branch_creation": "BLOCKED",
+    "reason": "Neon branch limit exceeded (HTTP 422). No existing branch was deleted to make room.",
+    "production_branch_modified": false
+  },
+  "restore_execution": {
+    "status": "NOT_EXECUTED",
+    "reason": [
+      "The execution container has no pg_restore binary.",
+      "Attempting to install postgresql-client-18 timed out; the required client was not made available.",
+      "The Neon project is at its branch limit, and the current execution path cannot restore the custom-format dump through the Neon SQL tool."
+    ],
+    "command_required": "pg_restore --dbname=\"$SCRATCH_NEON_URL\" --no-owner --no-acl --clean --if-exists neon-dump-2026-10-21.dump"
+  },
+  "post_restore_audit": "NOT_RUN — no restore occurred.",
+  "post_restore_isolation": "NOT_RUN — no restore occurred.",
+  "staging_health_check": "NOT_RUN — no restore occurred.",
+  "overall_status": "BLOCKED",
+  "next_required_actions": [
+    "Provide or free a non-production Neon branch slot with owner approval; no branch was deleted automatically.",
+    "Run pg_restore with PostgreSQL 18 client against that scratch branch using its branch-specific connection string, never the production URL.",
+    "Run scripts/neon-gate11-readonly-audit.sql and the full docs/ISOLATION_TEST_PLAN.md against the restored branch.",
+    "Record restore output, audit JSON, isolation transcript, and staging health/readiness responses before marking disaster recovery complete."
+  ],
+  "safety": {
+    "production_unchanged": true,
+    "production_login_disabled": true,
+    "paypal_live_payments_disabled": true,
+    "secrets_or_connection_strings_archived": false
+  }
+}
