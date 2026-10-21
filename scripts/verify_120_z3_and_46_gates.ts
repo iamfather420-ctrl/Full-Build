@@ -1,9 +1,18 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { execSync as nodeExecSync } from 'node:child_process';
 import { UnifiedZ3FormalProver } from '../src/proofs/UnifiedZ3FormalProver';
 import { System46Gates } from '../src/proofs/System46Gates';
+import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
 
 async function main() {
+  // Supply real Node/Git context so gate evidence records the actual checked-out
+  // commit. The pipeline now blocks rather than substituting a fallback hash.
+  AuthoritativeVerificationPipeline.setNodePlatform({
+    execSync: (command, options) => nodeExecSync(command, options as any).toString(),
+    fs,
+    path
+  });
   console.log('===========================================================');
   console.log(' PROJECT AGATE / SOLVEX FORMAL PROOF & TRUTH-BOUNDARY AUDIT');
   console.log(' 120 Z3 THEOREM CASES & 46 SYSTEM GATES EXECUTION PIPELINE');
