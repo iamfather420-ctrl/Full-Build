@@ -328,7 +328,7 @@ export class NeonStore {
         "SELECT indexdef FROM pg_indexes WHERE schemaname = 'public' AND tablename = 'access_requests'"
       );
       const hasIdempotencyUnique = (Array.isArray(indexes) ? indexes : []).some((row: any) => {
-        const definition = String(row.indexdef || '').toLowerCase().replace(/\\s+/g, ' ');
+        const definition = String(row.indexdef || '').toLowerCase().replace(/\s+/g, ' ');
         return definition.includes('unique') &&
           definition.includes('(tenant_id, idempotency_key)');
       });
