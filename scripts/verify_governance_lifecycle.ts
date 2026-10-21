@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { Lifecycle, State, type Actor } from "../src/lib/lifecycle";
+import { Lifecycle, State, GOVERNANCE_TRANSITIONS, type Actor } from "../src/lib/lifecycle";
 
 const DAISY: Actor = { id: "daisy-haminja", kind: "partner" };
 const OWNER: Actor = { id: "owner", kind: "human" };
@@ -110,21 +110,7 @@ function highRiskReviewed(life: Lifecycle, tool: string) {
 // Edges not reachable through public methods are reported as gaps, not fabricated as passes.
 const declaredStates = Object.values(State);
 assert.equal(new Set(declaredStates).size, declaredStates.length, "state names must be unique");
-const declaredEdges: Record<string, string[]> = {
-  PROPOSED: ["REVIEWED", "REJECTED", "CANCELLED", "NEEDS_REVIEW"],
-  REVIEWED: ["AUTHORIZED", "REJECTED", "CANCELLED", "NEEDS_REVIEW"],
-  NEEDS_REVIEW: ["REVIEWED", "REJECTED", "CANCELLED"],
-  AUTHORIZED: ["RUNNING", "BLOCKED", "CANCELLED"],
-  BLOCKED: ["AUTHORIZED", "CANCELLED"],
-  RUNNING: ["VALIDATING", "FAILED", "CANCELLED"],
-  VALIDATING: ["COMPLETED", "FAILED", "NEEDS_REVIEW"],
-  FAILED: ["RECOVERY_REQUIRED"],
-  RECOVERY_REQUIRED: ["AUTHORIZED", "CANCELLED"],
-  COMPLETED: [],
-  REJECTED: [],
-  CANCELLED: [],
-};
-const allEdges = Object.entries(declaredEdges).flatMap(([from, targets]) => targets.map((to) => `${from}->${to}`));
+const allEdges = Object.entries(GOVERNANCE_TRANSITIONS).flatMap(([from, targets]) => targets.map((to) => `${from}->${to}`));
 const untestedEdges = allEdges.filter((transition) => !coveredEdges.has(transition));
 const unvisitedStates = declaredStates.filter((state) => !coveredStates.has(state));
 console.log("SOLVEX GOVERNANCE LIFECYCLE VERIFICATION");
