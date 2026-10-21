@@ -1,0 +1,218 @@
+{
+  "execution_id": "gate46_exec_1792559121687",
+  "timestamp": "2026-10-21T05:05:21.687Z",
+  "total_gates": 46,
+  "authoritative_gates_count": 15,
+  "enterprise_gates_count": 30,
+  "master_closure_gate_count": 1,
+  "gates_passed": 41,
+  "external_provider_required_count": 1,
+  "blocked_count": 1,
+  "failed_count": 3,
+  "all_local_and_model_passed": false,
+  "overall_verdict": "BLOCKED",
+  "source": {
+    "workflow_run_id": 39547545814,
+    "workflow_run_url": "https://github.com/iamfather420-ctrl/Full-Build/actions/runs/39547545814",
+    "workflow_head_sha": "da22639220559f4e9011ccf0ee1143f068df2de7",
+    "artifact_name": "authoritative-verification-dea5a0627fa82a0d9ea5efd24b0fea3841564b90",
+    "artifact_sha256": "bdf5ef0c8e6174599f3dd627de01b8279d4a5ec7c5db5f98fb522b57a5b9825e",
+    "raw_generated_report_sha256": "ff3837a7a7cc244c12e7ecaca442bd9518b39581314eebb122ea38ac4a6d1665",
+    "reported_gate00_commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
+    "reported_gate00_runtime_mode": "BROWSER_RUNTIME",
+    "provenance_warning": "Fresh evaluator output was produced by the workflow, but Gate 00 reports BROWSER_RUNTIME and commit 728625581c2f89210c752d03fda0a154812b2366, which does not match workflow HEAD da22639220559f4e9011ccf0ee1143f068df2de7. Current-commit provenance is unverified until this mismatch is resolved. The complete raw report is retained in the linked workflow artifact."
+  },
+  "gates": [
+    {
+      "gate_id": "GATE-00",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-01",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-02",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-03",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-04",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-05",
+      "status": "FAIL"
+    },
+    {
+      "gate_id": "GATE-06",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-07",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-08",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-09",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-10",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-11",
+      "status": "EXTERNAL_PROVIDER_REQUIRED"
+    },
+    {
+      "gate_id": "GATE-12",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-13",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-14",
+      "status": "BLOCKED"
+    },
+    {
+      "gate_id": "INV-01",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-02",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-03",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-04",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-05",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-06",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-07",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-08",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-09",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-10",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-11",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-12",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-13",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-14",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-15",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-16",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-17",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-18",
+      "status": "FAIL"
+    },
+    {
+      "gate_id": "INV-19",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-20",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-21",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-22",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-23",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-24",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-25",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-26",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-27",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-28",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-29",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "INV-30",
+      "status": "PASSED"
+    },
+    {
+      "gate_id": "GATE-46",
+      "status": "FAIL"
+    }
+  ],
+  "failed_gate_notes": {
+    "GATE-05": "Reported FAIL; details state 29 of 30 tests passed but also claim 100% pass rate. Inconsistent and requires investigation.",
+    "GATE-11": "External provider required in this evaluator report; its Neon details say not connected in the evaluator environment. This does not override the separate direct Neon branch audit recorded in the isolation transcript.",
+    "GATE-14": "Production gate blocked by failed invariant test, evaluator-side Neon connection missing, and isolation proof not bound to production.",
+    "INV-18": "PayPal enforcement invariant reported FAIL even though PayPal/live payments are intentionally disabled for this release; investigate whether the test expectation matches the approved disabled-payment policy.",
+    "GATE-46": "Master closure gate failed because preceding gates are not all passed."
+  }
+}
