@@ -55,10 +55,15 @@ jobs:
           echo "DATE=$DATE" >> "$GITHUB_ENV"
           echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
 
-      - name: Install PostgreSQL client
+      - name: Install PostgreSQL 18 client
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y curl ca-certificates
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+          echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-18
+          pg_dump --version
 
       - name: Create and verify Neon database dump
         shell: bash
