@@ -63,7 +63,8 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
           sudo apt-get install -y postgresql-client-18
-          pg_dump --version
+          echo "PG18_BIN=/usr/lib/postgresql/18/bin" >> "$GITHUB_ENV"
+          /usr/lib/postgresql/18/bin/pg_dump --version
 
       - name: Create and verify Neon database dump
         shell: bash
@@ -77,10 +78,13 @@ jobs:
             exit 1
           fi
 
-          DUMP="neon-dump-${DATE}.dump"
-          echo "Creating PostgreSQL custom-format backup..."
+          PG_DUMP="${PG18_BIN}/pg_dump"
+          PG_RESTORE="${PG18_BIN}/pg_restore"
 
-          pg_dump \
+          DUMP="neon-dump-${DATE}.dump"
+          echo "Creating PostgreSQL custom-format backup with $($PG_DUMP --version)..."
+
+          "$PG_DUMP" \
             --dbname="$NEON_DATABASE_URL" \
             --format=custom \
             --no-owner \
@@ -89,7 +93,7 @@ jobs:
 
           test -s "$DUMP"
           echo "Checking backup archive..."
-          pg_restore --list "$DUMP" > /tmp/solvex-restore-list.txt
+          "$PG_RESTORE" --list "$DUMP" > /tmp/solvex-restore-list.txt
           test -s /tmp/solvex-restore-list.txt
 
           echo "Backup SHA-256:"
