@@ -93,12 +93,15 @@ export class AuthoritativeVerificationPipeline {
       }
     };
 
-    let commitSha = '728625581c2f89210c752d03fda0a154812b2366';
+    // Never substitute a remembered or synthetic commit hash. If the runner
+    // cannot provide Git provenance, record it as unavailable and fail this gate.
+    let commitSha = 'UNAVAILABLE';
     if (platform.execSync) {
       try {
-        commitSha = platform.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+        const observedSha = platform.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+        if (/^[0-9a-f]{40}$/i.test(observedSha)) commitSha = observedSha;
       } catch {
-        commitSha = '728625581c2f89210c752d03fda0a154812b2366';
+        commitSha = 'UNAVAILABLE';
       }
     }
 
