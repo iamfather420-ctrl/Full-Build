@@ -1,0 +1,144 @@
+# Daisy Haminja AI/UI/OS — File-Level Source Inventory
+
+**Inventory date:** 2026-10-21  
+**Primary inventory source:** `iamfather420-ctrl/Full-Build` (default branch `main`, tree SHA `a5ae6a4f928b80460519a9b493c1355916351967`).  
+**Additional source:** `iamfather420-ctrl/SOLVEX-PARADOX-BOX` (default branch `main`, tree SHA `83f3fd9f9a7cc07c440e13c17818e6be271b9bee`).  
+**Scope note:** this is a file-level inventory of Daisy-named files and directly related brain, OS, UI, execution, and test modules found in those repository trees. It is not a claim that every file in either large repository belongs to Daisy. Paths are exact repository paths. Purpose descriptions are based on filenames and inspected source excerpts; binary assets are identified by path/type. No files were copied or merged by this inventory.
+
+## SOLVEX governance lifecycle — test coverage report
+
+The source `src/lib/lifecycle.ts` defines 12 states and 25 legal directed transitions. The verification script `scripts/verify_governance_lifecycle.ts` exercises reachable paths via the public API and lists every edge it cannot exercise as an implementation gap. It does not mutate state directly or mark unimplemented paths as passed.
+
+- Expected reachable paths covered by the script: PROPOSED → REVIEWED → AUTHORIZED → RUNNING → VALIDATING → COMPLETED; PROPOSED → REJECTED; REVIEWED → REJECTED; AUTHORIZED → BLOCKED → AUTHORIZED; VALIDATING → FAILED.
+- Guardrails checked: Daisy cannot authorize HIGH-risk work; human review/owner authorization required; unavailable tools remain BLOCKED with a reason; failed validation is not completed; audit-chain integrity stays valid.
+- Source-level gaps already visible: no public cancellation method despite CANCELLED edges; no public entry into NEEDS_REVIEW; no public FAILED → RECOVERY_REQUIRED recovery method; VALIDATING is advanced synchronously inside `run()`, so callers cannot intervene before COMPLETED/FAILED. The script prints actual transition/state counts and exact uncovered edges in CI.
+- The test is not evidence of production execution or durable audit persistence; `Lifecycle` is currently an in-memory class and the audit digest in this file is a small FNV-style digest, not a cryptographic hash.
+
+## Daisy Haminja files — Full-Build
+
+| Path | Origin | Purpose |
+|---|---|---|
+| `DAISY_AI_OS.md` | `iamfather420-ctrl/Full-Build` | Top-level pointer to the unified Daisy AI OS directory and local startup instructions. |
+| `daisy-ai-os/BUILD.txt` | same | Build/status note; records claimed 14/14 verification and target platform list. |
+| `daisy-ai-os/package.json` | same | Scripts for running/verifying the Daisy OS and building native artifacts/images. |
+| `daisy-ai-os/server.mjs` | same | Main local server entry point for the standalone Daisy AI OS. |
+| `daisy-ai-os/src/brain/DaisyActivationGate.ts` | same | Activation gate for Daisy runtime capabilities. |
+| `daisy-ai-os/src/native-os/permissions/PermissionKernel.ts` | same | Permission-checking layer for the native OS. |
+| `daisy-ai-os/src/native-os/process/ProcessLayer.ts` | same | Process/runtime layer for native OS operations. |
+| `daisy-ai-os/src/native-os/runtime/DaisyRuntime.ts` | same | Daisy native runtime implementation. |
+| `daisy-ai-os/src/native-os/system-tools/SystemTools.ts` | same | System tool registry/operations for the native OS. |
+| `daisy-ai-os/src/native-os/types.ts` | same | Shared types for native OS modules. |
+| `src/brain/DaisyActivationGate.ts` | same | Main app activation gate; controls whether autonomous reasoning can activate. |
+| `src/brain/DaisyBrain.ts` | same | Main brain facade/state report; reads registries, verification state, gateways, and activation gate. |
+| `src/brain/DaisyReasoningKernel.ts` | same | Reasoning-kernel implementation used to propose composite candidates. |
+| `src/components/DaisyBrainView.tsx` | same | UI view for the brain and 54-node mesh. |
+| `src/components/DaisyFloat.tsx` | same | Floating Daisy assistant UI entry point. |
+| `src/components/DaisyHaminjaAssistant.tsx` | same | Main interactive assistant component, including wake-word detection and controls. |
+| `src/assets/images/daisy_avatar_portrait_1784658206570.jpg` | same | Daisy portrait asset. |
+| `public/daisy-avatar_native.png` | same | Daisy avatar image asset. |
+| `public/daisy-haminja_native.png` | same | Daisy Haminja image asset. |
+| `public/daisy_avatar.jpg` | same | Daisy avatar image asset. |
+| `public/img_daisy_core_icon_1782437282955.jpg` | same | Daisy core icon asset. |
+| `public/img_daisy_hero_banner_1782437295189.jpg` | same | Daisy hero/banner asset. |
+| `artifacts/solvex/public/daisy-avatar.png` | same | Daisy avatar asset used by the Solvex artifact app. |
+| `artifacts/solvex/public/daisy-haminja.png` | same | Daisy Haminja artwork used by the Solvex artifact app. |
+| `artifacts/solvex/src/components/DaisyAvatar.tsx` | same | Avatar UI component for the artifact app. |
+| `artifacts/solvex/src/components/DaisyFloat_native.tsx` | same | Native/floating Daisy assistant component for the artifact app. |
+| `src/lib/daisy-functions.ts` | same | Daisy tool/function catalogue and proposal adapter into the governance lifecycle. |
+| `src/lib/daisyAdminInjector.ts` | same | Admin-guarded runtime patch/injection module. Requires security review before enabling mutation. |
+| `src/lib/daisyAutonomousEngine.ts` | same | Autonomous orchestration/self-healing integration module. |
+| `src/lib/daisyCoreEngine.ts` | same | Core Daisy engine module. |
+| `src/lib/daisyProvisioner.ts` | same | Software provisioning/customization pipeline module. |
+| `src/lib/daisySelfUpdater.ts` | same | Self-update/runtime patch module; requires tightly controlled authorization and rollback. |
+| `src/lib/lifecycle.ts` | same | Governance task state machine, policy checks, and in-memory hash-linked audit entries. |
+| `src/routes/lifecycle.tsx` | same | Lifecycle dashboard UI for propose/review/authorize/run and audit-chain display. |
+| `src/routes/agents.tsx` | same | Agent route/UI supporting the agent interface. |
+| `src/nodes/DaisySubsystemExecutors.ts` | same | Daisy subsystem executor implementations. |
+| `src/tests/daisy54NodeCoverage.ts` | same | Coverage checks for the Daisy 54-node subsystem. |
+| `proof-before-power/public/agents/daisy-haminja.mjs` | same | Proof-before-power agent policy: Daisy can propose but not execute or grade proof. |
+| `proof-before-power/public/agents/daisy-haminja.test.mjs` | same | Tests for the proof-before-power Daisy agent. |
+| `src/converted_app/logic/DaisyCoreConsole.ts` | same | Converted/ported Daisy console logic. |
+| `src/converted_app/logic/DaisyEntities.ts` | same | Converted Daisy domain/entity models. |
+| `src/converted_app/logic/DaisyGeminiService.ts` | same | Converted AI-provider service; provider dependency must be checked against the Daisy-only OS requirement. |
+| `src/converted_app/logic/DaisyRepository.ts` | same | Converted data repository layer. |
+| `src/converted_app/logic/DaisyViewModel.ts` | same | Converted UI view-model layer. |
+| `app/src/main/java/com/example/data/DaisyEntities.kt` | same | Android data/domain entities. |
+| `app/src/main/java/com/example/data/DaisyGeminiService.kt` | same | Android provider service; conflicts with “Daisy only / Gemini removed” note unless intentionally retained for a separate app. |
+| `app/src/main/java/com/example/data/DaisyRepository.kt` | same | Android data repository. |
+| `app/src/main/java/com/example/data/model/AgenticMesh.kt` | same | Android agent-mesh model. |
+| `app/src/main/java/com/example/ui/DaisyCoreConsole.kt` | same | Android Daisy core console UI. |
+| `app/src/main/java/com/example/ui/DaisyViewModel.kt` | same | Android Daisy console view-model. |
+
+## Related Daisy source — SOLVEX-PARADOX-BOX
+
+| Path | Origin | Purpose |
+|---|---|---|
+| `src/brain/DaisyBrain.ts` | `iamfather420-ctrl/SOLVEX-PARADOX-BOX` | Separate repository version of the Daisy brain; reconcile against Full-Build before choosing a canonical copy. |
+| `src/qa_v4/src/daisycore/daisyBrain.ts` | same | QA-v4 Daisy brain implementation. |
+| `src/qa_v4/daisyIntegration.ts` | same | QA-v4 integration entry for Daisy components. |
+| `src/marketplace/OrderLifecycle.ts` | same | Marketplace order lifecycle state machine; separate from `src/lib/lifecycle.ts`. |
+| `src/database/SqliteStore.ts` | same | SQLite persistence layer; check whether it is wired into the canonical Daisy runtime. |
+| `src/proofs/daisy_architecture.ts` | same | Architecture/proof model for Daisy system claims. |
+| `src/tests/enterpriseVerification.ts` | same | Enterprise invariant suite, including system/lifecycle checks. |
+| `src/tests/dfrlVerification.ts` | same | DFRL proof verification tests. |
+| `src/tests/dfrlApiVerification.ts` | same | DFRL API verification tests. |
+| `app/src/main/assets/app.js` | same | Android WebView app JavaScript bundle. |
+| `app/src/main/assets/index.html` | same | Android WebView app shell. |
+| `app/src/main/assets/style.css` | same | Android WebView styling. |
+| `app/src/main/AndroidManifest.xml` | same | Android application manifest and declared capabilities. |
+
+## Source archives identified in the repository manifest
+
+The checked-in `sources/smash-archive-manifest.txt` records the following Daisy-related archive inputs. The inventory above describes files actually present in repository trees; these archive members are provenance inputs, not individually inventoried internal files because the archives are not checked in as extracted trees here.
+
+| Archive/member | Origin | Inventory finding |
+|---|---|---|
+| `Full-Build-SAT-Witness-Fix-production-hardening.zip` (21,599,543 bytes) | Smash transfer `TADA.zip`, transfer ID `MzTZDszljz-ft` | Manifest identifies this as the archive used to rebuild the current Full-Build, with newer commits subsequently merged on `main`. |
+| `Daisy-Himinja-AI-UI-OS-v3-main.zip` (2,814,970 bytes) | Same `TADA.zip` | Daisy AI/UI/OS archive; internal file list and exact file-to-archive provenance have not been re-extracted/verified in this audit. |
+| `daisy-haminja-solvex-brain.zip` (1,713,515 bytes) | Same `TADA.zip` | Daisy/SOLVEX brain archive; internal file list and version relationship remain unverified. |
+| `Haminja-AI-main.zip` (91,892 bytes) | Same `TADA.zip` | Additional Haminja AI source archive; internal files not individually compared here. |
+| `Daisy-Haminja-AI---UAREFAKE-Registry-Problem-Solving-Engine-main.zip` (95,079 bytes) | Same `TADA.zip` | Daisy/UAREFAKE registry/problem-solving archive; internal files not individually compared here. |
+| `Solvex-Daisy-Haminja-Kernel-Update.zip` (21,734,559 bytes) and `Solvex-Daisy-Haminja-Kernel-Update (1).zip` (15,043,231 bytes) | Same `TADA.zip` | Kernel update archives; whether they are identical, incremental, or divergent must be checked by archive hashes and manifests. |
+| `Daisy-AI-OS-Complete-With-ISO.tar.part-00` (1,887,436,800 bytes) | Smash transfer `2 x 2.zip`, transfer ID `YBKjTiquq2-ft` | Only split part 00 is recorded; later `.part-01+` pieces are absent from this transfer manifest. The full tar cannot be extracted or validated from this part alone. |
+| `Daisy Haminja SolveX Brain _ Google AI Studio.mht` (5,741,575 bytes) | Same `TADA.zip` | Captured AI Studio page/archive; contents are a source artifact, not a repository with verified build lineage. |
+
+Manifest links: [Smash source README](../sources/README.md) and [archive manifest](../sources/smash-archive-manifest.txt).
+
+## Newly uploaded source archive examined: `solvex-daisy-haminja-os.zip`
+
+- SHA-256: `b349aaac55b605e62979a21414fd6475bcc80e0d80a5dd4a30b192894d1ca668`. This examination counted **669 ZIP entries** totaling **17,017,380 uncompressed bytes** (ZIP size 17,157,362 bytes).
+- Root-level app files include `src/App.tsx`, `src/lib/lifecycle.ts`, `scripts/test-solvex-governance.mjs`, and verification artifacts under `artifacts/`.
+- Nested source snapshots include **404 files** under `authentic_sources/Full-Build`, **58** under `authentic_sources/Daisy-Himinja-AI-UI-OS-v3`, **34** under `authentic_sources/Daisy-Haminja-AI-Registry`, and **11** under `authentic_sources/Daisy-Haminja-App-Forge`. The ZIP therefore carries several versions/source trees, not one unambiguous canonical source.
+- Daisy OS v3 includes Android app code, engine components (`ConsensusEngine.kt`, `DiscoveryEngine.kt`, `VoiceCoPilot.kt`, `IngressParser.kt`, `TetherManager.kt`, `GeminiClient.kt`), Compose UI/theme resources, Gradle configuration, and basic unit/instrumented test scaffolding.
+- Daisy Haminja AI Registry includes a React app, registry viewer, autonomous communication panel, B2B economic dashboard, compliance dashboard, conflict analysis, mesh telemetry, solver dashboard, knowledge-graph and verified-corpus modules, and a server entry point.
+- Daisy Haminja App Forge includes an app shell, server, ledger/tethers data files, and build configuration.
+- The archive root has `metadata.json` declaring `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API`; its README also instructs setting `GEMINI_API_KEY`. This conflicts with the nested Full-Build `DAISY_AI_OS.md` statement “Gemini removed. Daisy only.” Provider removal is therefore **not verified across the uploaded archive**.
+
+### Governance tests run against the uploaded archive
+
+I extracted only the archive's `src/lib/lifecycle.ts` and `scripts/test-solvex-governance.mjs` into a temporary test directory and ran:
+
+```bash
+node --experimental-strip-types --test scripts/test-solvex-governance.mjs
+```
+
+**Observed result: 6 tests passed, 0 failed, 0 skipped.** Tests cover the standard completion path, rejection, NEEDS_REVIEW and resolution, BLOCKED and unblock/retry, FAILED → RECOVERY_REQUIRED → reauthorization, and illegal state skips. Against the archive's declared matrix, these scenarios exercise **13 of 25 directed transitions and reach 11 of 12 states**; `CANCELLED` is not reached. Uncovered edges include every transition into `CANCELLED`, `REVIEWED → NEEDS_REVIEW`, `REVIEWED → REJECTED`, `NEEDS_REVIEW → REJECTED`, `RUNNING → FAILED` as a direct edge, and `VALIDATING → NEEDS_REVIEW`. Thus the suite passes its six test cases, but does not verify every declared transition.
+
+**Important provenance distinction:** this passing result is for the lifecycle implementation inside the uploaded ZIP, **not** the current `main` version in GitHub. The uploaded implementation exposes `flagNeedsReview`, `resolveNeedsReview`, `unblock`, `flagRecoveryRequired`, and `authorizeRecovery`; the current GitHub `main` lifecycle file does not expose those methods. The archive also has a `TRANSITIONS` matrix that is not exported in current `main`. Therefore the six passing tests do not establish that current `main` supports these paths. The test labels the audit digest “cryptographically sound,” but the implementation uses an 8-hex-digit FNV-style digest; that is **not cryptographic integrity protection**. The run also used demo result strings and is not evidence of live tool execution.
+
+The uploaded archive gives us an authentic candidate source for filling current lifecycle gaps, but merging it must be a reviewed, path-specific reconciliation rather than copying the whole ZIP over current code. Preserve the current repository as a separate provenance source and do not mix duplicate app trees blindly.
+
+## Missing or unverified components
+
+1. **Lifecycle transition completeness:** the source declares cancellation, needs-review, and recovery transitions without public methods to drive all of them. The new verifier documents exact uncovered edges; implement explicit, permission-checked transition APIs and tests before claiming full state coverage.
+2. **Durable governance history:** `Lifecycle` keeps tasks/audit entries in memory. The shown digest is not cryptographic. A production governance ledger needs durable storage, cryptographic hashing/signing, replay protection, and tamper/recovery tests.
+3. **Daisy canonical-source manifest:** there are multiple Daisy implementations in Full-Build, SOLVEX-PARADOX-BOX, converted_app, Android app, and artifact app. A source-of-truth/provenance map with hashes and version relationships is still needed; do not treat similarly named files as interchangeable.
+4. **Provider alignment:** `DAISY_AI_OS.md` says “Gemini removed. Daisy only,” while Android/converted modules include `DaisyGeminiService`. Determine whether these are legacy/separate deliverables or remove/replace only with an approved source-based change.
+5. **Native build artifacts and referenced scripts:** `daisy-ai-os/BUILD.txt` references `machine-os/boot/daisy-kernel.elf` and `native/kernel/`, but the current Full-Build Git tree contains no files under `machine-os/` or `native/kernel/`. `daisy-ai-os/package.json` references `scripts/activate-os.ts`, `scripts/verify-complete.ts`, `scripts/build-native.sh`, `scripts/make-linux-image.sh`, and `scripts/install-linux.sh`; these paths are also absent under `daisy-ai-os/` in the inspected tree. Therefore the listed activation/verification/native-build commands are not self-contained in this checkout until those sources/artifacts are restored or the scripts are corrected. A build note alone is not proof that the binary is present or runnable.
+6. **End-to-end runtime wiring:** UI, brain, provisioning, autonomous engine, self-updater, and persistence modules exist by path, but their complete safe integration and production behavior are not proven by the inventory.
+7. **Production identity, permissions, and persistence:** trusted OIDC, least-privilege runtime database credentials, tenant isolation, backup/restore rehearsal, and fresh production gate evidence remain external readiness blockers from the current project status.
+8. **Archives and other GitHub account:** this inventory records the two accessible repositories above. It does not claim exhaustive coverage of all prior archives, Google Drive uploads, Replit workspaces, or the separate `Solvex-Paradox-Box` GitHub account's repositories. Those sources must be enumerated and compared before declaring the Daisy source inventory globally complete.
+
+## Reproduction
+
+Run `npm run verify:lifecycle` from the Full-Build root. CI output reports covered states/edges and all currently unexercised transitions. Existing test/build workflows remain in place.

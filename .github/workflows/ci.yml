@@ -26,5 +26,7 @@ jobs:
         run: npm run build
       - name: TypeScript
         run: npm run lint
+      - name: Governance lifecycle transitions
+        run: npm run verify:lifecycle
       - name: Enterprise invariants
         run: npm run verify:enterprise

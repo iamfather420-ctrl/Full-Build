@@ -22,7 +22,7 @@ export type StateName = (typeof State)[keyof typeof State];
 export const Risk = { LOW: 1, MEDIUM: 2, HIGH: 3 } as const;
 export type RiskName = keyof typeof Risk;
 
-const TRANSITIONS: Record<StateName, StateName[]> = {
+export const GOVERNANCE_TRANSITIONS: Record<StateName, StateName[]> = {
   PROPOSED: ["REVIEWED", "REJECTED", "CANCELLED", "NEEDS_REVIEW"],
   REVIEWED: ["AUTHORIZED", "REJECTED", "CANCELLED", "NEEDS_REVIEW"],
   NEEDS_REVIEW: ["REVIEWED", "REJECTED", "CANCELLED"],
@@ -108,7 +108,7 @@ export class Lifecycle {
   }
 
   private move(task: Task, to: StateName, actor: Actor, event: string, detail: Record<string, string> = {}) {
-    if (!TRANSITIONS[task.state].includes(to)) {
+    if (!GOVERNANCE_TRANSITIONS[task.state].includes(to)) {
       this.deny(task, actor, `invalid transition ${task.state}->${to}`);
     }
     const from = task.state;
