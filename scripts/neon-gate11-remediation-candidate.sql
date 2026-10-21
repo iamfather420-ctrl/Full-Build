@@ -12,23 +12,21 @@ BEGIN;
 -- login: Neon correctly rejects that operation for this connection. Instead,
 -- create a new SQL-native role with no elevated membership and preserve the
 -- existing login untouched for rollback until the application is switched.
-CREATE ROLE solvex_runtime_v2
-  NOLOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
-GRANT solvex_app_runtime TO solvex_runtime_v2;
-ALTER ROLE solvex_runtime_v2
-  LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
-
--- Assign an unexposed random initial password. After this transaction is
--- applied in an approved change window, rotate it via the Neon role-password
--- API and place the returned value into the deployment secret store.
-DO $password$
+-- Create the login role in one DDL statement. This avoids a separate
+-- ALTER ROLE operation, which Neon may deny even after CREATE ROLE succeeds.
+-- The random initial password is intentionally not emitted in query results.
+DO $create_runtime_role$
 BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'solvex_runtime_v2') THEN
+    RAISE EXCEPTION 'solvex_runtime_v2 already exists; stop and reconcile rather than altering it blindly';
+  END IF;
   EXECUTE format(
-    'ALTER ROLE solvex_runtime_v2 PASSWORD %L',
+    'CREATE ROLE solvex_runtime_v2 LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD %L',
     encode(public.gen_random_bytes(32), 'hex')
   );
 END
-$password$;
+$create_runtime_role$;
+GRANT solvex_app_runtime TO solvex_runtime_v2;
 
 -- Tenant-scoped payment records use the existing signed claim contract.
 ALTER TABLE public.payment_orders ENABLE ROW LEVEL SECURITY;
