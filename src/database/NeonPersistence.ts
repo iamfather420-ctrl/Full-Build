@@ -303,4 +303,64 @@ export class NeonStore {
       return [];
     }
   }
+
+  public async verifyAccessRequestSchema(): Promise<{ ready: boolean; missing: string[] }> {
+    if (!this.isConnected || !this.neonClient) return { ready: false, missing: ['connection'] };
+    try {
+      const rows = await this.neonClient.query(
+        "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'orders'"
+      );
+      const present = new Set((Array.isArray(rows) ? rows : []).map((row: any) => String(row.column_name)));
+      const required = ['id', 'tenant_id', 'created_at', 'updated_at', 'status', 'version', 'payload_json'];
+      const missing = required.filter((name) => !present.has(name));
+      return { ready: missing.length === 0, missing };
+    } catch (error: any) {
+      this.lastError = error?.message || 'Access-request schema check failed';
+      return { ready: false, missing: ['schema_query_failed'] };
+    }
+  }
+
+  public async listAccessRequests(tenantId: string, limit = 100): Promise<Record<string, unknown>[]> {
+    if (!this.isConnected || !this.neonClient || typeof tenantId !== 'string' || !tenantId.trim()) return [];
+    const safeLimit = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 100)) : 100;
+    try {
+      const rows = await this.neonClient.query(
+        "SELECT payload_json FROM orders WHERE tenant_id = $1 AND payload_json->>'id' LIKE 'ar_%' ORDER BY created_at DESC LIMIT $2",
+        [tenantId.trim(), safeLimit]
+      );
+      return (Array.isArray(rows) ? rows : []).map((row: any) => row.payload_json).filter((item: any) => item && typeof item === 'object');
+    } catch (error: any) {
+      this.lastError = error?.message || 'Access-request read failed';
+      return [];
+    }
+  }
+
+  public async createAccessRequest(record: {
+    id: string; tenant_id: string; offer_id: string; request_text: string;
+    requested_by: string; idempotency_key: string; status: string;
+    authorization_state: string; payment_state: 'DISABLED';
+  }): Promise<typeof record | null> {
+    if (!this.isConnected || !this.neonClient || !record.tenant_id.trim() || !record.requested_by.trim()) return null;
+    const schema = await this.verifyAccessRequestSchema();
+    if (!schema.ready) return null;
+    try {
+      const existingRows = await this.neonClient.query(
+        "SELECT payload_json FROM orders WHERE tenant_id = $1 AND payload_json->>'idempotency_key' = $2 LIMIT 1",
+        [record.tenant_id, record.idempotency_key]
+      );
+      const existing = Array.isArray(existingRows) ? existingRows[0]?.payload_json : null;
+      if (existing && typeof existing === 'object') return existing as typeof record;
+      const now = Date.now();
+      const payload = { ...record, created_at: now, updated_at: now, version: '1.0.0' };
+      await this.neonClient.query(
+        "INSERT INTO orders (id, tenant_id, created_at, updated_at, status, version, payload_json) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        [record.id, record.tenant_id, now, now, record.status, '1.0.0', JSON.stringify(payload)]
+      );
+      return record;
+    } catch (error: any) {
+      this.lastError = error?.message || 'Access-request write failed';
+      return null;
+    }
+  }
+
 }
