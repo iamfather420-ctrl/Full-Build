@@ -42,6 +42,25 @@ SELECT json_build_object(
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = 'public' AND c.relkind = 'r'
   ),
+  'internal_metadata_exceptions', (
+    SELECT coalesce(json_agg(json_build_object(
+      'table', c.relname,
+      'tenant_scoped', EXISTS (
+        SELECT 1 FROM information_schema.columns col
+        WHERE col.table_schema = n.nspname AND col.table_name = c.relname AND col.column_name = 'tenant_id'
+      ),
+      'rls_enabled', c.relrowsecurity,
+      'rls_forced', c.relforcerowsecurity,
+      'runtime_select', has_table_privilege('solvex_app_runtime', c.oid, 'SELECT'),
+      'runtime_insert', has_table_privilege('solvex_app_runtime', c.oid, 'INSERT'),
+      'runtime_update', has_table_privilege('solvex_app_runtime', c.oid, 'UPDATE'),
+      'runtime_delete', has_table_privilege('solvex_app_runtime', c.oid, 'DELETE'),
+      'classification', 'INTERNAL_METADATA_REQUIRES_EXPLICIT_REVIEW'
+    ) ORDER BY c.relname), '[]'::json)
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p') AND c.relname LIKE '\\_%' ESCAPE '\\'
+  ),
   'rls_exceptions', (
     SELECT coalesce(json_agg(json_build_object(
       'table', c.relname,
@@ -62,6 +81,7 @@ SELECT json_build_object(
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = 'public' AND c.relkind = 'r'
+      AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
       AND (
         NOT c.relrowsecurity
         OR NOT c.relforcerowsecurity
