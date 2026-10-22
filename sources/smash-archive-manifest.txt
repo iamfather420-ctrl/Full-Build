@@ -1,15 +1,15 @@
-# Smash archive manifest
+# Archive provenance manifest
 
-This manifest records the archive transfers referenced by the Full-Build README. It distinguishes reported file contents from items that have been independently re-downloaded, concatenated, or verified.
+The Daisy archive was split into part-00 and part-01 because the files were too large for direct transfer; Smash was used as the transfer method. A Smash package containing only part-00 does not establish that part-01 is missing from the original source set.
 
-| Transfer | Link | Reported contents | Verification status |
+| Source | Link | Recorded contents | Status |
 | --- | --- | --- | --- |
 | TADA.zip | https://fromsmash.com/MzTZDszljz-ft | Reported 756 MB ZIP with 63 files, including `Full-Build-SAT-Witness-Fix-production-hardening.zip` and related SolveX / UAREFAKE / Daisy bundles | Historical listing; current availability and byte-for-byte contents not re-verified |
-| Daisy part 00 | https://fromsmash.com/YBKjTiquq2-ft | Reported `2 x 2.zip`, containing `Daisy-AI-OS-Complete-With-ISO.tar.part-00` only | Historical report; current availability and checksum not re-verified |
-| Daisy part 01 | https://fromsmash.com/iy0orXgo0p-ft | Previously identified as the separate transfer containing `Daisy-AI-OS-Complete-With-ISO.tar.part-01` | Historical identification only; current availability, downloaded bytes, and checksum not verified |
+| Smash package containing part-00 | https://fromsmash.com/YBKjTiquq2-ft | Reported `2 x 2.zip`, containing `Daisy-AI-OS-Complete-With-ISO.tar.part-00` | One transfer package, not the complete split set |
+| Full-Build release | https://github.com/iamfather420-ctrl/Full-Build/releases/tag/v0.1.0-daisy-ai-os | Recorded assets: `Daisy-AI-OS-Complete-With-ISO.tar.part-00`, `Daisy-AI-OS-Complete-With-ISO.tar.part-01`, and a SHA-256 file | Both numbered parts are identified in the existing release record; do not describe part-01 as missing solely because one Smash package included part-00 only |
 
-## Reassembly status
+## Reassembly and integrity
 
-The intended concatenation order is `part-00` followed by `part-01`, producing `Daisy-AI-OS-Complete-With-ISO.tar`. Do not treat the archive as complete until both exact parts are available, concatenated in order, and the resulting file passes the published SHA-256 check. The combined archive has been reported as 2,415,636,480 bytes, but host-side concatenation and extraction have not been independently verified in this audit.
+The intended order is part-00 followed by part-01. The reported combined archive size is 2,415,636,480 bytes. To independently verify a local reconstruction, concatenate the exact two parts in order and validate the result against the published SHA-256 before extracting it. This documentation does not claim that a new local concatenation or extraction was performed during this correction.
 
-A missing or expired Smash transfer does not prove the source is permanently lost. The Git repository is a separate working tree and should not be described as byte-for-byte equivalent to the complete ISO archive without a manifest/hash comparison.
+The working Git tree and the split ISO archive are distinct deliverables. Do not claim they are byte-for-byte equivalent without comparing their manifests and hashes.
