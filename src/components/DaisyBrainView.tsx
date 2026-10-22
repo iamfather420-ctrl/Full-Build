@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cpu, CheckCircle2, Shield, Network, Zap, AlertTriangle } from 'lucide-react';
+import { Cpu, CheckCircle2, Shield, Network, Zap, Coins, AlertTriangle } from 'lucide-react';
 import { DaisyBrain, CompleteBrainState } from '../brain/DaisyBrain';
 import { NodeRegistry, NodeEntity } from '../nodes/NodeRegistry';
 
