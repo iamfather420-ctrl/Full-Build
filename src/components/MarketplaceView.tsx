@@ -31,22 +31,7 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({
   );
 
   // Orders list state
-  const [orders, setOrders] = useState<any[]>(() => {
-    return [
-      {
-        id: 'ord_demo_01',
-        tenant_id: 'TENANT_ENTERPRISE_DEMO',
-        offer_id: 'off_zeno_core',
-        solution_id: 'DH-S-001',
-        proof_bundle_id: 'PB-DH-S-001',
-        title: 'Bounded Zeno Geometric Convergence Algorithm',
-        price_cents: 63281,
-        status: 'ORDER_CREATED',
-        payment_id: null,
-        created_at: Date.now() - 3600000
-      }
-    ];
-  });
+  const [orders, setOrders] = useState<any[]>([]);
 
   const [activePaymentOrder, setActivePaymentOrder] = useState<string | null>(null);
   const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
