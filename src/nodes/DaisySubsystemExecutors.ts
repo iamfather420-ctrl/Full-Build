@@ -538,7 +538,7 @@ export class DaisySubsystemExecutors {
         const start = performance.now();
         const lifecycle = OrderLifecycleManager.getInstance();
         const sqlite = SqliteStore.getInstance();
-        const orderId = \`ord_cuj_\${Date.now()}\`;
+        const orderId = 'ord_cuj_' + Date.now();
         sqlite.insertRecord('orders', {
           id: orderId,
           tenant_id: 'TENANT_ROOT',
