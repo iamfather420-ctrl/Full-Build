@@ -2,22 +2,23 @@
 
 SolveX + Daisy Haminja full build: the web runtime, formal SAT-witness corpus, payments-disabled release gates, and the source archives those gates were cut from.
 
-This repository is the working tree. The two Smash transfers below are the uploaded archives it was reconciled against. They expire, so the git history is the durable copy.
+This repository is the working tree. The Smash transfers below are the uploaded archives it was reconciled against. Transfer links can expire, so git history is the durable copy of this working tree; it is not proof that the complete ISO archive has been reassembled.
 
 ## Source archives
 
 | Transfer | Archive | What it is |
 | --- | --- | --- |
-| [3 x 2 ?](https://fromsmash.com/MzTZDszljz-ft) | `TADA.zip` (756 MB, 63 files) | Full-Build snapshots, including `Full-Build-SAT-Witness-Fix-production-hardening.zip`, plus related SolveX / UAREFAKE / Daisy bundles |
-| [1 x 2](https://fromsmash.com/YBKjTiquq2-ft) | `2 x 2.zip` (1.65 GB, 1 file) | `Daisy-AI-OS-Complete-With-ISO.tar.part-00` only |
+| [TADA.zip](https://fromsmash.com/MzTZDszljz-ft) | `TADA.zip` (reported 756 MB, 63 files) | Full-Build snapshots, including `Full-Build-SAT-Witness-Fix-production-hardening.zip`, plus related SolveX / UAREFAKE / Daisy bundles |
+| [Daisy part 00](https://fromsmash.com/YBKjTiquq2-ft) | `2 x 2.zip` (reported 1.65 GB) | Previously reported to contain `Daisy-AI-OS-Complete-With-ISO.tar.part-00` only |
+| [Daisy part 01](https://fromsmash.com/iy0orXgo0p-ft) | Separate Smash transfer | Previously identified as containing `Daisy-AI-OS-Complete-With-ISO.tar.part-01`; current availability and contents have not been verified |
 
-File-by-file listing: [sources/smash-archive-manifest.txt](sources/smash-archive-manifest.txt).
+Archive provenance and current verification limits: [sources/smash-archive-manifest.txt](sources/smash-archive-manifest.txt).
 
-`2 x 2.zip` is split-tar part 00 by itself. Later parts were not in that transfer, so the Daisy ISO archive cannot be fully unpacked from the link.
+**Part 2 / archive-completion status:** the repository history records that the part-00 transfer did not include later parts. A separate link was previously identified for part-01, but it has not been verified as currently downloadable, and successful concatenation, checksum validation, and ISO extraction have not been confirmed. Therefore the complete split archive must not be described as recovered yet.
 
 ## What landed from the hardening archive
 
-`Full-Build-SAT-Witness-Fix-production-hardening.zip` (inside TADA.zip) was merged into this tree on 2026-10-21.
+`Full-Build-SAT-Witness-Fix-production-hardening.zip` (reported inside TADA.zip) was merged into this tree on 2026-10-21.
 
 Brought in:
 
@@ -57,4 +58,4 @@ Do not hand-edit generated evidence JSON to force a SAT result. Regenerate it wi
 - `scripts/` — verification and release-safety checks
 - `migrations/004_access_requests.sql` — additive, unapplied
 - `app/` — Android shell
-- `sources/` — Smash archive manifest
+- `sources/` — Smash archive provenance manifest
