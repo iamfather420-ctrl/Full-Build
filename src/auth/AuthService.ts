@@ -26,7 +26,7 @@ export class AuthService {
     throw new Error('BLOCKED: local token issuance is disabled; use the approved OIDC issuer.');
   }
 
-  public verifyToken(_token: string): { valid: false; error: string } {
+  public verifyToken(_token: string): { valid: boolean; user?: UserContext; error?: string } {
     return { valid: false, error: 'BLOCKED: no configured production OIDC verifier is available.' };
   }
 
