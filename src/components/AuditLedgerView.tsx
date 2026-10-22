@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, AlertTriangle, CheckCircle2, Lock, Terminal, RefreshCw, Key } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 import { DurableStore } from '../database/DurableStore';
 
 interface AuditLedgerViewProps {
@@ -10,43 +10,12 @@ export const AuditLedgerView: React.FC<AuditLedgerViewProps> = ({ onChainVerifie
   const store = DurableStore.getInstance();
   const [chain, setChain] = useState(() => store.getState().audit_chain);
   const [verification, setVerification] = useState(() => store.verifyChain());
-  const [tamperInjected, setTamperInjected] = useState(false);
-  const [tamperMessage, setTamperMessage] = useState<string | null>(null);
 
   const handleVerifyChain = () => {
     const res = store.verifyChain();
     setVerification(res);
+    setChain(store.getState().audit_chain);
     onChainVerified();
-  };
-
-  const handleSimulateTamper = () => {
-    const rawChain = store.getState().audit_chain;
-    if (rawChain.length < 1) return;
-
-    const targetIdx = rawChain.length - 1;
-    // Mutate byte in last block
-    rawChain[targetIdx].payload_hash = 'deadbeef'.repeat(8);
-    setTamperInjected(true);
-
-    const check = store.verifyChain();
-    setVerification(check);
-    setTamperMessage(`Anti-Tamper Sentinel Alarm Activated: ${check.reason}`);
-    onChainVerified();
-  };
-
-  const handleRestoreChain = () => {
-    // Recompute payload hash to heal
-    const rawChain = store.getState().audit_chain;
-    if (rawChain.length < 1) return;
-
-    for (let i = 0; i < rawChain.length; i++) {
-      // Re-initialize genesis if tampered
-      // Simply reload or reset
-    }
-    // Clean up
-    setTamperInjected(false);
-    setTamperMessage(null);
-    handleVerifyChain();
   };
 
   return (
@@ -59,11 +28,11 @@ export const AuditLedgerView: React.FC<AuditLedgerViewProps> = ({ onChainVerifie
               <ShieldCheck className="w-4 h-4" />
             </span>
             <h2 className="text-xl font-bold text-white tracking-tight">
-              Linear SHA-256 Merkle Ledger & Anti-Tamper Sentinel
+              Hash-Linked Audit Ledger Verification
             </h2>
           </div>
           <p className="text-sm text-slate-400 max-w-2xl">
-            Immutable, append-only cryptographic ledger tracking every state transition, tenant mutation, checkpoint creation, and order capture. Continuous anti-tamper sentinel detects 1-bit mutations.
+            Verifies the persisted hash-linked audit records currently available to this application. This check does not claim digital signatures, immutability, or external anchoring.
           </p>
         </div>
 
@@ -76,21 +45,6 @@ export const AuditLedgerView: React.FC<AuditLedgerViewProps> = ({ onChainVerifie
             <span>Verify Merkle Integrity</span>
           </button>
 
-          {!tamperInjected ? (
-            <button
-              onClick={handleSimulateTamper}
-              className="px-4 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800 text-rose-300 text-xs font-semibold transition cursor-pointer"
-            >
-              Simulate Byte Mutation (Test Sentinel)
-            </button>
-          ) : (
-            <button
-              onClick={handleRestoreChain}
-              className="px-4 py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-800 text-emerald-300 text-xs font-semibold transition cursor-pointer"
-            >
-              Acknowledge & Clear Alarm
-            </button>
-          )}
         </div>
       </div>
 
