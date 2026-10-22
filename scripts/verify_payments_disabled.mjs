@@ -7,7 +7,7 @@ const app = read('src/App.tsx');
 const marketplace = read('src/components/MarketplaceView.tsx');
 const api = read('src/api/ApiRouter.ts');
 
-assert.match(adapter, /deliberately unavailable[\s\S]*no network calls/i,
+assert.match(adapter, /Fail-closed payment boundary[\s\S]*deliberately unavailable[\s\S]*no network calls/i,
   'PayPal adapter must document its disabled boundary');
 assert.match(adapter, /public hasActiveCredentials\(\): boolean \{\s*return false;/,
   'PayPal adapter must never report active credentials');
