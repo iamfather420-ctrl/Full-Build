@@ -20,6 +20,7 @@ const formal = readJson('formal-aggregation.json');
 const summary = readJson('z3-120-formal-verification-summary.json');
 const activation = readJson('daisy-brain-activation-gate.json');
 const gates = readJson('system-46-gates.json');
+const authoritative = readJson('execution-gates.json');
 
 if (formal.total?.required !== 120) fail('Formal aggregate must require exactly 120 cases.');
 if (formal.total?.actual_z3_executions !== 120) fail('Formal aggregate must record 120 actual Z3 executions.');
@@ -53,6 +54,18 @@ if (activation.corpus?.total_required !== 120 || activation.corpus?.executed !==
 if (activation.mandatory_gates?.total !== 46 || activation.mandatory_gates?.observed !== 46 ||
     gates.total_gates !== 46 || !Array.isArray(gates.gates) || gates.gates.length !== 46) {
   fail('The 46-gate inventory is incomplete or inconsistent.');
+}
+const gate09 = authoritative.gates?.find((g: any) => g.gate_id === 'GATE-09');
+if (gate09?.status !== 'PASSED' || (gate09.details?.unsatisfied_node_ids?.length ?? -1) !== 0) {
+  fail('Fresh authoritative gate artifact must show all 54 nodes executed with no unsatisfied nodes.');
+}
+const gate12 = authoritative.gates?.find((g: any) => g.gate_id === 'GATE-12');
+if (gate12?.status !== 'BLOCKED' ||
+    gate12.details?.order_lifecycle?.final_status !== 'OFFER' ||
+    gate12.details?.order_lifecycle?.transitions_executed?.length !== 0 ||
+    gate12.details?.order_lifecycle?.authorization_blocked !== true ||
+    gate12.details?.order_lifecycle?.payment_processing !== 'DISABLED') {
+  fail('Lifecycle evidence must report blocked authorization and the unchanged OFFER state; it must not claim escrow funding or deployment.');
 }
 if (!['ACTIVE', 'BLOCKED'].includes(activation.status)) {
   fail('Daisy activation status is missing or unrecognized.');
