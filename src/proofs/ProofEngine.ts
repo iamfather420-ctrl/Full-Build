@@ -1,59 +1,16 @@
 import { ProofBundleEntity } from '../database/DatabaseSchema';
-import { ProofBundleBuilder } from './ProofBundle';
-import { NOPOTVerifier } from './NOPOTProof';
-import { DurableStore } from '../database/DurableStore';
 
 export class ProofEngine {
   private static instance: ProofEngine | null = null;
   private bundles: Map<string, ProofBundleEntity> = new Map();
 
-  private constructor() {
-    this.bootstrapDHS001();
-  }
+  private constructor() {}
 
   public static getInstance(): ProofEngine {
     if (!ProofEngine.instance) {
       ProofEngine.instance = new ProofEngine();
     }
     return ProofEngine.instance;
-  }
-
-  private bootstrapDHS001(): void {
-    const cert = NOPOTVerifier.verifyAlgorithmTermination(
-      'AchillesZenoConvergenceSum',
-      (remaining) => remaining - 1,
-      10,
-      100
-    );
-
-    const builder = new ProofBundleBuilder(
-      'PB-DH-S-001',
-      'DH-S-001',
-      'Bounded Zeno Geometric Convergence Algorithm reaches zero distance in exactly bounded O(log(1/epsilon)) steps.'
-    );
-
-    builder
-      .setImplementation('export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }')
-      .addTest('TEST-ZENO-01', 'Convergence to epsilon within 64 iterations', true, 1.2)
-      .addTest('TEST-ZENO-02', 'Zero division guard invariant check', true, 0.4)
-      .addTest('TEST-ZENO-03', 'Deterministic float reproducibility across runs', true, 0.8)
-      .addFormalProof('NOPOT', cert.variant_function, cert.termination_proved)
-      .addLean4Proof('src/proofs/lean/ZenoAchilles.lean')
-      .addLean4Proof('src/proofs/lean/NOPOTTermination.lean')
-      .addOracle('ORACLE-LEAN4-WITNESS', 'Lean4 Community Kernel Attestor', 'DETERMINISTIC_CHECK', true)
-      .addOracle('ORACLE-NOPOT-WITNESS', 'NOPOT Variant Decreasing Order Verifier', 'MATH_INSPECTION', true)
-      .addReplay('REPLAY-CLEANROOM-01', 'd8787c88ae821901', 'd8787c88ae821901')
-      .addEvidence('Log: 64 iterations executed without divergence.')
-      .addEvidence('Log: Binary footprint 128 bytes, 0 heap allocations.')
-      .addSourceReference('Aristotle Physics VI:9')
-      .addLimitation('Applies only to continuous metrics with standard real topology.');
-
-    const sealed = builder.seal();
-    this.bundles.set(sealed.proof_id, sealed);
-
-    const store = DurableStore.getInstance();
-    store.getState().proof_bundles[sealed.proof_id] = sealed;
-    store.persist();
   }
 
   public getBundle(proofId: string): ProofBundleEntity | undefined {
