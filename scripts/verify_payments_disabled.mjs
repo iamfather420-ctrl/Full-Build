@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const read = (path) => readFileSync(new URL(\`../\${path}\`, import.meta.url), 'utf8');
+const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const adapter = read('src/payments/PayPalAdapter.ts');
 const app = read('src/App.tsx');
 const marketplace = read('src/components/MarketplaceView.tsx');
