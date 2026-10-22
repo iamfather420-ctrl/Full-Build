@@ -1,7 +1,6 @@
 import React from 'react';
 import { Shield, Key, Database, RefreshCw, Cpu, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { SovereignRole, UserContext } from '../auth/AuthService';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 
 interface HeaderProps {
   currentUser: UserContext;
