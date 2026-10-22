@@ -106,14 +106,19 @@ export class System46Gates {
     const externalBoundaryChecks = enterpriseReport.results.filter(inv => /external adapter inventory|paypal dn-35 server.authoritative fail.closed/i.test(inv.name));
     const failClosedActive = failClosedChecks.length > 0 && failClosedChecks.every(inv => inv.passed);
     const externalBoundariesPreserved = externalBoundaryChecks.length > 0 && externalBoundaryChecks.every(inv => inv.passed);
-    const masterPassed = evaluatedGates.length === 45 && nonPassedPrior === 0 && failClosedActive && externalBoundariesPreserved;
+    const structuralIntegrityOk = evaluatedGates.length === 45 && failClosedActive && externalBoundariesPreserved;
+    const masterPassed = structuralIntegrityOk && nonPassedPrior === 0 && failedPrior === 0;
+    const masterBlocked = !masterPassed && structuralIntegrityOk && failedPrior === 0 && nonPassedPrior > 0;
+    const masterStatus: GateExecutionResult['status'] = masterPassed
+      ? 'PASSED'
+      : masterBlocked ? 'BLOCKED' : 'FAIL';
 
     evaluatedGates.push({
       gate_number: 46,
       gate_id: 'GATE-46',
       name: 'Master Truth-Boundary & Proof Closure Gate',
       category: 'MASTER_PROOF_CLOSURE',
-      status: masterPassed ? 'PASSED' : 'FAIL',
+      status: masterStatus,
       claim_scope: 'LOCAL',
       duration_ms: Date.now() - startedAt,
       evidence_hash: computeSha256(JSON.stringify({ gate_id: 'GATE-46', master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
@@ -123,7 +128,9 @@ export class System46Gates {
         preceding_failed: failedPrior,
         preceding_non_passed: nonPassedPrior,
         external_boundaries_preserved: externalBoundariesPreserved,
-        fail_closed_active: failClosedActive
+        fail_closed_active: failClosedActive,
+        structural_integrity_ok: structuralIntegrityOk,
+        closure_state: masterPassed ? 'VERIFIED' : masterBlocked ? 'BLOCKED' : 'FAILED'
       }
     });
 
