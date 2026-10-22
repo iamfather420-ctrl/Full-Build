@@ -67,6 +67,17 @@ if (gate12?.status !== 'BLOCKED' ||
     gate12.details?.order_lifecycle?.payment_processing !== 'DISABLED') {
   fail('Lifecycle evidence must report blocked authorization and the unchanged OFFER state; it must not claim escrow funding or deployment.');
 }
+const masterGate = gates.gates.find((g: any) => g.gate_id === 'GATE-46');
+if (!masterGate) fail('Master GATE-46 is missing.');
+const masterDetails = masterGate.details ?? {};
+if (masterDetails.preceding_failed === 0 &&
+    masterDetails.preceding_non_passed > 0 &&
+    masterGate.status !== 'BLOCKED') {
+  fail('Master GATE-46 must report BLOCKED, not FAIL, when prior gates are blocked or require external providers.');
+}
+if (masterDetails.preceding_failed > 0 && masterGate.status !== 'FAIL') {
+  fail('Master GATE-46 must report FAIL when a preceding gate has an actual failure.');
+}
 if (!['ACTIVE', 'BLOCKED'].includes(activation.status)) {
   fail('Daisy activation status is missing or unrecognized.');
 }
