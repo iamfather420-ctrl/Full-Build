@@ -473,7 +473,7 @@ export class AuthoritativeVerificationPipeline {
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
     const pipeRes = pipe.runPipeline('DFRL-P-024', zenoCode);
 
-    const testOrderId = \`e2e_order_\${Date.now()}\`;
+    const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
     sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
       id: testOrderId,
