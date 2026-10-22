@@ -6,6 +6,18 @@ export interface PayPalCredentials {
   environment: PayPalEnvironment;
 }
 
+export interface PayPalMaskedCredentialsInfo {
+  environment: PayPalEnvironment;
+  masked_client_id: string;
+  has_credentials: boolean;
+}
+
+export interface PayPalCredentialTestResult {
+  valid: boolean;
+  authenticated: boolean;
+  reason: string;
+}
+
 export interface PayPalCaptureResult {
   status: 'EXTERNAL_PROVIDER_REQUIRED' | 'BLOCKED';
   reason: string;
@@ -25,8 +37,18 @@ export class PayPalAdapter {
     return PayPalAdapter.instance;
   }
 
+  public publicStatus(): 'EXTERNAL_PROVIDER_REQUIRED' { return 'EXTERNAL_PROVIDER_REQUIRED'; }
+
   public hasActiveCredentials(): boolean {
     return false;
+  }
+
+  public getMaskedCredentialsInfo(): PayPalMaskedCredentialsInfo {
+    return { environment: 'sandbox', masked_client_id: 'NOT_CONFIGURED', has_credentials: false };
+  }
+
+  public async testLiveCredentials(_clientId: string, _clientSecret: string, _environment: PayPalEnvironment): Promise<PayPalCredentialTestResult> {
+    return { valid: false, authenticated: false, reason: 'BLOCKED: PayPal credential testing is disabled and no network request was made.' };
   }
 
   public clearSessionCredentials(): void {
