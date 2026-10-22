@@ -23,7 +23,7 @@ export interface RawNodeExecutionResult {
   category: string;
   executed: boolean;
   claim_scope: 'MODEL' | 'LOCAL' | 'SANDBOX' | 'PRODUCTION';
-  status: 'SUCCESS' | 'FAIL_CLOSED' | 'PROVIDER_REQUIRED' | 'PROHIBITED_BLOCKED';
+  status: 'SUCCESS' | 'FAIL_CLOSED' | 'PROVIDER_REQUIRED' | 'PROHIBITED_BLOCKED' | 'FAIL';
   duration_ms: number;
   evidence: Record<string, any>;
   error?: string;
@@ -321,20 +321,34 @@ export class DaisySubsystemExecutors {
         };
       }
 
-      // 16. DN-16: RBAC Token Mint & Validator
+      // 16. DN-16: RBAC Token Boundary (Fail-Closed Until OIDC)
       case 'DN-16': {
+        const start = performance.now();
         const auth = AuthService.getInstance();
-        const tok = auth.createSignedToken('u_test', 'TENANT_TEST', 'test@agate.io', 'ADMIN');
-        const ver = auth.verifyToken(tok);
+        let mintBlocked = false;
+        let mintError = '';
+        try {
+          auth.createSignedToken('u_test', 'TENANT_TEST', 'test@agate.io', 'ADMIN');
+        } catch (error) {
+          mintError = error instanceof Error ? error.message : String(error);
+          mintBlocked = /^BLOCKED:/.test(mintError);
+        }
+        const untrustedToken = auth.verifyToken('untrusted-token');
+        const boundaryVerified = mintBlocked && !untrustedToken.valid;
         return {
           node_id: 'DN-16',
-          name: 'RBAC Token Mint & Validator',
+          name: 'RBAC Token Boundary (Fail-Closed Until OIDC)',
           category: 'SECURITY',
           executed: true,
           claim_scope: 'LOCAL',
-          status: ver.valid ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: boundaryVerified ? 'FAIL_CLOSED' : 'FAIL',
           duration_ms: performance.now() - start,
-          evidence: { role: ver.user?.role, valid: ver.valid }
+          evidence: {
+            local_token_mint_blocked: mintBlocked,
+            untrusted_token_rejected: !untrustedToken.valid,
+            authorization_mode: 'TRUSTED_OIDC_REQUIRED',
+            mint_error: mintError
+          }
         };
       }
 
@@ -519,36 +533,47 @@ export class DaisySubsystemExecutors {
         };
       }
 
-      // 28. DN-28: Order State Machine Orchestrator
+      // 28. DN-28: Order Lifecycle Authorization Gate (Fail-Closed)
       case 'DN-28': {
+        const start = performance.now();
         const lifecycle = OrderLifecycleManager.getInstance();
-        const auth = AuthService.getInstance();
-        const tok = auth.createSignedToken('adm', 'TENANT_ROOT', 'adm@agate.io', 'ADMIN');
-        const usr = auth.verifyToken(tok).user!;
-        const orderId = `ord_cuj_${Date.now()}`;
         const sqlite = SqliteStore.getInstance();
+        const orderId = 'ord_cuj_' + Date.now();
         sqlite.insertRecord('orders', {
           id: orderId,
           tenant_id: 'TENANT_ROOT',
-          offer_id: 'OFFER_DEMO',
-          solution_id: 'SOL_DEMO',
-          proof_bundle_id: 'PB_DEMO',
+          offer_id: 'OFFER_CUJ',
+          solution_id: 'SOL_CUJ',
+          proof_bundle_id: 'PB_CUJ',
           price_cents: 1000,
           status: 'OFFER',
-          version: '1.0.0-PROD'
+          version: '1.0.0-TEST'
         });
-        const t1 = lifecycle.transitionOrder(orderId, 'ORDER_CREATED', usr);
-        const tBad = lifecycle.transitionOrder(orderId, 'DEPLOYED', usr);
-        const validTransitions = t1.success && !tBad.success;
+
+        // No local role token is minted. Verify that the unauthenticated
+        // transition is rejected and the persisted state remains unchanged.
+        const attempt = lifecycle.transitionOrder(orderId, 'ORDER_CREATED');
+        const storedOrder = sqlite.getRawDb().get('SELECT status FROM orders WHERE id = ?', [orderId]);
+        const stateUnchanged = storedOrder?.status === 'OFFER';
+        const blockedAsRequired = !attempt.success &&
+          /BLOCKED: verified identity and signed tenant claims are required/i.test(attempt.error || '') &&
+          stateUnchanged;
+
         return {
           node_id: 'DN-28',
-          name: 'Order State Machine Orchestrator',
+          name: 'Order Lifecycle Authorization Gate (Fail-Closed)',
           category: 'MARKETPLACE',
           executed: true,
           claim_scope: 'LOCAL',
-          status: validTransitions ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: blockedAsRequired ? 'FAIL_CLOSED' : 'FAIL',
           duration_ms: performance.now() - start,
-          evidence: { valid_transition: t1.success, invalid_transition_rejected: !tBad.success }
+          evidence: {
+            unauthenticated_transition_rejected: !attempt.success,
+            order_state_unchanged: stateUnchanged,
+            persisted_order_status: storedOrder?.status ?? 'UNKNOWN',
+            authorization_reason: attempt.error ?? 'NONE',
+            payment_processing: 'DISABLED'
+          }
         };
       }
 
