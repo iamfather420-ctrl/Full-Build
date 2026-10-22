@@ -1,20 +1,22 @@
 # Full-Build
 
-SolveX + Daisy Haminja full build: the web runtime, formal SAT-witness corpus, payments-disabled release gates, and the source archives those gates were cut from.
+SolveX + Daisy Haminja full build: the web runtime, formal SAT-witness corpus, payments-disabled release gates, and the source archives used to reconcile it.
 
-This repository is the working tree. The Smash transfers below are the uploaded archives it was reconciled against. Transfer links can expire, so git history is the durable copy of this working tree; it is not proof that the complete ISO archive has been reassembled.
+This repository is the working tree. The Daisy ISO was split into numbered parts because the files were too large for direct transfer; Smash was used as the transfer service. Do not interpret a single Smash ZIP containing only part-00 as evidence that part-01 is missing from the original build or its release assets.
 
-## Source archives
+## Source archives and split build
 
-| Transfer | Archive | What it is |
+| Source | Contents | Notes |
 | --- | --- | --- |
-| [TADA.zip](https://fromsmash.com/MzTZDszljz-ft) | `TADA.zip` (reported 756 MB, 63 files) | Full-Build snapshots, including `Full-Build-SAT-Witness-Fix-production-hardening.zip`, plus related SolveX / UAREFAKE / Daisy bundles |
-| [Daisy part 00](https://fromsmash.com/YBKjTiquq2-ft) | `2 x 2.zip` (reported 1.65 GB) | Previously reported to contain `Daisy-AI-OS-Complete-With-ISO.tar.part-00` only |
-| [Daisy part 01](https://fromsmash.com/iy0orXgo0p-ft) | Separate Smash transfer | Previously identified as containing `Daisy-AI-OS-Complete-With-ISO.tar.part-01`; current availability and contents have not been verified |
+| [TADA.zip transfer](https://fromsmash.com/MzTZDszljz-ft) | Reported 756 MB ZIP with 63 files | Full-Build snapshots, including `Full-Build-SAT-Witness-Fix-production-hardening.zip`, plus related SolveX / UAREFAKE / Daisy bundles |
+| [Smash transfer for the split archive](https://fromsmash.com/YBKjTiquq2-ft) | Reported 1.65 GB ZIP containing `Daisy-AI-OS-Complete-With-ISO.tar.part-00` | One transfer/archive package is not necessarily the complete multi-part source set |
+| [Full-Build GitHub release](https://github.com/iamfather420-ctrl/Full-Build/releases/tag/v0.1.0-daisy-ai-os) | Recorded release assets: `Daisy-AI-OS-Complete-With-ISO.tar.part-00`, `Daisy-AI-OS-Complete-With-ISO.tar.part-01`, and SHA-256 file | The repository's recorded source identifies both split parts and the checksum. Use the release asset list as the authoritative location; do not label part-01 missing solely because a Smash package contained part-00 only. |
 
-Archive provenance and current verification limits: [sources/smash-archive-manifest.txt](sources/smash-archive-manifest.txt).
+Archive provenance notes: [sources/smash-archive-manifest.txt](sources/smash-archive-manifest.txt).
 
-**Part 2 / archive-completion status:** the repository history records that the part-00 transfer did not include later parts. A separate link was previously identified for part-01, but it has not been verified as currently downloadable, and successful concatenation, checksum validation, and ISO extraction have not been confirmed. Therefore the complete split archive must not be described as recovered yet.
+## Multi-part archive handling
+
+The split source consists of **part-00 and part-01**. They were split because of transfer-size limits. A transfer archive containing only one part is not the same thing as the original source set being incomplete. To verify a local reconstruction, concatenate the exact parts in numeric order, then check the resulting archive against the published SHA-256 before extracting it. This README does not claim that a new local concatenation or extraction was performed during this documentation correction.
 
 ## What landed from the hardening archive
 
@@ -58,4 +60,4 @@ Do not hand-edit generated evidence JSON to force a SAT result. Regenerate it wi
 - `scripts/` — verification and release-safety checks
 - `migrations/004_access_requests.sql` — additive, unapplied
 - `app/` — Android shell
-- `sources/` — Smash archive provenance manifest
+- `sources/` — archive provenance manifest
