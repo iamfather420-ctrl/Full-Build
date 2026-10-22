@@ -54,20 +54,18 @@ export class DaisyActivationGate {
   }
 
   public static read(): DaisyActivationGateRecord | null {
-    const g = globalThis as any;
-    if (typeof window === 'undefined' && g && g.process && typeof g.process.cwd === 'function') {
+    if (typeof window === 'undefined' && typeof process !== 'undefined' && typeof process.cwd === 'function') {
       try {
-        const req = g.require;
-        if (typeof req === 'function') {
-          const fsMod = req('fs');
-          const pathMod = req('path');
-          if (fsMod && pathMod) {
-            const file = pathMod.resolve(g.process.cwd(), this.RELATIVE_PATH);
-            if (fsMod.existsSync(file)) {
-              const data = JSON.parse(fsMod.readFileSync(file, 'utf8')) as DaisyActivationGateRecord;
-              inMemoryRecord = data;
-              return data;
-            }
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const fsMod = typeof require === 'function' ? require('fs') : null;
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const pathMod = typeof require === 'function' ? require('path') : null;
+        if (fsMod && pathMod) {
+          const file = pathMod.resolve(process.cwd(), this.RELATIVE_PATH);
+          if (fsMod.existsSync(file)) {
+            const data = JSON.parse(fsMod.readFileSync(file, 'utf8')) as DaisyActivationGateRecord;
+            inMemoryRecord = data;
+            return data;
           }
         }
       } catch {
