@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Cpu, CheckCircle2, Shield, Network, Zap, Coins, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Cpu, CheckCircle2, Shield, Network, Zap, AlertTriangle } from 'lucide-react';
 import { DaisyBrain, CompleteBrainState } from '../brain/DaisyBrain';
 import { NodeRegistry, NodeEntity } from '../nodes/NodeRegistry';
 
 export const DaisyBrainView: React.FC = () => {
   const brain = DaisyBrain.getInstance();
   const nodeReg = NodeRegistry.getInstance();
-  const [brainState, setBrainState] = useState<CompleteBrainState>(brain.getLiveBrainState());
+  const [brainState] = useState<CompleteBrainState>(brain.getLiveBrainState());
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
 
