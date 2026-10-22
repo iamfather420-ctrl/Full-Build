@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const read = (path) => readFileSync(new URL(\`../\${path}\`, import.meta.url), 'utf8');
+const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const auth = read('src/auth/AuthService.ts');
 const api = read('src/api/ApiRouter.ts');
 const runtime = read('scripts/verify_production_runtime.ts');
