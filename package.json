@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
+    "test:formal-hash": "tsx scripts/test_formal_evidence_hash.ts",
     "preflight": "tsx scripts/preflight.ts",
     "verify:enterprise": "tsx scripts/verify_enterprise.ts",
     "verify:dfrl": "tsx scripts/verify_dfrl.ts",
@@ -20,11 +21,11 @@
     "verify:nodes": "tsx scripts/verify_nodes.ts",
     "verify:paypal": "tsx scripts/verify_paypal_dual_env.ts",
     "verify:authoritative": "tsx scripts/verify_authoritative.ts",
-    "verify:production-runtime": "tsx scripts/verify_authoritative.ts",
     "verify:sandbox": "tsx scripts/verify_sandbox.ts",
     "verify:proof-closure": "tsx scripts/full_build_verification_closure.ts",
     "verify:ci": "tsx scripts/ci_proof_closure_check.ts",
-    "verify:all": "tsx scripts/verify_authoritative.ts"
+    "verify:all": "tsx scripts/verify_authoritative.ts",
+    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
