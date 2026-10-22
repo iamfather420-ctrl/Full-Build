@@ -1,4 +1,3 @@
-import { configureTestAuthEnvironment } from './testAuthEnvironment';
 import cp from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -6,7 +5,6 @@ import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVer
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
 
 async function main() {
-  configureTestAuthEnvironment();
   AuthoritativeVerificationPipeline.setNodePlatform({
     execSync: cp.execSync,
     fs,
@@ -15,8 +13,8 @@ async function main() {
   setDiskDbChecker((p: string) => fs.existsSync(p));
 
   console.log('===========================================================');
-  console.log(' PROJECT AGATE SOVEREIGN CORE / SOLVEX PLATFORM');
-  console.log(' AUTHORITATIVE 14-GATE VERIFICATION PIPELINE');
+  console.log(' SOLVEX + DAISY HAMINJA AI/UI/OS • SOLVEX B2B SOLUTIONS');
+  console.log(' AUTHORITATIVE 15-GATE VERIFICATION PIPELINE');
   console.log('===========================================================');
 
   const pipeline = AuthoritativeVerificationPipeline.getInstance();

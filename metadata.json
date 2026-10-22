@@ -1,6 +1,6 @@
 {
-  "name": "Project AGATE Sovereign Core & Solvex B2B Platform",
-  "description": "Enterprise sovereign parity audit control panel, defensible pricing engine, PayPal DN-35 payment gateway, and formal paradox resolution suite powered by dAIsy haMINJA.",
+  "name": "SOLVEX + Daisy Haminja AI/UI/OS",
+  "description": "SOLVEX + Daisy Haminja AI/UI/OS — Enterprise sovereign parity audit control panel, defensible pricing engine, PayPal DN-35 payment gateway, formal paradox resolution suite, and SolveX B2B Solutions.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,7 +1,7 @@
 {
   "test_name": "DH Cryptographic Proof Manifest Tamper Detection",
-  "original_root_hash": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
-  "tampered_root_hash": "a1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+  "original_root_hash": "4e88a82f27813209437ad6bf2612186ae5ee0aa1c5587420e0b2ecf8c82fe0bc",
+  "tampered_root_hash": "ae88a82f27813209437ad6bf2612186ae5ee0aa1c5587420e0b2ecf8c82fe0bc",
   "alarm_triggered": true,
   "tamper_detected": true,
   "passed": true,

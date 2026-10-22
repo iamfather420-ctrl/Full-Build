@@ -23,14 +23,14 @@
   "scope": "MODEL_VERIFIED",
   "solver": "z3-wasm",
   "solver_version": "Microsoft Research Z3 WASM 5.2.0",
-  "execution_id": "dh_suite_1790883774548_x1etdi",
-  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "execution_id": "dh_suite_1792677310731_9y1pzl",
+  "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
   "contract_hash": "d967d270daec400141778e8c311550bbbe32b4d13a4a8f84e22e3b90229a0da2",
-  "source_hash": "3cb8d768e956760a958e55859f2dd379e9ff2f85980e03838ef16360e4a62a02",
+  "source_hash": "0f39c663fae98d2054ac8b4e8c627977f009f15e19db72ad8c2d2bb394791ffe",
   "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-  "evidence_hash": "e7b58970b208a2f3b262b03a5d0a83cee960a2469cdb905f2e4fbd3e0c25bec2",
+  "evidence_hash": "da4510d0abba9d615aa3c12956afe76f765c3b4d0d011f180da50d960c1e3249",
   "evidence_integrity": "PASS",
   "source_integrity": "PASS",
-  "timestamp": "2026-10-01T19:42:56.126Z",
-  "duration_ms": 53.832
+  "timestamp": "2026-10-22T13:55:12.006Z",
+  "duration_ms": 52.82
 }

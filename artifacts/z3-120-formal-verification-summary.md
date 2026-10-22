@@ -1,12 +1,12 @@
 # Project AGATE / Daisy / Solvex — 120-Case Formal Z3 Verification Dossier
 ## Automated Theorem Prover Complete Formal Proof Ledger
 
-- **Commit SHA:** `b992445d00e6f8e27bd0aeaf308ad2f17a64d142`
-- **Timestamp:** `2026-10-01T19:43:23.542Z`
+- **Commit SHA:** `d86e3000e980a4ba6363e99bb918a782de215d20`
+- **Timestamp:** `2026-10-22T14:06:56.345Z`
 - **Total Z3 Executions:** 120 / 120
 - **Expected-Result Matches:** 120 / 120
 - **Deterministic Cleanroom Replays:** 120 / 120
-- **Combined Root Hash:** `aebc02b4ac87edddcb35b60a09638ae92f58c139e1376fe0801ff4dffd6aeba3`
+- **Combined Root Hash:** `b03f29a7af1c9d9ddc798a77e718eda2ce4deaba8dbdcd77619b9aee01893be3`
 - **Distribution:** UNSAT: 118 (88 DFRL + 30 DH), SAT: 2 (2 DH), UNKNOWN: 0, ERROR: 0
 - **Activation Gate Status:** **PROVEN_120_FORMAL_CLOSURE**
 

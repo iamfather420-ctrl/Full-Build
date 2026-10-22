@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { computeSha256 } from '../database/DatabaseSchema';
 import { DaisyActivationGate } from './DaisyActivationGate';
 
 export type ReasoningComponentKind = 'PARADOX' | 'SOLUTION' | 'INVARIANT' | 'CONSTRAINT' | 'EVIDENCE' | 'FAILURE' | 'TETHER';
@@ -49,12 +49,9 @@ export class DaisyReasoningKernel {
       throw new Error('DAISY_REASONING_REJECTED: composite candidate requires at least one component');
     }
 
-    const candidate_id = 'DAISY-C-' + crypto
-      .createHash('sha256')
-      .update(JSON.stringify({ problemId, components, tetherEdges, rationale }))
-      .digest('hex')
-      .slice(0, 20)
-      .toUpperCase();
+    const candidate_id = 'DAISY-C-' + computeSha256(
+      JSON.stringify({ problemId, components, tetherEdges, rationale })
+    ).slice(0, 20).toUpperCase();
 
     return {
       candidate_id,

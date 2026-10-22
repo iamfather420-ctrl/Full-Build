@@ -11,7 +11,7 @@ export class SystemStatusService {
     const paypal = adapters.find(a => a.adapter_id === 'DN-35');
 
     return {
-      product: 'Project AGATE Sovereign Core & SOLVEX Sovereign Platform',
+      product: 'SOLVEX + Daisy Haminja AI/UI/OS — SolveX B2B Solutions',
       engine: 'dAIsy haMINJA Core Engine',
       version: '1.0.0-PROD',
       registered_nodes: nodeReg.getAllNodes().length,

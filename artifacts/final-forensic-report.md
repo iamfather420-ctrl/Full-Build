@@ -1,8 +1,8 @@
 # Solvex Authoritative Forensic Verification Audit Report
-**Commit SHA:** `b992445d00e6f8e27bd0aeaf308ad2f17a64d142`  
-**Timestamp:** `2026-10-01T19:43:23.542Z`  
+**Commit SHA:** `d86e3000e980a4ba6363e99bb918a782de215d20`  
+**Timestamp:** `2026-10-22T14:06:56.346Z`  
 **Verdict:** **PROVEN_120_FORMAL_CLOSURE (120/120 REAL Z3 EXECUTIONS)**  
-**Combined Root Hash:** `aebc02b4ac87edddcb35b60a09638ae92f58c139e1376fe0801ff4dffd6aeba3`  
+**Combined Root Hash:** `b03f29a7af1c9d9ddc798a77e718eda2ce4deaba8dbdcd77619b9aee01893be3`  
 
 ---
 
@@ -11,7 +11,7 @@
 - **DH 32-Paradox Authoritative Subsystem:** 32 / 32 real executions, 32 fresh-context replays, 32 matches.
 - **Total Theorem Prover Scope:** Exactly 120 / 120 formal Z3-WASM verified cases.
 - **Independence & Freshness:** 100% fresh Z3 context creation per execution and replay; zero context reuse.
-- **Commit Binding:** HEAD SHA resolved dynamically from current git repository (`b992445d00e6f8e27bd0aeaf308ad2f17a64d142`).
+- **Commit Binding:** HEAD SHA resolved dynamically from current git repository (`d86e3000e980a4ba6363e99bb918a782de215d20`).
 - **Source Binding:** Cryptographically bound to disk content of `src/paradoxes/DHBootstrapParadoxRegistry.ts`.
 
 ---
