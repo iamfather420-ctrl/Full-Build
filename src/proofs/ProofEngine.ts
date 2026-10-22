@@ -1,10 +1,14 @@
 import { ProofBundleEntity } from '../database/DatabaseSchema';
+import { DurableStore } from '../database/DurableStore';
 
 export class ProofEngine {
   private static instance: ProofEngine | null = null;
   private bundles: Map<string, ProofBundleEntity> = new Map();
 
-  private constructor() {}
+  private constructor() {
+    const persisted = DurableStore.getInstance().getState().proof_bundles;
+    for (const [id, bundle] of Object.entries(persisted)) this.bundles.set(id, bundle);
+  }
 
   public static getInstance(): ProofEngine {
     if (!ProofEngine.instance) {
