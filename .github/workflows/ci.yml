@@ -22,6 +22,10 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Fail-closed release safety checks
+        run: npm run verify:release-safety
+      - name: Payments-disabled boundary checks
+        run: npm run verify:payments-disabled
       - name: Build
         run: npm run build
       - name: TypeScript
