@@ -6,7 +6,8 @@ const artifactNames = [
   'formal-aggregation.json',
   'z3-120-formal-verification-summary.json',
   'daisy-brain-activation-gate.json',
-  'system-46-gates.json'
+  'system-46-gates.json',
+  'execution-gates.json'
 ];
 const before = new Map<string, number>();
 for (const name of artifactNames) {
