@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Cpu, Flame, CheckCircle2, Shield, Network, Zap, Coins, ArrowRight } from 'lucide-react';
+import { Cpu, CheckCircle2, Shield, Network, Zap, Coins, ArrowRight, AlertTriangle } from 'lucide-react';
 import { DaisyBrain, CompleteBrainState } from '../brain/DaisyBrain';
 import { NodeRegistry, NodeEntity } from '../nodes/NodeRegistry';
-import { vaultService, AGATELedgerTransaction } from '../services/vaultService';
 
 export const DaisyBrainView: React.FC = () => {
   const brain = DaisyBrain.getInstance();
@@ -10,23 +9,11 @@ export const DaisyBrainView: React.FC = () => {
   const [brainState, setBrainState] = useState<CompleteBrainState>(brain.getLiveBrainState());
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
-  // AGATE waste burn console state
-  const [wasteKg, setWasteKg] = useState<number>(500);
-  const [harvesterAddress, setHarvesterAddress] = useState<string>('0x7A4b...C891');
-  const [burnReceipt, setBurnReceipt] = useState<AGATELedgerTransaction | null>(null);
 
   const nodes = nodeReg.getAllNodes();
   const categories = ['ALL', 'CORE_KERNEL', 'LOGIC_SOLVER', 'PERSISTENCE', 'SECURITY', 'MARKETPLACE', 'PAYMENTS', 'SETTLEMENT', 'AUDIT'];
 
   const filteredNodes = nodes.filter(n => selectedCategory === 'ALL' || n.category === selectedCategory);
-
-  const handleRecordWasteBurn = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (wasteKg <= 0) return;
-    const tx = vaultService.recordWasteBurn(wasteKg, harvesterAddress);
-    setBurnReceipt(tx);
-    setBrainState(brain.getLiveBrainState());
-  };
 
   return (
     <div className="space-y-6">
@@ -148,87 +135,12 @@ export const DaisyBrainView: React.FC = () => {
           </div>
         </div>
 
-        {/* AGATE Waste-Burn Minting Console */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="font-semibold text-white flex items-center gap-2 text-sm">
-                <Flame className="w-4 h-4 text-amber-400" />
-                Waste-Backed Minting Console
-              </h3>
-              <span className="text-[11px] font-mono text-emerald-400">
-                0.15 AGATE / kg
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 font-mono text-xs">
-              <div className="flex justify-between text-slate-400">
-                <span>Total AGATE Minted:</span>
-                <span className="text-cyan-400 font-bold">
-                  {brainState.consensus_telemetry.total_minted_supply_agate.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>Certified Waste Destroyed:</span>
-                <span className="text-emerald-400 font-bold">
-                  {brainState.consensus_telemetry.total_burned_waste_kg.toLocaleString()} kg
-                </span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>Active Network Harvesters:</span>
-                <span className="text-white">
-                  {brainState.consensus_telemetry.active_harvesters}
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleRecordWasteBurn} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Certified Physical Waste (kg)
-                </label>
-                <input
-                  type="number"
-                  value={wasteKg}
-                  onChange={(e) => setWasteKg(Number(e.target.value))}
-                  min="1"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  Harvester Enclave Address
-                </label>
-                <input
-                  type="text"
-                  value={harvesterAddress}
-                  onChange={(e) => setHarvesterAddress(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500 text-[11px]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-600/20"
-              >
-                <Flame className="w-3.5 h-3.5" />
-                <span>Certify Waste Burn & Mint AGATE</span>
-              </button>
-            </form>
-
-            {burnReceipt && (
-              <div className="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-700 text-xs font-mono space-y-1 text-emerald-200">
-                <div className="font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  Mint Transaction Confirmed
-                </div>
-                <div>ID: {burnReceipt.id}</div>
-                <div>Minted: +{burnReceipt.amount_agate} AGATE</div>
-                <div className="text-[10px] text-slate-400 break-all">Leaf Hash: {burnReceipt.merkle_leaf_hash}</div>
-              </div>
-            )}
+        {/* Minting is unavailable until external evidence and a durable ledger verifier are connected. */}
+        <div className="lg:col-span-4 rounded-2xl border border-amber-800/70 bg-amber-950/20 p-6 space-y-3">
+          <div className="flex items-center gap-2 text-amber-200 font-semibold">
+            <AlertTriangle className="h-4 w-4" /> AGATE minting disabled
           </div>
+          <p className="text-sm text-slate-300">No physical-waste evidence verifier or independently verified minting ledger is connected in this build. No mint transaction will be generated or represented as confirmed.</p>
         </div>
       </div>
     </div>
