@@ -23,28 +23,7 @@ export interface DaisyActivationGateRecord {
   generated_at: string;
 }
 
-let inMemoryRecord: DaisyActivationGateRecord | null = {
-  schema_version: '1.0.0',
-  status: 'ACTIVE',
-  reason: 'Authoritative 120-case formal Z3 verification corpus active and verified.',
-  corpus: {
-    total_required: 120,
-    dfrl_required: 88,
-    dh_required: 32,
-    executed: 120,
-    deterministic_replays: 120,
-    unknown: 0,
-    errors: 0
-  },
-  mandatory_gates: {
-    total: 15,
-    passed: 14,
-    failed: 0
-  },
-  verification_root_sha256: 'b03f29a7af1c9d9ddc798a77e718eda2ce4deaba8dbdcd77619b9aee01893be3',
-  source_commit_sha: '25f65b16be2a12c8f52975172fcf3e870c94cb23',
-  generated_at: new Date().toISOString()
-};
+let inMemoryRecord: DaisyActivationGateRecord | null = null;
 
 export class DaisyActivationGate {
   private static readonly RELATIVE_PATH = 'artifacts/daisy-brain-activation-gate.json';
