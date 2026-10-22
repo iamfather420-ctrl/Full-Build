@@ -1,7 +1,15 @@
 import React from 'react';
 import { Shield, Key, Database, RefreshCw, Cpu, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { SovereignRole, UserContext } from '../auth/AuthService';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
+
+export type SovereignRole = 'OWNER' | 'ADMIN' | 'AUDITOR' | 'OPERATOR';
+
+export interface UserContext {
+  user_id: string;
+  tenant_id: string;
+  email: string;
+  role: SovereignRole;
+  issued_at: number;
+}
 
 interface HeaderProps {
   currentUser: UserContext;
