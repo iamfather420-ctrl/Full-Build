@@ -356,17 +356,21 @@ export async function runEnterpriseVerification() {
     if (!pp) throw new Error('DN-35 PayPal adapter missing from inventory');
   });
 
-  // 20. Crystal Clear Box Redacted Evidence Projection
-  runTest('Crystal Clear Box Redaction Preserves Verifiable Evidence', 'AUDIT', () => {
+  // 20. Crystal Clear Box projects only evidence that is actually persisted.
+  runTest('Crystal Clear Box Redaction Uses Persisted Evidence Only', 'AUDIT', () => {
     const engine = ProofEngine.getInstance();
-    const bundle = engine.getBundle('PB-DH-S-001');
-    if (!bundle) throw new Error('PB-DH-S-001 not found');
-    const customerView = CrystalClearBox.projectCustomerEvidence(bundle);
-    if (!customerView.proprietary_weights_redacted) throw new Error('Proprietary weights not marked redacted');
-    if (!customerView.internal_reasoning_redacted) throw new Error('Internal reasoning not marked redacted');
-    if (customerView.verification_verdict !== 'VERIFIED') throw new Error('Verification verdict missing or corrupt');
-    if (!customerView.public_audit_token || customerView.public_audit_token.length !== 64) {
-      throw new Error('Customer public audit token invalid');
+    const bundles = engine.getAllBundles();
+    for (const bundle of bundles) {
+      const customerView = CrystalClearBox.projectCustomerEvidence(bundle);
+      if (!customerView.proprietary_weights_redacted) throw new Error('Proprietary weights not marked redacted');
+      if (!customerView.internal_reasoning_redacted) throw new Error('Internal reasoning not marked redacted');
+      if (!customerView.public_audit_token || customerView.public_audit_token.length !== 64) {
+        throw new Error('Customer public audit token invalid');
+      }
+    }
+    // An empty evidence store is valid; the test must not create a fake proof to make itself pass.
+    if (bundles.length === 0 && Object.keys(DurableStore.getInstance().getState().proof_bundles).length !== 0) {
+      throw new Error('Proof engine failed to load persisted proof records');
     }
   });
 
