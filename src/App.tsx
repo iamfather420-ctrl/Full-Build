@@ -23,9 +23,8 @@ import { ProofBundlesView } from './components/ProofBundlesView';
 import { DaisyBrainView } from './components/DaisyBrainView';
 import { AuditLedgerView } from './components/AuditLedgerView';
 import { EnterpriseAuditRunner } from './components/EnterpriseAuditRunner';
-import { AuthService, SovereignRole, UserContext } from './auth/AuthService';
+import { SovereignRole, UserContext } from './auth/AuthService';
 import { DurableStore } from './database/DurableStore';
-import { PayPalAdapter } from './payments/PayPalAdapter';
 
 type ActiveTab =
   | 'OVERVIEW'
@@ -39,21 +38,13 @@ type ActiveTab =
   | 'AUDIT_SUITE';
 
 export default function App() {
-  const authService = AuthService.getInstance();
   const durableStore = DurableStore.getInstance();
-  const paypalAdapter = PayPalAdapter.getInstance();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('OVERVIEW');
-  const [activeTenant, setActiveTenant] = useState('TENANT_ENTERPRISE_DEMO');
-  const [currentUser, setCurrentUser] = useState<UserContext>({
-    user_id: 'usr_enterprise_master',
-    tenant_id: 'TENANT_ENTERPRISE_DEMO',
-    email: 'operator@sovereign-agate.io',
-    role: 'OWNER',
-    issued_at: Date.now()
-  });
+  const [activeTenant, setActiveTenant] = useState('');
+  const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
 
-  const [chainValid, setChainValid] = useState(true);
+  const [chainValid, setChainValid] = useState(false);
   const [auditHead, setAuditHead] = useState('');
   const [paypalConnected, setPaypalConnected] = useState(false);
 
@@ -68,17 +59,29 @@ export default function App() {
     if (chain.length > 0) {
       setAuditHead(chain[chain.length - 1].record_hash);
     }
-    setPaypalConnected(paypalAdapter.hasActiveCredentials());
+    setPaypalConnected(false);
   };
 
   const handleRoleChange = (role: SovereignRole) => {
-    setCurrentUser(prev => ({ ...prev, role }));
+    setCurrentUser(prev => prev ? ({ ...prev, role }) : null);
   };
 
   const handleTenantChange = (tenant: string) => {
     setActiveTenant(tenant);
-    setCurrentUser(prev => ({ ...prev, tenant_id: tenant }));
+    setCurrentUser(prev => prev ? ({ ...prev, tenant_id: tenant }) : null);
   };
+
+  if (!currentUser) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
+        <section className="max-w-xl rounded-2xl border border-amber-800/70 bg-slate-900 p-8" role="status">
+          <h1 className="text-xl font-bold">SOLVEX + Daisy Haminja — access blocked</h1>
+          <p className="mt-3 text-slate-300">No verified OIDC session is available. This build will not create a demo identity, tenant, or owner session. Production authentication remains disabled until the signed-claims verifier and required readiness gates pass.</p>
+          <p className="mt-3 text-sm text-amber-300">No authenticated application actions are available in this state.</p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
