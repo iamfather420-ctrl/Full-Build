@@ -8,11 +8,7 @@ import {
   Terminal,
   Activity,
   Key,
-  CheckCircle2,
-  Lock,
   Layers,
-  Flame,
-  Database
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { PayPalHub } from './components/PayPalHub';
