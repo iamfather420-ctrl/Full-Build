@@ -61,7 +61,7 @@ export class PreflightService {
     items.push({
       name: 'node',
       category: 'RUNTIME',
-      status: nodeVer.startsWith('v2') || nodeVer.startsWith('v18') ? 'PRESENT' : 'INCOMPATIBLE',
+      status: /^v(?:20|22|24)\./.test(nodeVer) ? 'PRESENT' : 'INCOMPATIBLE',
       version: nodeVer,
       tested_import_path: 'process.version',
       notes: 'Node.js LTS runtime'
@@ -240,7 +240,7 @@ export class PreflightService {
     items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_LIVE_SECRET', 'PAYPAL_CLIENT_SECRET']));
 
     // 3. NEON_DATABASE_URL
-    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
+    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://'), ['DATABASE_URL']));
 
     // 4. GEMINI_API_KEY
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
