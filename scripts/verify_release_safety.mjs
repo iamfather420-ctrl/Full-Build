@@ -64,8 +64,8 @@ assert.match(neonPersistence, /new neonMod\.Pool\(\{ connectionString: this\.dat
   'Neon operations must use the Pool API when invoking parameterized .query calls');
 assert.match(neonPersistence, /testRes\?\.rows\?\.\[0\]\?\.connected/,
   'Neon connectivity must inspect the Pool query result rows');
-assert.match(neonPersistence, /WHERE \$\{tableName\}\.tenant_id = EXCLUDED\.tenant_id/,
-  'conflict updates must not overwrite records belonging to a different tenant');
+assert.match(neonPersistence, /Generic Neon writes are disabled pending schema-specific repositories and tenant-isolation tests/,
+  'generic Neon writes must remain blocked until schema-specific tenant-safe repositories are implemented');
 assert.match(neonPersistence, /Unexpected Neon query result shape/,
   'Neon read paths must reject unexpected result shapes instead of claiming verification');
 
