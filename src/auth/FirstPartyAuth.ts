@@ -4,9 +4,16 @@ import {
   scrypt as scryptCallback,
   timingSafeEqual,
 } from 'node:crypto';
-import { promisify } from 'node:util';
+type ScryptParameters = { N: number; r: number; p: number; maxmem: number };
 
-const scrypt = promisify(scryptCallback);
+function scrypt(password: string, salt: Buffer, keyLength: number, options: ScryptParameters): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scryptCallback(password, salt, keyLength, options, (error, derivedKey) => {
+      if (error) reject(error);
+      else resolve(derivedKey as Buffer);
+    });
+  });
+}
 const EMAIL_MAX_LENGTH = 254;
 const PASSWORD_MIN_LENGTH = 12;
 const SESSION_TTL_SECONDS = 60 * 60 * 12;
