@@ -11,7 +11,8 @@ Daisy is the intended first-party identity and session authority. OIDC is not re
 - Opaque, random session credentials; only token hashes are stored. Sessions expire after 12 hours and support revocation.
 - Email normalization, minimum 12-character passwords, generic login/reset responses, and rate-limit hooks.
 - The caller cannot choose tenant IDs or roles during registration. Public registration must always assign `CUSTOMER`; privileged roles require a separately audited owner-controlled provisioning workflow.
-- A PostgreSQL/Neon repository implementation using parameterized SQL and transactions is included. An email-delivery adapter is still mandatory. No process-memory production fallback exists.\n- An opt-in Express router provides registration, verification, login, session inspection, logout, and password-reset endpoints. It is deliberately not mounted in the existing API.
+- A PostgreSQL/Neon repository implementation using parameterized SQL and transactions is included. An email-delivery adapter is still mandatory. No process-memory production fallback exists.
+- An opt-in Express router provides registration, verification, login, session inspection, logout, and password-reset endpoints. It is deliberately not mounted in the existing API.
 - Additive proposed schema in `migrations/005_daisy_first_party_auth.sql`; it is deliberately not applied.
 
 ## Required before integration or production
@@ -27,4 +28,11 @@ Daisy is the intended first-party identity and session authority. OIDC is not re
 ## Explicit safety boundary
 
 This branch does not wire the new core into the live API, does not apply a database migration, does not enable login, does not create a privileged account, and does not change deployment or payment configuration. Existing fail-closed `AuthService` behavior remains in place until the durable adapter and integration tests are verified.
-\n## Repository files\n\n- `src/auth/FirstPartyAuth.ts` — credential, verification, session, and reset lifecycle.\n- `src/auth/NeonFirstPartyAuthRepository.ts` — PostgreSQL adapter.\n- `src/auth/FirstPartyAuthRouter.ts` — opt-in Express endpoints with Origin checks and secure session cookies.\n- `migrations/005_daisy_first_party_auth.sql` — proposed additive schema, not applied.\n- `scripts/first_party_auth.test.ts` — lifecycle unit tests using a test-only in-memory repository; these do not substitute for database integration tests.\n
+
+## Repository files
+
+- `src/auth/FirstPartyAuth.ts` — credential, verification, session, and reset lifecycle.
+- `src/auth/NeonFirstPartyAuthRepository.ts` — PostgreSQL adapter.
+- `src/auth/FirstPartyAuthRouter.ts` — opt-in Express endpoints with Origin checks and secure session cookies.
+- `migrations/005_daisy_first_party_auth.sql` — proposed additive schema, not applied.
+- `scripts/first_party_auth.test.ts` — lifecycle unit tests using a test-only in-memory repository; these do not substitute for database integration tests.
