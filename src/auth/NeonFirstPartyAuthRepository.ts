@@ -161,10 +161,12 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
   }
 
   async consumeRateLimit(keyHash: string, now: Date): Promise<AuthRateLimitResult> {
-    // Fixed 15-minute window; lock-free atomic UPSERT. Limit is 12 requests/window/key.
+    // One atomic UPSERT: increment, rolling-window reset, and lockout decision
+    // happen under the same row lock. No follow-up UPDATE can race another request.
     const result = await this.pool.query(
-      `INSERT INTO daisy_auth_rate_limits (key_hash, window_started_at, attempts, updated_at)
-       VALUES ($1, $2, 1, $2)
+      `INSERT INTO daisy_auth_rate_limits
+         (key_hash, window_started_at, attempts, blocked_until, updated_at)
+       VALUES ($1, $2, 1, NULL, $2)
        ON CONFLICT (key_hash) DO UPDATE SET
          window_started_at = CASE
            WHEN daisy_auth_rate_limits.window_started_at <= $2::timestamptz - interval '15 minutes' THEN $2
@@ -174,23 +176,22 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
            ELSE daisy_auth_rate_limits.attempts + 1 END,
          blocked_until = CASE
            WHEN daisy_auth_rate_limits.window_started_at <= $2::timestamptz - interval '15 minutes' THEN NULL
+           WHEN daisy_auth_rate_limits.blocked_until > $2 THEN daisy_auth_rate_limits.blocked_until
+           WHEN daisy_auth_rate_limits.attempts + 1 > 12
+             THEN GREATEST(daisy_auth_rate_limits.window_started_at + interval '15 minutes',
+                           $2::timestamptz + interval '15 minutes')
            ELSE daisy_auth_rate_limits.blocked_until END,
          updated_at = $2
        RETURNING attempts, window_started_at, blocked_until`,
       [keyHash, now],
     );
     const row = result.rows[0] as DbRow;
-    const windowStart = asDate(row.window_started_at) ?? now;
     const blockedUntil = asDate(row.blocked_until);
-    const attempts = Number(row.attempts);
-    const windowExpires = new Date(windowStart.getTime() + 15 * 60 * 1000);
     if (blockedUntil && blockedUntil > now) {
-      return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000)) };
-    }
-    if (attempts > 12) {
-      const until = new Date(Math.max(windowExpires.getTime(), now.getTime() + 15 * 60 * 1000));
-      await this.pool.query('UPDATE daisy_auth_rate_limits SET blocked_until = $2 WHERE key_hash = $1', [keyHash, until]);
-      return { allowed: false, retryAfterSeconds: Math.ceil((until.getTime() - now.getTime()) / 1000) };
+      return {
+        allowed: false,
+        retryAfterSeconds: Math.max(1, Math.ceil((blockedUntil.getTime() - now.getTime()) / 1000)),
+      };
     }
     return { allowed: true, retryAfterSeconds: 0 };
   }
