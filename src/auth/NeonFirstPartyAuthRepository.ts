@@ -284,11 +284,20 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
   async createPasswordResetToken(input: {
     accountId: string; tokenHash: string; expiresAt: Date; createdAt: Date;
   }): Promise<void> {
-    await this.pool.query(
-      `INSERT INTO daisy_auth_one_time_tokens (token_hash, account_id, purpose, created_at, expires_at)
-       SELECT $2, id, 'RESET_PASSWORD', $4, $3 FROM daisy_auth_accounts
-       WHERE id = $1 AND disabled_at IS NULL AND email_verified_at IS NOT NULL`,
-      [input.accountId, input.tokenHash, input.expiresAt, input.createdAt],
-    );
+    await inTransaction(this.pool, async (client) => {
+      const account = await client.query(
+        'SELECT id FROM daisy_auth_accounts WHERE id = $1 AND disabled_at IS NULL AND email_verified_at IS NOT NULL FOR UPDATE',
+        [input.accountId],
+      );
+      if (!account.rows[0]) return;
+      await client.query(
+        "UPDATE daisy_auth_one_time_tokens SET consumed_at = $2 WHERE account_id = $1 AND purpose = 'RESET_PASSWORD' AND consumed_at IS NULL",
+        [input.accountId, input.createdAt],
+      );
+      await client.query(
+        "INSERT INTO daisy_auth_one_time_tokens (token_hash, account_id, purpose, created_at, expires_at) VALUES ($1, $2, 'RESET_PASSWORD', $3, $4)",
+        [input.tokenHash, input.accountId, input.createdAt, input.expiresAt],
+      );
+    });
   }
 }
