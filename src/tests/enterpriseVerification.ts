@@ -229,8 +229,8 @@ export async function runEnterpriseVerification() {
     const store = DurableStore.getInstance();
     const sol = store.getState().solutions['DH-S-001'];
     if (!sol) throw new Error('Preserved solution DH-S-001 missing from store');
-    if (sol.verification_status !== 'VERIFIED') throw new Error('DH-S-001 is not marked VERIFIED');
-    if (!sol.reversibility_guaranteed) throw new Error('DH-S-001 must guarantee reversibility');
+    if (sol.verification_status === 'VERIFIED') throw new Error('DH-S-001 must not be marked VERIFIED without a persisted proof bundle');
+    if (sol.reversibility_guaranteed) throw new Error('DH-S-001 must not claim reversibility without a tested rollback proof');
   });
 
   // 12. Proof Bundle Builder & Attestation Sealing
@@ -265,9 +265,9 @@ export async function runEnterpriseVerification() {
   runTest('21-Stage Problem Resolution Pipeline Full Traversal', 'PIPELINE', () => {
     const pipeline = SolutionPipeline.getInstance();
     const result = pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
-    if (!result.overall_success) throw new Error(`Pipeline execution failed: ${result.rejection_reason}`);
-    if (result.completed_stages !== 21) {
-      throw new Error(`Expected exactly 21 completed stages, got ${result.completed_stages}`);
+    if (result.overall_success) throw new Error('Pipeline claimed success without executable stage validators');
+    if (result.completed_stages !== 0 || result.stage_traces[0]?.status !== 'BLOCKED') {
+      throw new Error('Pipeline must remain blocked until real validators and evidence providers are registered');
     }
   });
 
