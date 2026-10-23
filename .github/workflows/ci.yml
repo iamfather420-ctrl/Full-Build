@@ -3,7 +3,6 @@ name: Build and Enterprise CI
 on:
   pull_request:
   push:
-    branches: [main]
 
 permissions:
   contents: read
@@ -11,7 +10,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,10 +21,16 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci
+      - name: Archive provenance verification
+        run: npm run verify:archive-provenance
+      - name: Fail-closed contract verification
+        run: node scripts/verify_fail_closed_contract.mjs
       - name: Fail-closed release safety checks
         run: npm run verify:release-safety
       - name: Payments-disabled boundary checks
         run: npm run verify:payments-disabled
+      - name: Formal 120-case verification
+        run: npm run verify:120
       - name: Build
         run: npm run build
       - name: TypeScript
