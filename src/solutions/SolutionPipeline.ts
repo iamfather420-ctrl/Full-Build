@@ -7,7 +7,7 @@ export interface PipelineExecutionResult {
   completed_stages: number;
   total_stages: number;
   paradox_code: string;
-  stage_traces: Array<{ stage: number; name: string; status: 'PASSED' | 'FAILED'; duration_ms: number }>;
+  stage_traces: Array<{ stage: number; name: string; status: 'PASSED' | 'FAILED' | 'BLOCKED'; duration_ms: number }>;
   rejection_reason?: string;
   solution_id?: string;
 }
@@ -92,6 +92,15 @@ export class SolutionPipeline {
   }
 
   public runPipeline(paradoxCode: string, codeSolution: string): PipelineExecutionResult {
+    // Fail closed until the named stages have executable validators and persisted evidence.
+    return {
+      overall_success: false,
+      completed_stages: 0,
+      total_stages: this.STAGES.length,
+      paradox_code: paradoxCode,
+      stage_traces: [{ stage: 1, name: this.STAGES[0], status: 'BLOCKED', duration_ms: 0 }],
+      rejection_reason: 'PIPELINE_BLOCKED: executable validators and evidence providers are not registered; no verification was claimed.'
+    };
     const stageTraces: Array<{ stage: number; name: string; status: 'PASSED' | 'FAILED'; duration_ms: number }> = [];
     let completed = 0;
 
