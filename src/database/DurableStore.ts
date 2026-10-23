@@ -197,10 +197,17 @@ export class DurableStore {
   }
 
   public persist(): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
-      } catch {}
+    // Browser localStorage is a client-side cache, not server-side/cloud durability.
+    // Never silently report persistence success when storage is unavailable or full.
+    if (typeof window === 'undefined' || !window.localStorage) {
+      throw new Error('PERSISTENCE_BLOCKED: browser localStorage is unavailable; no durable save was performed.');
+    }
+
+    try {
+      window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+    } catch (error: any) {
+      const detail = typeof error?.name === 'string' ? error.name : 'storage error';
+      throw new Error(`PERSISTENCE_BLOCKED: browser localStorage write failed (${detail}); no durable save was confirmed.`);
     }
   }
 }
