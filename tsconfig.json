@@ -29,6 +29,7 @@
     "src/App.tsx",
     "src/components/**/*",
     "src/brain/**/*",
-    "src/api/**/*",\n    "src/auth/**/*"
+    "src/api/**/*",
+    "src/auth/**/*"
   ]
 }
