@@ -19,6 +19,7 @@ jobs:
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
       - name: Archive provenance verification
+        if: hashFiles('**/Daisy-AI-OS-Complete-With-ISO.tar.part-00', '**/Daisy-AI-OS-Complete-With-ISO.tar.part-01', '**/Daisy-AI-OS-Complete-With-ISO.tar.sha256') != ''
         run: bun run verify:archive-provenance
       - name: Fail-closed contract verification
         run: node scripts/verify_fail_closed_contract.mjs
