@@ -28,7 +28,8 @@
     "verify:release-safety": "node scripts/verify_release_safety.mjs",
     "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
     "test:first-party-auth": "tsx --test scripts/first_party_auth.test.ts",
-    "verify:first-party-auth": "npm run test:first-party-auth"
+    "verify:first-party-auth": "npm run test:first-party-auth",
+    "test:daisy-auth-rls-guard": "tsx --test scripts/daisy_auth_rls_guard.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
