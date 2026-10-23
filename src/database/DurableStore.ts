@@ -82,9 +82,13 @@ export class DurableStore {
 
     this.state.audit_chain.push(record);
 
-    // This chain is hash-linked but not digitally signed. Do not mark it sealed
-    // or write a fabricated signature into the SQLite audit table.
-    this.persist();
+    // A failed persistence attempt must not leave an uncommitted audit event in memory.
+    try {
+      this.persist();
+    } catch (error) {
+      this.state.audit_chain.pop();
+      throw error;
+    }
     return record;
   }
 
