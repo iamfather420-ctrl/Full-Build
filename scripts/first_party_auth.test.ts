@@ -52,10 +52,19 @@ class TestRepository implements FirstPartyAuthRepository {
     if (a && !a.disabledAt) a.emailVerifiedAt = now;
     return a ?? null;
   }
-  async consumePasswordResetToken(hash: string, now: Date) {
+  async resetPasswordWithToken(hash: string, passwordHash: string, changedAt: Date) {
     const t = this.tokens.get(hash);
-    if (!t || t.purpose !== 'RESET_PASSWORD' || t.consumed || t.expiresAt <= now) return null;
-    t.consumed = true; return this.accounts.find(a => a.id === t.accountId) ?? null;
+    if (!t || t.purpose !== 'RESET_PASSWORD' || t.consumed || t.expiresAt <= changedAt) return false;
+    const account = this.accounts.find(a => a.id === t.accountId && !a.disabledAt && a.emailVerifiedAt);
+    if (!account) return false;
+    // The test repository models the single atomic database operation.
+    t.consumed = true;
+    account.passwordHash = passwordHash;
+    this.sessions.filter(s => s.accountId === account.id && !s.revokedAt).forEach(s => { s.revokedAt = changedAt; });
+    for (const other of this.tokens.values()) {
+      if (other.accountId === account.id && other.purpose === 'RESET_PASSWORD' && !other.consumed) other.consumed = true;
+    }
+    return true;
   }
   async replacePasswordAndRevokeSessions(id: string, hash: string, at: Date) {
     const a = this.accounts.find(x => x.id === id);
