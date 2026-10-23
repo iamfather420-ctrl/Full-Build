@@ -19,18 +19,22 @@ jobs:
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
       - name: Archive provenance verification
-        run: npm run verify:archive-provenance
+        run: bun run verify:archive-provenance
       - name: Fail-closed contract verification
         run: node scripts/verify_fail_closed_contract.mjs
       - name: Fail-closed release safety checks
-        run: npm run verify:release-safety
+        run: bun run verify:release-safety
       - name: Payments-disabled boundary checks
-        run: npm run verify:payments-disabled
+        run: bun run verify:payments-disabled
+      - name: Formal evidence hash verification
+        run: bun run test:formal-hash
       - name: Formal 120-case verification
-        run: npm run verify:120
+        run: bun run verify:120
+      - name: Proof closure verification
+        run: bun run verify:proof-closure
       - name: Build
-        run: npm run build
+        run: bun run build
       - name: TypeScript
-        run: npm run lint
+        run: bun run lint
       - name: Enterprise invariants
-        run: npm run verify:enterprise
+        run: bun run verify:enterprise
