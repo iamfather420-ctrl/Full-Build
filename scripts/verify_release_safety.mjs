@@ -44,6 +44,16 @@ assert.match(preflight, /env === 'production' && cloudDatabaseConfigured/,
 assert.match(preflight, /PAYPAL_LIVE_CLIENT_ID', false/);
 assert.match(preflight, /PAYPAL_LIVE_CLIENT_SECRET', false/,
   'live payment credentials must not be a production prerequisite while payments are disabled');
+
+assert.match(neonPersistence, /new neonMod\.Pool\(\{ connectionString: this\.databaseUrl! \}\)/,
+  'Neon operations must use the Pool API when invoking parameterized .query calls');
+assert.match(neonPersistence, /testRes\?\.rows\?\.\[0\]\?\.connected/,
+  'Neon connectivity must inspect the Pool query result rows');
+assert.match(neonPersistence, /WHERE \$\{tableName\}\.tenant_id = EXCLUDED\.tenant_id/,
+  'conflict updates must not overwrite records belonging to a different tenant');
+assert.match(neonPersistence, /Unexpected Neon query result shape/,
+  'Neon read paths must reject unexpected result shapes instead of claiming verification');
+
 assert.match(durableStore, /window\.localStorage\.setItem/,
   'browser state persistence must remain visible for production-readiness auditing');
 assert.match(workflow, /PAYMENTS_ENABLED:\s*'false'/,
