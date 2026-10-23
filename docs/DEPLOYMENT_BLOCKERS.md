@@ -1,21 +1,28 @@
 # Deployment Blockers — Verified Vercel Snapshot
 
-Checked: 2026-10-15. Scope: Vercel project `uarefake`, project ID `prj_Tj42CgzCWuJSlzhwxFLLNrkLUHVu`.
+Last prior inspection: 2026-10-15. This is a historical snapshot, not a claim about the live environment on 2026-10-23. Re-query the Vercel project and DNS before using these findings as current evidence.
 
-## Observed state
-- Project metadata reports `live: false`.
-- The newest deployment is READY but has `target: null`; it is a preview deployment from `iamfather420-ctrl/Uarefake-1`, branch `integration/proof-before-power-gate`, commit `aa0b7690a07846ec8c66f7524665d87dddfe7a8a`.
-- The only visible project environment variable is `DATABASE_URL`, targeted to production, stored as sensitive, with an empty value. Do not treat it as a usable database connection.
-- `uarefake.space` is attached to the project but `verified: false`; Vercel reports pending domain verification and supplies a TXT challenge under `_vercel.uarefake.space`.
-- `uarefake.com` is not in the project domain list.
-- The project's current verified Vercel application domains are the Vercel-hosted `uarefake.vercel.app` and preview aliases. This does not prove the requested custom domains route to the application.
+## Observed state at the prior inspection
+- Project metadata reported `live: false`.
+- The newest deployment was READY but had `target: null`; it was a preview deployment from `iamfather420-ctrl/Uarefake-1`, branch `integration/proof-before-power-gate`, commit `aa0b7690a07846ec8c66f7524665d87dddfe7a8a`.
+- The only visible project environment variable was `DATABASE_URL`, targeted to production, stored as sensitive, with an empty value. Do not treat it as a usable database connection.
+- `uarefake.space` was attached to the project but reported `verified: false`, with a pending TXT challenge under `_vercel.uarefake.space`.
+- `uarefake.com` was not in the project's domain list at that time.
+- The visible verified Vercel application domains were `uarefake.vercel.app` and preview aliases. This did not prove the custom domain routes to a production application.
 
-## Required actions before production
-1. In the domain registrar/DNS provider, publish the exact Vercel TXT verification record for `uarefake.space`, then verify it in Vercel.
-2. Confirm ownership and current DNS/routing of `uarefake.com` before attaching it to the intended production project. Do not blindly overwrite existing DNS or move a domain from another project.
-3. Provision the correct least-privilege Neon runtime connection through the secret manager; never use a database owner credential as the routine app runtime. The existing production `DATABASE_URL` value is empty.
-4. Configure and verify the actual server-side identity/tenant boundary and signed RLS context before enabling database-backed mutations.
-5. Create a production deployment only after build/tests, runtime RLS verification, domain mapping, monitoring and restore checks pass. A READY preview deployment is not production.
+## Required release blockers
+1. **Domain:** Recheck registrar DNS and Vercel verification for canonical `uarefake.space`. Confirm routing and certificate status. Do not overwrite DNS or transfer domains without verifying ownership and current routing.
+2. **Runtime secret:** Provision and verify a least-privilege Neon runtime connection through the secret manager. Never use a database owner credential as routine app runtime. Verify that the secret is present without printing its value.
+3. **Identity/authentication:** Confirm the server-side identity verifier and tenant boundary are actually implemented and security-reviewed. AGATE is a proposed first-party identity direction, not a verified replacement for OIDC today. Do not accept an NFT/public identifier alone as authentication, do not remove fail-closed checks, and do not enable production login until signed-claim verification, tenant binding, revocation/recovery, and negative tests pass.
+4. **Database isolation:** Verify the restricted role, forced RLS, policies, no elevated membership, and cross-tenant negative tests against the exact release commit.
+5. **Recovery:** Execute a scratch restore rehearsal, then rerun database audit and tenant-isolation tests. Backup presence is not enough.
+6. **Build and tests:** Run the production build, type checks, lint, unit/integration tests, and security regression suite against the exact release candidate. Attach logs and commit SHA. A previous READY preview does not prove current build health.
+7. **Observability:** Verify health/readiness endpoints, logs, alerting, and operational ownership in staging and production-target configuration.
+8. **46-gate audit:** Reconcile each gate against a current implementation and evidence artifact. Historical 120-case corpus success does not by itself pass all production gates.
 
-## Safety
-No production deployment, domain transfer, DNS modification, database migration, or payment activation was performed during this inspection.
+## Safety constraints
+- Canonical domain remains `uarefake.space`.
+- Keep production authentication/login disabled until all required gates are verified.
+- Keep PayPal/live payments disabled.
+- Do not perform production deployment, DNS changes, database migrations, destructive restores, or payment activation as part of this documentation update.
+- If required tools or environment access are unavailable, record the item as BLOCKED with the reason; do not infer success.
