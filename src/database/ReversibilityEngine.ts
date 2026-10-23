@@ -63,7 +63,9 @@ export class ReversibilityEngine {
 
     if (checkpointId) {
       const rollback = this.executeRollback(checkpointId, `Automatic fail-closed diversion: ${triggerReason}`);
-      if (!rollback.success) {
+      if (rollback.success) {
+        rollbackStatus = 'ROLLED_BACK';
+      } else {
         rollbackStatus = 'FAILED';
       }
     }
