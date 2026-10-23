@@ -66,7 +66,7 @@ export class NeonStore {
 
     try {
       const neonMod = await import('@neondatabase/serverless');
-      if (neonMod && typeof neonMod.neon === 'function') {
+      if (neonMod && typeof neonMod.Pool === 'function') {
         this.neonClient = new neonMod.Pool({ connectionString: this.databaseUrl! });
         // Pool.query is the API used by migrations and parameterized operations below.
         // Do not mix the tagged-template neon() API with node-postgres .query() calls.
@@ -276,7 +276,7 @@ export class NeonStore {
         payload_json: JSON.stringify(data)
       };
 
-      await this.neonClient.query(`
+      const result = await this.neonClient.query(`
         INSERT INTO ${tableName} (id, tenant_id, created_at, updated_at, status, version, payload_json)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (id) DO UPDATE SET
@@ -285,8 +285,14 @@ export class NeonStore {
           payload_json = EXCLUDED.payload_json
         WHERE ${tableName}.tenant_id = EXCLUDED.tenant_id
       `, [payload.id, payload.tenant_id, payload.created_at, payload.updated_at, payload.status, payload.version, payload.payload_json]);
+      if (result?.rowCount !== 1) {
+        this.lastError = 'Write rejected: record may already belong to a different tenant; no successful mutation was confirmed';
+        return false;
+      }
+      this.lastError = null;
       return true;
-    } catch {
+    } catch (e: any) {
+      this.lastError = e?.message || 'Neon record write failed';
       return false;
     }
   }
