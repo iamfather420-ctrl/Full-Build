@@ -67,10 +67,11 @@ export class NeonStore {
     try {
       const neonMod = await import('@neondatabase/serverless');
       if (neonMod && typeof neonMod.neon === 'function') {
-        this.neonClient = neonMod.neon(this.databaseUrl!);
-        // Test lightweight query
-        const testRes = await this.neonClient`SELECT 1 as connected;`;
-        if (testRes && testRes[0]?.connected === 1) {
+        this.neonClient = new neonMod.Pool({ connectionString: this.databaseUrl! });
+        // Pool.query is the API used by migrations and parameterized operations below.
+        // Do not mix the tagged-template neon() API with node-postgres .query() calls.
+        const testRes = await this.neonClient.query('SELECT 1 AS connected');
+        if (testRes?.rows?.[0]?.connected === 1 || testRes?.rows?.[0]?.connected === '1') {
           this.isConnected = true;
           this.lastError = null;
           return true;
@@ -168,7 +169,9 @@ export class NeonStore {
       return { verified: 0, required: required27.length, missing: required27 };
     }
     try {
-      const rows = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
+      const result = await this.neonClient.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ANY($1::text[])`, [required27]);
+      const rows = Array.isArray(result) ? result : result?.rows;
+      if (!Array.isArray(rows)) throw new Error('Unexpected Neon query result shape during table verification');
       const present = new Set(rows.map((r: any) => r.table_name));
       const missing = required27.filter(t => !present.has(t));
       this.tablesVerified = required27.length - missing.length;
@@ -212,7 +215,7 @@ export class NeonStore {
       return { ...empty, error: this.lastError || 'Neon not connected' };
     }
     try {
-      const rows = await this.neonClient.query(`
+      const result = await this.neonClient.query(`
         SELECT c.relname AS table_name,
                c.relrowsecurity AS rls_enabled,
                c.relforcerowsecurity AS rls_forced,
@@ -226,7 +229,7 @@ export class NeonStore {
           AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
         ORDER BY c.relname
       `);
-      const tables = Array.isArray(rows) ? rows : [];
+      const tables = Array.isArray(result) ? result : (Array.isArray(result?.rows) ? result.rows : []);
       const withoutRls = tables.filter((r: any) => r.rls_enabled !== true).map((r: any) => String(r.table_name));
       const withoutPolicy = tables.filter((r: any) => Number(r.policy_count) < 1).map((r: any) => String(r.table_name));
       const forced = tables.filter((r: any) => r.rls_forced === true).length;
@@ -280,6 +283,7 @@ export class NeonStore {
           updated_at = EXCLUDED.updated_at,
           status = EXCLUDED.status,
           payload_json = EXCLUDED.payload_json
+        WHERE ${tableName}.tenant_id = EXCLUDED.tenant_id
       `, [payload.id, payload.tenant_id, payload.created_at, payload.updated_at, payload.status, payload.version, payload.payload_json]);
       return true;
     } catch {
@@ -295,9 +299,11 @@ export class NeonStore {
     }
     const safeLimit = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 500)) : 100;
     try {
-      const rows = await this.neonClient.query(`
+      const result = await this.neonClient.query(`
         SELECT * FROM ${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2
       `, [tenantId.trim(), safeLimit]);
+      const rows = Array.isArray(result) ? result : result?.rows;
+      if (!Array.isArray(rows)) throw new Error('Unexpected Neon query result shape during tenant read');
       return rows.map((r: any) => ({ ...r, ...r.payload_json }));
     } catch {
       return [];
