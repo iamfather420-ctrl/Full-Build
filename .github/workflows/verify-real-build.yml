@@ -1,0 +1,69 @@
+name: Full Build Verification
+
+on:
+  push:
+    branches:
+      - ops/fullbuild-repo-status-20261023
+      - ops/fullbuild-verification-workflow-20261023
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-build-verification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Build, safety, formal evidence, and archive gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact revision
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify release safety
+        run: npm run verify:release-safety
+
+      - name: Verify payments remain disabled
+        run: npm run verify:payments-disabled
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Type-check
+        run: npm run lint
+
+      - name: Verify enterprise invariants
+        run: npm run verify:enterprise
+
+      - name: Verify 120-case corpus
+        run: npm run verify:120
+
+      - name: Verify archive payload and provenance
+        id: archive
+        continue-on-error: true
+        run: npm run verify:archive-provenance
+
+      - name: Preserve verification summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Full Build Verification"
+            echo "- Revision: \`$GITHUB_SHA\`"
+            echo "- Branch: \`$GITHUB_REF_NAME\`"
+            echo "- Archive provenance step conclusion: \`${{ steps.archive.outcome }}\`"
+            echo "- Archive payload verification is separate; this workflow does not claim the split archive was reconstructed or hash-verified."
+            echo "- Production authentication and live payments are not enabled by this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
