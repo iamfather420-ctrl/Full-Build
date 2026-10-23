@@ -60,7 +60,7 @@ export interface FirstPartyAuthRepository {
     verificationExpiresAt: Date;
     now: Date;
   }): Promise<{ account: FirstPartyAccount; created: boolean }>;
-  consumeRateLimit(keyHash: string, now: Date): Promise<AuthRateLimitResult>;
+  consumeRateLimit(keyHash: string, now: Date): Promise<AuthRateLimitResult>;\n  replaceVerificationToken(accountId: string, tokenHash: string, expiresAt: Date, now: Date): Promise<boolean>;
   createSession(input: {
     accountId: string;
     tenantId: string;
