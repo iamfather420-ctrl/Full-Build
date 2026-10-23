@@ -181,12 +181,26 @@ export class DurableStore {
       };
     }
     if (chk.snapshot_state) {
+      const previous = {
+        problems: this.state.problems,
+        solutions: this.state.solutions,
+        offers: this.state.offers,
+        tenants: this.state.tenants
+      };
       this.state.problems = JSON.parse(JSON.stringify(chk.snapshot_state.problems || {}));
       this.state.solutions = JSON.parse(JSON.stringify(chk.snapshot_state.solutions || {}));
       this.state.offers = JSON.parse(JSON.stringify(chk.snapshot_state.offers || {}));
       this.state.tenants = JSON.parse(JSON.stringify(chk.snapshot_state.tenants || {}));
-      this.persist();
-      return { success: true };
+      try {
+        this.persist();
+        return { success: true };
+      } catch (error: any) {
+        this.state.problems = previous.problems;
+        this.state.solutions = previous.solutions;
+        this.state.offers = previous.offers;
+        this.state.tenants = previous.tenants;
+        return { success: false, error: error?.message || 'PERSISTENCE_BLOCKED: rollback was not saved.' };
+      }
     }
     return { success: false, error: 'Snapshot state missing from checkpoint' };
   }
