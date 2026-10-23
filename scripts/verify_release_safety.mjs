@@ -30,6 +30,17 @@ assert.match(sqliteStore, /SQLITE_WRITE_BLOCKED:[^']*cannot persist SQL writes/,
   'non-durable SQLite fallback must reject writes instead of reporting fake success');
 assert.match(sqliteStore, /Non-durable in-memory fallback/,
   'the in-memory SQL fallback must be explicitly identified as non-durable');
+assert.match(preflight, /let sqliteStatus: DependencyStatus = 'MISSING'/,
+  'preflight must fail closed when native SQLite is unavailable');
+assert.match(preflight, /non-durable fallback is not counted as a database/i,
+  'preflight must not treat the in-memory fallback as a real database');
+assert.match(preflight, /items\.push\(checkVar\('NEON_DATABASE_URL', true/,
+  'production preflight must require cloud database configuration');
+assert.match(preflight, /env === 'production' && cloudDatabaseConfigured/,
+  'local SQLite must not be required when production is configured for cloud persistence');
+assert.match(preflight, /PAYPAL_LIVE_CLIENT_ID', false/);
+assert.match(preflight, /PAYPAL_LIVE_CLIENT_SECRET', false/,
+  'live payment credentials must not be a production prerequisite while payments are disabled');
 assert.match(durableStore, /window\.localStorage\.setItem/,
   'browser state persistence must remain visible for production-readiness auditing');
 assert.match(workflow, /PAYMENTS_ENABLED:\s*'false'/,
