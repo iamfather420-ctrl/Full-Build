@@ -61,11 +61,11 @@ export class SolutionPipeline {
       paradox_ref: 'DH-P-001',
       implementation_source: code,
       implementation_hash: computeSha256(code),
-      verification_status: 'VERIFIED',
+      verification_status: 'CLAIM_ONLY',
       proof_bundle_id: 'PB-DH-S-001',
-      performance_boost_percent: 42.5,
-      reversibility_guaranteed: true,
-      status: 'VERIFIED'
+      performance_boost_percent: 0,
+      reversibility_guaranteed: false,
+      status: 'CLAIM_ONLY'
     };
 
     store.getState().solutions['DH-S-001'] = sol;
