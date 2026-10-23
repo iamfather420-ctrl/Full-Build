@@ -106,7 +106,7 @@ export function createFirstPartyAuthRouter(auth: FirstPartyAuth, publicOrigin: s
         return;
       }
       // req.ip is trustworthy only after the parent app configures trusted proxies correctly.
-      const sourceIdentifier = req.ip || req.socket.remoteAddress || 'unknown-source';
+      const sourceIdentifier = 'source:' + (req.ip || req.socket.remoteAddress || 'unknown');
       const result = await auth.login(email, password, sourceIdentifier);
       noStore(res);
       setSessionCookie(res, result.session.cookieValue, result.session.expiresAt);
