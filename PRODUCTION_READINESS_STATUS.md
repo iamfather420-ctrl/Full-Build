@@ -63,3 +63,28 @@ See `docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md` for the exact staging and 
 ## Safety boundary
 
 This build is a hardened **integration candidate**, not a production-certified release. It has not been deployed, committed to either GitHub account, or connected to the live Neon database. The existing 27-table database was not initialized, overwritten, migrated, or otherwise changed. Keep the release on a review branch until the dependency-backed build, OIDC provider, additive migration in staging, full Neon repository integration, 46-gate suite, and operational recovery gates pass.
+
+
+## Authoritative production-gate snapshot (2026-10-23 review)
+
+The repository's recorded authoritative run remains a **local** execution, not a production deployment:
+
+- Execution ID: `exec_pipeline_1792683102844`
+- Tested commit recorded in the report: `728625581c2f89210c752d03fda0a154812b2366`
+- Recorded run time: `2026-10-22T15:31:53.082Z`
+- Claim scope: `LOCAL_VERIFIED / MODEL_VERIFIED`
+- Recorded gate count: `14 / 15` passed; GATE-14 remains `BLOCKED`
+- Production gate verdict: `BLOCKED_MISSING_EXTERNAL_CREDENTIALS`
+
+Treat `execution-gates.md`, `production-gate-evaluation.md`, and their JSON counterparts as evidence for that specific recorded run only. Do not represent the old report as a fresh run against the current commit. Regenerate evidence with the authoritative dependency-backed pipeline after dependencies and runner access are available.
+
+### Explicit unresolved blockers
+
+1. Real OIDC provider credentials/configuration are absent or not verified: issuer, JWKS, audience, callback, and signed tenant/role claim mapping must be tested against the actual provider.
+2. Neon/external database integration is not production-verified. The production schema, least-privilege runtime connection, tenant isolation, and persistence path require staging verification and recorded evidence.
+3. PayPal and all live payment processing remain intentionally disabled. Do not enable them under this readiness task; any future re-enable is a separate reviewed authorization.
+4. Official Daisy archive parts and checksum/provenance have not been confirmed present and complete in the current working checkout. Verify every required part against the official manifest and checksum; never infer completeness from a partial archive or small export.
+5. Reproducible dependency installation remains incomplete in this environment. The reported npm lockfile mismatch and unexecuted frozen Bun install/CI run must be resolved in a dependency-enabled runner before claiming the official build/test suite passed.
+6. Operational production prerequisites remain unverified: production-target deployment, secrets-manager configuration, canonical-domain routing/TLS, monitoring/alerts, backup restore rehearsal, rollback, and incident operations.
+
+**Final verdict remains NOT PRODUCTION-READY.** This is a hardened integration candidate. Local/model checks do not substitute for real external-provider verification, archive provenance, reproducible build evidence, or deployment readiness. Keep GATE-14 and the production gate blocked until the evidence is current and independently reviewable.
