@@ -45,3 +45,13 @@ This branch does not wire the new core into the live API, does not apply a datab
 - Ran a SQL contract probe for tenant/account/session/token/rate-limit inserts and one-time token consumption. The probe cleaned up its test rows; no test account or session was retained.
 - **Not applied to the production branch.** This rehearsal did not validate the TypeScript repository against a live app connection.
 - The new auth tables currently have RLS disabled and no policies. Therefore this branch is a schema-shape rehearsal only, not an authorization-isolation pass. Do not mount auth routes or use the schema for real users until a dedicated least-privilege auth DB role, explicit grants, tenant RLS strategy, and concurrency/integration tests are verified.
+
+
+## Verification update (2026-10-23)
+
+- GitHub Actions run `39909417451` (Build and Enterprise CI) completed successfully on the prior docs commit: locked dependency install, fail-closed release-safety checks, payments-disabled checks, build, TypeScript, and enterprise invariants all passed.
+- GitHub Actions run `39909417458` (formal evidence) completed successfully: deterministic corpus roots/receipts, typecheck, app build, enterprise invariants, and original 120-case verifier passed.
+- GitHub Actions run `39909417534` (authoritative 120-case verification) completed successfully: release-safety, first-party auth lifecycle tests, payments-disabled checks, typecheck, 120-case corpus, and evidence artifact checks passed. Production preflight and production runtime wiring checks were **skipped**, not passed.
+- Follow-up commit `28e7aca7888b479e313ac014c668019885d98300` tightens the Neon session lookup to require a matching account/session tenant, a live session, and a verified, enabled account in the same query. This follow-up commit still requires fresh CI confirmation.
+- Live inspection of the non-primary rehearsal branch confirms all five auth tables exist, but RLS is disabled and no auth-specific isolation policy has been proven. Do not mount the router or promote the schema. RLS must be designed around the unauthenticated email lookup and token workflows; a simplistic `tenant_id = current_setting(...)` policy would break login/registration or encourage unsafe bypasses.
+- No production auth, production migration, deployment, domain change, or payment configuration was changed.
