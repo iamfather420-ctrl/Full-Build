@@ -141,6 +141,25 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
     });
   }
 
+  async replaceVerificationToken(accountId: string, tokenHash: string, expiresAt: Date, now: Date): Promise<boolean> {
+    return inTransaction(this.pool, async (client) => {
+      const account = await client.query(
+        'SELECT id FROM daisy_auth_accounts WHERE id = $1 AND email_verified_at IS NULL AND disabled_at IS NULL FOR UPDATE',
+        [accountId],
+      );
+      if (!account.rows[0]) return false;
+      await client.query(
+        "UPDATE daisy_auth_one_time_tokens SET consumed_at = $2 WHERE account_id = $1 AND purpose = 'VERIFY_EMAIL' AND consumed_at IS NULL",
+        [accountId, now],
+      );
+      await client.query(
+        "INSERT INTO daisy_auth_one_time_tokens (token_hash, account_id, purpose, created_at, expires_at) VALUES ($1, $2, 'VERIFY_EMAIL', $3, $4)",
+        [tokenHash, accountId, now, expiresAt],
+      );
+      return true;
+    });
+  }
+
   async consumeRateLimit(keyHash: string, now: Date): Promise<AuthRateLimitResult> {
     // Fixed 15-minute window; lock-free atomic UPSERT. Limit is 12 requests/window/key.
     const result = await this.pool.query(
