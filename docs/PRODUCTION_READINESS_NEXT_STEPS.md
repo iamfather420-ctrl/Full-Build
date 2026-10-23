@@ -1,36 +1,54 @@
 # Production Readiness Next Steps
 
-Status as of 2026-10-21. Items remain **BLOCKED** until real evidence is recorded. Do not mark complete from documentation alone.
+Status reviewed: 2026-10-23. This document is a readiness tracker, not proof of readiness. Keep every gate BLOCKED until current, reproducible evidence is attached to the relevant commit and environment.
 
-## 1. Database permissions (GATE-11 role / RLS)
-- **Current:** Production login `solvex_runtime_login` has elevated flags (`CREATEDB`, `CREATEROLE`, `REPLICATION`, `BYPASSRLS`) and inherits `neon_superuser`.
-- **Candidate:** PR #17 stages `solvex_runtime_v2` with only `solvex_app_runtime` membership and strict tenant RLS (no OWNER bypass).
-- **Action:** Apply candidate only on a non-production Neon branch. Re-run `scripts/neon-gate11-readonly-audit.sql`. Confirm `rolbypassrls = false`, no elevated membership, forced RLS + policy on every tenant-scoped table.
-- **Evidence required:** Audit JSON before/after, role membership query, `NeonPersistence.verifyRlsPosture()` output.
-- **Status:** BLOCKED
+## Release safety invariants
+- Canonical domain: `uarefake.space`.
+- Production authentication/login remains disabled until all required security, tenant-isolation, recovery, and release gates pass.
+- Payments/PayPal remain disabled. Do not activate payment flows as part of readiness work.
+- Do not run migrations, restore operations, or destructive tests against production.
+- Keep status transitions distinct: `PROPOSED != APPROVED != EXECUTED != VERIFIED`. Documentation or a passing isolated test alone does not prove production readiness.
+- Any unavailable tool, missing credential, unexecuted test, or ambiguous result is BLOCKED with a reason.
 
-## 2. Customer isolation
-- **Action:** On the validated branch, create two tenants. Using a signed claim for tenant A, attempt SELECT/INSERT/UPDATE against tenant B rows (direct table, via functions if any, payment tables, and any views). Expect zero rows and RLS rejection on writes.
-- **Evidence required:** Test transcript showing cross-tenant attempts fail closed; same-tenant reads succeed.
-- **Status:** BLOCKED
+## 1. Runtime database privileges and RLS (GATE-11)
+- **Known prior finding:** the production role `solvex_runtime_login` was reported with elevated privileges (`CREATEDB`, `CREATEROLE`, `REPLICATION`, `BYPASSRLS`) and `neon_superuser` membership.
+- **Candidate:** a restricted v2 runtime role was staged and audited on a disposable branch in prior work. Do not assume it has been promoted or that production is safe.
+- **Next action:** on a non-production Neon branch, run `scripts/neon-gate11-readonly-audit.sql`; capture role flags/memberships, table RLS/forced-RLS and policy results, and `NeonPersistence.verifyRlsPosture()` output.
+- **Evidence required:** timestamped before/after audit JSON, exact branch/commit, role membership query, and an explicit reviewed exception for internal migration metadata if applicable.
+- **Status:** BLOCKED pending fresh, reproducible evidence.
 
-## 3. Authentication and human authorization
-- **Action:** Keep production login disabled. Verify `solvex_private.auth_context_ready()` and signed-claim path. Confirm unauthenticated production API access fails closed (see PR #10).
-- **Evidence required:** Auth readiness query, fail-closed API test output.
-- **Status:** BLOCKED
+## 2. Tenant isolation
+- Execute `docs/ISOLATION_TEST_PLAN.md` using the restricted runtime role and trusted, short-lived synthetic signed claims on a non-production branch.
+- Prove same-tenant reads work and cross-tenant reads/writes, missing/invalid/expired claims, indirect access paths, and applicable payment-table access fail closed.
+- **Evidence required:** per-case results with exact role, branch ID, commit SHA, timestamp, and artifact path. Never include signing secrets or reusable tokens.
+- **Status:** BLOCKED until the full plan has actually run and results are attached.
+
+## 3. Identity architecture and authentication boundary (AGATE / OIDC)
+- **Product direction:** evaluate the first-party AGATE identity/NFT design as the intended sovereign identity path; do not treat this direction as an implemented or production-validated authentication system.
+- **Current release rule:** do not remove or bypass existing fail-closed OIDC/authentication checks until a reviewed replacement contract is implemented and proven equivalent or stronger for server-side authentication, session/token integrity, revocation, account recovery, tenant binding, replay resistance, and authorization.
+- **Required design decisions/evidence:** specify issuer and verifier responsibilities; signed-claim format and key custody/rotation; expiry/audience/issuer checks; revocation and recovery; account-to-tenant binding; privacy and deletion boundaries; threat model; negative tests; and migration/rollback plan. An NFT or public chain identifier by itself is not proof of a person's legal identity or an authenticated session.
+- **Privacy constraint:** do not put names, KYC records, contact details, or other direct personal information in immutable on-chain data. Keep only non-sensitive references/commitments on-chain; keep eligible PII off-chain and define verified deletion behavior. Document what cannot be erased from a public chain.
+- **KYC constraint:** transaction/payment confirmation is not a substitute for identity verification. Do not enable KYC or payment processing without a separate approved, compliant design.
+- **Evidence required:** architecture decision record, implemented server-side verifier, signed-claim tests, tenant-isolation results, security review, and recovery/revocation tests.
+- **Status:** BLOCKED — design intent is recorded; implementation and production-grade evidence are not established by this document.
 
 ## 4. Disaster recovery
-- **Action:** Follow `docs/DR_RESTORE_PROCEDURE.md`. Restore latest `solvex-neon-backup-*.dump` to a scratch Neon branch. Point a staging app at it. Re-run isolation tests. Confirm application health.
-- **Evidence required:** Restore log, post-restore isolation transcript, health-check output.
-- **Status:** BLOCKED (backup artifacts exist; restore not yet executed)
+- Follow `docs/DR_RESTORE_PROCEDURE.md` using a scratch Neon branch only.
+- Restore a recent database dump, validate schema and data, rerun the GATE-11 audit and complete isolation tests, and point a staging app at the restored database for health/readiness checks.
+- **Evidence required:** restore command log, backup/run identifier, scratch branch identifier, post-restore audit, isolation transcript, and staging health-check output.
+- **Status:** BLOCKED until an actual restore and post-restore verification are recorded. Backup existence or `pg_restore --list` alone is not a restore rehearsal.
 
-## 5. 46-gate / protocol audit
-- **Action:** Map each gate/protocol to current code path, automated test, and fresh evidence artifact. Anything without current evidence stays BLOCKED.
-- **Status:** PARTIAL (120-case corpus re-run passed; full mapping incomplete)
+## 5. 46 production gates and protocol audit
+- Map each gate to its real implementation, automated test, fresh evidence artifact, responsible owner, and explicit verdict.
+- Preserve provenance: reports must identify the exact source commit and test run. Do not reuse historical counts or stale reports as current proof.
+- Prior evidence includes a successful 120-case corpus run, but that does not imply all 46 production gates are satisfied.
+- **Status:** PARTIAL / BLOCKED for release until the complete gate-to-evidence mapping is reconciled.
 
-## 6. Final production checks
-- **Action:** Deployment health/readiness endpoints, monitoring, least-privilege runtime confirmation, end-to-end isolation under new role, security regression.
-- **Status:** NOT STARTED
+## 6. Deployment, domains, monitoring, and runtime configuration
+- Recheck the live Vercel project state, production-target deployment, canonical-domain verification/routing, secret availability, logs/alerts, health and readiness endpoints, and least-privilege database connectivity.
+- Prior inspection reported `uarefake.space` domain verification pending and a production-target `DATABASE_URL` with an empty value. These are historical observations and must be rechecked before claiming current status.
+- A READY preview deployment is not proof of a production deployment.
+- **Status:** BLOCKED pending fresh environment evidence.
 
-## Gate
-Production login remains disabled until items 1–4 have recorded evidence and GATE-14 is no longer blocked.
+## Promotion gate
+Do not enable production login/authentication, tenant mutations, or payments until sections 1–6 have current evidence, the identity architecture decision is approved, GATE-14 is unblocked, and the release verdict is explicitly VERIFIED by the required human authority. No documentation-only sign-off can satisfy a technical gate.
