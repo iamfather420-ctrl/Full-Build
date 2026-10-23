@@ -27,6 +27,15 @@ class TestRepository implements FirstPartyAuthRepository {
     this.tokens.set(input.verificationTokenHash, { accountId: account.id, purpose: 'VERIFY_EMAIL', expiresAt: input.verificationExpiresAt, consumed: false });
     return { account, created: true };
   }
+  async replaceVerificationToken(accountId: string, tokenHash: string, expiresAt: Date, now: Date) {
+    const account = this.accounts.find(a => a.id === accountId && !a.emailVerifiedAt && !a.disabledAt);
+    if (!account) return false;
+    for (const token of this.tokens.values()) {
+      if (token.accountId === accountId && token.purpose === 'VERIFY_EMAIL' && !token.consumed) token.consumed = true;
+    }
+    this.tokens.set(tokenHash, { accountId, purpose: 'VERIFY_EMAIL', expiresAt, consumed: false });
+    return true;
+  }
   async consumeRateLimit(_keyHash: string, _now: Date): Promise<AuthRateLimitResult> { return { allowed: true, retryAfterSeconds: 0 }; }
   async createSession(input: { accountId: string; tenantId: string; tokenHash: string; createdAt: Date; expiresAt: Date }) {
     const session: FirstPartySession = { id: `session-${this.sessions.length + 1}`, ...input, revokedAt: null };
