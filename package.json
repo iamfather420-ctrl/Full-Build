@@ -26,7 +26,8 @@
     "verify:all": "tsx scripts/verify_authoritative.ts",
     "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
     "verify:release-safety": "node scripts/verify_release_safety.mjs",
-    "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs"
+    "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
+    "verify:archive-provenance": "node scripts/verify_archive_provenance.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -36,7 +37,6 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
-    "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "vite": "^8.3.0",
