@@ -16,7 +16,9 @@ const SCRYPT_N = 1 << 15;
 const SCRYPT_R = 8;
 const SCRYPT_P = 1;
 const SCRYPT_KEY_BYTES = 64;
-const SCRYPT_MAXMEM = 64 * 1024 * 1024;\n// Fixed valid dummy hash ensures unknown-account login still performs the same scrypt work.\nconst DUMMY_PASSWORD_HASH = 'scrypt$32768$8$1$ZGFpc3ktZHVtbXktc2FsdCE$r1-vnCfsq20jXzVaz1L6IKRtJNO0V079qAiH4neInNsDsjZ53_Ek8PYnbuB95XwAfSOD4neDqsqUYB36QkfCOw';
+const SCRYPT_MAXMEM = 64 * 1024 * 1024;
+// Fixed valid dummy hash ensures unknown-account login still performs the same scrypt work.
+const DUMMY_PASSWORD_HASH = 'scrypt$32768$8$1$ZGFpc3ktZHVtbXktc2FsdCE$r1-vnCfsq20jXzVaz1L6IKRtJNO0V079qAiH4neInNsDsjZ53_Ek8PYnbuB95XwAfSOD4neDqsqUYB36QkfCOw';
 
 export type FirstPartyRole = 'OWNER' | 'ADMIN' | 'VERIFIER' | 'CUSTOMER';
 
@@ -60,7 +62,8 @@ export interface FirstPartyAuthRepository {
     verificationExpiresAt: Date;
     now: Date;
   }): Promise<{ account: FirstPartyAccount; created: boolean }>;
-  consumeRateLimit(keyHash: string, now: Date): Promise<AuthRateLimitResult>;\n  replaceVerificationToken(accountId: string, tokenHash: string, expiresAt: Date, now: Date): Promise<boolean>;
+  consumeRateLimit(keyHash: string, now: Date): Promise<AuthRateLimitResult>;
+  replaceVerificationToken(accountId: string, tokenHash: string, expiresAt: Date, now: Date): Promise<boolean>;
   createSession(input: {
     accountId: string;
     tenantId: string;
