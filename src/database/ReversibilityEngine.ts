@@ -59,7 +59,7 @@ export class ReversibilityEngine {
   ): DiversionResult {
     const failureId = `fail_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const evidenceHash = computeSha256(JSON.stringify(evidencePayload || { failedGate, triggerReason, executionId }));
-    let rollbackStatus: 'ROLLED_BACK' | 'FAILED' | 'REJECTED' = 'ROLLED_BACK';
+    let rollbackStatus: 'ROLLED_BACK' | 'FAILED' | 'REJECTED' = checkpointId ? 'FAILED' : 'REJECTED';
 
     if (checkpointId) {
       const rollback = this.executeRollback(checkpointId, `Automatic fail-closed diversion: ${triggerReason}`);
@@ -81,14 +81,19 @@ export class ReversibilityEngine {
       });
     } catch {}
 
-    this.durableStore.appendAudit(
-      tenantId,
-      'FAIL_CLOSED_SENTINEL',
-      'FAILURE_DIVERSION',
-      'FAILURE',
-      failureId,
-      { failedGate, triggerReason, rollbackStatus, evidenceHash }
-    );
+    try {
+      this.durableStore.appendAudit(
+        tenantId,
+        'FAIL_CLOSED_SENTINEL',
+        'FAILURE_DIVERSION',
+        'FAILURE',
+        failureId,
+        { failedGate, triggerReason, rollbackStatus, evidenceHash }
+      );
+    } catch {
+      // Failure evidence could not be persisted; report the diversion as failed.
+      rollbackStatus = 'FAILED';
+    }
 
     return {
       fail_closed_enforced: true,
