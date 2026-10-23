@@ -256,7 +256,14 @@ export class FirstPartyAuth {
       now,
     });
     // Same response for existing and new addresses prevents account enumeration.
-    if (result.created) {
+    if (result.created || !result.account.emailVerifiedAt) {
+      if (!result.created) {
+        const expiresAt = new Date(now.getTime() + VERIFY_TTL_SECONDS * 1000);
+        const replaced = await this.repository.replaceVerificationToken(
+          result.account.id, sha256(rawToken), expiresAt, now,
+        );
+        if (!replaced) return { accepted: true };
+      }
       const verificationUrl = new URL('/auth/verify-email', this.publicOrigin);
       verificationUrl.searchParams.set('token', rawToken);
       await this.sendVerificationEmail(normalizedEmail, verificationUrl.toString());
