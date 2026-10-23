@@ -119,3 +119,17 @@ test('rejects weak passwords and non-HTTPS production origins', async () => {
   await assert.rejects(() => auth.register('valid@example.com', 'short'), /at least 12 characters/i);
   assert.throws(() => new FirstPartyAuth({ ...config, publicOrigin: 'http://uarefake.space' }), /HTTPS/i);
 });
+
+import { DaisyAuthEmailDelivery } from '../src/auth/DaisyAuthEmailDelivery';
+
+test('email delivery refuses missing server-side credentials', () => {
+  assert.throws(() => new DaisyAuthEmailDelivery({ apiKey: '', from: '' }), /BLOCKED/);
+});
+
+test('email delivery refuses a non-HTTPS provider endpoint', () => {
+  assert.throws(() => new DaisyAuthEmailDelivery({
+    apiKey: 'test-only-not-a-real-key',
+    from: 'Daisy <auth@example.invalid>',
+    apiBaseUrl: 'http://localhost:3000',
+  }), /BLOCKED/);
+});
