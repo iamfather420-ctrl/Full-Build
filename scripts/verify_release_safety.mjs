@@ -33,7 +33,7 @@ assert.match(sqliteStore, /Non-durable in-memory fallback/,
   'the in-memory SQL fallback must be explicitly identified as non-durable');
 assert.match(neonPersistence, /backend: 'PERSISTENCE_UNAVAILABLE',[\s\S]*?configured: false/,
   'missing cloud database configuration must report persistence unavailable');
-assert.match(preflight, /let sqliteStatus: DependencyStatus = env === 'production' && cloudDatabaseConfigured,
+assert.match(preflight, /let sqliteStatus: DependencyStatus = env === 'production' && cloudDatabaseConfigured \? 'NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT' : 'MISSING'/,
   'preflight must fail closed when native SQLite is unavailable');
 assert.match(preflight, /non-durable fallback is not counted as a database/i,
   'preflight must not treat the in-memory fallback as a real database');
