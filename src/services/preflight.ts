@@ -242,7 +242,24 @@ export class PreflightService {
     // 3. NEON_DATABASE_URL
     items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://'), ['DATABASE_URL']));
 
-    // 4. GEMINI_API_KEY
+    // 4. Production OIDC trust configuration. Presence is not proof of a working
+    // provider; end-to-end callback, signature, audience, issuer, and tenant tests
+    // remain separate release gates. Never allow local HS256 to satisfy production.
+    items.push(checkVar('AUTH_MODE', true, (v) => v.trim().toLowerCase() === 'oidc'));
+    items.push(checkVar('AUTH_ISSUER', true, (v) => {
+      try { return new URL(v).protocol === 'https:'; } catch { return false; }
+    }));
+    items.push(checkVar('AUTH_AUDIENCE', true, (v) => v.trim().length > 0));
+    items.push(checkVar('AUTH_JWKS_URL', true, (v) => {
+      try { return new URL(v).protocol === 'https:'; } catch { return false; }
+    }));
+    items.push(checkVar('AUTH_CLIENT_ID', true, (v) => v.trim().length > 0));
+    items.push(checkVar('AUTH_CLIENT_SECRET', true, (v) => v.trim().length > 0));
+    items.push(checkVar('AUTH_REDIRECT_URI', true, (v) => {
+      try { return new URL(v).protocol === 'https:'; } catch { return false; }
+    }));
+
+    // 5. GEMINI_API_KEY
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
 
     return items;
