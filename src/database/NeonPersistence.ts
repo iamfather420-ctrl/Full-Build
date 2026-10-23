@@ -34,6 +34,10 @@ export class NeonStore {
     'adapter_status', 'node_registry', 'execution_runs', 'failures'
   ] as const;
 
+  private isAllowedTable(tableName: string): boolean {
+    return (this.requiredTables as readonly string[]).includes(tableName);
+  }
+
   private constructor() {
     this.databaseUrl = (typeof process !== 'undefined' && (process.env?.NEON_DATABASE_URL || process.env?.DATABASE_URL)) || null;
   }
