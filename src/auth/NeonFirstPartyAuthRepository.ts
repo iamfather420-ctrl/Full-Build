@@ -210,7 +210,22 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
   }
 
   async findSessionByTokenHash(tokenHash: string): Promise<FirstPartySession | null> {
-    const result = await this.pool.query('SELECT * FROM daisy_auth_sessions WHERE token_hash = $1 LIMIT 1', [tokenHash]);
+    // Enforce the session/account tenant binding and account eligibility in the same
+    // database read. The core rechecks expiry/revocation and account state as defense in depth.
+    const result = await this.pool.query(
+      `SELECT s.*
+       FROM daisy_auth_sessions s
+       JOIN daisy_auth_accounts a
+         ON a.id = s.account_id
+        AND a.tenant_id = s.tenant_id
+       WHERE s.token_hash = $1
+         AND s.revoked_at IS NULL
+         AND s.expires_at > now()
+         AND a.disabled_at IS NULL
+         AND a.email_verified_at IS NOT NULL
+       LIMIT 1`,
+      [tokenHash],
+    );
     return result.rows[0] ? sessionFrom(result.rows[0] as DbRow) : null;
   }
 
