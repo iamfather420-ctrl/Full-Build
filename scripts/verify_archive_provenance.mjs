@@ -71,10 +71,16 @@ try {
     console.log(`Combined size verified: ${reconstructedSize.toLocaleString()} bytes.`);
   }
 
-  const tempChecksum = path.join(tempDir, path.basename(checksumPath));
-  copyFileSync(checksumPath, tempChecksum);
-  execFileSync('sha256sum', ['-c', path.basename(tempChecksum)], { cwd: tempDir, stdio: 'inherit' });
-  console.log('PASS: reconstructed archive matches the official SHA-256 checksum.');
+  const expectedDigest = match[1].toLowerCase();
+  const actualDigest = execFileSync('sha256sum', [reconstructed], { encoding: 'utf8' }).trim().split(' ')[0].toLowerCase();
+  console.log('Expected SHA-256:', expectedDigest);
+  console.log('Actual SHA-256:', actualDigest);
+  if (actualDigest !== expectedDigest) {
+    console.error('FAIL: reconstructed archive does not match the official SHA-256 checksum.');
+    process.exitCode = 1;
+  } else {
+    console.log('PASS: reconstructed archive matches the official SHA-256 checksum.');
+  }
 } catch (error) {
   console.error('FAIL: archive reconstruction or SHA-256 verification failed.');
   console.error(error.message);
