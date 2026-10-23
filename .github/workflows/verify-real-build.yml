@@ -38,6 +38,9 @@ jobs:
           npm audit --json > npm-audit.json || true
           node scripts/summarize_npm_audit.mjs npm-audit.json
 
+      - name: Block vulnerable dependency releases
+        run: npm audit --audit-level=moderate
+
       - name: Preserve dependency audit report
         if: always()
         uses: actions/upload-artifact@v4
