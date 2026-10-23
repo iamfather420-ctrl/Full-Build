@@ -36,3 +36,12 @@ This branch does not wire the new core into the live API, does not apply a datab
 - `src/auth/FirstPartyAuthRouter.ts` — opt-in Express endpoints with Origin checks and secure session cookies.
 - `migrations/005_daisy_first_party_auth.sql` — proposed additive schema, not applied.
 - `scripts/first_party_auth.test.ts` — lifecycle unit tests using a test-only in-memory repository; these do not substitute for database integration tests.
+
+
+## Database rehearsal evidence (2026-10-23)
+
+- Applied the additive `005_daisy_first_party_auth.sql` table/index shape only to the existing non-primary Neon branch `solvex-tenant-auth-rehearsal-2026-10-16` (`br-dark-smoke-b4iu7i2t`) in project `SolveX`.
+- Confirmed all five `daisy_auth_*` tables are present.
+- Ran a SQL contract probe for tenant/account/session/token/rate-limit inserts and one-time token consumption. The probe cleaned up its test rows; no test account or session was retained.
+- **Not applied to the production branch.** This rehearsal did not validate the TypeScript repository against a live app connection.
+- The new auth tables currently have RLS disabled and no policies. Therefore this branch is a schema-shape rehearsal only, not an authorization-isolation pass. Do not mount auth routes or use the schema for real users until a dedicated least-privilege auth DB role, explicit grants, tenant RLS strategy, and concurrency/integration tests are verified.
