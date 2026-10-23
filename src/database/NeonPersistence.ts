@@ -118,40 +118,17 @@ export class NeonStore {
   }
 
   public async runMigrations(): Promise<{ success: boolean; tablesCreated: number; error?: string }> {
-    if (!this.isConnected || !this.neonClient) {
-      return { success: false, tablesCreated: 0, error: this.lastError || 'Neon not connected' };
-    }
-
-    const required27 = [...this.requiredTables];
-
-    try {
-      for (const tbl of required27) {
-        await this.neonClient.query(`
-          CREATE TABLE IF NOT EXISTS ${tbl} (
-            id TEXT PRIMARY KEY,
-            tenant_id TEXT NOT NULL,
-            created_at BIGINT NOT NULL,
-            updated_at BIGINT NOT NULL,
-            status TEXT NOT NULL,
-            version TEXT NOT NULL,
-            payload_json JSONB
-          )
-        `);
-        // Existing Neon tables may predate this persistence contract. Evolve them
-        // in place instead of assuming CREATE TABLE IF NOT EXISTS changes their schema.
-        // ADD COLUMN IF NOT EXISTS is idempotent and keeps production migration safe to re-run.
-        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS tenant_id TEXT`);
-        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS created_at BIGINT`);
-        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS updated_at BIGINT`);
-        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS status TEXT`);
-        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS version TEXT`);
-        await this.neonClient.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS payload_json JSONB`);
-        await this.neonClient.query(`CREATE INDEX IF NOT EXISTS idx_${tbl}_tenant ON ${tbl}(tenant_id)`);
-      }
-      return { success: true, tablesCreated: required27.length };
-    } catch (e: any) {
-      return { success: false, tablesCreated: 0, error: e.message };
-    }
+    // Generic schema creation is intentionally disabled. The production domain tables
+    // have domain-specific columns and constraints; adding payload_json columns or
+    // indexes here can conceal schema drift and bypass the reviewed migration process.
+    // Apply only reviewed, versioned SQL migrations through the authorized deployment
+    // workflow after schema diff, RLS, backup, and rollback checks have passed.
+    this.lastError = 'Automatic generic Neon migrations are disabled; use reviewed versioned migrations';
+    return {
+      success: false,
+      tablesCreated: 0,
+      error: this.lastError
+    };
   }
 
   public async verifyRequiredTables(): Promise<{ verified: number; required: number; missing: string[] }> {
@@ -254,47 +231,12 @@ export class NeonStore {
     }
   }
 
-  public async insertRecord(tableName: string, data: Record<string, any>): Promise<boolean> {
-    if (!this.isConnected || !this.neonClient) return false;
-    if (!this.isAllowedTable(tableName)) {
-      this.lastError = 'Rejected table outside the persistence allowlist';
-      return false;
-    }
-    if (typeof data.tenant_id !== 'string' || data.tenant_id.trim().length === 0) {
-      this.lastError = 'Rejected write without an explicit tenant_id';
-      return false;
-    }
-    try {
-      const now = Date.now();
-      const payload = {
-        id: data.id || `rec_${Date.now()}`,
-        tenant_id: data.tenant_id.trim(),
-        created_at: data.created_at || now,
-        updated_at: data.updated_at || now,
-        status: data.status || 'ACTIVE',
-        version: data.version || '1.0.0-PROD',
-        payload_json: JSON.stringify(data)
-      };
-
-      const result = await this.neonClient.query(`
-        INSERT INTO ${tableName} (id, tenant_id, created_at, updated_at, status, version, payload_json)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        ON CONFLICT (id) DO UPDATE SET
-          updated_at = EXCLUDED.updated_at,
-          status = EXCLUDED.status,
-          payload_json = EXCLUDED.payload_json
-        WHERE ${tableName}.tenant_id = EXCLUDED.tenant_id
-      `, [payload.id, payload.tenant_id, payload.created_at, payload.updated_at, payload.status, payload.version, payload.payload_json]);
-      if (result?.rowCount !== 1) {
-        this.lastError = 'Write rejected: record may already belong to a different tenant; no successful mutation was confirmed';
-        return false;
-      }
-      this.lastError = null;
-      return true;
-    } catch (e: any) {
-      this.lastError = e?.message || 'Neon record write failed';
-      return false;
-    }
+  public async insertRecord(_tableName: string, _data: Record<string, any>): Promise<boolean> {
+    // Generic JSON persistence is disabled until every domain table has a reviewed,
+    // schema-specific repository and tenant-isolation integration tests. Do not write
+    // data into guessed columns or allow an upsert to imply persistence is verified.
+    this.lastError = 'Generic Neon writes are disabled pending schema-specific repositories and tenant-isolation tests';
+    return false;
   }
 
   public async findTenantRecords(tableName: string, tenantId: string, limit: number = 100): Promise<any[]> {
