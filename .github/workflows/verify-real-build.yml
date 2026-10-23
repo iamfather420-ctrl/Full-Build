@@ -32,6 +32,21 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Audit locked dependencies
+        shell: bash
+        run: |
+          npm audit --json > npm-audit.json || true
+          node scripts/summarize_npm_audit.mjs npm-audit.json
+
+      - name: Preserve dependency audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-dependency-audit
+          path: npm-audit.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Verify release safety
         run: npm run verify:release-safety
 
@@ -52,7 +67,6 @@ jobs:
 
       - name: Verify archive payload and provenance
         id: archive
-        continue-on-error: true
         run: npm run verify:archive-provenance
 
       - name: Preserve verification summary
@@ -61,9 +75,9 @@ jobs:
         run: |
           {
             echo "## Full Build Verification"
-            echo "- Revision: \`$GITHUB_SHA\`"
-            echo "- Branch: \`$GITHUB_REF_NAME\`"
-            echo "- Archive provenance step conclusion: \`${{ steps.archive.outcome }}\`"
-            echo "- Archive payload verification is separate; this workflow does not claim the split archive was reconstructed or hash-verified."
+            echo "- Revision: `$GITHUB_SHA`"
+            echo "- Branch: `$GITHUB_REF_NAME`"
+            echo "- Archive provenance step conclusion: `${{ steps.archive.outcome }}`"
+            echo "- A failed archive gate means the original split payload is missing or unverified; source tests do not override that blocker."
             echo "- Production authentication and live payments are not enabled by this workflow."
           } >> "$GITHUB_STEP_SUMMARY"
