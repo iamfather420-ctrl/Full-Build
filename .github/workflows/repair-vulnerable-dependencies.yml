@@ -1,0 +1,74 @@
+name: Repair vulnerable dependencies safely
+
+on:
+  push:
+    branches:
+      - ops/fullbuild-repo-status-20261023
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dependency-repair-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    name: Update compatible dependency fixes and verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: ops/fullbuild-repo-status-20261023
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install current locked dependencies
+        run: npm ci
+
+      - name: Apply non-breaking npm audit fixes
+        run: npm audit fix
+
+      - name: Reinstall exactly from updated lockfile
+        run: npm ci
+
+      - name: Require clean dependency audit
+        run: npm audit --audit-level=moderate
+
+      - name: Verify release safety
+        run: npm run verify:release-safety
+
+      - name: Verify payments remain disabled
+        run: npm run verify:payments-disabled
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Type-check
+        run: npm run lint
+
+      - name: Verify enterprise invariants
+        run: npm run verify:enterprise
+
+      - name: Verify 120-case corpus
+        run: npm run verify:120
+
+      - name: Commit tested lockfile repair
+        shell: bash
+        run: |
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "No dependency manifest changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "Fix audited dependency vulnerabilities"
+          git push origin HEAD:ops/fullbuild-repo-status-20261023
