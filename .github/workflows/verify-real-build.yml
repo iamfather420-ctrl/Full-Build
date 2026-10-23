@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Build, safety, formal evidence, and archive gate
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Checkout exact revision
         uses: actions/checkout@v4
@@ -68,6 +68,17 @@ jobs:
       - name: Verify 120-case corpus
         run: npm run verify:120
 
+      - name: Retrieve official release archive parts
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://github.com/iamfather420-ctrl/Full-Build/releases/download/v0.1.0-daisy-ai-os"
+          curl --fail --location --retry 3 --retry-all-errors --output Daisy-AI-OS-Complete-With-ISO.tar.part-00 "$base/Daisy-AI-OS-Complete-With-ISO.tar.part-00"
+          curl --fail --location --retry 3 --retry-all-errors --output Daisy-AI-OS-Complete-With-ISO.tar.part-01 "$base/Daisy-AI-OS-Complete-With-ISO.tar.part-01"
+          curl --fail --location --retry 3 --retry-all-errors --output Daisy-AI-OS-Complete-With-ISO.tar.sha256 "$base/Daisy-AI-OS-Complete-With-ISO.tar.sha256"
+          test "$(stat -c %s Daisy-AI-OS-Complete-With-ISO.tar.part-00)" -eq 1887436800
+          test "$(stat -c %s Daisy-AI-OS-Complete-With-ISO.tar.part-01)" -eq 528199680
+
       - name: Verify archive payload and provenance
         id: archive
         run: npm run verify:archive-provenance
@@ -78,9 +89,9 @@ jobs:
         run: |
           {
             echo "## Full Build Verification"
-            echo "- Revision: `$GITHUB_SHA`"
-            echo "- Branch: `$GITHUB_REF_NAME`"
-            echo "- Archive provenance step conclusion: `${{ steps.archive.outcome }}`"
+            echo "- Revision: $GITHUB_SHA"
+            echo "- Branch: $GITHUB_REF_NAME"
+            echo "- Archive provenance step conclusion: ${{ steps.archive.outcome }}"
             echo "- A failed archive gate means the original split payload is missing or unverified; source tests do not override that blocker."
             echo "- Production authentication and live payments are not enabled by this workflow."
           } >> "$GITHUB_STEP_SUMMARY"
