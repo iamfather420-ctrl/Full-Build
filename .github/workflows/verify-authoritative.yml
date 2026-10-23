@@ -48,6 +48,9 @@ jobs:
       - name: Verify fail-closed release safety
         run: npm run verify:release-safety
 
+      - name: Verify first-party Daisy authentication lifecycle
+        run: npm run verify:first-party-auth
+
       - name: Verify payments remain disabled
         run: npm run verify:payments-disabled
 
