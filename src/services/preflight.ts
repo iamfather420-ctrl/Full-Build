@@ -114,19 +114,22 @@ export class PreflightService {
       notes: 'TypeScript execution engine'
     });
 
-    // 5. Database Drivers: SQLite
-    let sqliteStatus: DependencyStatus = 'PRESENT';
-    let sqliteType = 'Universal SQLite Interface with 27-Table Relational Schema';
+    // 5. Database Drivers: SQLite. A schema-shaped in-memory fallback is not a database.
+    let sqliteStatus: DependencyStatus = 'MISSING';
+    let sqliteType = 'Native node:sqlite DatabaseSync unavailable; non-durable fallback is not counted as a database.';
     try {
       // @ts-ignore
       if (typeof require === 'function') {
         // @ts-ignore
         const nodeSqlite = require('node:sqlite');
-        if (nodeSqlite && nodeSqlite.DatabaseSync) {
-          sqliteType = 'node:sqlite DatabaseSync Native';
+        if (nodeSqlite && typeof nodeSqlite.DatabaseSync === 'function') {
+          sqliteStatus = 'PRESENT';
+          sqliteType = 'Native node:sqlite DatabaseSync detected; persistence still requires runtime write/read verification.';
         }
       }
-    } catch {}
+    } catch {
+      // Fail closed: do not report SQLite present when the native driver cannot load.
+    }
     items.push({
       name: 'sqlite',
       category: 'DATABASE',
@@ -231,9 +234,9 @@ export class PreflightService {
     items.push(checkVar('PAYPAL_SANDBOX_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_ID', 'PAYPAL_CLIENT_ID']));
     items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_SECRET', 'PAYPAL_SANDBOX_KEY', 'PAYPAL_CLIENT_SECRET']));
 
-    // 2. PayPal Live Credentials (Required in Production)
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8, ['PAYPAL_LIVE_ID', 'PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_SECRET', 'PAYPAL_CLIENT_SECRET']));
+    // 2. PayPal Live Credentials (intentionally not required; live payments remain disabled)
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_LIVE_ID', 'PAYPAL_CLIENT_ID']));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_LIVE_SECRET', 'PAYPAL_CLIENT_SECRET']));
 
     // 3. NEON_DATABASE_URL
     items.push(checkVar('NEON_DATABASE_URL', false, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
