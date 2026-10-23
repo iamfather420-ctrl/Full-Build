@@ -272,10 +272,13 @@ export class FirstPartyAuth {
     return safeAccount(account);
   }
 
-  async login(email: string, password: string): Promise<{ account: SafeAccount; session: SessionCredential }> {
+  async login(email: string, password: string, sourceIdentifier: string): Promise<{ account: SafeAccount; session: SessionCredential }> {
     const normalizedEmail = normalizeEmail(email);
+    if (typeof sourceIdentifier !== 'string' || sourceIdentifier.length < 8 || sourceIdentifier.length > 256) {
+      throw new FirstPartyAuthError('INVALID_INPUT', 'A trusted login source identifier is required.');
+    }
     await this.rateLimit('login-email', normalizedEmail);
-    await this.rateLimit('login-source', normalizedEmail);
+    await this.rateLimit('login-source', sourceIdentifier);
     const account = await this.repository.findAccountByEmail(normalizedEmail);
     // Perform a real scrypt verification even for unknown accounts to reduce timing leaks.
     const passwordMatches = await verifyPassword(
