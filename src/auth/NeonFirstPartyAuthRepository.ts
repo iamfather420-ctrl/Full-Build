@@ -263,18 +263,53 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
     });
   }
 
-  async consumePasswordResetToken(tokenHash: string, now: Date): Promise<FirstPartyAccount | null> {
+  async resetPasswordWithToken(tokenHash: string, passwordHash: string, changedAt: Date): Promise<boolean> {
     return inTransaction(this.pool, async (client) => {
+      // Lock the token and account in one transaction. Any failure rolls back token
+      // consumption, so a failed password update does not burn the reset link.
       const token = await client.query(
-        `UPDATE daisy_auth_one_time_tokens SET consumed_at = $2
-         WHERE token_hash = $1 AND purpose = 'RESET_PASSWORD' AND consumed_at IS NULL AND expires_at > $2
-         RETURNING account_id`,
-        [tokenHash, now],
+        `SELECT t.account_id
+         FROM daisy_auth_one_time_tokens t
+         JOIN daisy_auth_accounts a ON a.id = t.account_id
+         WHERE t.token_hash = $1
+           AND t.purpose = 'RESET_PASSWORD'
+           AND t.consumed_at IS NULL
+           AND t.expires_at > $2
+           AND a.disabled_at IS NULL
+           AND a.email_verified_at IS NOT NULL
+         FOR UPDATE OF t, a`,
+        [tokenHash, changedAt],
       );
-      if (!token.rows[0]) return null;
+      if (!token.rows[0]) return false;
       const accountId = String((token.rows[0] as DbRow).account_id);
-      const result = await client.query('SELECT * FROM daisy_auth_accounts WHERE id = $1 FOR UPDATE', [accountId]);
-      return result.rows[0] ? accountFrom(result.rows[0] as DbRow) : null;
+      const consumed = await client.query(
+        `UPDATE daisy_auth_one_time_tokens
+         SET consumed_at = $2
+         WHERE token_hash = $1 AND consumed_at IS NULL AND expires_at > $2
+         RETURNING token_hash`,
+        [tokenHash, changedAt],
+      );
+      if (!consumed.rows[0]) return false;
+      const update = await client.query(
+        `UPDATE daisy_auth_accounts
+         SET password_hash = $2, password_changed_at = $3
+         WHERE id = $1 AND disabled_at IS NULL AND email_verified_at IS NOT NULL
+         RETURNING id`,
+        [accountId, passwordHash, changedAt],
+      );
+      if (!update.rows[0]) throw new Error('BLOCKED: account is not eligible for password change.');
+      await client.query(
+        'UPDATE daisy_auth_sessions SET revoked_at = $2 WHERE account_id = $1 AND revoked_at IS NULL',
+        [accountId, changedAt],
+      );
+      await client.query(
+        `UPDATE daisy_auth_one_time_tokens
+         SET consumed_at = $2
+         WHERE account_id = $1 AND purpose = 'RESET_PASSWORD'
+           AND consumed_at IS NULL`,
+        [accountId, changedAt],
+      );
+      return true;
     });
   }
 
