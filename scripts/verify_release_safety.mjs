@@ -54,8 +54,11 @@ assert.match(neonPersistence, /WHERE \$\{tableName\}\.tenant_id = EXCLUDED\.tena
 assert.match(neonPersistence, /Unexpected Neon query result shape/,
   'Neon read paths must reject unexpected result shapes instead of claiming verification');
 
-assert.match(durableStore, /window\.localStorage\.setItem/,
-  'browser state persistence must remain visible for production-readiness auditing');
+assert.match(durableStore, /PERSISTENCE_BLOCKED: browser localStorage is unavailable/,
+  'browser state writes must fail closed when local persistence is unavailable');
+assert.match(durableStore, /PERSISTENCE_BLOCKED: browser localStorage write failed/,
+  'browser state writes must surface storage failures instead of swallowing them');
+
 assert.match(workflow, /PAYMENTS_ENABLED:\s*'false'/,
   'authoritative workflow must keep payments disabled');
 assert.ok(packageJson.scripts['verify:release-safety'], 'release safety command must be declared');
