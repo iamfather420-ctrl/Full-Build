@@ -14,13 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
       - name: Install locked dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
       - name: Archive provenance verification
         run: npm run verify:archive-provenance
       - name: Fail-closed contract verification
