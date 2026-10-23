@@ -55,3 +55,11 @@ This branch does not wire the new core into the live API, does not apply a datab
 - Follow-up commit `28e7aca7888b479e313ac014c668019885d98300` tightens the Neon session lookup to require a matching account/session tenant, a live session, and a verified, enabled account in the same query. This follow-up commit still requires fresh CI confirmation.
 - Live inspection of the non-primary rehearsal branch confirms all five auth tables exist, but RLS is disabled and no auth-specific isolation policy has been proven. Do not mount the router or promote the schema. RLS must be designed around the unauthenticated email lookup and token workflows; a simplistic `tenant_id = current_setting(...)` policy would break login/registration or encourage unsafe bypasses.
 - No production auth, production migration, deployment, domain change, or payment configuration was changed.
+
+
+## Follow-up work (2026-10-23)
+
+- Added `src/auth/DaisyAuthEmailDelivery.ts`, a server-side Resend API adapter using native HTTPS fetch. It requires a server-side API key and sender, enforces the canonical `https://uarefake.space` link origin, times out requests, and fails closed on provider errors without exposing provider response bodies.
+- Added tests for missing email credentials and rejecting a non-HTTPS provider endpoint. These are configuration-safety tests, not a live provider delivery test.
+- Do not set production secrets or activate delivery until the sender/domain is verified, provider account is approved, and a controlled test inbox confirms delivery. Never put the provider key in client-side variables.
+- Remaining hard blockers: the auth schema still has no verified RLS/grant strategy; the TypeScript repository has not passed real PostgreSQL integration/concurrency tests; the adapter is not mounted in the running app; no login UI is wired; and the complete 46-gate production preflight/restore rehearsal is not proven. These gaps are intentionally fail-closed.
