@@ -16,7 +16,7 @@ const SCRYPT_N = 1 << 15;
 const SCRYPT_R = 8;
 const SCRYPT_P = 1;
 const SCRYPT_KEY_BYTES = 64;
-const SCRYPT_MAXMEM = 64 * 1024 * 1024;
+const SCRYPT_MAXMEM = 64 * 1024 * 1024;\n// Fixed valid dummy hash ensures unknown-account login still performs the same scrypt work.\nconst DUMMY_PASSWORD_HASH = 'scrypt$32768$8$1$ZGFpc3ktZHVtbXktc2FsdCE$r1-vnCfsq20jXzVaz1L6IKRtJNO0V079qAiH4neInNsDsjZ53_Ek8PYnbuB95XwAfSOD4neDqsqUYB36QkfCOw';
 
 export type FirstPartyRole = 'OWNER' | 'ADMIN' | 'VERIFIER' | 'CUSTOMER';
 
@@ -283,7 +283,7 @@ export class FirstPartyAuth {
     // Perform a real scrypt verification even for unknown accounts to reduce timing leaks.
     const passwordMatches = await verifyPassword(
       typeof password === 'string' && Buffer.byteLength(password, 'utf8') <= 1024 ? password : '',
-      account?.passwordHash ?? 'invalid$0$0$0$$',
+      account?.passwordHash ?? DUMMY_PASSWORD_HASH,
     );
     if (!account || !passwordMatches) {
       throw new FirstPartyAuthError('INVALID_CREDENTIALS', 'Email or password is incorrect.');
