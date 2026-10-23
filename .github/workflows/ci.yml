@@ -26,6 +26,10 @@ jobs:
         run: npm run verify:release-safety
       - name: Payments-disabled boundary checks
         run: npm run verify:payments-disabled
+      - name: Daisy first-party authentication lifecycle tests
+        run: npm run test:first-party-auth
+      - name: Daisy auth RLS guard static regression tests
+        run: npm run test:daisy-auth-rls-guard
       - name: Build
         run: npm run build
       - name: TypeScript
