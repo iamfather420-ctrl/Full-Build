@@ -7,6 +7,7 @@ const api = read('src/api/ApiRouter.ts');
 const runtime = read('scripts/verify_production_runtime.ts');
 const sqliteStore = read('src/database/SqliteStore.ts');
 const durableStore = read('src/database/DurableStore.ts');
+const preflight = read('src/services/preflight.ts');
 const workflow = read('.github/workflows/verify-authoritative.yml');
 const packageJson = JSON.parse(read('package.json'));
 
