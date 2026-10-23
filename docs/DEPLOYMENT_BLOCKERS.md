@@ -19,3 +19,18 @@ Checked: 2026-10-15. Scope: Vercel project `uarefake`, project ID `prj_Tj42CgzCW
 
 ## Safety
 No production deployment, domain transfer, DNS modification, database migration, or payment activation was performed during this inspection.
+
+
+## Current gate clarification (reviewed 2026-10-23)
+
+The repository's authoritative recorded gate report identifies its environment as `LOCAL`, with claim scope `LOCAL_VERIFIED / MODEL_VERIFIED`, 14/15 gates passed, GATE-14 blocked, and production verdict `BLOCKED_MISSING_EXTERNAL_CREDENTIALS`. This is a historical run tied to its recorded commit and timestamp, not evidence of the current live deployment.
+
+Additional explicit release blockers tracked in `PRODUCTION_READINESS_STATUS.md`:
+- Real OIDC issuer/JWKS/audience/callback and signed tenant/role mapping are not externally verified.
+- Neon persistence/schema/runtime-role and tenant isolation are not production-verified.
+- Official Daisy archive parts and checksum/provenance are not confirmed complete in the working checkout.
+- Dependency installation and reproducible lockfile/CI status remain incomplete.
+- Operational deployment, secrets, canonical-domain/TLS, monitoring, restore, and rollback prerequisites remain unverified.
+- PayPal/live payments remain intentionally disabled and must not be enabled by this readiness work.
+
+Do not hand-edit generated execution reports to make them appear current. Re-run the authoritative pipeline in a dependency-enabled runner and preserve the exact commit SHA and generated artifacts. Until then, release verdict remains **NOT PRODUCTION-READY** and GATE-14 remains **BLOCKED**.
