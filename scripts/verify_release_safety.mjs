@@ -41,16 +41,16 @@ assert.match(preflight, /items\.push\(checkVar\('NEON_DATABASE_URL', true/,
   'production preflight must require cloud database configuration');
 assert.match(preflight, /items\.push\(checkVar\('AUTH_MODE', true, \(v\) => v\.trim\(\)\.toLowerCase\(\) === 'oidc'\)/,
   'production preflight must require OIDC mode, not local token mode');
-assert.match(preflight, /items\.push\(checkVar\('AUTH_ISSUER', true,[\s\S]*?new URL\(v\)[\s\S]*?url\.protocol === 'https:'/,
+assert.match(preflight, /AUTH_ISSUER', true,[\s\S]*?new URL\(v\)\.protocol === 'https:'/,
   'production OIDC issuer must be an HTTPS URL');
 assert.match(preflight, /items\.push\(checkVar\('AUTH_AUDIENCE', true, \(v\) => v\.trim\(\)\.length > 0\)/,
   'production OIDC audience must be configured');
-assert.match(preflight, /items\.push\(checkVar\('AUTH_JWKS_URL', true,[\s\S]*?new URL\(v\)[\s\S]*?url\.protocol === 'https:'/,
+assert.match(preflight, /AUTH_JWKS_URL', true,[\s\S]*?new URL\(v\)\.protocol === 'https:'/,
   'production JWKS endpoint must be HTTPS');
 assert.match(preflight, /items\.push\(checkVar\('AUTH_CLIENT_ID', true/);
 assert.match(preflight, /items\.push\(checkVar\('AUTH_CLIENT_SECRET', true/,
   'production OIDC client credentials must be present');
-assert.match(preflight, /items\.push\(checkVar\('AUTH_REDIRECT_URI', true,[\s\S]*?new URL\(v\)[\s\S]*?url\.protocol === 'https:'/,
+assert.match(preflight, /AUTH_REDIRECT_URI', true,[\s\S]*?new URL\(v\)\.protocol === 'https:'/,
   'production OIDC redirect URI must be HTTPS');
 assert.match(preflight, /Presence is not proof of a working/,
   'preflight must state that configuration presence does not prove provider integration');
