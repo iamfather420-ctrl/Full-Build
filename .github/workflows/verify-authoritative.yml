@@ -45,6 +45,12 @@ jobs:
           npx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
 
+      - name: Verify fail-closed release safety
+        run: npm run verify:release-safety
+
+      - name: Verify payments remain disabled
+        run: npm run verify:payments-disabled
+
       - name: Production preflight
         if: github.event_name == 'workflow_dispatch' && inputs.production_release
         run: npm run preflight
