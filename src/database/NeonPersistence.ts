@@ -90,14 +90,14 @@ export class NeonStore {
     const isConf = this.isConfigured();
     if (!isConf) {
       return {
-        backend: 'SQLITE_LOCAL',
+        backend: 'PERSISTENCE_UNAVAILABLE',
         configured: false,
         connected: false,
         tables_verified: 0,
         total_required_tables: this.totalRequiredTables,
         tenant_isolation_verified: false,
         restart_readback_verified: false,
-        notes: 'NEON_DATABASE_URL and DATABASE_URL are not configured. Cloud persistence is unverified; local fallback selection must be reported separately by the caller.'
+        notes: 'NEON_DATABASE_URL and DATABASE_URL are not configured. No durable backend is verified; any in-memory or browser-local fallback must not be represented as cloud or server-side persistence.'
       };
     }
 
