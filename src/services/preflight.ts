@@ -115,8 +115,11 @@ export class PreflightService {
     });
 
     // 5. Database Drivers: SQLite. A schema-shaped in-memory fallback is not a database.
-    let sqliteStatus: DependencyStatus = 'MISSING';
-    let sqliteType = 'Native node:sqlite DatabaseSync unavailable; non-durable fallback is not counted as a database.';
+    const cloudDatabaseConfigured = Boolean(typeof process !== 'undefined' && (process.env?.NEON_DATABASE_URL || process.env?.DATABASE_URL));
+    let sqliteStatus: DependencyStatus = env === 'production' && cloudDatabaseConfigured ? 'NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT' : 'MISSING';
+    let sqliteType = env === 'production' && cloudDatabaseConfigured
+      ? 'Local SQLite is not required when cloud database configuration is present; verify Neon connectivity, schema, isolation, and restart readback separately.'
+      : 'Native node:sqlite DatabaseSync unavailable; non-durable fallback is not counted as a database.';
     try {
       // @ts-ignore
       if (typeof require === 'function') {
@@ -239,7 +242,7 @@ export class PreflightService {
     items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_LIVE_SECRET', 'PAYPAL_CLIENT_SECRET']));
 
     // 3. NEON_DATABASE_URL
-    items.push(checkVar('NEON_DATABASE_URL', false, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
+    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
 
     // 4. GEMINI_API_KEY
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
