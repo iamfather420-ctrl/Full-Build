@@ -160,7 +160,12 @@ export class DurableStore {
       timestamp: Date.now()
     };
     this.state.checkpoints[id] = checkpoint;
-    this.persist();
+    try {
+      this.persist();
+    } catch (error) {
+      delete this.state.checkpoints[id];
+      throw error;
+    }
     return checkpoint;
   }
 
