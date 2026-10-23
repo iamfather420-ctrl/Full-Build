@@ -1,7 +1,10 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, copyFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const repoRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const archiveName = 'Daisy-AI-OS-Complete-With-ISO.tar';
 const requiredFiles = [
   'Daisy-AI-OS-Complete-With-ISO.tar.part-00',
   'Daisy-AI-OS-Complete-With-ISO.tar.part-01',
@@ -12,7 +15,7 @@ function collectFiles(dir, out = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      collectFiles(full, out);
+      if (entry.name !== '.git' && entry.name !== 'node_modules' && entry.name !== 'dist') collectFiles(full, out);
     } else {
       out.push(full);
     }
@@ -21,57 +24,61 @@ function collectFiles(dir, out = []) {
 }
 
 const files = collectFiles(repoRoot);
-const present = requiredFiles.filter((name) => files.some((file) => path.basename(file) === name));
+const locate = (name) => files.find((file) => path.basename(file) === name);
+const present = requiredFiles.filter((name) => Boolean(locate(name)));
 
-console.log('Archive provenance check for Daisy AI OS release assets');
+console.log('Archive provenance and SHA-256 verification for Daisy AI OS release assets');
 console.log('Repository root:', repoRoot);
-console.log('Expected official assets:');
-for (const entry of requiredFiles) {
-  console.log(` - ${entry}`);
-}
-
-if (present.length === 0) {
-  console.log('');
-  console.log('BLOCKED: the official Daisy archive assets are not present in this checkout.');
-  console.log('The repository documents the archive names and intended reconstruction order, but the real payload is missing.');
-  console.log('This is an environment/provenance blocker, not a source-code validation pass.');
-  console.log('');
-  console.log('Expected reconstruction sequence:');
-  console.log('  cat Daisy-AI-OS-Complete-With-ISO.tar.part-00 Daisy-AI-OS-Complete-With-ISO.tar.part-01 > Daisy-AI-OS-Complete-With-ISO.tar');
-  console.log('  sha256sum -c Daisy-AI-OS-Complete-With-ISO.tar.sha256');
-  process.exit(1);
-}
-
-for (const name of requiredFiles) {
-  const match = files.find((file) => path.basename(file) === name);
-  if (!match) {
-    console.log(`MISSING: ${name}`);
-    continue;
-  }
-  const size = statSync(match).size;
-  console.log(`FOUND: ${name} (${size.toLocaleString()} bytes)`);
-}
-
-const checksumPath = files.find((file) => path.basename(file) === 'Daisy-AI-OS-Complete-With-ISO.tar.sha256');
-if (checksumPath && existsSync(checksumPath)) {
-  const checksumText = readFileSync(checksumPath, 'utf8').trim();
-  if (!checksumText) {
-    console.log('BLOCKED: checksum file is empty.');
-    process.exit(1);
-  }
-  console.log('Checksum file present; ready for reconstruction and verification when the split archive parts are available.');
-  console.log('Checksum contents:');
-  console.log(checksumText);
-}
+for (const entry of requiredFiles) console.log(` - ${entry}`);
 
 if (present.length !== requiredFiles.length) {
-  const missing = requiredFiles.filter((name) => !present.includes(name));
-  console.log('');
-  console.log('PARTIAL: missing official Daisy archive assets:');
-  for (const entry of missing) console.log(` - ${entry}`);
+  console.error('BLOCKED: the official split archive and checksum must all be present before verification.');
+  for (const name of requiredFiles.filter((entry) => !present.includes(entry))) console.error(`MISSING: ${name}`);
+  console.error('No archive reconstruction or checksum pass is claimed.');
   process.exit(1);
 }
 
-console.log('');
-console.log('Detected the expected official asset names in the working tree.');
-console.log('No checksum pass was claimed because the actual archive payload has not been reconstructed in this environment.');
+const part0 = locate(requiredFiles[0]);
+const part1 = locate(requiredFiles[1]);
+const checksumPath = locate(requiredFiles[2]);
+for (const file of [part0, part1, checksumPath]) {
+  console.log(`FOUND: ${path.basename(file)} (${statSync(file).size.toLocaleString()} bytes)`);
+}
+
+const checksumText = readFileSync(checksumPath, 'utf8').trim();
+const match = checksumText.match(/^([a-fA-F0-9]{64})\s+[* ]?(.+)$/);
+if (!match) {
+  console.error('BLOCKED: checksum file must contain a SHA-256 digest and the expected archive filename.');
+  process.exit(1);
+}
+const checksumTarget = path.basename(match[2].trim());
+if (checksumTarget !== archiveName) {
+  console.error(`BLOCKED: checksum target "${checksumTarget}" does not match expected "${archiveName}".`);
+  process.exit(1);
+}
+
+const tempDir = mkdtempSync(path.join(os.tmpdir(), 'daisy-archive-verify-'));
+try {
+  const reconstructed = path.join(tempDir, archiveName);
+  console.log('Reconstructing archive in temporary storage; source parts are left unchanged.');
+  execFileSync('bash', ['-c', 'cat "$1" "$2" > "$3"', 'archive-concat', part0, part1, reconstructed], { stdio: 'inherit' });
+  const reconstructedSize = statSync(reconstructed).size;
+  const expectedSize = statSync(part0).size + statSync(part1).size;
+  if (reconstructedSize !== expectedSize) {
+    console.error(`FAIL: reconstructed size ${reconstructedSize} does not equal combined part size ${expectedSize}.`);
+    process.exitCode = 1;
+  } else {
+    console.log(`Combined size verified: ${reconstructedSize.toLocaleString()} bytes.`);
+  }
+
+  const tempChecksum = path.join(tempDir, path.basename(checksumPath));
+  copyFileSync(checksumPath, tempChecksum);
+  execFileSync('sha256sum', ['-c', path.basename(tempChecksum)], { cwd: tempDir, stdio: 'inherit' });
+  console.log('PASS: reconstructed archive matches the official SHA-256 checksum.');
+} catch (error) {
+  console.error('FAIL: archive reconstruction or SHA-256 verification failed.');
+  console.error(error.message);
+  process.exitCode = 1;
+} finally {
+  rmSync(tempDir, { recursive: true, force: true });
+}
