@@ -121,14 +121,12 @@ export class PreflightService {
       ? 'Local SQLite is not required when cloud database configuration is present; verify Neon connectivity, schema, isolation, and restart readback separately.'
       : 'Native node:sqlite DatabaseSync unavailable; non-durable fallback is not counted as a database.';
     try {
-      // @ts-ignore
-      if (typeof require === 'function') {
-        // @ts-ignore
-        const nodeSqlite = require('node:sqlite');
-        if (nodeSqlite && typeof nodeSqlite.DatabaseSync === 'function') {
-          sqliteStatus = 'PRESENT';
-          sqliteType = 'Native node:sqlite DatabaseSync detected; persistence still requires runtime write/read verification.';
-        }
+      // This method runs in the Node preflight runtime. Use ESM dynamic import:
+      // require() is not defined in this project's type:module environment.
+      const nodeSqlite = await import('node:sqlite');
+      if (nodeSqlite && typeof nodeSqlite.DatabaseSync === 'function') {
+        sqliteStatus = 'PRESENT';
+        sqliteType = 'Native node:sqlite DatabaseSync detected; persistence still requires runtime write/read verification.';
       }
     } catch {
       // Fail closed: do not report SQLite present when the native driver cannot load.
