@@ -8,6 +8,7 @@ const runtime = read('scripts/verify_production_runtime.ts');
 const sqliteStore = read('src/database/SqliteStore.ts');
 const durableStore = read('src/database/DurableStore.ts');
 const preflight = read('src/services/preflight.ts');
+const neonPersistence = read('src/database/NeonPersistence.ts');
 const workflow = read('.github/workflows/verify-authoritative.yml');
 const packageJson = JSON.parse(read('package.json'));
 
@@ -30,6 +31,8 @@ assert.match(sqliteStore, /SQLITE_WRITE_BLOCKED:[^']*cannot persist SQL writes/,
   'non-durable SQLite fallback must reject writes instead of reporting fake success');
 assert.match(sqliteStore, /Non-durable in-memory fallback/,
   'the in-memory SQL fallback must be explicitly identified as non-durable');
+assert.match(neonPersistence, /backend: 'PERSISTENCE_UNAVAILABLE',[\s\S]*?configured: false/,
+  'missing cloud database configuration must report persistence unavailable');
 assert.match(preflight, /let sqliteStatus: DependencyStatus = 'MISSING'/,
   'preflight must fail closed when native SQLite is unavailable');
 assert.match(preflight, /non-durable fallback is not counted as a database/i,
