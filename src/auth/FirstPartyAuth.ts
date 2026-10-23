@@ -82,7 +82,7 @@ export interface FirstPartyAuthRepository {
   revokeSession(sessionId: string, revokedAt: Date): Promise<void>;
   revokeAllSessions(accountId: string, revokedAt: Date): Promise<void>;
   consumeVerificationToken(tokenHash: string, now: Date): Promise<FirstPartyAccount | null>;
-  consumePasswordResetToken(tokenHash: string, now: Date): Promise<FirstPartyAccount | null>;
+  resetPasswordWithToken(tokenHash: string, passwordHash: string, changedAt: Date): Promise<boolean>;
   replacePasswordAndRevokeSessions(accountId: string, passwordHash: string, changedAt: Date): Promise<void>;
   createPasswordResetToken(input: {
     accountId: string;
@@ -365,10 +365,13 @@ export class FirstPartyAuth {
         Buffer.byteLength(newPassword, 'utf8') > 1024) {
       throw new FirstPartyAuthError('INVALID_OR_EXPIRED_TOKEN', 'Reset link or new password is invalid or expired.');
     }
-    const account = await this.repository.consumePasswordResetToken(sha256(rawToken), new Date());
-    if (!account || account.disabledAt || !account.emailVerifiedAt) {
+    // Hash first, then atomically consume the reset token, update the password,
+    // revoke every active session, and invalidate any other reset tokens.
+    const changedAt = new Date();
+    const passwordHash = await hashPassword(newPassword);
+    const updated = await this.repository.resetPasswordWithToken(sha256(rawToken), passwordHash, changedAt);
+    if (!updated) {
       throw new FirstPartyAuthError('INVALID_OR_EXPIRED_TOKEN', 'Reset link or new password is invalid or expired.');
     }
-    await this.repository.replacePasswordAndRevokeSessions(account.id, await hashPassword(newPassword), new Date());
   }
 }
