@@ -1,9 +1,8 @@
 name: Repair vulnerable dependencies safely
 
 on:
-  push:
-    branches:
-      - ops/fullbuild-repo-status-20261023
+  # Manual only: npm ci currently cannot consume the stale npm lockfile safely.
+  # Do not run automated dependency upgrades until package-lock.json is reconciled.
   workflow_dispatch:
 
 permissions:
