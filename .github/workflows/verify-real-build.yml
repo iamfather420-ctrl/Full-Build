@@ -23,23 +23,21 @@ jobs:
       - name: Checkout exact revision
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install locked dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Audit locked dependencies
         shell: bash
         run: |
-          npm audit --json > npm-audit.json || true
+          bun pm ls --all > dependency-tree.txt
+          npm audit --package-lock-only --json > npm-audit.json || true
           node scripts/summarize_npm_audit.mjs npm-audit.json
 
       - name: Block vulnerable dependency releases
-        run: npm audit --audit-level=moderate
+        run: npm audit --package-lock-only --audit-level=moderate
 
       - name: Preserve dependency audit report
         if: always()
@@ -51,7 +49,7 @@ jobs:
           retention-days: 14
 
       - name: Verify release safety
-        run: npm run verify:release-safety
+        run: bun run verify:release-safety
 
       - name: Verify payments remain disabled
         run: npm run verify:payments-disabled
