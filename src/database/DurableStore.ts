@@ -82,9 +82,13 @@ export class DurableStore {
 
     this.state.audit_chain.push(record);
 
-    // This chain is hash-linked but not digitally signed. Do not mark it sealed
-    // or write a fabricated signature into the SQLite audit table.
-    this.persist();
+    // A failed persistence attempt must not leave an uncommitted audit event in memory.
+    try {
+      this.persist();
+    } catch (error) {
+      this.state.audit_chain.pop();
+      throw error;
+    }
     return record;
   }
 
@@ -156,7 +160,12 @@ export class DurableStore {
       timestamp: Date.now()
     };
     this.state.checkpoints[id] = checkpoint;
-    this.persist();
+    try {
+      this.persist();
+    } catch (error) {
+      delete this.state.checkpoints[id];
+      throw error;
+    }
     return checkpoint;
   }
 
@@ -172,12 +181,26 @@ export class DurableStore {
       };
     }
     if (chk.snapshot_state) {
+      const previous = {
+        problems: this.state.problems,
+        solutions: this.state.solutions,
+        offers: this.state.offers,
+        tenants: this.state.tenants
+      };
       this.state.problems = JSON.parse(JSON.stringify(chk.snapshot_state.problems || {}));
       this.state.solutions = JSON.parse(JSON.stringify(chk.snapshot_state.solutions || {}));
       this.state.offers = JSON.parse(JSON.stringify(chk.snapshot_state.offers || {}));
       this.state.tenants = JSON.parse(JSON.stringify(chk.snapshot_state.tenants || {}));
-      this.persist();
-      return { success: true };
+      try {
+        this.persist();
+        return { success: true };
+      } catch (error: any) {
+        this.state.problems = previous.problems;
+        this.state.solutions = previous.solutions;
+        this.state.offers = previous.offers;
+        this.state.tenants = previous.tenants;
+        return { success: false, error: error?.message || 'PERSISTENCE_BLOCKED: rollback was not saved.' };
+      }
     }
     return { success: false, error: 'Snapshot state missing from checkpoint' };
   }
@@ -197,10 +220,17 @@ export class DurableStore {
   }
 
   public persist(): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      try {
-        window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
-      } catch {}
+    // Browser localStorage is a client-side cache, not server-side/cloud durability.
+    // Never silently report persistence success when storage is unavailable or full.
+    if (typeof window === 'undefined' || !window.localStorage) {
+      throw new Error('PERSISTENCE_BLOCKED: browser localStorage is unavailable; no durable save was performed.');
+    }
+
+    try {
+      window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+    } catch (error: any) {
+      const detail = typeof error?.name === 'string' ? error.name : 'storage error';
+      throw new Error(`PERSISTENCE_BLOCKED: browser localStorage write failed (${detail}); no durable save was confirmed.`);
     }
   }
 }

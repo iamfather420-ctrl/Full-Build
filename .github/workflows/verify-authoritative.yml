@@ -33,17 +33,16 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '22'
+          bun-version: 1.2.15
 
-      - name: Install dependencies (clean, reproducible)
+      - name: Install dependencies and validate the dependency graph
         run: |
-          npm install --legacy-peer-deps --no-audit --no-fund
-          # Ensure critical binaries are present
-          npx tsx --version
-          node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
+          bun install
+          bunx tsx --version
+          bun -e "import('z3-solver').then(() => console.log('z3-solver resolved')).catch((error) => { console.error(error); process.exit(1); })"
 
       - name: Verify fail-closed release safety
         run: npm run verify:release-safety
@@ -53,22 +52,22 @@ jobs:
 
       - name: Production preflight
         if: github.event_name == 'workflow_dispatch' && inputs.production_release
-        run: npm run preflight
+        run: bun run preflight
 
       - name: Production runtime wiring verification
         if: github.event_name == 'workflow_dispatch' && inputs.production_release
-        run: npm run verify:production-runtime
+        run: bun run verify:production-runtime
 
       - name: Type-check
         if: always()
-        run: npm run lint
+        run: bun run lint
 
       - name: Run Unified 120-Case Reproducible Verification Corpus
         if: always()
         id: verify
         run: |
           echo "Starting authoritative verification against commit $(git rev-parse HEAD)"
-          npm run verify:120
+          bun run verify:120
         env:
           CI: true
 
@@ -78,7 +77,7 @@ jobs:
           echo "## Authoritative Verification Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** \`$(git rev-parse HEAD)\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Command:** \`npm run verify:120\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Command:** \`bun run verify:120\`" >> $GITHUB_STEP_SUMMARY
           if [ -f artifacts/dfrl-88-verification.json ]; then
             echo "### DFRL 88" >> $GITHUB_STEP_SUMMARY
             node -e '
@@ -129,7 +128,7 @@ jobs:
 
       - name: Validate fresh formal and lifecycle evidence
         if: success()
-        run: npm run verify:ci
+        run: bun run verify:ci
 
       - name: Upload verification artifacts
         if: always()

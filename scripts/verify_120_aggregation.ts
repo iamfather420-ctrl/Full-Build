@@ -7,8 +7,25 @@ import { buildFormalEvidenceHashes } from '../src/proofs/formalEvidenceHash';
 import { System46Gates } from '../src/proofs/System46Gates';
 import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
+ 
+// Ephemeral test-only browser storage for Node state-transition checks.
+// This is not a production durability backend; persistence gates test durable stores separately.
+function installEphemeralVerificationStorage(): void {
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => { values.set(key, String(value)); },
+    removeItem: (key: string) => { values.delete(key); },
+    clear: () => values.clear(),
+    key: (index: number) => Array.from(values.keys())[index] ?? null,
+    get length() { return values.size; }
+  };
+  (globalThis as any).window = { localStorage: storage };
+}
+
 
 async function main() {
+  installEphemeralVerificationStorage();
   console.log('================================================================');
   console.log(' PROJECT AGATE / DAISY / SOLVEX — 120-CASE FORMAL Z3 AGGREGATION');
   console.log(' (88 DFRL OPERATORS + 32 DH PARADOX CONTRACTS)');
@@ -19,6 +36,7 @@ async function main() {
     execSync: cp.execSync,
     fs
   });
+  AuthoritativeVerificationPipeline.setNodePlatform({ execSync: cp.execSync, fs, path });
 
   const dhVerifier = DHFormalVerifier.getInstance();
   const commitSha = dhVerifier.getCommitSha();

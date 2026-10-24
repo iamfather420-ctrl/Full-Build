@@ -5,6 +5,18 @@ import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVer
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
 
 async function main() {
+  // Deterministic ephemeral browser storage for local verification only.
+  // This is deliberately not presented as production durability evidence.
+  const values = new Map<string, string>();
+  const storage = {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => { values.set(key, String(value)); },
+    removeItem: (key: string) => { values.delete(key); },
+    clear: () => values.clear(),
+    key: (index: number) => Array.from(values.keys())[index] ?? null,
+    get length() { return values.size; }
+  };
+  (globalThis as any).window = { localStorage: storage, sessionStorage: storage };
   AuthoritativeVerificationPipeline.setNodePlatform({
     execSync: cp.execSync,
     fs,

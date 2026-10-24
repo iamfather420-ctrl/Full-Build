@@ -61,7 +61,7 @@ export class PreflightService {
     items.push({
       name: 'node',
       category: 'RUNTIME',
-      status: nodeVer.startsWith('v2') || nodeVer.startsWith('v18') ? 'PRESENT' : 'INCOMPATIBLE',
+      status: /^v(?:20|22|24)\./.test(nodeVer) ? 'PRESENT' : 'INCOMPATIBLE',
       version: nodeVer,
       tested_import_path: 'process.version',
       notes: 'Node.js LTS runtime'
@@ -114,19 +114,23 @@ export class PreflightService {
       notes: 'TypeScript execution engine'
     });
 
-    // 5. Database Drivers: SQLite
-    let sqliteStatus: DependencyStatus = 'PRESENT';
-    let sqliteType = 'Universal SQLite Interface with 27-Table Relational Schema';
+    // 5. Database Drivers: SQLite. A schema-shaped in-memory fallback is not a database.
+    const cloudDatabaseConfigured = Boolean(typeof process !== 'undefined' && (process.env?.NEON_DATABASE_URL || process.env?.DATABASE_URL));
+    let sqliteStatus: DependencyStatus = env === 'production' && cloudDatabaseConfigured ? 'NOT_REQUIRED_FOR_SELECTED_ENVIRONMENT' : 'MISSING';
+    let sqliteType = env === 'production' && cloudDatabaseConfigured
+      ? 'Local SQLite is not required when cloud database configuration is present; verify Neon connectivity, schema, isolation, and restart readback separately.'
+      : 'Native node:sqlite DatabaseSync unavailable; non-durable fallback is not counted as a database.';
     try {
-      // @ts-ignore
-      if (typeof require === 'function') {
-        // @ts-ignore
-        const nodeSqlite = require('node:sqlite');
-        if (nodeSqlite && nodeSqlite.DatabaseSync) {
-          sqliteType = 'node:sqlite DatabaseSync Native';
-        }
+      // This method runs in the Node preflight runtime. Use ESM dynamic import:
+      // require() is not defined in this project's type:module environment.
+      const nodeSqlite = await import('node:sqlite');
+      if (nodeSqlite && typeof nodeSqlite.DatabaseSync === 'function') {
+        sqliteStatus = 'PRESENT';
+        sqliteType = 'Native node:sqlite DatabaseSync detected; persistence still requires runtime write/read verification.';
       }
-    } catch {}
+    } catch {
+      // Fail closed: do not report SQLite present when the native driver cannot load.
+    }
     items.push({
       name: 'sqlite',
       category: 'DATABASE',
@@ -231,14 +235,31 @@ export class PreflightService {
     items.push(checkVar('PAYPAL_SANDBOX_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_ID', 'PAYPAL_CLIENT_ID']));
     items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_SECRET', 'PAYPAL_SANDBOX_KEY', 'PAYPAL_CLIENT_SECRET']));
 
-    // 2. PayPal Live Credentials (Required in Production)
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8, ['PAYPAL_LIVE_ID', 'PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_SECRET', 'PAYPAL_CLIENT_SECRET']));
+    // 2. PayPal Live Credentials (intentionally not required; live payments remain disabled)
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_LIVE_ID', 'PAYPAL_CLIENT_ID']));
+    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_LIVE_SECRET', 'PAYPAL_CLIENT_SECRET']));
 
     // 3. NEON_DATABASE_URL
-    items.push(checkVar('NEON_DATABASE_URL', false, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
+    items.push(checkVar('NEON_DATABASE_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://'), ['DATABASE_URL']));
 
-    // 4. GEMINI_API_KEY
+    // 4. Production OIDC trust configuration. Presence is not proof of a working
+    // provider; end-to-end callback, signature, audience, issuer, and tenant tests
+    // remain separate release gates. Never allow local HS256 to satisfy production.
+    items.push(checkVar('AUTH_MODE', true, (v) => v.trim().toLowerCase() === 'oidc'));
+    items.push(checkVar('AUTH_ISSUER', true, (v) => {
+      try { return new URL(v).protocol === 'https:'; } catch { return false; }
+    }));
+    items.push(checkVar('AUTH_AUDIENCE', true, (v) => v.trim().length > 0));
+    items.push(checkVar('AUTH_JWKS_URL', true, (v) => {
+      try { return new URL(v).protocol === 'https:'; } catch { return false; }
+    }));
+    items.push(checkVar('AUTH_CLIENT_ID', true, (v) => v.trim().length > 0));
+    items.push(checkVar('AUTH_CLIENT_SECRET', true, (v) => v.trim().length > 0));
+    items.push(checkVar('AUTH_REDIRECT_URI', true, (v) => {
+      try { return new URL(v).protocol === 'https:'; } catch { return false; }
+    }));
+
+    // 5. GEMINI_API_KEY
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
 
     return items;
