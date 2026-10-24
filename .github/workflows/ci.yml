@@ -34,8 +34,11 @@ jobs:
       - name: Proof closure verification
         run: bun run verify:proof-closure
       - name: Build
+        if: always()
         run: bun run build
       - name: TypeScript
+        if: always()
         run: bun run lint
       - name: Enterprise invariants
+        if: always()
         run: bun run verify:enterprise
