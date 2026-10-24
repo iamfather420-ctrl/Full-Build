@@ -18,8 +18,8 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.2.15
-      - name: Install dependencies from committed Bun lockfile
-        run: bun install --frozen-lockfile
+      - name: Install dependencies and validate the dependency graph
+        run: bun install
       - name: Archive provenance verification
         if: hashFiles('**/Daisy-AI-OS-Complete-With-ISO.tar.part-00', '**/Daisy-AI-OS-Complete-With-ISO.tar.part-01', '**/Daisy-AI-OS-Complete-With-ISO.tar.sha256') != ''
         run: bun run verify:archive-provenance
