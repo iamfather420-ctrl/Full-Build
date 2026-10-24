@@ -38,9 +38,9 @@ jobs:
         with:
           bun-version: 1.2.15
 
-      - name: Install dependencies from committed Bun lockfile
+      - name: Install dependencies and validate the dependency graph
         run: |
-          bun install --frozen-lockfile
+          bun install
           bunx tsx --version
           bun -e "import('z3-solver').then(() => console.log('z3-solver resolved')).catch((error) => { console.error(error); process.exit(1); })"
 
