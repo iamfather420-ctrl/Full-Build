@@ -15,7 +15,7 @@ for (const name of artifactNames) {
   before.set(name, fs.existsSync(file) ? fs.statSync(file).mtimeMs : -1);
 }
 
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const bun = process.platform === 'win32' ? 'bun.exe' : 'bun';
 const env = { ...process.env, SOLVEX_ENV: 'ci', PAYMENTS_ENABLED: 'false' };
 const commands = [
   'verify:release-safety',
@@ -30,8 +30,8 @@ const commands = [
 const failures: string[] = [];
 
 for (const script of commands) {
-  console.log('\n[LOCAL VERIFICATION] npm run ' + script);
-  const result = spawnSync(npm, ['run', script], { stdio: 'inherit', env, shell: process.platform === 'win32' });
+  console.log('\n[LOCAL VERIFICATION] bun run ' + script);
+  const result = spawnSync(bun, ['run', script], { stdio: 'inherit', env, shell: process.platform === 'win32' });
   if (result.error) {
     failures.push(script + ': ' + result.error.message);
   } else if (result.status !== 0) {
