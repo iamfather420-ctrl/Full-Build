@@ -17,9 +17,7 @@ jobs:
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies from committed Bun lockfile
-        run: bun install
-      - name: Verify lockfile remains unchanged
-        run: git diff --exit-code -- bun.lock
+        run: bun install --frozen-lockfile
       - name: Archive provenance verification
         if: hashFiles('**/Daisy-AI-OS-Complete-With-ISO.tar.part-00', '**/Daisy-AI-OS-Complete-With-ISO.tar.part-01', '**/Daisy-AI-OS-Complete-With-ISO.tar.sha256') != ''
         run: bun run verify:archive-provenance
