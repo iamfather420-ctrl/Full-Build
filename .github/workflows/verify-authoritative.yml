@@ -36,7 +36,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install dependencies from committed lockfile
+      - name: Install dependencies and reconcile stale lock metadata
         run: |
           bun install
           bunx tsx --version
