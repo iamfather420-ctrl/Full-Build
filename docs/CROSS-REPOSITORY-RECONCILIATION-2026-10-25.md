@@ -36,8 +36,10 @@ Do not connect these native scaffolds to production execution yet. Recover the a
 ## CI findings
 - Full-Build main at inspection: `033546150dedb2732af07e608941299178402a0e`.
 - Uarefake-1 main at inspection: `16192442622c8bbd33f20cb8a46755b16b33028f`; Vercel status checks succeeded, but this does not prove the full native runtime works.
-- Recent Full-Build runs on `ops/fullbuild-repo-status-20261023` failed at dependency installation: Bun 1.3.3 reported `Unknown lockfile version` for `bun.lock`; a Bun 1.4.4 run also reported that the frozen lockfile needed changes. Missing installed binaries then caused build/typecheck/formal steps to fail.
-- Therefore, those runs do not provide a clean 120-case or 46-gate pass. First repair the authoritative lockfile, then rerun all checks from one commit.
+- Previous Full-Build runs on `ops/fullbuild-repo-status-20261023` failed at dependency installation: Bun 1.3.3 reported `Unknown lockfile version` for `bun.lock`; a Bun 1.4.4 run reported that the frozen lockfile needed changes.
+- Diagnostic pull request #32 (`f0796d0c198159adb61a4a1ac908807771651481`) used `npm install --legacy-peer-deps` to expose source/test behavior without treating the stale lockfile as reproducible. On this commit, Build and Enterprise CI passed, formal-evidence hash stability passed, and Authoritative 120-Case Verification passed.
+- The 120-case run reported 88/88 DFRL executions/replays, 32/32 DH executions/expected matches/replays, 120/120 expected-result matches and cleanroom replays, 118 UNSAT, 2 SAT, and 0 errors. The final check reported that the 46-gate inventory was internally consistent; it explicitly kept production activation blocked. This is a formal-corpus pass, not a pass of all production gates.
+- The lockfile remains unresolved: the diagnostic install is not a substitute for a committed, frozen, reproducible dependency lock. Do not merge the diagnostic install change as the final CI fix.
 - A Uarefake source-import run passed on one commit but another failed while pushing generated changes; repeatability remains to be confirmed.
 
 ## Next safe actions
