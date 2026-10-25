@@ -8,6 +8,7 @@ const api = read('src/api/ApiRouter.ts');
 const paypal = read('src/payments/PayPalAdapter.ts');
 const market = read('src/components/MarketplaceView.tsx');
 const app = read('src/App.tsx');
+const persistence = read('src/database/NeonPersistence.ts');
 
 assert.match(auth, /createSignedToken\s*\([^)]*\)\s*:\s*string\s*\{\s*throw new Error\('BLOCKED: local token issuance is disabled; use the approved OIDC issuer\.'\);/s,
   'AuthService must fail closed by rejecting local token issuance.');
@@ -35,4 +36,11 @@ assert.match(market, /Checkout, escrow funding, and live payments are disabled/i
   'Marketplace UI must clearly disclose the disabled payment state.');
 assert.match(app, /PayPalHub/, 'App must still include the PayPal hub shell without pretending it is active.');
 
-console.log('PASS: fail-closed auth, API, payment, and marketplace contract checks are consistent and production-disabled.');
+assert.match(persistence, /runMigrations\\s*\\([^)]*\\)[\\s\\S]*?Automatic generic Neon migrations are disabled/, 
+  'Neon schema changes must remain blocked unless reviewed versioned migrations are used.');
+assert.match(persistence, /insertRecord\\s*\\([^)]*\\)[\\s\\S]*?Generic Neon writes are disabled pending schema-specific repositories/, 
+  'Generic Neon writes must remain blocked until schema-specific repositories are verified.');
+assert.match(persistence, /findTenantRecords\\s*\\([^)]*\\)[\\s\\S]*?Generic Neon tenant reads are disabled pending schema-specific repositories/, 
+  'Generic Neon reads must remain blocked until schema-specific repositories are verified.');
+
+console.log('PASS: fail-closed auth, API, payment, marketplace, and unverified persistence boundaries are enforced.');
