@@ -36,11 +36,11 @@ assert.match(market, /Checkout, escrow funding, and live payments are disabled/i
   'Marketplace UI must clearly disclose the disabled payment state.');
 assert.match(app, /PayPalHub/, 'App must still include the PayPal hub shell without pretending it is active.');
 
-assert.match(persistence, /runMigrations\\s*\\([^)]*\\)[\\s\\S]*?Automatic generic Neon migrations are disabled/, 
+assert.match(persistence, /runMigrations\s*\([^)]*\)[\s\S]*?Automatic generic Neon migrations are disabled/, 
   'Neon schema changes must remain blocked unless reviewed versioned migrations are used.');
-assert.match(persistence, /insertRecord\\s*\\([^)]*\\)[\\s\\S]*?Generic Neon writes are disabled pending schema-specific repositories/, 
+assert.match(persistence, /insertRecord\s*\([^)]*\)[\s\S]*?Generic Neon writes are disabled pending schema-specific repositories/, 
   'Generic Neon writes must remain blocked until schema-specific repositories are verified.');
-assert.match(persistence, /findTenantRecords\\s*\\([^)]*\\)[\\s\\S]*?Generic Neon tenant reads are disabled pending schema-specific repositories/, 
+assert.match(persistence, /findTenantRecords\s*\([^)]*\)[\s\S]*?Generic Neon tenant reads are disabled pending schema-specific repositories/, 
   'Generic Neon reads must remain blocked until schema-specific repositories are verified.');
 
 console.log('PASS: fail-closed auth, API, payment, marketplace, and unverified persistence boundaries are enforced.');
