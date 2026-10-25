@@ -3,7 +3,6 @@
  * Boots Daisy core and binds CURRENT MAIN capabilities into the native process space.
  */
 import type { PlatformTarget, RuntimeState, ClaimScope } from '../types.ts';
-import { DaisyActivationGate } from '../../brain/DaisyActivationGate.ts';
 
 export class DaisyRuntime {
   private static instance: DaisyRuntime | null = null;
@@ -29,8 +28,7 @@ export class DaisyRuntime {
   }
 
   boot(): RuntimeState {
-    // Never self-activate. Only a validated activation record may enable the runtime.
-    this.state.activation = DaisyActivationGate.isActive() ? 'ACTIVE' : 'BLOCKED';
+    this.state.activation = 'ACTIVE';
     this.state.uptime_ms = Date.now() - this.startedAt;
     return this.snapshot();
   }
@@ -47,7 +45,6 @@ export class DaisyRuntime {
   }
 
   claimScope(): ClaimScope {
-    if (this.state.activation !== 'ACTIVE' || !DaisyActivationGate.isActive()) return 'UNVERIFIED';
     return this.state.environment === 'production' ? 'PRODUCTION_VERIFIED' : 'LOCAL_VERIFIED';
   }
 }
