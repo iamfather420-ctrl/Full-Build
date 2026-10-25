@@ -239,22 +239,13 @@ export class NeonStore {
     return false;
   }
 
-  public async findTenantRecords(tableName: string, tenantId: string, limit: number = 100): Promise<any[]> {
-    if (!this.isConnected || !this.neonClient) return [];
-    if (!this.isAllowedTable(tableName) || typeof tenantId !== 'string' || tenantId.trim().length === 0) {
-      this.lastError = 'Rejected tenant read with an invalid table or tenant identifier';
-      return [];
-    }
-    const safeLimit = Number.isInteger(limit) ? Math.max(1, Math.min(limit, 500)) : 100;
-    try {
-      const result = await this.neonClient.query(`
-        SELECT * FROM ${tableName} WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2
-      `, [tenantId.trim(), safeLimit]);
-      const rows = Array.isArray(result) ? result : result?.rows;
-      if (!Array.isArray(rows)) throw new Error('Unexpected Neon query result shape during tenant read');
-      return rows.map((r: any) => ({ ...r, ...r.payload_json }));
-    } catch {
-      return [];
-    }
+  public async findTenantRecords(_tableName: string, _tenantId: string, _limit: number = 100): Promise<any[]> {
+    // Generic tenant reads are disabled for the same reason as generic writes:
+    // the legacy domain schema has not been reconciled with reviewed table-specific
+    // repositories. Guessing tenant_id/created_at/payload_json can silently return
+    // empty results or expose an incorrect isolation assumption. Implement reads only
+    // through schema-specific repositories with RLS integration tests.
+    this.lastError = 'Generic Neon tenant reads are disabled pending schema-specific repositories and tenant-isolation tests';
+    return [];
   }
 }
