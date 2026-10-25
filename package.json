@@ -27,7 +27,8 @@
     "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
     "verify:release-safety": "node scripts/verify_release_safety.mjs",
     "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
-    "verify:archive-provenance": "node scripts/verify_archive_provenance.mjs"
+    "verify:archive-provenance": "node scripts/verify_archive_provenance.mjs",
+    "verify:dependency-lock": "bun install --frozen-lockfile"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
