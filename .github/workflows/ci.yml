@@ -20,10 +20,7 @@ jobs:
           bun-version: 1.3.3
 
       - name: Install dependencies and validate the dependency graph
-        # Temporary diagnostic mode: allow pinned Bun to reconcile the existing lockfile,
-        # then run the full verification suite. Commit a regenerated lockfile after this
-        # workflow exposes whether the remaining failure is lockfile format or dependency drift.
-        run: bun install
+        run: bun install --no-save
       - name: Archive provenance verification
         if: hashFiles('**/Daisy-AI-OS-Complete-With-ISO.tar.part-00', '**/Daisy-AI-OS-Complete-With-ISO.tar.part-01', '**/Daisy-AI-OS-Complete-With-ISO.tar.sha256') != ''
         run: bun run verify:archive-provenance
