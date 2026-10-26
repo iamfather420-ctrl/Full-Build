@@ -44,7 +44,8 @@ export class SqliteStore {
       }
     } catch {}
 
-    // Resilient universal in-memory SQL interface with 27-table indexing
+    // Non-durable in-memory fallback for limited reads only. This is not SQLite and must not
+    // claim successful SQL mutations. Durable writes require a real database adapter.
     const self = this;
     return {
       exec: (sql: string) => {
@@ -98,9 +99,8 @@ export class SqliteStore {
         }
         return rows[0];
       },
-      run: (sql: string, params: any[] = []) => {
-        // Simple mock runner for inserts and updates
-        return { changes: 1, lastInsertRowid: Date.now() };
+      run: (_sql: string, _params: any[] = []) => {
+        throw new Error('SQLITE_WRITE_BLOCKED: native SQLite is unavailable; the in-memory fallback cannot persist SQL writes. Configure a real durable database adapter.');
       }
     };
   }

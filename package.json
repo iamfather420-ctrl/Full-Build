@@ -26,7 +26,9 @@
     "verify:all": "tsx scripts/verify_authoritative.ts",
     "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
     "verify:release-safety": "node scripts/verify_release_safety.mjs",
-    "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs"
+    "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
+    "verify:archive-provenance": "node scripts/verify_archive_provenance.mjs",
+    "verify:dependency-lock": "bun install --frozen-lockfile"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -36,18 +38,18 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
-    "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "vite": "^8.3.0",
-    "z3-solver": "^5.2.0"
+    "z3-solver": "^5.2.0",
+    "motion": "^12.23.24"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.25.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",

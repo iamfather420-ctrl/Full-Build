@@ -1,0 +1,95 @@
+name: Full Build Verification
+
+on:
+  push:
+    branches:
+      - ops/fullbuild-repo-status-20261023
+      - ops/fullbuild-verification-workflow-20261023
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-build-verification-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Build, safety, formal evidence, and archive gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact revision
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Audit locked dependencies
+        shell: bash
+        run: |
+          bun pm ls --all > dependency-tree.txt
+          npm audit --package-lock-only --json > npm-audit.json || true
+          node scripts/summarize_npm_audit.mjs npm-audit.json
+
+      - name: Block vulnerable dependency releases
+        run: npm audit --package-lock-only --audit-level=moderate
+
+      - name: Preserve dependency audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-dependency-audit
+          path: npm-audit.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Verify release safety
+        run: bun run verify:release-safety
+
+      - name: Verify payments remain disabled
+        run: npm run verify:payments-disabled
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Type-check
+        run: npm run lint
+
+      - name: Verify enterprise invariants
+        run: npm run verify:enterprise
+
+      - name: Verify 120-case corpus
+        run: npm run verify:120
+
+      - name: Retrieve official release archive parts
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://github.com/iamfather420-ctrl/Full-Build/releases/download/v0.1.0-daisy-ai-os"
+          curl --fail --location --retry 3 --retry-all-errors --output Daisy-AI-OS-Complete-With-ISO.tar.part-00 "$base/Daisy-AI-OS-Complete-With-ISO.tar.part-00"
+          curl --fail --location --retry 3 --retry-all-errors --output Daisy-AI-OS-Complete-With-ISO.tar.part-01 "$base/Daisy-AI-OS-Complete-With-ISO.tar.part-01"
+          curl --fail --location --retry 3 --retry-all-errors --output Daisy-AI-OS-Complete-With-ISO.tar.sha256 "$base/Daisy-AI-OS-Complete-With-ISO.tar.sha256"
+          test "$(stat -c %s Daisy-AI-OS-Complete-With-ISO.tar.part-00)" -eq 1887436800
+          test "$(stat -c %s Daisy-AI-OS-Complete-With-ISO.tar.part-01)" -eq 528199680
+
+      - name: Verify archive payload and provenance
+        id: archive
+        run: npm run verify:archive-provenance
+
+      - name: Preserve verification summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Full Build Verification"
+            echo "- Revision: $GITHUB_SHA"
+            echo "- Branch: $GITHUB_REF_NAME"
+            echo "- Archive provenance step conclusion: ${{ steps.archive.outcome }}"
+            echo "- A failed archive gate means the original split payload is missing or unverified; source tests do not override that blocker."
+            echo "- Production authentication and live payments are not enabled by this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"

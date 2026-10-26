@@ -5,7 +5,7 @@ This checklist is a release gate, not evidence that the tasks have passed. The c
 ## Before staging
 
 - [ ] Use the committed `bun.lock` with `bun install --frozen-lockfile` (the current `package-lock.json` is stale; do not claim `npm ci` reproducibility yet).
-- [ ] Run `bun run lint`, `bun run verify:release-safety`, `bun run verify:api-security`, `bun run verify:120`, and `bun run verify:proof-closure`.
+- [ ] Run `bun install --frozen-lockfile`, `bun run lint`, `node scripts/verify_fail_closed_contract.mjs`, `bun run verify:release-safety`, `bun run verify:payments-disabled`, `bun run test:formal-hash`, `bun run verify:120`, and `bun run verify:proof-closure`. The separate `verify:api-security` script is not present in `package.json`; do not treat that command as executable until an implementation is added.
 - [ ] Regenerate the formal verification reports with the authoritative project runner; do not hand-edit old report JSON.
 - [ ] Configure a real OIDC issuer, API audience, client ID/secret, HTTPS JWKS URL, and exact HTTPS callback URI. The provider must issue RS256/ES256 JWT access tokens with signed `sub`, `tenant_id`, and approved `role` claims.
 - [ ] Validate login, logout, nonce rejection, state replay rejection, PKCE verifier enforcement, key rotation, expiry, tenant scoping, and same-origin mutation checks against the real identity provider.

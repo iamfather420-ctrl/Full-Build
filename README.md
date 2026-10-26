@@ -1,6 +1,8 @@
-# Full-Build
+# SOLVEX + Daisy Haminja Sovereign Enterprise OS — Full Build
 
-SolveX + Daisy Haminja full build: the web runtime, formal SAT-witness corpus, payments-disabled release gates, and the source archives used to reconcile it.
+This is the working build for **SOLVEX + Daisy Haminja Sovereign Enterprise OS**: the web runtime, formal SAT-witness corpus, sovereign governance and execution boundaries, payments-disabled release gates, and source archives used to reconcile the complete system.
+
+**Identity rule:** “Sovereign” is part of the product identity from the beginning. Preserve it in user-facing branding, documentation, metadata, UI, release notes, and status reporting. Do not treat it as an optional tagline or remove it during build, export, or refactoring.
 
 This repository is the working tree. The Daisy ISO was split into numbered parts because the files were too large for direct transfer; Smash was used as the transfer service. Do not interpret a single Smash ZIP containing only part-00 as evidence that part-01 is missing from the original build or its release assets.
 

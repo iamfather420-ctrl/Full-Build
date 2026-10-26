@@ -10,6 +10,10 @@ async function main() {
   const rep = await runDaisy54NodeCoverage();
   for (const n of rep.results) {
     console.log(`[${n.node_id}] ${n.name.padEnd(52)}: [${n.status}] (${n.claim_scope})`);
+    if (n.error) console.error(`  [${n.node_id}] execution error: ${n.error}`);
+    if (!n.instantiated || !n.executed || !n.output_asserted || !n.evidence_generated) {
+      console.error(`  [${n.node_id}] evidence flags: registered=${n.registered}, instantiated=${n.instantiated}, reachable=${n.reachable}, executed=${n.executed}, output_asserted=${n.output_asserted}, evidence_generated=${n.evidence_generated}`);
+    }
   }
 
   console.log('\n===========================================================');
