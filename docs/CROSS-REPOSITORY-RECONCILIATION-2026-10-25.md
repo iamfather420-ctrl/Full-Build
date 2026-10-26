@@ -50,3 +50,42 @@ Do not connect these native scaffolds to production execution yet. Recover the a
 5. Wire modules only after interface, security, and end-to-end tests pass.
 
 Keep payments disabled and do not enable production authentication or claim readiness before identity, tenant isolation, persistence, restore, and release gates pass.
+
+
+## Expanded large-repository overlap scan
+
+Repository metadata and representative manifests/source files were inspected across the accessible account inventory. GitHub repository “size” is storage metadata, not a measure of useful source. In particular, the very large Agate repositories contain embedded workspaces, caches, and toolchain material, so their raw tracked-entry counts are not evidence of unique functionality.
+
+| Repository | Approx. GitHub size (KB) | Overlap / code review result | Import decision |
+|---|---:|---|---|
+| `agate-master-build` | 172,540 | Workspace shell with `apps/*` and `packages/*`; inspected `apps` subtree SHA matched `agate-unified-monorepo` in the earlier tree comparison. | Do not merge as another full copy. |
+| `agate-unified-monorepo` | 172,571 | Same workspace structure and matching inspected `apps` subtree as `agate-master-build`; large count includes embedded project copies/caches. | Treat as overlapping duplicate until a package-level diff proves otherwise. |
+| `agate-core-build` | 172,156 | React/Android application scaffold overlaps `solvex-react-build` and parts of Full-Build; package manifest uses older Vite/TypeScript generations and does not declare the current Z3 dependency. A direct lookup for the missing native runtime class returned not found. | No blind merge; no missing runtime recovered. |
+| `Uarefake-1` | 115,452 | Canonical app; includes isolated imported snapshots and has the app-specific governance lifecycle/tests. Its docs explicitly say imported code is not all wired into the live runtime. | Keep as canonical app; do not re-import its own snapshots. |
+| `solvex-react-build` | 22,267 | React/Android sibling overlaps the older Agate application scaffold; package manifest differs from Full-Build and does not establish formal-runtime compatibility. | No full-tree merge. |
+| `Full-Build` | 22,052 | Primary formal-verification source: Z3/DFRL/DH corpus, 46-gate inventory, enterprise verification, API and native runtime scaffolding. | Keep as core verification source. |
+| `SolveX` | 8,413 | Separate AI Studio / Android project; README requires a Gemini API key and Android Studio. Not the same runtime or backend. | Keep as a separate UI/app source unless an Android-specific release is explicitly being assembled. |
+| `web-build` | 7,603 | Uarefake-style app fork with an embedded alternate Full-Build verifier. Its `verify_120_corpus.ts` hard-codes several mutation/failure/tamper flags to `true`, and its companion report says 3 SAT cases, conflicting with the current authoritative corpus's 2 SAT cases. | Reject as a source of authoritative verification code. |
+| `SOLVEX-PARADOX-BOX` | 3,025 | Contains DFRL/Z3 proof engine, MMTAI, NOPOT, Crystal Clear Box, and enterprise test paths that overlap with matching modules already in Full-Build. Some tests assert API status strings and “zero mock” flags; those labels alone do not independently establish the behavior. | Do not duplicate overlapping modules or promote its test results as independent evidence. |
+| `bloom-clear-tiger-meadow` | 3,064 | Package manifest substantially matches the Uarefake app family (TanStack Start, Better Auth, PGlite/pg, Vite 8, similar scripts). It is a fork/sibling rather than a missing core module. | No full-tree merge; review only genuinely unique commits if identified. |
+| `SolveXRepoUnify` | 1,038 | React/Vite app fork with a different dependency set. Related self-updater/admin-injector files also appear in `Autonomous-consolidated-B2B-solutions`, so they are duplicated. | Do not import self-mutating runtime injector code without a separate threat model and constrained patch pipeline. |
+| `FREEDOM-SIM-AI-OS`, `Solvex-Hub`, `proof-before-power` | smaller | Separate AI Studio / Android / proof-demo projects. The proof-before-power manifest contains no executable test/build scripts; README is AI Studio boilerplate. | No verified, complete, needed module established in this pass. |
+
+## Candidate-module completeness review
+
+### Already present / overlapping — no import needed
+- Full-Build already contains `src/mmtai/MMTAIProtocol.ts`, `src/proofs/NOPOTProof.ts`, `src/audit/CrystalClearBox.ts`, `src/database/ReversibilityEngine.ts`, `src/tests/enterpriseVerification.ts`, and the Z3 formal proof engine. The corresponding SOLVEX-PARADOX-BOX imports/tests substantially duplicate these components.
+- Uarefake-1 already contains the full Full-Build source snapshot under `integrated-sources/Full-Build/` and a filtered source snapshot under `integrations/source-repos/`. These are provenance-preserving copies, not runtime connections.
+- Uarefake-1 already has `src/lib/solvex-governance-lifecycle.ts` plus its test. It is an app-level policy validator; its own reconciliation notes correctly state that this does not yet supply atomic durable transitions or a verified HMAC audit chain. Moving it into the formal core would create a framework/dependency mismatch rather than complete the runtime.
+
+### Reviewed but rejected — not complete or not safe to import
+- The alternate `web-build` formal runner reports a different SAT distribution from the current canonical corpus and marks mutation/failure/tamper tests as passed with literal booleans. It is not authoritative verification evidence.
+- Daisy self-updater/admin-injector/provisioner modules are duplicated across related app repositories and describe runtime code mutation, injection, or automatic provisioning. They are not a missing, verified native runtime and should not be merged into the privileged execution path.
+- The required `daisy-ai-os/src/native-os/UnifiedDaisyAIOS.ts` was checked at its expected path in Full-Build and at corresponding paths in the large Agate/React sibling repositories; it was not found. Do not synthesize a class just to satisfy the import.
+- The Solvex-Paradox-Box enclave/API tests are coupled to its own `ParadoxOperator`, API/router and registry implementation. Their current assertions are not drop-in tests for Full-Build's interfaces and some use status flags as evidence. Importing them without adapting them to test the real target would create false confidence.
+
+## Import outcome
+
+**No new source module was imported in this pass.** That is a deliberate evidence-based outcome: each candidate identified so far is either already present, a near-duplicate/fork, app-specific and dependency-incompatible, stale against the authoritative SAT corpus, or unsafe/incomplete for privileged execution. Importing any of these would increase file count without closing a verified capability gap.
+
+The remaining meaningful gap is not a missing pile of source files: it is the authentic, secure native Daisy runtime composition and its real system-tool/authorization implementations. The next implementation must be tested against the target's real interfaces, return BLOCKED/NOT_IMPLEMENTED for unsupported tools, and preserve human authorization, independent completion verification, and fail-closed behavior.
