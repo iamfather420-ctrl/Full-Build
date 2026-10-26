@@ -89,3 +89,13 @@ Repository metadata and representative manifests/source files were inspected acr
 **No new source module was imported in this pass.** That is a deliberate evidence-based outcome: each candidate identified so far is either already present, a near-duplicate/fork, app-specific and dependency-incompatible, stale against the authoritative SAT corpus, or unsafe/incomplete for privileged execution. Importing any of these would increase file count without closing a verified capability gap.
 
 The remaining meaningful gap is not a missing pile of source files: it is the authentic, secure native Daisy runtime composition and its real system-tool/authorization implementations. The next implementation must be tested against the target's real interfaces, return BLOCKED/NOT_IMPLEMENTED for unsupported tools, and preserve human authorization, independent completion verification, and fail-closed behavior.
+
+
+## Additional related public source repositories
+
+Two related public repositories surfaced outside the primary account inventory and were inspected directly:
+
+- `Solvex-Paradox-Box/Uarefake`: same TanStack Start / Better Auth / PGlite application family as `Uarefake-1`, not a missing standalone core module. Its `src/lib/daisy.ts` calls the external xAI/Grok API and returns a fail-closed provider error when the key is absent. The canonical app's reconciliation decision explicitly removed this provider route; do not import it back.
+- `Solvex-Paradox-Box/Autonomous-consolidated-B2B-solutions`: older Vite 6 / TypeScript 5.8 app with separate dependencies and duplicate Daisy self-update/admin-injection/provisioning files. The inspected `daisyAdminInjector.ts` contains client-side `localStorage` trust checks and hard-coded admin-key values; `daisySelfUpdater.ts` mutates browser state, hides visible UI errors, and fabricates a randomized build-version label rather than verifying a real build artifact. `daisyProvisioner.ts` is an in-memory ledger with delay-driven phases and does not demonstrate real compilation/deployment. None is complete or safe for import into the privileged runtime.
+
+These candidates were explicitly excluded from the build rather than silently overlooked.
