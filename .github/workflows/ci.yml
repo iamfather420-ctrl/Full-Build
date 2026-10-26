@@ -45,3 +45,13 @@ jobs:
       - name: Enterprise invariants
         if: always()
         run: bun run verify:enterprise
+
+      - name: Upload verification artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solvex-daisy-verification-${{ github.run_id }}
+          path: |
+            artifacts/*.json
+          if-no-files-found: warn
+          retention-days: 14
