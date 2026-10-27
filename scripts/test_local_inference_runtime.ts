@@ -11,7 +11,7 @@ async function main() {
 
   const info = await runtime.probe();
   assert.equal(info.ready, false, 'Missing model/engine must never report ready.');
-  assert.equal(info.offlineCapable, true, 'The runtime contract must advertise its intended offline mode.');
+  assert.equal(info.offlineCapable, false, 'The runtime must not attest offline capability without enforced network isolation.');
 
   const unavailable = await runtime.generate({
     messages: [{ role: 'user', content: 'A real inference request' }],
