@@ -30,21 +30,21 @@ for (const instructionPath of instructionPaths) {
   }
 }
 
-// Initialize Gemini client server-side
+// External model providers are disabled by default. Daisy must not send prompts
+// to a third party unless the creator explicitly opts in at runtime.
 const apiKey = process.env.GEMINI_API_KEY;
+const allowExternalModelProvider = process.env.ALLOW_EXTERNAL_MODEL_PROVIDER === 'true';
 let ai: GoogleGenAI | null = null;
 
-if (apiKey) {
+if (apiKey && allowExternalModelProvider) {
   ai = new GoogleGenAI({
-    apiKey: apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
+    apiKey,
+    httpOptions: { headers: { 'User-Agent': 'solvex-sovereign-core' } }
   });
 } else {
-  console.warn('⚠️ GEMINI_API_KEY is not defined in environment variables. Daisy chat will return a blocked response until a model provider is configured.');
+  console.warn(
+    'External model provider is disabled by default. Configure a first-party inference runtime, or explicitly set ALLOW_EXTERNAL_MODEL_PROVIDER=true to authorize the existing Gemini adapter.'
+  );
 }
 
 // Payment creation is deliberately disabled. Never fabricate transaction IDs,
@@ -102,7 +102,14 @@ app.post('/api/chat', async (req, res) => {
   if (!prompt) return res.status(400).json({ success: false, error: 'Prompt is required.' });
   if (prompt.length > 20000) return res.status(413).json({ success: false, error: 'Prompt exceeds the allowed size.' });
   if (!foundationalSystemInstruction) return res.status(503).json({ success: false, code: 'FOUNDATIONAL_INSTRUCTION_UNAVAILABLE', status: 'BLOCKED', error: 'Daisy cannot start because its canonical system instruction could not be loaded.' });
-  if (!ai) return res.status(503).json({ success: false, code: 'MODEL_PROVIDER_UNAVAILABLE', status: 'BLOCKED', error: 'No model provider is configured. No simulated response was generated.' });
+  if (!ai) return res.status(503).json({
+    success: false,
+    code: allowExternalModelProvider ? 'MODEL_PROVIDER_UNAVAILABLE' : 'EXTERNAL_MODEL_PROVIDER_DISABLED',
+    status: 'BLOCKED',
+    error: allowExternalModelProvider
+      ? 'No explicitly authorized model provider is configured. No simulated response was generated.'
+      : 'External model providers are disabled. No prompt was sent to a third party; no first-party inference runtime is currently connected.'
+  });
   try {
     const history = rawHistory.filter((msg: any) => msg && (msg.sender === 'user' || msg.sender === 'assistant' || msg.sender === 'model') && typeof msg.text === 'string').slice(-20);
     const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = history.map((msg: any) => ({
