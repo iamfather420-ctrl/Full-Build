@@ -229,7 +229,7 @@ export class DaisyBrain {
         total_propositions: totalOps,
         formal_proof_rate: `${proofPct}% (${this.verifiedDFRLCount}/${totalOps} UNSAT Proved)`,
         deterministic_replays_matched: this.verifiedReplayCount,
-        claim_scope: 'MODEL_VERIFIED'
+        claim_scope: brainActive && this.verifiedDFRLCount === 88 && this.verifiedReplayCount === 88 ? 'MODEL_VERIFIED' : 'UNVERIFIED'
       },
       gateways_status: {
         paypal_dn35: {
