@@ -56,17 +56,20 @@ Daisy produces real responses through its own verified runtime **only when**:
 
 Until then, `/api/chat` must continue returning `BLOCKED` / `FIRST_PARTY_MODEL_UNAVAILABLE` (or opt-in external provider if the creator sets the flag).
 
+## Evidence integration checkpoint — 2026-10-27 (refreshed)
 
-## Evidence integration checkpoint — 2026-10-27
+The latest completed CI set for PR #54 ran against branch head `17c49501d6169c49d8faaf4bb2961f33b4d602a8`. All four required workflows passed: Build and Enterprise CI (run `40561707659`), Native UI Build (`40561707741`), Formal Evidence Hash Stability (`40561707592`), and Authoritative 120-Case Verification (`40561707619`).
 
-The latest pull-request CI artifact bundle was inspected. The four Paradox Ledger evidence files agree on source commit `09f1aa8775e892d2d0b9e97c70c2e29b593b55af`, and the formal summary's combined root and run receipt match the activation record.
+The authoritative verification artifact was downloaded and inspected. Its four relevant evidence records agree on source commit `20fb0597d4ae2dc1a96e294664ce46b1f457c781`; the formal summary's combined root and run receipt match the activation record.
 
 The evidence is internally consistent but does **not** authorize activation:
 
-- 120/120 formal cases and replays matched; unknown and error counts are zero.
-- 42/46 system gates passed; three are blocked and one requires external providers.
+- 120/120 formal cases and 120/120 clean-room replays matched; 118 UNSAT, 2 SAT, zero unknowns, and zero errors.
+- 42/46 system gates passed; three are blocked and one requires an external provider.
 - The activation record and overall 46-gate verdict are both `BLOCKED`.
-- The 15-gate pipeline reports `BLOCKED_MISSING_EXTERNAL_CREDENTIALS`; trusted identity and signed tenant claims are unavailable.
-- The artifact source SHA is the CI-tested pull-request merge revision, not the current PR head SHA. The read-only Paradox Ledger must not treat these records as current for a different runtime commit. Regenerate evidence for the exact revision intended for runtime before any activation decision.
+- The 15-gate pipeline reports 12 passed and `BLOCKED_MISSING_EXTERNAL_CREDENTIALS`; trusted identity and signed tenant claims remain unavailable.
+- Artifact source SHA `20fb0597...` is the CI-generated pull-request merge revision, not the branch head SHA `17c49501...`. Do not treat the artifacts as evidence for a different runtime revision. Regenerate evidence for the exact revision intended for runtime before any activation decision.
+
+The local-inference fail-closed test now correctly expects `offlineCapable: false`, because the runtime sets an environment hint but does not enforce OS-level network isolation. A real offline execution test and verified local model/engine are still outstanding.
 
 This checkpoint is evidence reconciliation only. It does not configure providers, execute lifecycle transitions, activate Daisy, enable payments, or authorize deployment.
