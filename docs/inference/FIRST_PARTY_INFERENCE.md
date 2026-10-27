@@ -56,11 +56,16 @@ Daisy produces real responses through its own verified runtime **only when**:
 
 Until then, `/api/chat` must continue returning `BLOCKED` / `FIRST_PARTY_MODEL_UNAVAILABLE` (or opt-in external provider if the creator sets the flag).
 
-## Evidence integration checkpoint — 2026-10-27 (refreshed)
+## Evidence integration checkpoint — 2026-10-27 (verification snapshot)
 
-The latest completed CI set for PR #54 ran against branch head `17c49501d6169c49d8faaf4bb2961f33b4d602a8`. All four required workflows passed: Build and Enterprise CI (run `40561707659`), Native UI Build (`40561707741`), Formal Evidence Hash Stability (`40561707592`), and Authoritative 120-Case Verification (`40561707619`).
+The completed CI set for PR #54 ran against branch head `56043b1de3b3fd5556a19c0127590863608ad912`. All four required workflows passed:
 
-The authoritative verification artifact was downloaded and inspected. Its four relevant evidence records agree on source commit `20fb0597d4ae2dc1a96e294664ce46b1f457c781`; the formal summary's combined root and run receipt match the activation record.
+- Build and Enterprise CI: run `40566141790`
+- Native UI Build: run `40566141686`
+- Formal Evidence Hash Stability: run `40566141786`
+- Authoritative 120-Case Verification: run `40566141712`
+
+The authoritative artifact was downloaded and inspected. Its four relevant evidence files agree on source commit `9b4249377fc74c2b56a5ed669d468eb7ca162bad`, the CI-generated pull-request merge revision for that snapshot. The formal summary's combined root and run receipt match the activation record.
 
 The evidence is internally consistent but does **not** authorize activation:
 
@@ -68,8 +73,8 @@ The evidence is internally consistent but does **not** authorize activation:
 - 42/46 system gates passed; three are blocked and one requires an external provider.
 - The activation record and overall 46-gate verdict are both `BLOCKED`.
 - The 15-gate pipeline reports 12 passed and `BLOCKED_MISSING_EXTERNAL_CREDENTIALS`; trusted identity and signed tenant claims remain unavailable.
-- Artifact source SHA `20fb0597...` is the CI-generated pull-request merge revision, not the branch head SHA `17c49501...`. Do not treat the artifacts as evidence for a different runtime revision. Regenerate evidence for the exact revision intended for runtime before any activation decision.
+- The artifact SHA is a CI-generated merge revision, not the branch head SHA. These records are valid only for the exact tested merge snapshot; regenerate evidence for the exact revision intended for runtime before any activation decision.
 
-The local-inference fail-closed test now correctly expects `offlineCapable: false`, because the runtime sets an environment hint but does not enforce OS-level network isolation. A real offline execution test and verified local model/engine are still outstanding.
+The first-party inference test now confirms that missing model/engine assets fail closed, malformed and oversized inputs return no generated text, offline capability is **not** attested without enforced network isolation, and directories cannot be mistaken for usable model weights or an executable engine. These checks do not prove a real local inference run: verified model weights, an executable engine, and an actual network-disabled inference test are still outstanding.
 
-This checkpoint is evidence reconciliation only. It does not configure providers, execute lifecycle transitions, activate Daisy, enable payments, or authorize deployment.
+This checkpoint is a dated verification snapshot, not a production approval. It does not configure providers, execute lifecycle transitions, activate Daisy, enable payments, or authorize deployment.
