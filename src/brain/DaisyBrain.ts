@@ -15,7 +15,7 @@ export interface CompleteBrainState {
   environment: 'local' | 'sandbox' | 'production';
   architecture: string;
   status: string;
-  claim_scope: 'MODEL_VERIFIED' | 'LOCAL_VERIFIED' | 'SANDBOX_VERIFIED' | 'PRODUCTION_VERIFIED' | 'EXTERNAL_PROVIDER_REQUIRED';
+  claim_scope: brainActive && this.verifiedDFRLCount === 88 && this.verifiedReplayCount === 88 ? 'MODEL_VERIFIED' : 'UNVERIFIED' | 'LOCAL_VERIFIED' | 'SANDBOX_VERIFIED' | 'PRODUCTION_VERIFIED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'BLOCKED';
   intelligence_nexus: {
     total_nodes: number;
     code_executed_nodes: number;
@@ -197,8 +197,8 @@ export class DaisyBrain {
       version: `1.0.0-${env.toUpperCase()} (SOLVEX + Daisy Haminja Sovereign Unified Core)`, 
       environment: env,
       architecture: 'Neural-Symbolic SMT Formal Verifier + 54-Node Sovereign Mesh',
-      status: brainActive ? brainClaimScope : 'EXTERNAL_PROVIDER_REQUIRED',
-      claim_scope: brainActive ? brainClaimScope : 'EXTERNAL_PROVIDER_REQUIRED',
+      status: brainActive ? brainClaimScope : 'BLOCKED',
+      claim_scope: brainActive ? brainClaimScope : 'BLOCKED',
       intelligence_nexus: {
         total_nodes: nodes.length,
         code_executed_nodes: nodes.filter(n => n.execution_mode === 'CODE_EXECUTED').length,
@@ -233,7 +233,7 @@ export class DaisyBrain {
       },
       gateways_status: {
         paypal_dn35: {
-          status: hasPayPal ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
+          status: 'DISABLED',
           configured: hasPayPal,
           environment: ppCreds?.environment || 'sandbox',
           claim_scope: hasPayPal ? 'LOCAL' : 'LOCAL'
@@ -245,8 +245,8 @@ export class DaisyBrain {
           local_fallback_active: !hasNeon
         },
         escrow_dn38: {
-          status: 'CODE_EXECUTED',
-          mode: 'SOVEREIGN_SETTLEMENT_ESCROW_ENGINE',
+          status: 'BLOCKED',
+          mode: 'NOT_ENABLED_UNVERIFIED',
           claim_scope: 'LOCAL'
         },
         stripe_dn36: {
