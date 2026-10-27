@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 
@@ -46,6 +46,127 @@ if (apiKey && allowExternalModelProvider) {
     'External model provider is disabled by default. Configure a first-party inference runtime, or explicitly set ALLOW_EXTERNAL_MODEL_PROVIDER=true to authorize the existing Gemini adapter.'
   );
 }
+
+// Read-only Paradox Ledger evidence API. Reads persisted artifacts only; no web request
+// runs a verifier or upgrades stale records into proof.
+app.get('/api/evidence/paradox-ledger', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  const runtimeCommit = String(process.env.SOLVEX_SOURCE_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || '').trim().toLowerCase();
+  const commitIsKnown = /^[a-f0-9]{40}$/.test(runtimeCommit);
+  const artifactNames = ['daisy-brain-activation-gate.json', 'z3-120-formal-verification-summary.json', 'system-46-gates.json', 'execution-gates.json'];
+  const roots = [path.resolve(process.cwd(), 'artifacts'), path.resolve(process.cwd(), '..', 'artifacts'), path.resolve(process.cwd(), 'Solvex-core', 'artifacts')];
+  const artifactRoot = roots.find(root => artifactNames.every(name => existsSync(path.join(root, name))));
+  const now = Date.now();
+  const maxAgeMs = 24 * 60 * 60 * 1000;
+  const sources: Record<string, any> = {};
+  const parsed: Record<string, any> = {};
+
+  for (const name of artifactNames) {
+    const filePath = artifactRoot ? path.join(artifactRoot, name) : '';
+    try {
+      if (!filePath || !existsSync(filePath)) { sources[name] = { available: false, status: 'MISSING' }; continue; }
+      const stat = statSync(filePath);
+      const data = JSON.parse(readFileSync(filePath, 'utf8'));
+      parsed[name] = data;
+      const sourceCommit = String(data.source_commit_sha || data.commit_sha || data.gates?.[0]?.details?.commit_sha || '').toLowerCase();
+      const generatedAt = String(data.generated_at || data.timestamp || data.completed_at || '');
+      const generatedMs = Date.parse(generatedAt);
+      const ageMs = now - generatedMs;
+      const fresh = Number.isFinite(generatedMs) && ageMs >= -30_000 && ageMs <= maxAgeMs && stat.size > 0;
+      const commitMatch = commitIsKnown && sourceCommit === runtimeCommit;
+      sources[name] = {
+        available: true,
+        status: fresh && commitMatch ? 'CURRENT' : !fresh ? 'STALE_OR_UNDATED' : !commitIsKnown ? 'RUNTIME_COMMIT_UNKNOWN' : 'SOURCE_COMMIT_MISMATCH',
+        generated_at: generatedAt || null,
+        age_seconds: Number.isFinite(ageMs) ? Math.max(0, Math.floor(ageMs / 1000)) : null,
+        source_commit_sha: sourceCommit || null,
+        runtime_commit_sha: commitIsKnown ? runtimeCommit : null,
+        commit_match: commitMatch,
+        fresh
+      };
+    } catch {
+      sources[name] = { available: false, status: 'INVALID_OR_UNREADABLE' };
+    }
+  }
+
+  const activation = parsed['daisy-brain-activation-gate.json'];
+  const formal = parsed['z3-120-formal-verification-summary.json'];
+  const gates = parsed['system-46-gates.json'];
+  const pipeline = parsed['execution-gates.json'];
+  const gateItems = Array.isArray(gates?.gates) ? gates.gates : [];
+  const nonPassedGates = gateItems.filter((gate: any) => gate?.status !== 'PASSED');
+  const sourceFilesCurrent = artifactNames.every(name => sources[name]?.status === 'CURRENT');
+  const activationValid = activation?.schema_version === '1.0.0' && activation?.status === 'ACTIVE' &&
+    activation?.corpus?.total_required === 120 && activation?.corpus?.dfrl_required === 88 &&
+    activation?.corpus?.dh_required === 32 && activation?.corpus?.executed === 120 &&
+    activation?.corpus?.deterministic_replays === 120 && activation?.corpus?.unknown === 0 &&
+    activation?.corpus?.errors === 0 && activation?.mandatory_gates?.total === 46 &&
+    activation?.mandatory_gates?.observed === 46 && activation?.mandatory_gates?.passed === 46 &&
+    activation?.mandatory_gates?.failed === 0 && activation?.mandatory_gates?.blocked === 0 &&
+    activation?.mandatory_gates?.external_provider_required === 0 && activation?.mandatory_gates?.non_passed === 0 &&
+    activation?.adversarial_verification && Object.values(activation.adversarial_verification).every(value => value === true) &&
+    /^[a-f0-9]{64}$/i.test(String(activation?.verification_root_sha256 || '')) &&
+    activation?.corpus_root_sha256 === activation?.verification_root_sha256 &&
+    /^[a-f0-9]{64}$/i.test(String(activation?.run_evidence_sha256 || '')) &&
+    String(activation?.source_commit_sha || '').toLowerCase() === runtimeCommit;
+  const formalMatches = formal?.total_z3_executions === 120 && formal?.replay_matches === 120 &&
+    formal?.distribution?.unknown === 0 && formal?.distribution?.error === 0 &&
+    formal?.combined_root_sha256 === activation?.verification_root_sha256 &&
+    formal?.run_evidence_sha256 === activation?.run_evidence_sha256 &&
+    String(formal?.commit_sha || '').toLowerCase() === String(activation?.source_commit_sha || '').toLowerCase();
+  const gatesComplete = gates?.total_gates === 46 && gateItems.length === 46 &&
+    nonPassedGates.length === 0 && gates?.overall_verdict === 'VERIFIED_SOVEREIGN_CLOSURE';
+  const pipelineBound = pipeline?.gates_total === 15 &&
+    String(pipeline?.commit_sha || '').toLowerCase() === String(activation?.source_commit_sha || '').toLowerCase();
+  const active = Boolean(commitIsKnown && sourceFilesCurrent && activationValid && formalMatches && gatesComplete && pipelineBound);
+  const reason = active
+    ? 'Fresh formal corpus, activation record, 46-gate report, and authoritative pipeline all match the runtime source revision.'
+    : !commitIsKnown
+      ? 'BLOCKED: runtime source commit is unavailable; evidence cannot be bound to this running revision.'
+      : !sourceFilesCurrent
+        ? 'BLOCKED: one or more evidence artifacts are missing, stale, unreadable, or bound to a different source revision.'
+        : !activationValid
+          ? 'BLOCKED: activation record does not satisfy the complete 120-case, adversarial, 46-gate, and source-commit contract.'
+          : !formalMatches
+            ? 'BLOCKED: formal summary roots, run receipt, counts, or source commit do not match the activation record.'
+            : !gatesComplete
+              ? 'BLOCKED: current 46-gate report is incomplete or contains a non-passed gate.'
+              : 'BLOCKED: authoritative pipeline evidence is not bound to the same source revision.';
+
+  return res.json({
+    success: true, status: active ? 'ACTIVE' : 'BLOCKED', reason,
+    runtime_commit_sha: commitIsKnown ? runtimeCommit : null, generated_at: new Date().toISOString(),
+    artifacts_directory: artifactRoot || null, sources,
+    formal: formal ? {
+      total_z3_executions: formal.total_z3_executions ?? null, expected_result_matches: formal.expected_result_matches ?? null,
+      replay_matches: formal.replay_matches ?? null, unsat: formal.distribution?.unsat ?? null,
+      sat: formal.distribution?.sat ?? null, unknown: formal.distribution?.unknown ?? null,
+      errors: formal.distribution?.error ?? null, combined_root_sha256: formal.combined_root_sha256 ?? null,
+      run_evidence_sha256: formal.run_evidence_sha256 ?? null, commit_sha: formal.commit_sha ?? null,
+      timestamp: formal.timestamp ?? null, activation_gate: formal.activation_gate ?? null
+    } : null,
+    activation: activation ? {
+      status: activation.status ?? 'UNKNOWN', reason: activation.reason ?? null, corpus: activation.corpus ?? null,
+      adversarial_verification: activation.adversarial_verification ?? null, mandatory_gates: activation.mandatory_gates ?? null,
+      verification_root_sha256: activation.verification_root_sha256 ?? null, run_evidence_sha256: activation.run_evidence_sha256 ?? null,
+      source_commit_sha: activation.source_commit_sha ?? null, generated_at: activation.generated_at ?? null,
+      gate_exceptions: Array.isArray(activation.gate_exceptions) ? activation.gate_exceptions : []
+    } : null,
+    gates: gates ? {
+      timestamp: gates.timestamp ?? null, total_gates: gates.total_gates ?? gateItems.length,
+      gates_passed: gates.gates_passed ?? null, blocked_count: gates.blocked_count ?? null,
+      failed_count: gates.failed_count ?? null, external_provider_required_count: gates.external_provider_required_count ?? null,
+      overall_verdict: gates.overall_verdict ?? 'UNKNOWN',
+      non_passed: nonPassedGates.slice(0, 46).map((gate: any) => ({ gate_number: gate.gate_number, gate_id: gate.gate_id, name: gate.name, status: gate.status }))
+    } : null,
+    authoritative_pipeline: pipeline ? {
+      completed_at: pipeline.completed_at ?? null, commit_sha: pipeline.commit_sha ?? null,
+      gates_total: pipeline.gates_total ?? null, gates_passed: pipeline.gates_passed ?? null,
+      production_gate_verdict: pipeline.production_gate_verdict ?? 'UNKNOWN',
+      production_blockers: Array.isArray(pipeline.production_blockers) ? pipeline.production_blockers : []
+    } : null
+  });
+});
 
 // Payment creation is deliberately disabled. Never fabricate transaction IDs,
 // checkout URLs, provider responses, or a successful payment intent.
