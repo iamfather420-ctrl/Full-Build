@@ -6,6 +6,7 @@ const instruction = read('DAISY_FOUNDATIONAL_SYSTEM_INSTRUCTION.md');
 const server = read('Solvex-core/server_native.ts');
 const entrypoint = read('Solvex-core/server.ts');
 const brain = read('src/brain/DaisyBrain.ts');
+const activationGate = read('src/brain/DaisyActivationGate.ts');
 const nativeUi = read('Solvex-core/src/App_native.tsx');
 const webview = read('app.js');
 
@@ -40,4 +41,10 @@ assert.doesNotMatch(nativeUi, /connectionId: isCurrentlyActive|status: isCurrent
 assert.doesNotMatch(webview, /simulateActionInBrowser|Simulated drag & drop ingestion|Simulated run/);
 assert.match(webview, /native bridge unavailable/);
 assert.match(webview, /no simulated result was created/);
+assert.match(activationGate, /MAX_EVIDENCE_AGE_MS/);
+assert.ok(activationGate.includes('record.source_commit_sha?.toLowerCase() !== expectedCommit'));
+assert.ok(activationGate.includes('gates?.total !== 46'));
+assert.match(activationGate, /adversarial_verification/);
+assert.match(activationGate, /Corrupt or unreadable disk evidence must never fall back/);
+assert.match(activationGate, /fresh 120-case, adversarial, 46-gate evidence/);
 console.log('PASS: canonical Daisy instruction is wired in; payment creation and simulated success paths fail closed.');
