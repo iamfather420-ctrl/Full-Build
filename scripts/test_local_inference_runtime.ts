@@ -13,6 +13,15 @@ async function main() {
   assert.equal(info.ready, false, 'Missing model/engine must never report ready.');
   assert.equal(info.offlineCapable, false, 'The runtime must not attest offline capability without enforced network isolation.');
 
+  const directoriesAreNotAssets = new LocalInferenceRuntime({
+    modelPath: process.cwd(),
+    enginePath: process.cwd(),
+    modelId: null,
+    modelVersion: null,
+  });
+  const directoryProbe = await directoriesAreNotAssets.probe();
+  assert.equal(directoryProbe.ready, false, 'Directories must not be accepted as model weights or an executable engine.');
+
   const unavailable = await runtime.generate({
     messages: [{ role: 'user', content: 'A real inference request' }],
   });
