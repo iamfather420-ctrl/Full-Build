@@ -1,4 +1,4 @@
-import { access, constants } from 'node:fs/promises';
+import { access, constants, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import {
@@ -12,9 +12,22 @@ import {
   MAX_PROMPT_CHARS,
 } from './InferenceRuntime';
 
-async function pathExists(filePath: string): Promise<boolean> {
+async function isNonEmptyReadableFile(filePath: string): Promise<boolean> {
   try {
+    const info = await stat(filePath);
+    if (!info.isFile() || info.size <= 0) return false;
     await access(filePath, constants.R_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function isExecutableFile(filePath: string): Promise<boolean> {
+  try {
+    const info = await stat(filePath);
+    if (!info.isFile()) return false;
+    await access(filePath, constants.X_OK);
     return true;
   } catch {
     return false;
@@ -106,8 +119,10 @@ export class LocalInferenceRuntime implements InferenceRuntime {
     if (!this.modelPath || !this.enginePath) {
       return this.getInfo();
     }
-    const modelOk = await pathExists(path.resolve(this.modelPath));
-    const engineOk = await pathExists(path.resolve(this.enginePath));
+    // Readability alone is not proof of a usable model/engine: directories,
+    // empty files, and non-executable engine files must not report READY.
+    const modelOk = await isNonEmptyReadableFile(path.resolve(this.modelPath));
+    const engineOk = await isExecutableFile(path.resolve(this.enginePath));
     this.ready = modelOk && engineOk;
     return this.getInfo();
   }
