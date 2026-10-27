@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import { LocalInferenceRuntime } from '../src/inference/LocalInferenceRuntime';
+
+async function main() {
+  const runtime = new LocalInferenceRuntime({
+    modelPath: null,
+    enginePath: null,
+    modelId: null,
+    modelVersion: null,
+  });
+
+  const info = await runtime.probe();
+  assert.equal(info.ready, false, 'Missing model/engine must never report ready.');
+  assert.equal(info.offlineCapable, true, 'The runtime contract must advertise its intended offline mode.');
+
+  const unavailable = await runtime.generate({
+    messages: [{ role: 'user', content: 'A real inference request' }],
+  });
+  assert.equal(unavailable.status, 'MODEL_UNAVAILABLE');
+  assert.equal(unavailable.code, 'FIRST_PARTY_MODEL_UNAVAILABLE');
+  assert.equal(unavailable.text, undefined, 'Missing model must not return fabricated output.');
+
+  const malformed = await runtime.generate({
+    messages: [{ role: 'invalid-role' as 'user', content: 'bad role' }],
+  });
+  assert.equal(malformed.status, 'MALFORMED_INPUT');
+  assert.equal(malformed.code, 'MALFORMED_INPUT');
+  assert.equal(malformed.text, undefined, 'Malformed input must not return output.');
+
+  const oversized = await runtime.generate({
+    messages: [{ role: 'user', content: 'x'.repeat(20_001) }],
+  });
+  assert.equal(oversized.status, 'MALFORMED_INPUT');
+  assert.equal(oversized.text, undefined);
+
+  console.log('PASS: local inference fails closed for missing assets, malformed roles, and oversized messages.');
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
