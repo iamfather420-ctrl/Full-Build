@@ -25,7 +25,7 @@ The split source consists of **part-00 and part-01**. They were split because of
 Brought in:
 
 - SAT-witness migration for the 120-case corpus (88 DFRL + 32 DH). Expected solver result is `sat` with an independently checked model, not an UNSAT refutation of the unrestricted paradox. See [SAT_WITNESS_MIGRATION.md](SAT_WITNESS_MIGRATION.md) and [SAT_WITNESS_NATIVE_RECHECK.md](SAT_WITNESS_NATIVE_RECHECK.md).
-- Production-hardening pass: public role-minting login retired, OIDC authorization-code + PKCE path, payments fail closed (HTTP 410), additive `migrations/004_access_requests.sql` (not applied to the live database). See [PRODUCTION_READINESS_STATUS.md](PRODUCTION_READINESS_STATUS.md) and [docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md](docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md).
+- Production-hardening pass: public role-minting login retired, OIDC authorization-code + PKCE path, payments fail closed (HTTP 410), and an additive access-request migration. Actual live migration state must be checked before any migration is reapplied. See [PRODUCTION_READINESS_STATUS.md](PRODUCTION_READINESS_STATUS.md) and [docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md](docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md).
 
 Kept from later commits already on `main` (2026-10-11 through 2026-10-21), which the October 10 archive does not contain:
 
@@ -34,22 +34,26 @@ Kept from later commits already on `main` (2026-10-11 through 2026-10-21), which
 - Neon `DATABASE_URL` alias, optional PayPal preflight, and the narrowed root `tsconfig.json`
 - Backup, read-only audit, and non-production GATE-11 workflows
 
-Release verdict is unchanged: **not production-ready**. `/readyz` is fail-closed until OIDC, schema reconciliation, and the 46 production gates have evidence. PayPal stays disabled.
+Release verdict is unchanged: **not production-ready**. `/readyz` is fail-closed until real OIDC configuration, schema/persistence reconciliation, and production gate evidence are verified. PayPal stays disabled.
 
 ## Scripts
 
+Use only scripts that exist in the committed `package.json`:
+
 ```bash
-bun install --frozen-lockfile   # preferred; package-lock.json is not the source of truth
+bun install --frozen-lockfile
 bun run lint
 bun run verify:release-safety
-bun run verify:api-security
-bun run verify:auth-contract
+bun run verify:payments-disabled
+bun run verify:enterprise
 bun run verify:120
 bun run verify:proof-closure
-bun run dev                      # local server, see server.ts
+bun run dev
 ```
 
-`npm run verify:all` chains the authoritative verifier, the 120-case aggregation, proof closure, and the release-safety checks.
+`bun run verify:all` currently invokes only `scripts/verify_authoritative.ts`; it does not chain the other checks. Run the listed checks individually when you need their results.
+
+The local `AuthService` boundary remains fail-closed without an approved, configured production identity verifier. Local or mocked checks do not prove that a real OIDC provider is configured.
 
 Do not hand-edit generated evidence JSON to force a SAT result. Regenerate it with the verifier scripts.
 
@@ -58,6 +62,6 @@ Do not hand-edit generated evidence JSON to force a SAT result. Regenerate it wi
 - `src/` — React UI, API router, Z3 formal verifiers, auth
 - `server.ts` — local runtime
 - `scripts/` — verification and release-safety checks
-- `migrations/004_access_requests.sql` — additive, unapplied
+- `migrations/004_access_requests.sql` — additive migration; reconcile with live migration history before applying
 - `app/` — Android shell
 - `sources/` — archive provenance manifest
