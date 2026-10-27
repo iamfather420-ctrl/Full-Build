@@ -11,20 +11,31 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "22"
-          cache: npm
+          bun-version: latest
       - name: Install locked dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
+      - name: Fail-closed release safety checks
+        run: bun run verify:release-safety
+      - name: Daisy foundational instruction and no-simulated-success checks
+        run: bun run verify:daisy-safety
+      - name: Compile native Daisy server entrypoint
+        run: bunx esbuild Solvex-core/server.ts --bundle --platform=node --format=cjs --packages=external --outfile=/tmp/solvex-core-server.cjs
+      - name: Payments-disabled boundary checks
+        run: bun run verify:payments-disabled
       - name: Build
-        run: npm run build
+        run: bun run build
       - name: TypeScript
-        run: npm run lint
+        run: bun run lint
       - name: Enterprise invariants
-        run: npm run verify:enterprise
+        run: bun run verify:enterprise
+      - name: Formal verification corpus
+        run: bun run verify:120
+      - name: Proof closure
+        run: bun run verify:proof-closure

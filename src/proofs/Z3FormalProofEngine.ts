@@ -6,7 +6,7 @@ export interface Z3ProofResult {
   domain: string;
   claim: string;
   smt_lib_script: string;
-  solver_result: 'unsat' | 'sat' | 'unknown';
+  solver_result: 'unsat' | 'sat' | 'unknown' | 'error';
   proved: boolean;
   explanation: string;
   counterexample_model?: Record<string, string>;
@@ -229,61 +229,69 @@ export class Z3FormalProofEngine {
     provedExplanation?: string
   ): Promise<Z3ProofResult> {
     const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const timestamp = Date.now();
+    let solverResult: Z3ProofResult['solver_result'] = 'error';
+    let counterexample: Record<string, string> | undefined;
+    let errorMessage: string | undefined;
+    const solverEngine = 'Microsoft Research Z3 WASM (z3-solver)';
+    const solverVersion = 'z3-solver package version resolved by lockfile';
 
-    // Formal Symbolic SMT Solver Engine
-    // Solves propositional constraints, self-referential equalities, contradiction checks, and arithmetic bounds
-    let solverResult: 'unsat' | 'sat' | 'unknown' = 'unsat';
-    let counterexample: Record<string, string> | undefined = undefined;
+    try {
+      // This path deliberately executes the submitted SMT-LIB with Z3. It does
+      // not infer results from string patterns or trust expectedResult as output.
+      const { init } = await import('z3-solver');
+      const z3 = await init();
+      const context = new z3.Context(`proof_${theoremId.replace(/[^a-zA-Z0-9_-]/g, '_')}_${timestamp}`);
+      const solver = new context.Solver();
+      await solver.fromString(smtScript);
+      const result = await solver.check();
 
-    const normalized = smtScript.replace(/;[^\n]*/g, '').trim();
+      if (result === 'sat' || result === 'unsat' || result === 'unknown') {
+        solverResult = result;
+      } else {
+        solverResult = 'error';
+        errorMessage = `Unexpected Z3 solver result: ${String(result)}`;
+      }
 
-    // Check for direct contradiction patterns:
-    // 1. (= X (not X)) -> boolean impossibility (UNSAT)
-    // 2. (= v1 0) and (= v2 1) and (= v1 v2) -> 0 = 1 (UNSAT)
-    // 3. (> Omega Omega) -> irreflexive strict order (UNSAT)
-    // 4. Pigeonhole distinct p0..p3 in range 1..3 -> |Domain| > |Codomain| (UNSAT)
-    // 5. Decrement progress negation: (not (and (< (s - 1) s) (>= (s - 1) 0))) for s > 0 -> s - 1 < s is true and s - 1 >= 0 is true, so and is true, not is false -> UNSAT
-    // 6. Real halving: (not (and (< d/2 d) (> d/2 0))) for d > 0 -> true, not is false -> UNSAT
-    if (
-      normalized.includes('(= (Member R R) (not (Member R R)))') ||
-      normalized.includes('(forall ((p Person)) (= (Shaves Barber p) (not (Shaves p p))))') ||
-      normalized.includes('(= LiarStatement (not LiarStatement))') ||
-      normalized.includes('(= Liar (not Liar))') ||
-      normalized.includes('(= C (=> C FalseConst))') ||
-      normalized.includes('(not (and (< s_next s) (>= s_next 0)))') ||
-      normalized.includes('(not (and (< d_next d) (> d_next 0.0)))') ||
-      (normalized.includes('(= v1 0)') && normalized.includes('(= v2 1)') && normalized.includes('(= v1 v2)')) ||
-      (normalized.includes('distinct p0 p1 p2 p3') && normalized.includes('<= p3 3')) ||
-      normalized.includes('(= s_next (- s')
-    ) {
-      solverResult = 'unsat';
-    } else if (normalized.includes('(assert false)') || normalized.includes('(assert (= 0 1))')) {
-      solverResult = 'unsat';
-    } else if (normalized.includes('(assert true)')) {
-      solverResult = 'sat';
-      counterexample = { 'model': 'true' };
-    } else {
-      // General DPLL symbolic evaluation
-      solverResult = expectedResult;
+      if (solverResult === 'sat') {
+        try {
+          const model = await solver.model();
+          counterexample = { model: String(model) };
+        } catch (modelError: any) {
+          // SAT remains SAT even if the optional model rendering fails.
+          counterexample = { model: 'SAT; model rendering unavailable' };
+        }
+      }
+    } catch (err: any) {
+      // Missing WASM, malformed SMT, and runtime exceptions fail closed.
+      solverResult = 'error';
+      errorMessage = err?.message || String(err);
     }
 
     const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const durationMs = Number((end - start).toFixed(2));
-
     const proved = solverResult === expectedResult;
-    const explanation = proved
-      ? (provedExplanation || `Theorem proved: Z3 SMT solver confirmed status [${solverResult.toUpperCase()}].`)
-      : `Verification failed: Z3 solver returned [${solverResult.toUpperCase()}], expected [${expectedResult.toUpperCase()}].`;
+    const explanation = solverResult === 'error'
+      ? `Verification did not complete: actual Z3 execution failed closed. ${errorMessage || 'Unknown solver error'}`
+      : proved
+        ? (provedExplanation || `Actual Z3 execution returned the expected status [${solverResult.toUpperCase()}].`)
+        : `Verification failed: actual Z3 returned [${solverResult.toUpperCase()}], expected [${expectedResult.toUpperCase()}].`;
 
     const certPayload = {
+      schema: 'SOLVEX_ACTUAL_Z3_EXECUTION_RECEIPT_V1',
       theoremId,
       theoremName,
+      domain,
       claim,
+      solverEngine,
+      solverVersion,
       solverResult,
+      expectedResult,
       proved,
       smtScript,
+      errorMessage: errorMessage || null,
       durationMs,
-      timestamp: Date.now()
+      timestamp
     };
 
     return {
@@ -296,11 +304,11 @@ export class Z3FormalProofEngine {
       proved,
       explanation,
       counterexample_model: counterexample,
-      solver_engine: 'Microsoft Research Z3 Automated Theorem Prover',
-      solver_version: 'Z3 5.2.0 (WebAssembly Native Kernel)',
+      solver_engine: solverEngine,
+      solver_version: solverVersion,
       execution_time_ms: durationMs,
       certificate_sha256: computeSha256(JSON.stringify(certPayload)),
-      timestamp: Date.now()
+      timestamp
     };
   }
 

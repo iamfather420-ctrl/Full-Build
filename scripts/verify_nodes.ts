@@ -1,6 +1,8 @@
+import { configureTestAuthEnvironment } from './testAuthEnvironment';
 import { runDaisy54NodeCoverage } from '../src/tests/daisy54NodeCoverage';
 
 async function main() {
+  configureTestAuthEnvironment();
   console.log('===========================================================');
   console.log(' DAISY 54-NODE ARCHITECTURE CUJ EXECUTION COVERAGE');
   console.log('===========================================================');

@@ -31,7 +31,7 @@ export default function App() {
     {
       id: 'init_handshake',
       sender: 'system',
-      text: `[Handshake Active - Core Secure Mode]\n\nI am the dAIsy HaMINJA Sovereign Core, central intelligence engine for the SolveX Institutional Marketplace. My 54-node grid and dual-market routing gateways are online.\n\nType a request to examine a paradoxical failure (e.g. Paradox 58), analyze grid workloads, or ask to purchase an autonomous business template checkout.`,
+      text: `[Handshake Active - Core Secure Mode]\n\nDaisy Haminja command interface for the SolveX workspace. The 54-node catalogue is a design inventory, not proof that every node is executing.\n\nType a request to analyze a problem or inspect available status. Payment processing is disabled; chat cannot authorize purchases. No operation is successful without server-backed evidence.`,
       timestamp: new Date().toLocaleTimeString()
     }
   ]);
@@ -52,19 +52,15 @@ export default function App() {
     setNodes(prev => prev.map(n => n.id === updatedNode.id ? updatedNode : n));
   };
 
-  // Toggle provider connection state
-  const handleToggleProvider = (id: string) => {
-    setProviders(prev => prev.map(p => {
-      if (p.id === id) {
-        const isCurrentlyActive = p.status === 'active' || p.status === 'configured';
-        return {
-          ...p,
-          status: isCurrentlyActive ? 'inactive' : 'active',
-          connectionId: isCurrentlyActive ? undefined : `conn_${id}_0x${Math.random().toString(16).substring(2, 6)}`
-        };
-      }
-      return p;
-    }));
+  // Payment providers remain disconnected until a real, authorized integration exists.
+  const handleToggleProvider = (_id: string) => {
+    setProviders(prev => prev.map(p => ({ ...p, status: 'inactive', connectionId: undefined })));
+    setMessages(prev => [...prev, {
+      id: `msg_payment_blocked_${Date.now()}`,
+      sender: 'system',
+      text: 'BLOCKED: payment providers are not connected. No credentials were tested and no transaction was created.',
+      timestamp: new Date().toLocaleTimeString()
+    }]);
   };
 
   // Chat message submission handler
@@ -90,22 +86,25 @@ export default function App() {
         })
       });
 
-      const data = await response.json();
+      const data: unknown = await response.json().catch(() => null);
+      const payload = data && typeof data === 'object' ? data as Record<string, unknown> : {};
+      const responseText = typeof payload.text === 'string' && payload.text.trim()
+        ? payload.text
+        : typeof payload.error === 'string' && payload.error.trim()
+          ? payload.error
+          : typeof payload.message === 'string' && payload.message.trim()
+            ? payload.message
+            : 'The sovereign core returned no readable response. No successful operation is assumed.';
+      const isBlocked = !response.ok || payload.status === 'BLOCKED' || payload.success === false;
 
       const aiMsg: ChatMessage = {
         id: `msg_ai_${Date.now()}`,
         sender: 'ai',
-        text: data.text,
+        text: isBlocked
+          ? `[${typeof payload.status === 'string' ? payload.status : 'REQUEST_FAILED'}]
+${responseText}`
+          : responseText,
         timestamp: new Date().toLocaleTimeString(),
-        metadata: data.trigger ? {
-          paymentAuthorized: true,
-          paymentDetails: {
-            amount: data.trigger.amount,
-            provider: data.trigger.provider,
-            checkoutUrl: `https://checkout.solvex.marketplace/pay?provider=${data.trigger.provider}&amount=${data.trigger.amount}`,
-            item: data.trigger.item || 'Autonomous Template Package'
-          }
-        } : undefined
       };
 
       setMessages(prev => [...prev, aiMsg]);
@@ -115,61 +114,36 @@ export default function App() {
       const errorMsg: ChatMessage = {
         id: `msg_err_${Date.now()}`,
         sender: 'ai',
-        text: `⚠️ Communication link fracture identified. Resetting network transceiver ports...`,
+        text: 'BLOCKED: communication with the sovereign core failed. No simulated reply or successful operation was generated.',
         timestamp: new Date().toLocaleTimeString()
       };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
-      setIsAiLoading(true); // wait, let's set it to false!
       setIsAiLoading(false);
     }
   };
 
-  // Add simulated success payment transaction to ledger
-  const handleAddTransaction = (provider: string, amount: number, item: string) => {
-    const successMsg: ChatMessage = {
-      id: `msg_success_${Date.now()}`,
+  // Never create a synthetic receipt or claim settlement succeeded.
+  const handleAddTransaction = (_provider: string, _amount: number, _item: string) => {
+    setMessages(prev => [...prev, {
+      id: `msg_payment_blocked_${Date.now()}`,
       sender: 'system',
-      text: `✅ [UNIFIED CLEARING SETTLEMENT RECEIVED]\n\nSovereign settlement of $${amount.toFixed(2)} USD completed successfully via ${provider.toUpperCase()}.\n\nItem Authorized: "${item}"\nClearing Ledger Hash: sha256:${Math.random().toString(16).substring(2, 10)}${Math.random().toString(16).substring(2, 10)}`,
+      text: 'BLOCKED: PayPal and all payment processing are disabled. No charge, transaction, receipt, or ledger entry was created.',
       timestamp: new Date().toLocaleTimeString()
-    };
-    setMessages(prev => [...prev, successMsg]);
-
-    // Update nodes load due to compilation activity
-    setNodes(prev => prev.map(n => n.id % 4 === 0 ? {
-      ...n,
-      load: Math.min(n.load + 15, 100),
-      activity: `Processing clearing ledger transaction validation.`
-    } : n));
+    }]);
   };
 
-  // Bind a recommended payment trigger from chat directly into sandbox
-  const handleSelectTrigger = (trigger: { amount: number; provider: string; item: string }) => {
-    setPaymentPreFill(trigger);
-    
-    // Switch to payments tab
+  // A model suggestion is not payment authorization. Keep the gateway closed.
+  const handleSelectTrigger = (_trigger: { amount: number; provider: string; item: string }) => {
+    setPaymentPreFill(null);
     setActiveTab('payments');
-
-    // Auto connect provider if inactive
-    setProviders(prev => prev.map(p => {
-      if (p.id === trigger.provider && p.status === 'inactive') {
-        return {
-          ...p,
-          status: 'active',
-          connectionId: `conn_${trigger.provider}_0x${Math.random().toString(16).substring(2, 6)}`
-        };
-      }
-      return p;
-    }));
-
-    // Post system message
-    const alertMsg: ChatMessage = {
-      id: `msg_alert_${Date.now()}`,
+    setProviders(prev => prev.map(p => ({ ...p, status: 'inactive', connectionId: undefined })));
+    setMessages(prev => [...prev, {
+      id: `msg_payment_blocked_${Date.now()}`,
       sender: 'system',
-      text: `🔄 Handshake parameters bound to Unified API checkout generator. Check transaction sandbox below to initialize checkout.`,
+      text: 'BLOCKED: a chat suggestion cannot authorize a purchase. PayPal and checkout are disabled; no provider was connected and no transaction was created.',
       timestamp: new Date().toLocaleTimeString()
-    };
-    setMessages(prev => [...prev, alertMsg]);
+    }]);
   };
 
   return (
@@ -184,7 +158,7 @@ export default function App() {
             <div className="flex items-center space-x-2">
               <h1 className="font-display font-medium text-xl text-white tracking-tight">SolveX Sovereign Core</h1>
               <span className="text-[9px] font-mono font-bold bg-cyan-950/40 text-cyan-400 border border-cyan-900 px-2 py-0.5 rounded uppercase">
-                v1.0.0 Stable
+                Native UI · guarded
               </span>
             </div>
             <p className="text-xs text-neutral-500 font-sans mt-0.5">
@@ -197,20 +171,20 @@ export default function App() {
         <div className="flex items-center space-x-4 text-xs font-mono py-2 px-4 bg-neutral-950 rounded border border-neutral-900/60 shadow-inner">
           <div className="flex items-center space-x-1.5">
             <Activity className="h-4 w-4 text-emerald-400 animate-pulse" />
-            <span className="text-neutral-400">Nodes:</span>
-            <span className="text-white font-bold">54/54</span>
+            <span className="text-neutral-400">Node catalogue:</span>
+            <span className="text-amber-300 font-bold">54 defined</span>
           </div>
           <div className="w-px h-4 bg-neutral-800"></div>
           <div className="flex items-center space-x-1.5">
             <Shield className="h-4 w-4 text-cyan-400" />
-            <span className="text-neutral-400">Paradoxes:</span>
-            <span className="text-cyan-400 font-bold">58 Locked</span>
+            <span className="text-neutral-400">Proof status:</span>
+            <span className="text-amber-300 font-bold">Not loaded</span>
           </div>
           <div className="w-px h-4 bg-neutral-800"></div>
           <div className="flex items-center space-x-1.5">
             <CloudLightning className="h-4 w-4 text-amber-400" />
-            <span className="text-neutral-400">Hosting:</span>
-            <span className="text-white font-bold uppercase">Cloud Run</span>
+            <span className="text-neutral-400">Execution:</span>
+            <span className="text-amber-300 font-bold uppercase">Fail-closed</span>
           </div>
         </div>
       </header>
@@ -332,8 +306,8 @@ export default function App() {
 
       {/* Aesthetic Footer */}
       <footer className="border-t border-neutral-950 bg-black/90 py-6 px-6 mt-12 text-center text-[10px] font-mono text-neutral-600">
-        <p>dAIsy HaMINJA SOVEREIGN GRID ARCHITECTURE • SECURED WITH 58 PARADOX OPERATORS</p>
-        <p className="mt-1">ISO_42001 & SOC2-TYPE-II COMPLIANT • ZERO KNOWLEDGE RAG ENCRYPTED</p>
+        <p>SOLVEX + DAISY HAMINJA • HUMAN AUTHORIZATION REQUIRED</p>
+        <p className="mt-1">UI status is not proof of execution, compliance, payment, or deployment.</p>
       </footer>
     </div>
   );

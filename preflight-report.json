@@ -1,8 +1,8 @@
 {
-  "timestamp": 1790883816102,
-  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "timestamp": 1792683103061,
+  "commit_sha": "728625581c2f89210c752d03fda0a154812b2366",
   "environment_mode": "local",
-  "node_version": "v22.23.2",
+  "node_version": "v22.23.3",
   "platform": "linux",
   "arch": "x64",
   "dependencies": [
@@ -10,7 +10,7 @@
       "name": "node",
       "category": "RUNTIME",
       "status": "PRESENT",
-      "version": "v22.23.2",
+      "version": "v22.23.3",
       "tested_import_path": "process.version",
       "notes": "Node.js LTS runtime"
     },

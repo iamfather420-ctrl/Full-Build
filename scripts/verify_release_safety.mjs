@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
+const auth = read('src/auth/AuthService.ts');
+const neon = read('src/database/NeonPersistence.ts');
+const api = read('src/api/ApiRouter.ts');
+const runtime = read('scripts/verify_production_runtime.ts');
+const workflow = read('.github/workflows/verify-authoritative.yml');
+const packageJson = JSON.parse(read('package.json'));
+
+assert.match(auth, /createSignedToken[\s\S]*throw new Error\('BLOCKED:/,
+  'local token creation must fail closed');
+assert.match(auth, /verifyToken[\s\S]*return \{ valid: false,/,
+  'unconfigured token verification must reject tokens');
+assert.match(auth, /authorize[\s\S]*return \{ authorized: false,/,
+  'authorization must fail closed without verified identity');
+assert.match(api, /if \(method !== 'GET'\)/,
+  'the current API router must reject mutations');
+assert.match(api, /path !== '\/api\/system\/health'[\s\S]*path !== '\/api\/system\/status'/,
+  'the current API router must expose only the documented read-only system endpoints');
+assert.match(api, /authentication_enabled: false/);
+assert.match(api, /payments_enabled: false/);
+assert.match(api, /readiness: 'BLOCKED'/);
+assert.doesNotMatch(runtime, /runMigrations\s*\(/,
+  'production readiness verification must not mutate the schema');
+assert.match(workflow, /PAYMENTS_ENABLED:\s*'false'/,
+  'authoritative workflow must keep payments disabled');
+assert.ok(packageJson.scripts['verify:release-safety'], 'release safety command must be declared');
+assert.ok(packageJson.scripts['verify:payments-disabled'], 'payments-disabled command must be declared');
+
+const migrationMethod = neon.slice(neon.indexOf('public async runMigrations'), neon.indexOf('public async verifyRequiredTables'));
+const genericWriteMethod = neon.slice(neon.indexOf('public async insertRecord'), neon.indexOf('public async findTenantRecords'));
+assert.match(neon, /backend: 'PERSISTENCE_UNAVAILABLE',[\s\S]*configured: false/,
+  'unconfigured Neon must not be reported as an active SQLite backend');
+assert.match(migrationMethod, /BLOCKED: generic Neon migrations are disabled/);
+assert.match(genericWriteMethod, /BLOCKED: generic Neon writes are disabled/);
+assert.doesNotMatch(neon, /CREATE TABLE IF NOT EXISTS|ALTER TABLE|INSERT INTO/,
+  'legacy generic Neon persistence must not mutate or write to the incompatible schema');
+console.log('PASS: authentication and authorization fail closed; public API is read-only; readiness is blocked; payments stay disabled.');

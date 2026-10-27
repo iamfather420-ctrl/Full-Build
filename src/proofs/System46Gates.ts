@@ -41,7 +41,8 @@ export class System46Gates {
   }
 
   public async evaluateAll46Gates(): Promise<System46GatesReport> {
-    const executionId = `gate46_exec_${Date.now()}`;
+    const startedAt = Date.now();
+    const executionId = `gate46_exec_${startedAt}`;
     const timestamp = new Date().toISOString();
     const evaluatedGates: GateExecutionResult[] = [];
 
@@ -67,7 +68,7 @@ export class System46Gates {
         status: gStatus,
         claim_scope: g.claim_scope,
         duration_ms: g.duration_ms,
-        evidence_hash: computeSha256(`AUTH_GATE:${g.gate_id}:${g.status}:${g.duration_ms}`),
+        evidence_hash: computeSha256(JSON.stringify({ gate_id: g.gate_id, status: g.status, duration_ms: g.duration_ms, claim_scope: g.claim_scope, details: g.details })),
         details: g.details
       });
     }
@@ -90,7 +91,7 @@ export class System46Gates {
         status: inv.passed ? 'PASSED' : 'FAIL',
         claim_scope: 'LOCAL',
         duration_ms: inv.duration_ms,
-        evidence_hash: computeSha256(`INV_GATE:${gateId}:${inv.passed}:${inv.name}`),
+        evidence_hash: computeSha256(JSON.stringify({ gate_id: gateId, name: inv.name, passed: inv.passed, duration_ms: inv.duration_ms, details: inv.details })),
         details: inv.details
       });
     }
@@ -101,24 +102,35 @@ export class System46Gates {
     const failedPrior = evaluatedGates.filter(g => g.status === 'FAIL').length;
     const passedPrior = evaluatedGates.filter(g => g.status === 'PASSED').length;
     const nonPassedPrior = evaluatedGates.filter(g => g.status !== 'PASSED').length;
-    const masterPassed = evaluatedGates.length === 45 && nonPassedPrior === 0;
+    const failClosedChecks = enterpriseReport.results.filter(inv => /fail.closed|unauthorized|unverified.*blocked/i.test(inv.name));
+    const externalBoundaryChecks = enterpriseReport.results.filter(inv => /external adapter inventory|paypal dn-35 server.authoritative fail.closed/i.test(inv.name));
+    const failClosedActive = failClosedChecks.length > 0 && failClosedChecks.every(inv => inv.passed);
+    const externalBoundariesPreserved = externalBoundaryChecks.length > 0 && externalBoundaryChecks.every(inv => inv.passed);
+    const structuralIntegrityOk = evaluatedGates.length === 45 && failClosedActive && externalBoundariesPreserved;
+    const masterPassed = structuralIntegrityOk && nonPassedPrior === 0 && failedPrior === 0;
+    const masterBlocked = !masterPassed && structuralIntegrityOk && failedPrior === 0 && nonPassedPrior > 0;
+    const masterStatus: GateExecutionResult['status'] = masterPassed
+      ? 'PASSED'
+      : masterBlocked ? 'BLOCKED' : 'FAIL';
 
     evaluatedGates.push({
       gate_number: 46,
       gate_id: 'GATE-46',
       name: 'Master Truth-Boundary & Proof Closure Gate',
       category: 'MASTER_PROOF_CLOSURE',
-      status: masterPassed ? 'PASSED' : 'FAIL',
+      status: masterStatus,
       claim_scope: 'LOCAL',
-      duration_ms: 1,
-      evidence_hash: computeSha256(`MASTER_GATE_46:${masterPassed}:${passedPrior}:${failedPrior}`),
+      duration_ms: Date.now() - startedAt,
+      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'GATE-46', master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
       details: {
         total_preceding_gates: 45,
         preceding_passed: passedPrior,
         preceding_failed: failedPrior,
         preceding_non_passed: nonPassedPrior,
-        external_boundaries_preserved: true,
-        fail_closed_active: true
+        external_boundaries_preserved: externalBoundariesPreserved,
+        fail_closed_active: failClosedActive,
+        structural_integrity_ok: structuralIntegrityOk,
+        closure_state: masterPassed ? 'VERIFIED' : masterBlocked ? 'BLOCKED' : 'FAILED'
       }
     });
 

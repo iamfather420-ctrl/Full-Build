@@ -19,39 +19,26 @@ export interface DaisyActivationGateRecord {
   generated_at: string;
 }
 
-const FALLBACK_ACTIVE: DaisyActivationGateRecord = {
-  schema_version: '1.0.0',
-  status: 'ACTIVE',
-  reason: 'Embedded Daisy local activation',
-  corpus: {
-    total_required: 120,
-    dfrl_required: 88,
-    dh_required: 32,
-    executed: 120,
-    deterministic_replays: 120,
-    unknown: 0,
-    errors: 0,
-  },
-  mandatory_gates: { total: 46, passed: 46, failed: 0 },
-  verification_root_sha256: 'local_daisy_activation_root',
-  source_commit_sha: 'unified-daisy-ai-os',
-  generated_at: new Date().toISOString(),
-};
-
+/**
+ * No embedded/default activation is permitted.
+ * The OS remains inactive until a future implementation loads and validates
+ * a real, commit-bound verification record produced by the authoritative
+ * verification pipeline.
+ */
 export class DaisyActivationGate {
-  public static read(): DaisyActivationGateRecord {
-    return FALLBACK_ACTIVE;
+  public static read(): DaisyActivationGateRecord | null {
+    return null;
   }
 
   public static assertActive(): DaisyActivationGateRecord {
     const record = this.read();
-    if (record.status !== 'ACTIVE') {
-      throw new Error('DAISY_BRAIN_FAIL_CLOSED: verification corpus activation gate is not ACTIVE');
+    if (!record || record.status !== 'ACTIVE') {
+      throw new Error('DAISY_BRAIN_FAIL_CLOSED: no verified activation record is available');
     }
     return record;
   }
 
   public static isActive(): boolean {
-    return this.read().status === 'ACTIVE';
+    return this.read()?.status === 'ACTIVE';
   }
 }

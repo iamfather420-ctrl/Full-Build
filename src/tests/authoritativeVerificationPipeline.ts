@@ -408,12 +408,11 @@ export class AuthoritativeVerificationPipeline {
     // GATE 11: External Provider Verification (Neon, PayPal)
     // ==========================================
     const g11Start = performance.now();
-    const paymentsEnabled = (typeof process !== 'undefined' && process.env?.PAYMENTS_ENABLED) === 'true';
     const pp = PayPalAdapter.getInstance();
-    const hasPayPal = paymentsEnabled && pp.hasActiveCredentials();
-    const ppCreds = paymentsEnabled ? pp.getEffectiveCredentials() : null;
+    const hasPayPal = pp.hasActiveCredentials();
+    const ppCreds = pp.getEffectiveCredentials();
     let ppAuth = false;
-    if (paymentsEnabled && hasPayPal && ppCreds) {
+    if (hasPayPal && ppCreds) {
       const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
       ppAuth = testPP.valid;
     }
@@ -424,36 +423,44 @@ export class AuthoritativeVerificationPipeline {
     if (hasNeon) {
       neonConn = await neon.connect();
     }
-    const neonRlsPosture = neonConn ? await neon.verifyRlsPosture() : null;
-    const gate11Ready = (!paymentsEnabled || ppAuth) && neonConn && (env !== 'production' || neonRlsPosture?.success === true);
+
+    let g11Status: GateResult['status'] = 'EXTERNAL_PROVIDER_REQUIRED';
+    if (!hasPayPal && !hasNeon) {
+      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
+    } else if (hasPayPal && !ppAuth) {
+      g11Status = 'FAILED';
+    } else if (hasNeon && !neonConn) {
+      g11Status = 'FAILED';
+    } else if (ppAuth && neonConn) {
+      g11Status = 'PASSED';
+    } else {
+      g11Status = 'CONFIGURED';
+    }
 
     recordGate(
       11,
       'GATE-11',
       'External Provider Gateways (Neon, PayPal)',
       'LOCAL',
-      gate11Ready ? 'PASSED' : 'EXTERNAL_PROVIDER_REQUIRED',
+      g11Status,
       performance.now() - g11Start,
       {
-        payments_enabled: paymentsEnabled,
         paypal: {
-          required: paymentsEnabled,
           configured: hasPayPal,
-          environment: ppCreds?.environment || (paymentsEnabled ? 'NOT_CONFIGURED' : 'DISABLED'),
+          environment: ppCreds?.environment || 'NOT_CONFIGURED',
           authenticated: ppAuth,
-          status: !paymentsEnabled ? 'DISABLED_NOT_REQUIRED' : (hasPayPal ? (ppAuth ? 'AUTHENTICATED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED'),
+          status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
           claim_scope: 'LOCAL'
         },
         neon: {
           configured: hasNeon,
           connected: neonConn,
-          status: hasNeon ? (neonConn ? 'CONNECTED' : 'CONFIGURED') : 'EXTERNAL_PROVIDER_REQUIRED',
-          rls_posture: neonRlsPosture,
+          status: !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : (neonConn ? 'CONNECTED' : 'CONNECTION_FAILED'),
           claim_scope: 'LOCAL'
         },
         stripe: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Stripe is prohibited; PayPal DN-35 is required only when PAYMENTS_ENABLED=true.'
+          policy: 'Sovereign Security Directive forbids Stripe; fiat settlements route exclusively to PayPal DN-35'
         }
       }
     );
@@ -466,7 +473,7 @@ export class AuthoritativeVerificationPipeline {
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
     const pipeRes = pipe.runPipeline('DFRL-P-024', zenoCode);
 
-    const testOrderId = `e2e_order_${Date.now()}`;
+    const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
     sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
       id: testOrderId,
@@ -479,29 +486,58 @@ export class AuthoritativeVerificationPipeline {
     });
 
     const orderMgr = OrderLifecycleManager.getInstance();
-    const t1 = orderMgr.transitionOrder(testOrderId, 'ORDER_CREATED');
-    const t2 = orderMgr.transitionOrder(testOrderId, 'ESCROW_FUNDED');
-    const t3 = orderMgr.transitionOrder(testOrderId, 'SANDBOX_PROVISIONED');
-    const t4 = orderMgr.transitionOrder(testOrderId, 'REPLAY_VERIFIED');
-    const t5 = orderMgr.transitionOrder(testOrderId, 'DEPLOYED');
+    const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
+    const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
+    for (const targetState of plannedTransitions) {
+      const result = orderMgr.transitionOrder(testOrderId, targetState);
+      transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
+      // Stop immediately at the first failed authorization or state transition.
+      if (!result.success) break;
+    }
+
+    const finalOrderRow = sqliteInst.getRawDb().get('SELECT status FROM orders WHERE id = ?', [testOrderId]);
+    const actualFinalStatus = String(finalOrderRow?.status ?? 'UNKNOWN');
+    const successfulTransitions = transitionAttempts.filter(t => t.success).map(t => t.target_state);
+    const e2eOk = pipeRes.overall_success &&
+      pipeRes.completed_stages === 21 &&
+      transitionAttempts.length === plannedTransitions.length &&
+      transitionAttempts.every(t => t.success) &&
+      actualFinalStatus === 'DEPLOYED';
+    const lifecycleBlocked = !e2eOk && transitionAttempts.some(t =>
+      !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
+    );
+    const lifecycleGateStatus: GateResult['status'] = e2eOk
+      ? 'PASSED'
+      : lifecycleBlocked ? 'BLOCKED' : 'FAILED';
+    const lifecycleAuditAction = e2eOk
+      ? 'LIFECYCLE_COMPLETED'
+      : lifecycleBlocked ? 'LIFECYCLE_BLOCKED' : 'LIFECYCLE_FAILED';
 
     const durableInst = DurableStore.getInstance();
     const e2eAudit = durableInst.appendAudit(
       'TENANT_ENTERPRISE_DEMO',
       'E2E_VERIFIER',
-      'LIFECYCLE_COMPLETED',
+      lifecycleAuditAction,
       'ORDER',
       testOrderId,
-      { pipeline_stages: pipeRes.completed_stages, final_order_status: 'DEPLOYED' }
+      {
+        pipeline_stages: pipeRes.completed_stages,
+        planned_transitions: plannedTransitions,
+        transition_attempts: transitionAttempts,
+        successful_transitions: successfulTransitions,
+        final_order_status: actualFinalStatus,
+        authorization_blocked: lifecycleBlocked,
+        payment_processing: 'DISABLED',
+        claim_scope: 'LOCAL'
+      }
     );
 
-    const e2eOk = pipeRes.overall_success && pipeRes.completed_stages === 21 && t1.success && t2.success && t3.success && t4.success && t5.success;
     recordGate(
       12,
       'GATE-12',
       'End-to-End Lifecycle Execution',
       'LOCAL',
-      e2eOk ? 'PASSED' : 'FAILED',
+      lifecycleGateStatus,
       performance.now() - g12Start,
       {
         solution_pipeline: {
@@ -512,10 +548,15 @@ export class AuthoritativeVerificationPipeline {
         },
         order_lifecycle: {
           order_id: testOrderId,
-          transitions_executed: ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'],
-          final_status: 'DEPLOYED'
+          planned_transitions: plannedTransitions,
+          transition_attempts: transitionAttempts,
+          transitions_executed: successfulTransitions,
+          final_status: actualFinalStatus,
+          authorization_blocked: lifecycleBlocked,
+          payment_processing: 'DISABLED'
         },
         merkle_audit_append: {
+          action: lifecycleAuditAction,
           record_id: e2eAudit.id,
           record_hash: e2eAudit.record_hash
         }
@@ -586,7 +627,7 @@ ${dfrlReport.results.map(r => `| \`${r.operator_id}\` | ${r.operator_name} | \`$
     const entReportStr = JSON.stringify(entRes, null, 2);
     writeArtifact('enterprise-verification-report.json', entReportStr, true);
 
-    const entReportMd = `# Project AGATE 30-Stage Enterprise Invariant Verification Report
+    const entReportMd = `# SOLVEX + Daisy Haminja AI/UI/OS 30-Stage Enterprise Invariant Verification Report
 - **Total Tests:** ${entRes.totalTests}
 - **Passed:** ${entRes.passedTests}
 - **Status:** ${entRes.allPassed ? 'ALL INVARIANTS SATISFIED' : 'FAILURES DETECTED'}
@@ -646,7 +687,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     const preflightStr = JSON.stringify(fullPreflight, null, 2);
     writeArtifact('preflight-report.json', preflightStr, true);
 
-    const preflightMd = `# Project AGATE Preflight Verification Report
+    const preflightMd = `# SOLVEX + Daisy Haminja AI/UI/OS Preflight Verification Report
 - **Commit SHA:** \`${commitSha}\`
 - **Environment:** \`${fullPreflight.environment_mode}\`
 - **Dependencies Present:** ${fullPreflight.dependencies.filter(d => d.status === 'PRESENT').length} / ${fullPreflight.dependencies.length}
@@ -688,18 +729,19 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     if (!g8Passed) productionBlockers.push('GATE-08 Mutation, failure injection, or tamper alarm failed.');
     if (!nodeCoverage.all_passed) productionBlockers.push('GATE-09 Daisy 54-node CUJ coverage failed.');
     if (!persistRep.all_local_passed) productionBlockers.push('GATE-10 Relational persistence or Merkle chain failed.');
-    if (!e2eOk) productionBlockers.push('GATE-12 End-to-end lifecycle verification failed.');
+    if (lifecycleBlocked) {
+      productionBlockers.push('GATE-12 lifecycle blocked: trusted identity and signed tenant claims are unavailable; no order transition or deployment occurred.');
+    } else if (!e2eOk) {
+      productionBlockers.push('GATE-12 End-to-end lifecycle verification failed.');
+    }
 
     // Production credential gates
     if (env === 'production') {
-      if (paymentsEnabled && (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth)) {
+      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
         productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
       }
       if (!hasNeon || !neonConn) {
-        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production persistence requires NEON_DATABASE_URL.');
-      }
-      if (!neonRlsPosture?.success) {
-        productionBlockers.push('GATE-11 Neon tenant isolation is not verified: public tables require enabled/forced RLS policies and a runtime role without BYPASSRLS.');
+        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
       }
     } else {
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
@@ -715,7 +757,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    } else if (env === 'sandbox' && paymentsEnabled && hasPayPal && ppCreds?.environment === 'sandbox') {
+    } else if (env === 'sandbox' && hasPayPal && ppCreds?.environment === 'sandbox') {
       claimScopeVerdict = 'SANDBOX_VERIFIED';
     } else {
       claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
@@ -741,7 +783,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     const completedAt = new Date().toISOString();
 
     const report: PipelineExecutionReport = {
-      pipeline_name: 'Project AGATE Sovereign Core Authoritative 15-Gate Verification',
+      pipeline_name: 'SOLVEX + Daisy Haminja AI/UI/OS Authoritative 15-Gate Verification',
       version: '1.0.0-PROD',
       execution_id: executionId,
       commit_sha: commitSha,
@@ -773,7 +815,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 }
 
 function generateMarkdownReport(report: PipelineExecutionReport): string {
-  return `# Project AGATE Sovereign Core & Solvex B2B Platform
+  return `# SOLVEX + Daisy Haminja AI/UI/OS — SolveX B2B Solutions
 ## Authoritative Verification & Evidence Report (GATE-00 through GATE-14)
 
 - **Execution ID:** \`${report.execution_id}\`

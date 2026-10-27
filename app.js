@@ -135,10 +135,18 @@ window.updateVoiceState = function(speaking, utteranceBase64, waveBase64) {
 function callNative(funcName, ...args) {
     if (window.DaisyBridge && typeof window.DaisyBridge[funcName] === 'function') {
         window.DaisyBridge[funcName](...args);
-    } else {
-        console.warn(`DaisyBridge.${funcName} not available in browser. Simulated run.`);
-        simulateActionInBrowser(funcName, ...args);
+        return;
     }
+
+    // Browser-only mode is not the native runtime. Never synthesize execution,
+    // ingested files, verified consensus, node state, or successful operations.
+    console.warn(`DaisyBridge.${funcName} unavailable; operation blocked.`);
+    const message = `BLOCKED: native bridge unavailable. ${funcName} was not executed and no simulated result was created.`;
+    currentUtterance = message;
+    const utterance = document.getElementById('copilotUtterance');
+    if (utterance) utterance.textContent = message;
+    logEvents.push({ type: 'WARNING', timestamp: Date.now(), message });
+    renderLogEvents();
 }
 
 // 3. UI RENDERING METHODS
@@ -555,177 +563,4 @@ function animateTethers() {
     });
 }
 
-// 6. SIMULATOR OF NATIVE LOGIC FOR PURE WEB VIEW TESTING (WHEN RUNNING OUTSIDE OF APK)
-function simulateActionInBrowser(funcName, ...args) {
-    if (funcName === 'performBindElement') {
-        const name = args[0];
-        const selector = args[1];
-        const bucket = args[2];
-        const id = 'sess_' + Math.floor(Math.random() * 100000);
-        tetherNodes.push({
-            sessionId: id,
-            sessionName: name,
-            domSelector: selector,
-            targetBucket: bucket,
-            mutationsCount: 0,
-            active: true
-        });
-        renderTetherNodes();
-        renderWidgetNodes();
-        
-        logEvents.push({
-            type: 'ROUTING',
-            timestamp: Date.now(),
-            message: `Bound browser session to element node '${selector}' as ${name}. ID: ${id}`
-        });
-        renderLogEvents();
-        
-        isSpeaking = true;
-        currentUtterance = `Successfully bound new MMTAI node ${name}. Ready to stream.`;
-        document.getElementById('copilotUtterance').textContent = currentUtterance;
-    } else if (funcName === 'forceTripNode') {
-        const id = args[0];
-        const node = tetherNodes.find(n => n.sessionId === id);
-        if (node) {
-            node.active = false;
-            node.mutationsCount += 1;
-            renderTetherNodes();
-            renderWidgetNodes();
-            
-            logEvents.push({
-                type: 'CIRCUIT_BREAKER',
-                timestamp: Date.now(),
-                message: `Circuit breaker TRIPPED for ${node.sessionName}: DOM element layout mutated unexpectedly.`
-            });
-            renderLogEvents();
-            
-            isSpeaking = true;
-            currentUtterance = `${node.sessionName} hit a limit. Automatically tripping circuit breaker and rerouting workload.`;
-            document.getElementById('copilotUtterance').textContent = currentUtterance;
-        }
-    } else if (funcName === 'reconnectNode') {
-        const id = args[0];
-        const node = tetherNodes.find(n => n.sessionId === id);
-        if (node) {
-            node.active = true;
-            renderTetherNodes();
-            renderWidgetNodes();
-            
-            logEvents.push({
-                type: 'ROUTING',
-                timestamp: Date.now(),
-                message: `Reconnected / Reset circuit breaker for ${node.sessionName}`
-            });
-            renderLogEvents();
-        }
-    } else if (funcName === 'severTether') {
-        const id = args[0];
-        const node = tetherNodes.find(n => n.sessionId === id);
-        tetherNodes = tetherNodes.filter(n => n.sessionId !== id);
-        renderTetherNodes();
-        renderWidgetNodes();
-        
-        logEvents.push({
-            type: 'WARNING',
-            timestamp: Date.now(),
-            message: `Severed active tether node: ${node ? node.sessionName : id}`
-        });
-        renderLogEvents();
-    } else if (funcName === 'ingestManualFile') {
-        const name = args[0];
-        const content = args[1];
-        ingressFiles.push({
-            name: name,
-            content: content
-        });
-        renderIngressFiles();
-        
-        logEvents.push({
-            type: 'ROUTING',
-            timestamp: Date.now(),
-            message: `Ingested code file sandbox partition: ${name}`
-        });
-        renderLogEvents();
-    } else if (funcName === 'clearLogs') {
-        logEvents = [];
-        renderLogEvents();
-    } else if (funcName === 'simulateZipDrop') {
-        // Trigger the file input dialog
-        const input = document.getElementById('zipFileInput');
-        if (input) input.click();
-    } else if (funcName === 'simulateDragDropFile') {
-        const name = args[0];
-        const content = args[1];
-        ingressFiles.push({
-            name: name,
-            content: content
-        });
-        renderIngressFiles();
-        
-        logEvents.push({
-            type: 'ROUTING',
-            timestamp: Date.now(),
-            message: `Simulated drag & drop ingestion of ${name}`
-        });
-        renderLogEvents();
-        
-        isSpeaking = true;
-        currentUtterance = `Simulated drag-drop ingestion of ${name}. Check Ingress Sandbox.`;
-        document.getElementById('copilotUtterance').textContent = currentUtterance;
-    } else if (funcName === 'analyzeCodebaseGaps') {
-        discoveryLinks = [
-            { sourceUrl: 'Android UI / Jetpack Compose', requiredInformation: 'M3 scaffold structure and custom canvas wave rendering APIs.' },
-            { sourceUrl: 'Node Client Socket API', requiredInformation: 'Bi-directional text stream buffers and chunk frame schemas.' }
-        ];
-        renderDiscoveryLinks();
-        
-        logEvents.push({
-            type: 'INFO',
-            timestamp: Date.now(),
-            message: `Completed codebase gap analysis. Located 2 gaps in required structure.`
-        });
-        renderLogEvents();
-        
-        isSpeaking = true;
-        currentUtterance = `Located two critical API gaps on the discovery board. Run map reduce to resolve them.`;
-        document.getElementById('copilotUtterance').textContent = currentUtterance;
-    } else if (funcName === 'triggerMapReduce') {
-        const prompt = args[0];
-        consensusTasks = [
-            { operation: 'Analyze ' + (prompt.length > 20 ? prompt.substring(0, 20) + '...' : prompt), payloadSize: prompt.length, verified: false },
-            { operation: 'Verify Tether Bridge API', payloadSize: 256, verified: false }
-        ];
-        renderConsensusTasks();
-        
-        logEvents.push({
-            type: 'ROUTING',
-            timestamp: Date.now(),
-            message: `Triggered distributed map-reduce cluster with prompt: "${prompt}"`
-        });
-        renderLogEvents();
-        
-        isSpeaking = true;
-        currentUtterance = `Dispatched map-reduce queries to cluster nodes. Run Consensus Check to validate results.`;
-        document.getElementById('copilotUtterance').textContent = currentUtterance;
-    } else if (funcName === 'runConsensusValidation') {
-        if (consensusTasks.length === 0) {
-            isSpeaking = true;
-            currentUtterance = `No consensus tasks in the queue. Trigger a map-reduce action first.`;
-            document.getElementById('copilotUtterance').textContent = currentUtterance;
-            return;
-        }
-        consensusTasks.forEach(t => t.verified = true);
-        renderConsensusTasks();
-        
-        logEvents.push({
-            type: 'INFO',
-            timestamp: Date.now(),
-            message: `Consensus validation complete. All task structures successfully matched and verified!`
-        });
-        renderLogEvents();
-        
-        isSpeaking = true;
-        currentUtterance = `Consensus integrity checked. All models successfully matched and verified!`;
-        document.getElementById('copilotUtterance').textContent = currentUtterance;
-    }
-}
+// Native bridge operations are intentionally not simulated in browser-only mode.

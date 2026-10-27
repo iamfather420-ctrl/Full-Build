@@ -1,6 +1,6 @@
 import { SqliteStore } from '../database/SqliteStore';
 import { DurableStore } from '../database/DurableStore';
-import { UserContext } from '../auth/AuthService';
+import { AuthService, UserContext } from '../auth/AuthService';
 
 export class OrderLifecycleManager {
   private static instance: OrderLifecycleManager | null = null;
@@ -40,6 +40,11 @@ export class OrderLifecycleManager {
     const order = rawDb.get('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) {
       return { success: false, error: `Order [${orderId}] not found in SQLite store` };
+    }
+
+    const authorization = AuthService.getInstance().authorize(user, 'ORDER_TRANSITION', order.tenant_id);
+    if (!authorization.authorized) {
+      return { success: false, error: authorization.reason || 'BLOCKED: verified authorization required.' };
     }
 
     const currentStatus = order.status;

@@ -36,7 +36,6 @@ export class DurableStore {
       checkpoints: {}
     };
     this.load();
-    this.bootstrapRootData();
   }
 
   public static getInstance(): DurableStore {
@@ -48,37 +47,6 @@ export class DurableStore {
 
   public getState(): DurableState {
     return this.state;
-  }
-
-  private bootstrapRootData(): void {
-    if (Object.keys(this.state.tenants).length === 0) {
-      this.state.tenants['TENANT_ENTERPRISE_DEMO'] = {
-        id: 'TENANT_ENTERPRISE_DEMO',
-        name: 'Enterprise Showcase Tenant',
-        tier: 'ENTERPRISE',
-        isolated_storage_key: computeSha256('KEY_TENANT_ENTERPRISE_DEMO'),
-        created_at: Date.now(),
-        status: 'ACTIVE'
-      };
-      this.state.tenants['TENANT_SOVEREIGN_ROOT'] = {
-        id: 'TENANT_SOVEREIGN_ROOT',
-        name: 'Sovereign Protocol Core',
-        tier: 'ENTERPRISE',
-        isolated_storage_key: computeSha256('KEY_TENANT_SOVEREIGN_ROOT'),
-        created_at: Date.now(),
-        status: 'ACTIVE'
-      };
-    }
-    if (this.state.audit_chain.length === 0) {
-      this.appendAudit(
-        'TENANT_SOVEREIGN_ROOT',
-        'GENESIS_SENTINEL',
-        'SYSTEM_INITIALIZE',
-        'SYSTEM',
-        'SOLVEX_GENESIS',
-        { status: 'GENESIS_SEEDED', version: '1.0.0-PROD' }
-      );
-    }
   }
 
   public appendAudit(
@@ -114,25 +82,8 @@ export class DurableStore {
 
     this.state.audit_chain.push(record);
 
-    try {
-      const sqlite = SqliteStore.getInstance();
-      sqlite.insertRecord('audit_records', {
-        id: record.id,
-        tenant_id: record.tenant_id,
-        index_num: record.index_num,
-        timestamp: record.timestamp,
-        actor: record.actor,
-        action: record.action,
-        target_entity: record.target_entity,
-        target_id: record.target_id,
-        payload_hash: record.payload_hash,
-        previous_hash: record.previous_hash,
-        record_hash: record.record_hash,
-        signature: 'ED25519_HARDENED_SENTINEL',
-        status: 'SEALED'
-      });
-    } catch {}
-
+    // This chain is hash-linked but not digitally signed. Do not mark it sealed
+    // or write a fabricated signature into the SQLite audit table.
     this.persist();
     return record;
   }

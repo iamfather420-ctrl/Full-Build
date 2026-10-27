@@ -1,1 +1,0 @@
-{"rewrites":[{"source":"/bridge/status","destination":"/api/bridge"},{"source":"/bridge/receipt","destination":"/api/bridge"}]}

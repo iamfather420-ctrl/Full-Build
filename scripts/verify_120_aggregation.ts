@@ -5,6 +5,8 @@ import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { buildFormalEvidenceHashes } from '../src/proofs/formalEvidenceHash';
 import { System46Gates } from '../src/proofs/System46Gates';
+import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
+import { setDiskDbChecker } from '../src/tests/persistenceVerification';
 
 async function main() {
   console.log('================================================================');
@@ -138,6 +140,9 @@ async function main() {
   if (!fs.existsSync(artifactsDir)) fs.mkdirSync(artifactsDir, { recursive: true });
 
   // Execute the authoritative 46-gate truth-boundary suite before allowing brain activation.
+  // Inject the real filesystem/platform so the nested authoritative pipeline refreshes its own gate artifacts.
+  AuthoritativeVerificationPipeline.setNodePlatform({ execSync: cp.execSync, fs, path });
+  setDiskDbChecker((p: string) => fs.existsSync(p));
   const gatesReport = await System46Gates.getInstance().evaluateAll46Gates();
   fs.writeFileSync(path.join(artifactsDir, 'system-46-gates.json'), JSON.stringify(gatesReport, null, 2), 'utf8');
 

@@ -1,0 +1,16 @@
+# Archive provenance manifest
+
+The Daisy archive was split into part-00 and part-01 because the files were too large for direct transfer; Smash was used as the transfer method. A Smash package containing only part-00 does not establish the complete split archive.
+
+| Source | Link | Recorded contents | Status |
+| --- | --- | --- | --- |
+| TADA.zip | https://fromsmash.com/MzTZDszljz-ft | Reported 756 MB ZIP with 63 files, including `Full-Build-SAT-Witness-Fix-production-hardening.zip` and related SolveX / UAREFAKE / Daisy bundles | Verified as a historical transfer package; treated as source provenance only |
+| Smash package containing part-00 | https://fromsmash.com/YBKjTiquq2-ft | Reported `2 x 2.zip`, containing `Daisy-AI-OS-Complete-With-ISO.tar.part-00` | One transfer package, not the complete split source set |
+| Additional Smash transfer package | https://fromsmash.com/iy0orXgo0p-ft | Reported transfer package; contents not yet retrieved or validated in this workspace | Unverified; pending download, manifest check, and hash comparison |
+| Full-Build release | https://github.com/iamfather420-ctrl/Full-Build/releases/tag/v0.1.0-daisy-ai-os | Recorded assets: `Daisy-AI-OS-Complete-With-ISO.tar.part-00`, `Daisy-AI-OS-Complete-With-ISO.tar.part-01`, `Daisy-AI-OS-Complete-With-ISO.tar.sha256`, `README.txt` | Canonical release asset record for the split archive |
+
+## Reassembly and integrity
+
+The intended order is part-00 followed by part-01. The reported combined archive size is 2,415,636,480 bytes. To independently verify a local reconstruction, concatenate the exact two parts in order, then compare the resulting SHA256 against the release checksum.
+
+The working Git tree and the split ISO archive are distinct deliverables. Do not claim they are byte-for-byte equivalent without comparing their manifests and hashes.

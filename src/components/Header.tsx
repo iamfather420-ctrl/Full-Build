@@ -1,7 +1,6 @@
 import React from 'react';
 import { Shield, Key, Database, RefreshCw, Cpu, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { SovereignRole, UserContext } from '../auth/AuthService';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 
 interface HeaderProps {
   currentUser: UserContext;
@@ -34,16 +33,16 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold tracking-tight text-white text-lg">Project AGATE</span>
+              <span className="font-bold tracking-tight text-white text-lg">SOLVEX + Daisy Haminja AI/UI/OS</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">
-                SOVEREIGN CORE v1.0
+                READINESS PENDING
               </span>
             </div>
             <p className="text-xs text-slate-400 font-mono flex items-center gap-1.5">
-              <span>SOLVEX B2B Engine</span>
+              <span>SolveX B2B Solutions</span>
               <span>•</span>
               <span className="text-emerald-400 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3 inline" /> dAIsy haMINJA Active
+                <AlertTriangle className="w-3 h-3 inline" /> dAIsy haMINJA — readiness pending
               </span>
             </p>
           </div>

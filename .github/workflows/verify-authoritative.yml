@@ -6,24 +6,24 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      production_release:
+        description: 'Run protected production readiness checks (payments remain disabled)'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   verify:
     runs-on: ubuntu-latest
     # PR validation uses a non-production environment; production checks remain protected.
     environment:
-      name: ${{ github.event_name == 'pull_request' && 'ci' || 'production' }}
+      name: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       deployment: false
     env:
-      SOLVEX_ENV: production
+      SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
-      # This is deployment configuration, not a credential. Keep production explicitly pinned to Live.
-      PAYPAL_ACTIVE_ENVIRONMENT: live
-      PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
-      PAYPAL_SANDBOX_CLIENT_SECRET: ${{ secrets.PAYPAL_SANDBOX_CLIENT_SECRET }}
-      PAYPAL_LIVE_CLIENT_ID: ${{ secrets.PAYPAL_LIVE_CLIENT_ID }}
-      PAYPAL_LIVE_CLIENT_SECRET: ${{ secrets.PAYPAL_LIVE_CLIENT_SECRET }}
-      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     timeout-minutes: 30
 
@@ -45,17 +45,19 @@ jobs:
           npx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
 
+      - name: Verify fail-closed release safety
+        run: npm run verify:release-safety
+
+      - name: Verify payments remain disabled
+        run: npm run verify:payments-disabled
+
       - name: Production preflight
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch' && inputs.production_release
         run: npm run preflight
 
       - name: Production runtime wiring verification
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch' && inputs.production_release
         run: npm run verify:production-runtime
-
-      - name: PayPal dual-environment verification
-        if: env.PAYMENTS_ENABLED == 'true' && github.event_name != 'pull_request'
-        run: npm run verify:paypal
 
       - name: Type-check
         if: always()
@@ -106,6 +108,7 @@ jobs:
         if: always()
         env:
           EVENT_NAME: ${{ github.event_name }}
+          PRODUCTION_RELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'true' || 'false' }}
         run: |
           if [ ! -f artifacts/daisy-brain-activation-gate.json ]; then
             echo "Missing Daisy activation gate"
@@ -115,14 +118,18 @@ jobs:
             const g = require("./artifacts/daisy-brain-activation-gate.json");
             const corpusOk = g.corpus?.total_required === 120 && g.corpus?.executed === 120 && g.corpus?.deterministic_replays === 120 && g.corpus?.unknown === 0 && g.corpus?.errors === 0;
             if (!corpusOk) { console.error("DAISY BRAIN CORPUS ACCOUNTING FAILED", g); process.exit(1); }
-            if (process.env.EVENT_NAME === "pull_request") {
-              console.log("PR verification: formal corpus passed; production activation is evaluated only by the protected production run.");
+            if (process.env.PRODUCTION_RELEASE !== "true") {
+              console.log("Non-release verification: formal corpus passed; production activation remains gated and is not required for CI.");
               console.log("Current activation status:", g.status, "— not a production-readiness approval.");
             } else {
               if (g.status !== "ACTIVE") { console.error("PRODUCTION ACTIVATION GATE BLOCKED", g); process.exit(1); }
               console.log("PRODUCTION ACTIVATION GATE ACTIVE: all gates and 120-case corpus passed");
             }
           '
+
+      - name: Validate fresh formal and lifecycle evidence
+        if: success()
+        run: npm run verify:ci
 
       - name: Upload verification artifacts
         if: always()

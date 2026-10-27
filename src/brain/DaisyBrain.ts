@@ -15,7 +15,7 @@ export interface CompleteBrainState {
   environment: 'local' | 'sandbox' | 'production';
   architecture: string;
   status: string;
-  claim_scope: 'MODEL_VERIFIED' | 'LOCAL_VERIFIED' | 'SANDBOX_VERIFIED' | 'PRODUCTION_VERIFIED' | 'EXTERNAL_PROVIDER_REQUIRED';
+  claim_scope: 'MODEL_VERIFIED' | 'LOCAL_VERIFIED' | 'SANDBOX_VERIFIED' | 'PRODUCTION_VERIFIED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'BLOCKED';
   intelligence_nexus: {
     total_nodes: number;
     code_executed_nodes: number;
@@ -78,7 +78,7 @@ export interface CompleteBrainState {
     audit_chain_blocks: number;
     anti_tamper_monitor: string;
     anti_mock_attestation: string;
-    mock_patterns_detected: number;
+    mock_patterns_detected: number | null;
   };
   truth_pillars: {
     pillar_1_identity: string;
@@ -91,8 +91,8 @@ export interface CompleteBrainState {
 
 export class DaisyBrain {
   private static instance: DaisyBrain | null = null;
-  private verifiedDFRLCount: number = 88;
-  private verifiedReplayCount: number = 88;
+  private verifiedDFRLCount: number = 0;
+  private verifiedReplayCount: number = 0;
   private readonly reasoningKernel = new DaisyReasoningKernel();
 
   private constructor() {}
@@ -105,6 +105,32 @@ export class DaisyBrain {
   }
 
   public recordDFRLVerification(verifiedCount: number, replayCount: number): void {
+    // Counts are accepted only after the activation record carries a complete,
+    // fresh-shaped corpus/gate result. Missing or incomplete evidence resets to zero.
+    const evidence = DaisyActivationGate.read();
+    const corpus = evidence?.corpus;
+    const gates = evidence?.mandatory_gates;
+    const complete = evidence?.status === 'ACTIVE'
+      && corpus?.total_required === 120
+      && corpus?.dfrl_required === 88
+      && corpus?.dh_required === 32
+      && corpus?.executed === 120
+      && corpus?.deterministic_replays === 120
+      && corpus?.unknown === 0
+      && corpus?.errors === 0
+      && typeof gates?.total === 'number'
+      && gates.total > 0
+      && gates.passed === gates.total
+      && gates.failed === 0;
+    const validCounts = Number.isInteger(verifiedCount)
+      && Number.isInteger(replayCount)
+      && verifiedCount >= 0 && verifiedCount <= 88
+      && replayCount >= 0 && replayCount <= 88;
+    if (!complete || !validCounts) {
+      this.verifiedDFRLCount = 0;
+      this.verifiedReplayCount = 0;
+      return;
+    }
     this.verifiedDFRLCount = verifiedCount;
     this.verifiedReplayCount = replayCount;
   }
@@ -154,13 +180,13 @@ export class DaisyBrain {
     }
 
     // Dynamic relational tables count from SQLite master
-    let sqliteTableCount = 27;
+    let sqliteTableCount = 0;
     try {
       const db = SqliteStore.getInstance().getRawDb();
       const tables = db.all("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
       sqliteTableCount = tables.length;
     } catch {
-      sqliteTableCount = 27;
+      sqliteTableCount = 0;
     }
 
     const totalOps = REAL_88_PARADOX_REGISTRY.length;
@@ -168,11 +194,11 @@ export class DaisyBrain {
 
     return {
       core_engine: 'dAIsy haMINJA Autonomous Problem Solving & Formal Reasoning Brain',
-      version: `1.0.0-${env.toUpperCase()} (Project AGATE Sovereign Unified Core)`,
+      version: `1.0.0-${env.toUpperCase()} (SOLVEX + Daisy Haminja Sovereign Unified Core)`, 
       environment: env,
       architecture: 'Neural-Symbolic SMT Formal Verifier + 54-Node Sovereign Mesh',
-      status: brainActive ? brainClaimScope : 'EXTERNAL_PROVIDER_REQUIRED',
-      claim_scope: brainActive ? brainClaimScope : 'EXTERNAL_PROVIDER_REQUIRED',
+      status: brainActive ? brainClaimScope : 'BLOCKED',
+      claim_scope: brainActive ? brainClaimScope : 'BLOCKED',
       intelligence_nexus: {
         total_nodes: nodes.length,
         code_executed_nodes: nodes.filter(n => n.execution_mode === 'CODE_EXECUTED').length,
@@ -187,13 +213,13 @@ export class DaisyBrain {
         proof_bundles_sealed: Object.keys(durable.getState().proof_bundles).length
       },
       consensus_telemetry: {
-        network: ledger.network || 'Project-AGATE-Mainnet-Cluster',
+        network: ledger.network || 'UNVERIFIED',
         merkle_root: ledger.merkle_root,
         total_minted_supply_agate: ledger.Sovereign_Wallet_System.total_supply,
         total_burned_waste_kg: ledger.Sovereign_Wallet_System.burned_waste_kg_total,
         active_harvesters: ledger.Sovereign_Wallet_System.active_harvesters_count,
         confirmed_transactions: ledger.transactions.length,
-        canonical_ledger_status: 'PARITY_SYNCHRONIZED'
+        canonical_ledger_status: 'UNVERIFIED'
       },
       formal_reasoning: {
         prover_engine: 'Microsoft Research Z3 Automated Theorem Prover',
@@ -203,11 +229,11 @@ export class DaisyBrain {
         total_propositions: totalOps,
         formal_proof_rate: `${proofPct}% (${this.verifiedDFRLCount}/${totalOps} UNSAT Proved)`,
         deterministic_replays_matched: this.verifiedReplayCount,
-        claim_scope: 'MODEL_VERIFIED'
+        claim_scope: brainActive && this.verifiedDFRLCount === 88 && this.verifiedReplayCount === 88 ? 'MODEL_VERIFIED' : 'UNVERIFIED'
       },
       gateways_status: {
         paypal_dn35: {
-          status: hasPayPal ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
+          status: 'DISABLED',
           configured: hasPayPal,
           environment: ppCreds?.environment || 'sandbox',
           claim_scope: hasPayPal ? 'LOCAL' : 'LOCAL'
@@ -219,8 +245,8 @@ export class DaisyBrain {
           local_fallback_active: !hasNeon
         },
         escrow_dn38: {
-          status: 'CODE_EXECUTED',
-          mode: 'SOVEREIGN_SETTLEMENT_ESCROW_ENGINE',
+          status: 'BLOCKED',
+          mode: 'NOT_ENABLED_UNVERIFIED',
           claim_scope: 'LOCAL'
         },
         stripe_dn36: {
@@ -233,15 +259,15 @@ export class DaisyBrain {
         fail_closed_active: true,
         audit_chain_continuous: chainVerification.valid,
         audit_chain_blocks: durable.getState().audit_chain.length,
-        anti_tamper_monitor: 'ACTIVE_BYTE_SENTINEL',
-        anti_mock_attestation: `AUTHENTIC ${env.toUpperCase()} EXECUTION - DYNAMIC FAIL-CLOSED GUARDS ACTIVE`,
-        mock_patterns_detected: 0
+        anti_tamper_monitor: 'UNVERIFIED', 
+        anti_mock_attestation: 'UNVERIFIED: independent mock-pattern scan evidence is not connected',
+        mock_patterns_detected: null
       },
       truth_pillars: {
-        pillar_1_identity: 'Identity is a Right: Cryptographic anchor & hardware enclave tethered',
-        pillar_2_privacy: 'Privacy as Default: Zero-knowledge proofs & stealth address derivation',
-        pillar_3_financial_health: 'Financial Health as Requirement: 100% waste-backed mint rate (0.15 AGATE/kg)',
-        pillar_4_guardianship: 'Human Guardianship: Multi-sig emergency override with physical relay interlock'
+        pillar_1_identity: 'Human-controlled identity: authentication remains blocked until identity and recovery controls are verified',
+        pillar_2_privacy: 'Privacy by design: data sharing and telemetry require explicit authorization and verified controls',
+        pillar_3_financial_health: 'Financial safety: payment processing remains disabled until provider integration and authorization are verified',
+        pillar_4_guardianship: 'Human guardianship: consequential execution requires explicit authorization and fail-closed controls'
       },
       timestamp: Date.now()
     };

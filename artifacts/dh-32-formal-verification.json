@@ -1,7 +1,7 @@
 {
-  "execution_id": "dh_suite_1790883774548_x1etdi",
-  "timestamp": "2026-10-01T19:42:54.548Z",
-  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
+  "execution_id": "dh_suite_1792677310731_9y1pzl",
+  "timestamp": "2026-10-22T13:55:10.731Z",
+  "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
   "total_cases": 32,
   "total_records": 32,
   "attempted": 32,
@@ -19,7 +19,7 @@
   "solver_version": "Microsoft Research Z3 WASM 5.2.0",
   "claim_scope": "MODEL_VERIFIED_SUITE (32/32 FORMAL SMT CLOSURE)",
   "overall_status": "VERIFIED",
-  "verification_root_sha256": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+  "verification_root_sha256": "4e88a82f27813209437ad6bf2612186ae5ee0aa1c5587420e0b2ecf8c82fe0bc",
   "results": [
     {
       "case_id": "DH-P-001",
@@ -50,15 +50,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "11cbbe898d8930c0779b004a2d47e84d71e022f858e2174b047422582686c0e0",
-      "source_hash": "62ffb54061fd714cedc3bcbb2edc2df66ef43a8623ce2261e5ca5768cb1eb5cd",
+      "source_hash": "1f48be8b88d4ad22e0f1f4931639cce8a1b7a0fc1928b5866814fcb58be3217d",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "ccc80eb9816446a7f7064055a14fc01957d34611d0c41acb539a16686dd81938",
+      "evidence_hash": "8cca50ee3cdd025ecd7bfa77d8c633e7dfddf35ffd4e2638b0583646edc982d7",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:54.556Z",
-      "duration_ms": 1275.184
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:10.743Z",
+      "duration_ms": 980.896
     },
     {
       "case_id": "DH-P-002",
@@ -86,15 +86,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "e57b5a664e449ee019af13e219086b5392abe3bb6494c71e9887e6940b2b9aca",
-      "source_hash": "514467013564a7055458c7b96a2ab10ba39d7d3aafe14054dc4a0a1fc3bd95cf",
+      "source_hash": "bce5b1d6006d1606e248f4dc3df2be3fe52ee72d9ea0ae6f3c705e80da65ae6e",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "eac4fda623bd2fd006f43802032c7c476aa792d72499c0d709bfb1c92345c0d0",
+      "evidence_hash": "afc278c921f35599675245de36cf6303c108bbc70b2ff1fadf1cb591893fc02a",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:55.846Z",
-      "duration_ms": 55.815
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:11.739Z",
+      "duration_ms": 55.68
     },
     {
       "case_id": "DH-P-003",
@@ -121,15 +121,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "da0866677fc71b8dc198f40cd92ce35b688144cb085c40944bbb7f6ea56032a7",
-      "source_hash": "206bed5787915d3ffbfe28049b46b86eb3fee239b77c3199404622653fd4b00a",
+      "source_hash": "25ce3ac1aa0c4bd0602b0d7f201df3254f0b0ca2bf64fed26730c473de64ac41",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "5ce044335b4a1bf41c970d20c2b22a0fe6fa079e5ec5a7c97edecd74f3f7b7fd",
+      "evidence_hash": "fbe4a106516481d23da7b9f1698d1ec06e6aebd39f6f5fe6d0d8b2e22b3a3a47",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:55.914Z",
-      "duration_ms": 201.241
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:11.806Z",
+      "duration_ms": 189.637
     },
     {
       "case_id": "DH-P-004",
@@ -156,15 +156,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "d967d270daec400141778e8c311550bbbe32b4d13a4a8f84e22e3b90229a0da2",
-      "source_hash": "3cb8d768e956760a958e55859f2dd379e9ff2f85980e03838ef16360e4a62a02",
+      "source_hash": "0f39c663fae98d2054ac8b4e8c627977f009f15e19db72ad8c2d2bb394791ffe",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "e7b58970b208a2f3b262b03a5d0a83cee960a2469cdb905f2e4fbd3e0c25bec2",
+      "evidence_hash": "da4510d0abba9d615aa3c12956afe76f765c3b4d0d011f180da50d960c1e3249",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.126Z",
-      "duration_ms": 53.832
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:12.006Z",
+      "duration_ms": 52.82
     },
     {
       "case_id": "DH-P-005",
@@ -191,15 +191,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "1444541927213fe0a47e50341b0b0993e83e9123a90f1472ae7ad7385ee74b57",
-      "source_hash": "aa86eb0d40e182a9e08fd7f994cd9f952ee9a37018d7ae3f400de05046708f97",
+      "source_hash": "70a13806874b74e79bca85abdddb236b2a0ab8319a4da0cabdb3f63b8bad1cbf",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "710fceda8f0bf9b8e5f8989835404ba61f08687cb22b426803c9762df033181d",
+      "evidence_hash": "e71334521615664f94742dd4254ba3a1c440487be36f2b9aaddc912ec95aa10f",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.192Z",
-      "duration_ms": 97.869
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:12.072Z",
+      "duration_ms": 90.354
     },
     {
       "case_id": "DH-P-006",
@@ -226,15 +226,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "a173700761f6143292920de4c2e2d6540e8ca373c8fa7b6970f7c73c565c4503",
-      "source_hash": "45ae2b9b2eff82e57c1660aa2137e28130812ea2e40e511c974796c426b42a48",
+      "source_hash": "be1a2771a84e79c4e042adc6ae9d533daf4779cbb44f29c45adf9db7823ef189",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "df09135955c6bad23f339368a9d37550a03a4d7e9adab6950e2e6c3b2d360846",
+      "evidence_hash": "49d01ed48ca4cee72913ed54b4df87e9733a9b2e06a4d2125e6c12924cce1871",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.302Z",
-      "duration_ms": 72.695
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:12.174Z",
+      "duration_ms": 73.527
     },
     {
       "case_id": "DH-P-007",
@@ -262,15 +262,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "24a29ce7c8507e9ffafdd642c735346dc1dff2636f8d6e134f99393682fe4fce",
-      "source_hash": "c157569ff9a9ceb8b066c45e07780994cb7bd34d0ca54717badb0911951cd656",
+      "source_hash": "6971d1fd09ef4c92a1ec8b552c6957ddf30ce7b97caaa8ac390dc73a1179a5d9",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "ff2b566eabcd70d7bbfcaccee377eece7c51c71613d34759bca90efee3ab666c",
+      "evidence_hash": "46d370710fcb609d30011fa6187cbd54ee4e049af2825b1adae62f826be62e01",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.386Z",
-      "duration_ms": 101.997
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:12.262Z",
+      "duration_ms": 532.485
     },
     {
       "case_id": "DH-P-008",
@@ -297,15 +297,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "a6beaf2656ad9a746bd0453fc0729f8b39c119425a51307b502d54ceaa68b732",
-      "source_hash": "0fefd37276eec1c14592a1e361a87bb2d0f603e7481e17b3ff6fdcb72b8f378f",
+      "source_hash": "794a0a5b934b6d663d26fe0f26d780efaf2e603fcaa11daa3f065bc52d900686",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "256d2e8434106ce2dbc6061d73829c7fd36496e17d701e299f4a2409debc67cf",
+      "evidence_hash": "b702c5f2a8cf52e53f0c405dc482790f1d1f20951bd22b26704328a66e07dd96",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.501Z",
-      "duration_ms": 64.353
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:12.813Z",
+      "duration_ms": 55.586
     },
     {
       "case_id": "DH-P-009",
@@ -332,15 +332,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "bf95417e8343f7ed9d7b733661681784e90d2f826c3fe6ce225c70dc4b57cdf6",
-      "source_hash": "c5859bd73e5a876d04146868cbb1fd38d668ab4bd867ecc500193cbea4c3eaf4",
+      "source_hash": "6568ac432658ccc98236a102fb21e9f491674693fcc6a2f5c8b0574ee27624dd",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "71e86449ad0f5a871601f451c4360ebae26c2a799f6d50b2dbafabe8709b8391",
+      "evidence_hash": "0e29eac1b2373926fbe0a9a9fa9fd25bdfcb1ac2939fa50c3bd43c4d7fc42eb1",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.578Z",
-      "duration_ms": 54.521
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:12.880Z",
+      "duration_ms": 52.774
     },
     {
       "case_id": "DH-P-010",
@@ -369,15 +369,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "ad95adfc61c8efd12eb2599722350369e75eb9030936eb5b8fb8cf942e358fda",
-      "source_hash": "c48e00114c6398e597f07401c0319cdb19f1bd0ed81220a40398e2882d095e19",
+      "source_hash": "dc4d05b2d5637ff5b9f2eef10334cdab1f9166366bb0b52d6761a24915d01c10",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "8a73b3cdfb48960568b44cea0572dbff0ed4ba12d566effcad1319fa39cf88ed",
+      "evidence_hash": "021ab5b602d8e3c80223c127eba31e353149df822e0bd8a9d87f5c8b77dd8ea9",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.644Z",
-      "duration_ms": 54.253
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:12.945Z",
+      "duration_ms": 53.484
     },
     {
       "case_id": "DH-P-011",
@@ -405,15 +405,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "e3d2c1102687b713ad86dcc06dddf53e58204829e52700297a4b2e643a49a0ed",
-      "source_hash": "501735fdfadbb659fe04ede9d44ace273754873dcaf7f590a399a04ce527e183",
+      "source_hash": "22b6687d398df4ad295f7bfd7dda712a3099372c1609e4050a3ce14e470a9e1e",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "47d73c5ee4daf695c03070d1c97ea1416857f856e780ace95b9e2c5a6db1c0b9",
+      "evidence_hash": "fa3deb251e944baa415a2efdb0b52ff50b814e84acabe0b616572c49e00e986a",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.709Z",
-      "duration_ms": 76.348
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.009Z",
+      "duration_ms": 78.069
     },
     {
       "case_id": "DH-P-012",
@@ -440,15 +440,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "fcb9e2a3ecd72afe5db962dbd93e9efa69a8ba91ed0f0604b79465845c5835d4",
-      "source_hash": "6467ba837a71e9f7deb3e4e26fdc80159c9890ea3e83fcf4f531dc9f89e864aa",
+      "source_hash": "393976a2c51a3b71471b9daafdaa5c20d151ef60da74e7cff87a57d4c940e39f",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "479ce133453f4c91f7d3fc3583f2d9f20c8db295801b2efc0d842a51bfb53979",
+      "evidence_hash": "62b389a09e7879f13146491a4614fc54cd38a8099a23a97dbaaa7857b20cc1ac",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.797Z",
-      "duration_ms": 57.877
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.098Z",
+      "duration_ms": 57.836
     },
     {
       "case_id": "DH-P-013",
@@ -475,15 +475,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "bb14ed62d2fd065afeb5ea93916d203db6141550d800620108b719d9ab36563f",
-      "source_hash": "7a9e4e48cf7851f0bd1850bf29d1dc8b1258dd144c329384a77704a5fa916376",
+      "source_hash": "ec8a6aeb19bff02018fbc062a00580e8855ea5812173d0d4d7cfe98274bcac51",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "dfbfe8d3275a36862ca261390d40eb8b4816917ac607ac4808f6925271b43e32",
+      "evidence_hash": "2173f4a914a579e1652d7d477c34b0f6d5b74ec93f5d9f9f7a09def8f5fe121d",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.868Z",
-      "duration_ms": 56.667
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.170Z",
+      "duration_ms": 55.191
     },
     {
       "case_id": "DH-P-014",
@@ -510,15 +510,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "bba56eda9a3e749e64cfa2168cf1985487684c50aee0f38a76104521c62c649f",
-      "source_hash": "472454c6b060b6c713813f23f0f12407bda66e5cf412ab9d2283da14bd069e23",
+      "source_hash": "0dd76a9113006d4eae668bdb34d6ee2d6faf40d7b5ee7fa2cd5b092a963ee219",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "b07c618b8cc80945beca1cb6a2f98e0a390631b51bd5c289c14f799af8d5420f",
+      "evidence_hash": "b4686a28401028ca3064a7bf588973988c9f01d5f37893e27423576a9e689114",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:56.936Z",
-      "duration_ms": 72.775
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.238Z",
+      "duration_ms": 71.59
     },
     {
       "case_id": "DH-P-015",
@@ -545,15 +545,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "99185786a3125ffd76d24f39dd0c7679be2c6030ea15e5a71c0649213cbab416",
-      "source_hash": "182698982fcb83e4132b71f2e0e6638955e397d94b36b2cbd25a768e66ee5c3d",
+      "source_hash": "5ac1d718c5e9982005b932ef341dca1353e47e7090945175a58a174cab6aae96",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "a583067f97ede4e82505a500e52eca1ef8e2d40512d972c31ca31a70648e1f3f",
+      "evidence_hash": "489d61e9a4e916ad5b2df06f49c77e022e5d23028b263db795ca85e2d31045cd",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.020Z",
-      "duration_ms": 56.437
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.322Z",
+      "duration_ms": 53.461
     },
     {
       "case_id": "DH-P-016",
@@ -580,15 +580,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "475cf3deb254afc74f21129f5934c6d7beab88f0684b16622957af988d1c1d74",
-      "source_hash": "8df37f38634bab21a6a67945f1677a1c0b5e20bca0a98bd04ca783c38912efff",
+      "source_hash": "4bb297e59b138ec2cf44e6866f800e21094f92361d61018eea84d61b95e3328c",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "7822e796621b8633566beee4ebccf5f90179d023ec83c1526cf85533098da073",
+      "evidence_hash": "78601a00aba76a0d320d0aa5999d98c1a2a5f6ff74b9f321b3646791bc43b604",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.090Z",
-      "duration_ms": 56.735
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.389Z",
+      "duration_ms": 59.027
     },
     {
       "case_id": "DH-P-017",
@@ -615,15 +615,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "0cb4feaf01b7a3874fdd803967f9dbd96ebdc507743fc1aeb3c045be9717fed1",
-      "source_hash": "14e45677e7688c6a43a142dfd20cc9ded61f1883911ee646e9f8aa265369cfe8",
+      "source_hash": "57bb6105cb92ee25daf55d59b9c3b25086958c729d7d1fd6869a37cc03a6f484",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "6371d0d0afab8eb5e62afab2029ed35e28130554b28e8b9ada1dca0937629aaf",
+      "evidence_hash": "6b2e43d78aeea09bfba7577979403ee7e8f882cf467c743c32acb84c3a5c9118",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.160Z",
-      "duration_ms": 56.39
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.460Z",
+      "duration_ms": 55.871
     },
     {
       "case_id": "DH-P-018",
@@ -652,15 +652,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "2efcdaf25b4077028e29b0a748d91f2fb1f15eb84fc69daae35c432ad9a67609",
-      "source_hash": "56c329a17bdce1f776027467e8626dcf4997a1346f44a3e46b8e28602a7e71dd",
+      "source_hash": "ba15f04db1a4a2e5422579338cf1b0722688aeec93a62744da0c53ac7115da81",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "1518ebd4a83fa59b002160037bdeaa6062b2bc6f34d24cf4f881283ca4d272f0",
+      "evidence_hash": "801a2c199805917c7cde6447f7fcee7e623e1781eb54b614518dbde39af24b1b",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.229Z",
-      "duration_ms": 69.321
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.526Z",
+      "duration_ms": 67.854
     },
     {
       "case_id": "DH-P-019",
@@ -687,15 +687,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "0c362edf28c66e138237c5b7c23653c31af3ac5a9d94e80eec789e956aefff9d",
-      "source_hash": "aad195fe57b670a87b3d24c45f1f919f4ca97e84ac65d9456ff412dda3d21d18",
+      "source_hash": "3f0fd2fd58a73e03fef66f123c29fa7b4d073a7f96a59d9c048ec9940d6ea731",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "416d8274fd682f356bc77eb0c2d3f20abc6e006eb52b522bd62c99b394044e5b",
+      "evidence_hash": "875903e631e7e13e7a79bcb9a108996013eae40070e1d3907aa3ee2694100d52",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.315Z",
-      "duration_ms": 69.765
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.607Z",
+      "duration_ms": 66.913
     },
     {
       "case_id": "DH-P-020",
@@ -723,15 +723,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "93903a9ec447542a4f47c8432c648e7ddbd38bb30c3a9402f188c0a9c8b91288",
-      "source_hash": "89164839a3d2d48092d272014a9cc3a841d6da1c48d904b808e1210678e36986",
+      "source_hash": "f6d310142b7604509defda6cf5f475713b276dc6687d10b092eed501cd15bad9",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "ae7ad138566162ce524a8f5c742d74d8862e8efa0607d1057770f843f2ae1c7d",
+      "evidence_hash": "3076f42d2c531e06a4d7a04b3944fb9c4e136b20105ba377ad5a002d8f0fd23f",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.397Z",
-      "duration_ms": 57.776
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.687Z",
+      "duration_ms": 58.868
     },
     {
       "case_id": "DH-P-021",
@@ -759,15 +759,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "85d7ee8c3e3bc69eacae3509c3bc58ba51a31b33cc82d216bd66a6a1f1763cb5",
-      "source_hash": "81f863f446fb8c8c321b4924116576945a363dd837fafab5077282f7d17de722",
+      "source_hash": "995731d82ce75793863547ed15f8439a9b61e6a708f846cd359dc26426572510",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "5117fd5ffb4258fe97f96490a92751b6cbb8f278d8d0c5daf2b23004216dfe51",
+      "evidence_hash": "9b3af169c673be5f961a470f3fbecd7d3d29946d85b7b7a10356a0f043b66cfd",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.466Z",
-      "duration_ms": 62.933
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.759Z",
+      "duration_ms": 62.05
     },
     {
       "case_id": "DH-P-022",
@@ -794,15 +794,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "cdeb57d2b4c688078255425810aa6257ebbfa4b69191e76141d68045c48c0575",
-      "source_hash": "d158fc747f4a8a02b1cfb188dc6863828a7ed0e0c3b1a230ce3273023001d29a",
+      "source_hash": "6e8a8a2b67ec90fa1af2b8503d103375e2b876e372b9aebee79dd0a3283cb426",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "6ce11d16f80798a16e61da8eb3163d5ce06f54fe6df08703751b065f7088a4dc",
+      "evidence_hash": "127c0ed4979150ae807d8930267c9386aed2864e0c404ff5e746da34a26ada50",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.540Z",
-      "duration_ms": 61.52
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.833Z",
+      "duration_ms": 58.646
     },
     {
       "case_id": "DH-P-023",
@@ -831,15 +831,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "b9b7139c39910bd1ce09cd90f6c52b7eb4be64aa1277e0eebd7eb281ae9d8dbb",
-      "source_hash": "540f1b1521add3c99a8e50e5e17376add711b0643ab19dc79a32be3ec581dde1",
+      "source_hash": "8d559f221dd87ed914b953e22c28e8ef03035e8504aa10a6153bdeaeafb82822",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "eb9cda105bd68dd3de0d316b8c32ed550245fe1e43a3567b53fb8ae6d914d750",
+      "evidence_hash": "8ccd4bdeda128490c72ac684a5e2d21b3700469f51a3de305d5ffedaf9fe7110",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.614Z",
-      "duration_ms": 55.036
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.904Z",
+      "duration_ms": 54.204
     },
     {
       "case_id": "DH-P-024",
@@ -867,15 +867,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "55cb367b04bdae2ad8aa26ec0599d243a221c5f854674132127b4015613cc3ae",
-      "source_hash": "8a402c1c6e1f2393ff2b36ba22bbe5be61d92c8e8aa9fadbfcbbbf62b72164c9",
+      "source_hash": "3ed6fd698bd9ccfbbaad2377e0301071859936b281e5f2014ac0701b6ef0c631",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "0de5226c0c6b70c05d31e125b063fac428747bfa5435fc3fcb4dffa3387e95a6",
+      "evidence_hash": "d4abaaf5e91e8291ad4ae302e53a1f4cdf7e1a92136181c22b11f5d82e12b4ca",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.682Z",
-      "duration_ms": 57.242
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:13.969Z",
+      "duration_ms": 57.059
     },
     {
       "case_id": "DH-P-025",
@@ -903,15 +903,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "6e5b8c801a5368abb1cf45ef1a391c24eb89bb2cc7f806e539b543fedfcf2c2b",
-      "source_hash": "4de3608bdf61f445544e51f12e36f8f2103c83aadd5f87a60dcde52e9916c58e",
+      "source_hash": "ad5558041230a436f00b08f004b06c8e5d8355f8dc1ee2891a5dfcdfef87bc75",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "924806afdea81d16f671af7b2b094114d935af4716f4d448fc1ac6647932cdb9",
+      "evidence_hash": "f3726d067c44692b760fad4d9495281f02bc4d8044bd78a9f612be1f40626b2a",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.752Z",
-      "duration_ms": 91.309
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.039Z",
+      "duration_ms": 91.811
     },
     {
       "case_id": "DH-P-026",
@@ -940,15 +940,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "43a1a50ebcc0ebf2a24c92859cd5efc91bd87935b8051e5120e777b34de3c0af",
-      "source_hash": "1fc4a644fb25ced4d40635c9c976a976cfd1670be7399c8834b4e12a421a8b91",
+      "source_hash": "58230719cb3bd38f46a4b7215f65c839de4cc49875637d83455eb543c1ab970c",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "5cbab69a7da7e9109a9745446d2fa8686f4d82f298c324f16981b9eecf7bf402",
+      "evidence_hash": "fa3c261aaf1434cdbabd58050e9463feff5cabeec1cc1a8e49d1542306373e5d",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.855Z",
-      "duration_ms": 63.426
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.141Z",
+      "duration_ms": 57.446
     },
     {
       "case_id": "DH-P-027",
@@ -975,15 +975,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "2eb36164861517004876d93b0d5438fb84a50026d22e243b1a0e1b25fea6d421",
-      "source_hash": "92792d52bff0625d32f2c31954879f052ba5ead20d477dd4694485f599053fbc",
+      "source_hash": "75b7a723dbe5dbb7d5031e56935ebc2895e52431d1e306fd5d595e2134f61e55",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "3c9630fc04e14c27ab97439c59c62dbe6c5ee34933e67281465aa38e5345ed81",
+      "evidence_hash": "e95cf4ec491f31ddb68edfb31038acc705a7ce36537d2834f52e4d10d4cbebc7",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:57.932Z",
-      "duration_ms": 54.739
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.215Z",
+      "duration_ms": 57.465
     },
     {
       "case_id": "DH-P-028",
@@ -1010,15 +1010,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "acb025e96d36d019a933b0e94de9bb43d2e2b96065ab7aecea558c055c6710d4",
-      "source_hash": "781cb88a8433b8cb17bf630532fe1e49b8fe11518b9fab424343a40418c8c800",
+      "source_hash": "bf90b4be4607f2c30ce0899cb622788bfed080cdc2e80885cfb239e43f7b4e7a",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "6a818c9524c66ea794c3d091ca209d4e07688aaecabdd548c85de0d575aa7439",
+      "evidence_hash": "ca42629f9e347c89c41ea240d9dd7b44d19f4438a43ee559c372636c8d10e3e8",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:58.000Z",
-      "duration_ms": 59.296
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.283Z",
+      "duration_ms": 57.787
     },
     {
       "case_id": "DH-P-029",
@@ -1045,15 +1045,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "ec382a18aba53784d9a386ef7c9f196b6af81e6431c6d3f2b1ddd1dc6cb8ce19",
-      "source_hash": "ef549d903a57cb3898bbf3bfdd2fa360ff101f22714bbdf3e6a9a93d158e886d",
+      "source_hash": "606cdd4bacf6ff55ccd35429cb4abdc40f54048764500e5c5b6ec464a6952a17",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "945d507c1e34c5cde25d6a73c78296895295a9947df8027f9fd76b45f696a684",
+      "evidence_hash": "7b19918761b332fb7f93d64b23a827428a541f5dbe761d3e4b2c3df7d2d5a6cd",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:58.071Z",
-      "duration_ms": 58.826
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.352Z",
+      "duration_ms": 64.583
     },
     {
       "case_id": "DH-P-030",
@@ -1080,15 +1080,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "c64b34e1c669d03a45e492dbc3abf3883fade37ceeeefc5cce92ec1817ece36a",
-      "source_hash": "c04e60aae049b2a3a5dce48a72f65bd71b9eaaaf15e876d959d4f73b2da8c362",
+      "source_hash": "59b4dcc819e1192ed653b0a21f36ed8fb0d24e6de016aaab282701af4c4b7989",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "62b6a46ab12bd9ec8b8bd02d86e7f8775b4028a83d2a229703f39543ee7792ad",
+      "evidence_hash": "9c264b8473dbf4e8f5f4033ca1745ca04501dd2b562167c910c7ab51b240e8ce",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:58.141Z",
-      "duration_ms": 59.996
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.428Z",
+      "duration_ms": 60.19
     },
     {
       "case_id": "DH-P-031",
@@ -1115,15 +1115,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "53977fafacb5eb31d35827d04b064e82c5ab2d2cf6f6fdf41ad6ec9c162b5c48",
-      "source_hash": "f00a9337c08219b63228fdc90cebc0562b6e0f2c809844b0d69c23c4e54f0895",
+      "source_hash": "b1186009d3d492cdbdfe5852687854220accf5f3aec24e1a88ce55224a4004b6",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "56f717a79f90a168a3bc7a4fa30c6389796bcf6e71f38e62980d9942b9fb4c10",
+      "evidence_hash": "4a756ff5ddebf97be04268eacf95d265915a843912cf71cd0c79e83e855a86c4",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:58.213Z",
-      "duration_ms": 58.323
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.499Z",
+      "duration_ms": 57.224
     },
     {
       "case_id": "DH-P-032",
@@ -1151,15 +1151,15 @@
       "solver": "z3-wasm",
       "solver_version": "Microsoft Research Z3 WASM 5.2.0",
       "contract_hash": "29ecbd0fc23699ebf606ad5d9226f11cdd51767515053b32f2ca52e7fd5770c8",
-      "source_hash": "1f3e556ee182213af0907ca99979be9db5c46f7670f33258152b6611912106d9",
+      "source_hash": "60b3b6e2820ee9a2e8e46f519174e08cdb99f617a7cfca4e64017572b25bedef",
       "source_content_hash": "acacd64e3e442ee8be0f69d24bcfe82a6f2513d4fa952e32491397db7a0270f3",
-      "evidence_hash": "a44d4a7dd8e22cc8aeb11f6f2d29989a60afdd61782a6974f76cb0075b775672",
+      "evidence_hash": "8c094a6af285e6dde9a3dc8cedafe6d01b6d811f3ca048b6b27a78295b00fd53",
       "evidence_integrity": "PASS",
       "source_integrity": "PASS",
-      "execution_id": "dh_suite_1790883774548_x1etdi",
-      "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-      "timestamp": "2026-10-01T19:42:58.282Z",
-      "duration_ms": 69.371
+      "execution_id": "dh_suite_1792677310731_9y1pzl",
+      "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+      "timestamp": "2026-10-22T13:55:14.567Z",
+      "duration_ms": 86.456
     }
   ],
   "replays": [
@@ -1169,10 +1169,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "ccc80eb9816446a7f7064055a14fc01957d34611d0c41acb539a16686dd81938",
-      "replay_evidence_hash": "96252b4334b4b5cefb05f260089e25af470fd34e3e411671233bc09d4ccbacd5",
-      "cleanroom_context_id": "dh_replay_DH-P-001_1790883775462_ynd3",
-      "timestamp": "2026-10-01T19:42:54.556Z"
+      "original_evidence_hash": "8cca50ee3cdd025ecd7bfa77d8c633e7dfddf35ffd4e2638b0583646edc982d7",
+      "replay_evidence_hash": "b85d8a9b62b494ac01ee247518b3234cd3317ceab9037c1c259d8c2cb97f6db0",
+      "cleanroom_context_id": "dh_replay_DH-P-001_1792677311707_sfu1",
+      "timestamp": "2026-10-22T13:55:10.743Z"
     },
     {
       "case_id": "DH-P-002",
@@ -1180,10 +1180,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "eac4fda623bd2fd006f43802032c7c476aa792d72499c0d709bfb1c92345c0d0",
-      "replay_evidence_hash": "7eee809dc234a56bc1b30d727bd25f1b269ccddf4faec329272558deea10d0ce",
-      "cleanroom_context_id": "dh_replay_DH-P-002_1790883775887_7ibo",
-      "timestamp": "2026-10-01T19:42:55.846Z"
+      "original_evidence_hash": "afc278c921f35599675245de36cf6303c108bbc70b2ff1fadf1cb591893fc02a",
+      "replay_evidence_hash": "381e9937eb3d0991663786ddefdfac01b2eeaa4f99167666e4c6c734d36eac42",
+      "cleanroom_context_id": "dh_replay_DH-P-002_1792677311778_2042",
+      "timestamp": "2026-10-22T13:55:11.739Z"
     },
     {
       "case_id": "DH-P-003",
@@ -1191,10 +1191,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "5ce044335b4a1bf41c970d20c2b22a0fe6fa079e5ec5a7c97edecd74f3f7b7fd",
-      "replay_evidence_hash": "3cf4d2f4e3d23e600df3d420bdc517de68e6eb6a6a81a48af12146703710eb22",
-      "cleanroom_context_id": "dh_replay_DH-P-003_1790883776074_f4t4",
-      "timestamp": "2026-10-01T19:42:55.914Z"
+      "original_evidence_hash": "fbe4a106516481d23da7b9f1698d1ec06e6aebd39f6f5fe6d0d8b2e22b3a3a47",
+      "replay_evidence_hash": "3c5a5ea646cdee237d4c7faf36967cd31a62fba124edaeb83a42d6c06ba3a004",
+      "cleanroom_context_id": "dh_replay_DH-P-003_1792677311959_gmg1",
+      "timestamp": "2026-10-22T13:55:11.806Z"
     },
     {
       "case_id": "DH-P-004",
@@ -1202,10 +1202,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "e7b58970b208a2f3b262b03a5d0a83cee960a2469cdb905f2e4fbd3e0c25bec2",
-      "replay_evidence_hash": "4d92739eeefe00cd123a6017a14bf99d50e980595dfb09de96f467d9a15c8a52",
-      "cleanroom_context_id": "dh_replay_DH-P-004_1790883776166_nz5h",
-      "timestamp": "2026-10-01T19:42:56.126Z"
+      "original_evidence_hash": "da4510d0abba9d615aa3c12956afe76f765c3b4d0d011f180da50d960c1e3249",
+      "replay_evidence_hash": "042122c64ff7b6c06acfaa4c6f35036f1d9cc51147d998dd27c858a125b0a1f9",
+      "cleanroom_context_id": "dh_replay_DH-P-004_1792677312046_rjk2",
+      "timestamp": "2026-10-22T13:55:12.006Z"
     },
     {
       "case_id": "DH-P-005",
@@ -1213,10 +1213,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "710fceda8f0bf9b8e5f8989835404ba61f08687cb22b426803c9762df033181d",
-      "replay_evidence_hash": "440ff526beb1440fd1d7bdbf58f26b0e081c7a6c3152db4197405c5bf3fe5f90",
-      "cleanroom_context_id": "dh_replay_DH-P-005_1790883776258_517v",
-      "timestamp": "2026-10-01T19:42:56.192Z"
+      "original_evidence_hash": "e71334521615664f94742dd4254ba3a1c440487be36f2b9aaddc912ec95aa10f",
+      "replay_evidence_hash": "04c513350909cce2bfd2a38e45826198fe56a40ffadfbf29a1c27eb681c86ecd",
+      "cleanroom_context_id": "dh_replay_DH-P-005_1792677312130_mwo4",
+      "timestamp": "2026-10-22T13:55:12.072Z"
     },
     {
       "case_id": "DH-P-006",
@@ -1224,10 +1224,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "df09135955c6bad23f339368a9d37550a03a4d7e9adab6950e2e6c3b2d360846",
-      "replay_evidence_hash": "48f708eb178a69f8aa2069823de62dde915dd686af2e4bd4351744bc246d70da",
-      "cleanroom_context_id": "dh_replay_DH-P-006_1790883776359_a1fh",
-      "timestamp": "2026-10-01T19:42:56.302Z"
+      "original_evidence_hash": "49d01ed48ca4cee72913ed54b4df87e9733a9b2e06a4d2125e6c12924cce1871",
+      "replay_evidence_hash": "5bd28a3eef4fbcfd7708262eeee8c784ec965e6d1d0f9150a97b7acb01ce5c77",
+      "cleanroom_context_id": "dh_replay_DH-P-006_1792677312231_qv5a",
+      "timestamp": "2026-10-22T13:55:12.174Z"
     },
     {
       "case_id": "DH-P-007",
@@ -1235,10 +1235,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "ff2b566eabcd70d7bbfcaccee377eece7c51c71613d34759bca90efee3ab666c",
-      "replay_evidence_hash": "f7123232a9a2dbb54b3cdd00f7467f7f56d8c0a05e7b4ea9379ebd041f6bfa7a",
-      "cleanroom_context_id": "dh_replay_DH-P-007_1790883776455_tmuo",
-      "timestamp": "2026-10-01T19:42:56.386Z"
+      "original_evidence_hash": "46d370710fcb609d30011fa6187cbd54ee4e049af2825b1adae62f826be62e01",
+      "replay_evidence_hash": "28e4778508c6d3a6ddfa7f80c59955dc11e452e260edbf652b30bfa83595dd1c",
+      "cleanroom_context_id": "dh_replay_DH-P-007_1792677312772_uwjo",
+      "timestamp": "2026-10-22T13:55:12.262Z"
     },
     {
       "case_id": "DH-P-008",
@@ -1246,10 +1246,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "256d2e8434106ce2dbc6061d73829c7fd36496e17d701e299f4a2409debc67cf",
-      "replay_evidence_hash": "0e4c1af613ec3d362989e161467bf4b756958bae81e672eed231daa647c14ddd",
-      "cleanroom_context_id": "dh_replay_DH-P-008_1790883776546_5xhy",
-      "timestamp": "2026-10-01T19:42:56.501Z"
+      "original_evidence_hash": "b702c5f2a8cf52e53f0c405dc482790f1d1f20951bd22b26704328a66e07dd96",
+      "replay_evidence_hash": "2a2b19b4f687ec5115d37d6ed47480bd493922fb891d803aa416280ebfbe2c02",
+      "cleanroom_context_id": "dh_replay_DH-P-008_1792677312852_anyj",
+      "timestamp": "2026-10-22T13:55:12.813Z"
     },
     {
       "case_id": "DH-P-009",
@@ -1257,10 +1257,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "71e86449ad0f5a871601f451c4360ebae26c2a799f6d50b2dbafabe8709b8391",
-      "replay_evidence_hash": "b640ad1728b8a38917bf46f5aee8489a3fb49ebaa12d18cc889bdf18facdb635",
-      "cleanroom_context_id": "dh_replay_DH-P-009_1790883776617_t516",
-      "timestamp": "2026-10-01T19:42:56.578Z"
+      "original_evidence_hash": "0e29eac1b2373926fbe0a9a9fa9fd25bdfcb1ac2939fa50c3bd43c4d7fc42eb1",
+      "replay_evidence_hash": "f7999061d3a48d13a2df17e20e4a5623b19aea6e0d553535519eaa482b0594c0",
+      "cleanroom_context_id": "dh_replay_DH-P-009_1792677312918_z0za",
+      "timestamp": "2026-10-22T13:55:12.880Z"
     },
     {
       "case_id": "DH-P-010",
@@ -1268,10 +1268,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "8a73b3cdfb48960568b44cea0572dbff0ed4ba12d566effcad1319fa39cf88ed",
-      "replay_evidence_hash": "2344e4175248b2da15bb48e4b1a2a444260ce4637d2ec5e10bb8c5588eb0ab33",
-      "cleanroom_context_id": "dh_replay_DH-P-010_1790883776682_08cp",
-      "timestamp": "2026-10-01T19:42:56.644Z"
+      "original_evidence_hash": "021ab5b602d8e3c80223c127eba31e353149df822e0bd8a9d87f5c8b77dd8ea9",
+      "replay_evidence_hash": "b7de46aea9a108913036ce02262340e4e3b2e49b950f6c673afb3904cf31694f",
+      "cleanroom_context_id": "dh_replay_DH-P-010_1792677312982_uopd",
+      "timestamp": "2026-10-22T13:55:12.945Z"
     },
     {
       "case_id": "DH-P-011",
@@ -1279,10 +1279,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "47d73c5ee4daf695c03070d1c97ea1416857f856e780ace95b9e2c5a6db1c0b9",
-      "replay_evidence_hash": "74e80cfe0fbd104f5945202adefeb6a7306dfcae079b46a59c09a08ec78e9c54",
-      "cleanroom_context_id": "dh_replay_DH-P-011_1790883776761_942y",
-      "timestamp": "2026-10-01T19:42:56.709Z"
+      "original_evidence_hash": "fa3deb251e944baa415a2efdb0b52ff50b814e84acabe0b616572c49e00e986a",
+      "replay_evidence_hash": "08f7da903d7109d4295b8d0c7540d0324a6a6db5ac2547fa00191718816ab02f",
+      "cleanroom_context_id": "dh_replay_DH-P-011_1792677313063_p961",
+      "timestamp": "2026-10-22T13:55:13.009Z"
     },
     {
       "case_id": "DH-P-012",
@@ -1290,10 +1290,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "479ce133453f4c91f7d3fc3583f2d9f20c8db295801b2efc0d842a51bfb53979",
-      "replay_evidence_hash": "a8883e0e5101acb2f07edd447ed8eeb92117a5f1b465660940d2912bafacba4a",
-      "cleanroom_context_id": "dh_replay_DH-P-012_1790883776840_dbfa",
-      "timestamp": "2026-10-01T19:42:56.797Z"
+      "original_evidence_hash": "62b389a09e7879f13146491a4614fc54cd38a8099a23a97dbaaa7857b20cc1ac",
+      "replay_evidence_hash": "cf1b24ae8691f8b4625a5af6136deee78a7333fcf2cec4245e145044d7aaf1f9",
+      "cleanroom_context_id": "dh_replay_DH-P-012_1792677313141_b1hb",
+      "timestamp": "2026-10-22T13:55:13.098Z"
     },
     {
       "case_id": "DH-P-013",
@@ -1301,10 +1301,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "dfbfe8d3275a36862ca261390d40eb8b4816917ac607ac4808f6925271b43e32",
-      "replay_evidence_hash": "e8710f51b9b7100da4ceb361505f1fc6b96bf1e6f67e91b3ece2e15be89ba339",
-      "cleanroom_context_id": "dh_replay_DH-P-013_1790883776908_1y5i",
-      "timestamp": "2026-10-01T19:42:56.868Z"
+      "original_evidence_hash": "2173f4a914a579e1652d7d477c34b0f6d5b74ec93f5d9f9f7a09def8f5fe121d",
+      "replay_evidence_hash": "c7f61a745eb06c10e1399185a8883746486687499c4203372e4a6c0551a251e7",
+      "cleanroom_context_id": "dh_replay_DH-P-013_1792677313212_8rxm",
+      "timestamp": "2026-10-22T13:55:13.170Z"
     },
     {
       "case_id": "DH-P-014",
@@ -1312,10 +1312,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "b07c618b8cc80945beca1cb6a2f98e0a390631b51bd5c289c14f799af8d5420f",
-      "replay_evidence_hash": "ee0fb69f105ef6949c8a98fe476f15268b56a320a0bdc1552c104cddeca68437",
-      "cleanroom_context_id": "dh_replay_DH-P-014_1790883776985_d6gp",
-      "timestamp": "2026-10-01T19:42:56.936Z"
+      "original_evidence_hash": "b4686a28401028ca3064a7bf588973988c9f01d5f37893e27423576a9e689114",
+      "replay_evidence_hash": "619d0526b02425fb73f275b78e91ac48bb282cd4dbef8926aca118af06d4f3f6",
+      "cleanroom_context_id": "dh_replay_DH-P-014_1792677313289_056o",
+      "timestamp": "2026-10-22T13:55:13.238Z"
     },
     {
       "case_id": "DH-P-015",
@@ -1323,10 +1323,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "a583067f97ede4e82505a500e52eca1ef8e2d40512d972c31ca31a70648e1f3f",
-      "replay_evidence_hash": "55c9adc139ee909ee5bd37f4071dab2440e6f5ab71d92d7f786de10ec99d8ab9",
-      "cleanroom_context_id": "dh_replay_DH-P-015_1790883777062_nr0i",
-      "timestamp": "2026-10-01T19:42:57.020Z"
+      "original_evidence_hash": "489d61e9a4e916ad5b2df06f49c77e022e5d23028b263db795ca85e2d31045cd",
+      "replay_evidence_hash": "45371b510546e6bca72ac00b2f7545aa661508ddc3cc03f4a2f9eb43316235bb",
+      "cleanroom_context_id": "dh_replay_DH-P-015_1792677313362_watb",
+      "timestamp": "2026-10-22T13:55:13.322Z"
     },
     {
       "case_id": "DH-P-016",
@@ -1334,10 +1334,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "7822e796621b8633566beee4ebccf5f90179d023ec83c1526cf85533098da073",
-      "replay_evidence_hash": "87e80527ba9c23cf878e82b042663a875accfa33420c8ffe24b7b339878a2b88",
-      "cleanroom_context_id": "dh_replay_DH-P-016_1790883777131_wtg7",
-      "timestamp": "2026-10-01T19:42:57.090Z"
+      "original_evidence_hash": "78601a00aba76a0d320d0aa5999d98c1a2a5f6ff74b9f321b3646791bc43b604",
+      "replay_evidence_hash": "84b78a9a0192503903258d43346cc087c50e8565a8544a8ad9c4c0034df29f2b",
+      "cleanroom_context_id": "dh_replay_DH-P-016_1792677313433_kren",
+      "timestamp": "2026-10-22T13:55:13.389Z"
     },
     {
       "case_id": "DH-P-017",
@@ -1345,10 +1345,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "6371d0d0afab8eb5e62afab2029ed35e28130554b28e8b9ada1dca0937629aaf",
-      "replay_evidence_hash": "3d43b87ce32ca055ac9205b4072a0f5c680e7c33caa38274c2cc90f47ee76c64",
-      "cleanroom_context_id": "dh_replay_DH-P-017_1790883777201_je92",
-      "timestamp": "2026-10-01T19:42:57.160Z"
+      "original_evidence_hash": "6b2e43d78aeea09bfba7577979403ee7e8f882cf467c743c32acb84c3a5c9118",
+      "replay_evidence_hash": "0c9e32087ed073fd1cfd1e945581c603905614ee1cfddb804b955cc6a55bf618",
+      "cleanroom_context_id": "dh_replay_DH-P-017_1792677313499_9ac2",
+      "timestamp": "2026-10-22T13:55:13.460Z"
     },
     {
       "case_id": "DH-P-018",
@@ -1356,10 +1356,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "1518ebd4a83fa59b002160037bdeaa6062b2bc6f34d24cf4f881283ca4d272f0",
-      "replay_evidence_hash": "fd547f5b5cf159ff996f01c24adffee4485d99c5eacc385e5141e703a71bb461",
-      "cleanroom_context_id": "dh_replay_DH-P-018_1790883777280_f89y",
-      "timestamp": "2026-10-01T19:42:57.229Z"
+      "original_evidence_hash": "801a2c199805917c7cde6447f7fcee7e623e1781eb54b614518dbde39af24b1b",
+      "replay_evidence_hash": "b78924a8c020c9c90d8701e413a412b84e5e799f39fb5ce6d192a8bb5e521c86",
+      "cleanroom_context_id": "dh_replay_DH-P-018_1792677313572_xruf",
+      "timestamp": "2026-10-22T13:55:13.526Z"
     },
     {
       "case_id": "DH-P-019",
@@ -1367,10 +1367,10 @@
       "original_result": "sat",
       "replay_result": "sat",
       "replay_match": true,
-      "original_evidence_hash": "416d8274fd682f356bc77eb0c2d3f20abc6e006eb52b522bd62c99b394044e5b",
-      "replay_evidence_hash": "3b63c61cbe11410b151157ee9001cc715110df70b08ac326f078c9e6418daf0e",
-      "cleanroom_context_id": "dh_replay_DH-P-019_1790883777366_b3s2",
-      "timestamp": "2026-10-01T19:42:57.315Z"
+      "original_evidence_hash": "875903e631e7e13e7a79bcb9a108996013eae40070e1d3907aa3ee2694100d52",
+      "replay_evidence_hash": "fba6f1212af625b1efb098f35878c01a8c5e0a49af8a481216134669da739c53",
+      "cleanroom_context_id": "dh_replay_DH-P-019_1792677313656_a02f",
+      "timestamp": "2026-10-22T13:55:13.607Z"
     },
     {
       "case_id": "DH-P-020",
@@ -1378,10 +1378,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "ae7ad138566162ce524a8f5c742d74d8862e8efa0607d1057770f843f2ae1c7d",
-      "replay_evidence_hash": "9bdc3146fa1bfee81651605b45e56efc5a8d4ff95d8f560a90cc4da04bd8f4b5",
-      "cleanroom_context_id": "dh_replay_DH-P-020_1790883777438_rx9k",
-      "timestamp": "2026-10-01T19:42:57.397Z"
+      "original_evidence_hash": "3076f42d2c531e06a4d7a04b3944fb9c4e136b20105ba377ad5a002d8f0fd23f",
+      "replay_evidence_hash": "22def0f1adbb67a18399780724ecdabf30919ba02d98cf95b1304bd059e40061",
+      "cleanroom_context_id": "dh_replay_DH-P-020_1792677313729_vff6",
+      "timestamp": "2026-10-22T13:55:13.687Z"
     },
     {
       "case_id": "DH-P-021",
@@ -1389,10 +1389,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "5117fd5ffb4258fe97f96490a92751b6cbb8f278d8d0c5daf2b23004216dfe51",
-      "replay_evidence_hash": "4baf31a859e1f045d47f51cbe0f3624d6eaaa5163022f494203c9d5b90481348",
-      "cleanroom_context_id": "dh_replay_DH-P-021_1790883777510_z9aw",
-      "timestamp": "2026-10-01T19:42:57.466Z"
+      "original_evidence_hash": "9b3af169c673be5f961a470f3fbecd7d3d29946d85b7b7a10356a0f043b66cfd",
+      "replay_evidence_hash": "877b902ff7143dfd7ecbf4a51f474502c86fa63585359f2ac3f768e85bf75536",
+      "cleanroom_context_id": "dh_replay_DH-P-021_1792677313803_7g5u",
+      "timestamp": "2026-10-22T13:55:13.759Z"
     },
     {
       "case_id": "DH-P-022",
@@ -1400,10 +1400,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "6ce11d16f80798a16e61da8eb3163d5ce06f54fe6df08703751b065f7088a4dc",
-      "replay_evidence_hash": "b27d6c2d97e32bed680c03f0af388cd780da0aa73ef00ff09840e15da70e4a40",
-      "cleanroom_context_id": "dh_replay_DH-P-022_1790883777582_xcmv",
-      "timestamp": "2026-10-01T19:42:57.540Z"
+      "original_evidence_hash": "127c0ed4979150ae807d8930267c9386aed2864e0c404ff5e746da34a26ada50",
+      "replay_evidence_hash": "6c22ba264f2cadd0538be9981d3bec65b69009463c98536f64279b8d46ceb76d",
+      "cleanroom_context_id": "dh_replay_DH-P-022_1792677313875_f4zw",
+      "timestamp": "2026-10-22T13:55:13.833Z"
     },
     {
       "case_id": "DH-P-023",
@@ -1411,10 +1411,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "eb9cda105bd68dd3de0d316b8c32ed550245fe1e43a3567b53fb8ae6d914d750",
-      "replay_evidence_hash": "7b2e8a79c467316495ca317c88b01d5658ba346d6ae66df5ddec2ec96d02aa87",
-      "cleanroom_context_id": "dh_replay_DH-P-023_1790883777655_xrr0",
-      "timestamp": "2026-10-01T19:42:57.614Z"
+      "original_evidence_hash": "8ccd4bdeda128490c72ac684a5e2d21b3700469f51a3de305d5ffedaf9fe7110",
+      "replay_evidence_hash": "0d999f58ebbc1b8c8453cf382e465d19c3d35fc5ad9908413ecb7ff26ed3e6dc",
+      "cleanroom_context_id": "dh_replay_DH-P-023_1792677313942_36rz",
+      "timestamp": "2026-10-22T13:55:13.904Z"
     },
     {
       "case_id": "DH-P-024",
@@ -1422,10 +1422,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "0de5226c0c6b70c05d31e125b063fac428747bfa5435fc3fcb4dffa3387e95a6",
-      "replay_evidence_hash": "ad7e32033e9427492aad86782d42e508806da5317c9d6ee02d2d61c3b2d3a301",
-      "cleanroom_context_id": "dh_replay_DH-P-024_1790883777721_9pd3",
-      "timestamp": "2026-10-01T19:42:57.682Z"
+      "original_evidence_hash": "d4abaaf5e91e8291ad4ae302e53a1f4cdf7e1a92136181c22b11f5d82e12b4ca",
+      "replay_evidence_hash": "dfa20cb3e878e0289924fb2db4b3c94358762b12cfdcbb4fe941e4fab8475823",
+      "cleanroom_context_id": "dh_replay_DH-P-024_1792677314010_7rjn",
+      "timestamp": "2026-10-22T13:55:13.969Z"
     },
     {
       "case_id": "DH-P-025",
@@ -1433,10 +1433,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "924806afdea81d16f671af7b2b094114d935af4716f4d448fc1ac6647932cdb9",
-      "replay_evidence_hash": "085e23cac5365b8b08abfd33a5d42b53d5afee4d4d8976f241368e016297885c",
-      "cleanroom_context_id": "dh_replay_DH-P-025_1790883777815_2mjh",
-      "timestamp": "2026-10-01T19:42:57.752Z"
+      "original_evidence_hash": "f3726d067c44692b760fad4d9495281f02bc4d8044bd78a9f612be1f40626b2a",
+      "replay_evidence_hash": "79711dfa3a2020a9d444bfd630a8ebfda18385abc71ad3c0ee855dc276336473",
+      "cleanroom_context_id": "dh_replay_DH-P-025_1792677314098_mfxk",
+      "timestamp": "2026-10-22T13:55:14.039Z"
     },
     {
       "case_id": "DH-P-026",
@@ -1444,10 +1444,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "5cbab69a7da7e9109a9745446d2fa8686f4d82f298c324f16981b9eecf7bf402",
-      "replay_evidence_hash": "1fd0afea18d557bde26b7a63ca44c4f4ae6d77cbb808a273a917bd371ee6a265",
-      "cleanroom_context_id": "dh_replay_DH-P-026_1790883777904_nyis",
-      "timestamp": "2026-10-01T19:42:57.855Z"
+      "original_evidence_hash": "fa3c261aaf1434cdbabd58050e9463feff5cabeec1cc1a8e49d1542306373e5d",
+      "replay_evidence_hash": "4a2336c04dae8d988b96325009275750cf57367581e774590768475099f055f9",
+      "cleanroom_context_id": "dh_replay_DH-P-026_1792677314187_3ru7",
+      "timestamp": "2026-10-22T13:55:14.141Z"
     },
     {
       "case_id": "DH-P-027",
@@ -1455,10 +1455,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "3c9630fc04e14c27ab97439c59c62dbe6c5ee34933e67281465aa38e5345ed81",
-      "replay_evidence_hash": "1915d6d4a5013da2cbc9223b4127013a8511853a32694a0c05912a615eee8ee8",
-      "cleanroom_context_id": "dh_replay_DH-P-027_1790883777973_mf4z",
-      "timestamp": "2026-10-01T19:42:57.932Z"
+      "original_evidence_hash": "e95cf4ec491f31ddb68edfb31038acc705a7ce36537d2834f52e4d10d4cbebc7",
+      "replay_evidence_hash": "9ad989136977e7693ba5df65422947f29a04ac8d2f607f571faa693da23d88d7",
+      "cleanroom_context_id": "dh_replay_DH-P-027_1792677314256_2deb",
+      "timestamp": "2026-10-22T13:55:14.215Z"
     },
     {
       "case_id": "DH-P-028",
@@ -1466,10 +1466,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "6a818c9524c66ea794c3d091ca209d4e07688aaecabdd548c85de0d575aa7439",
-      "replay_evidence_hash": "5fbcfdedf3ab0f3894c04902465328e2a9d0a00651a61c6b9287693f720726b8",
-      "cleanroom_context_id": "dh_replay_DH-P-028_1790883778039_8lja",
-      "timestamp": "2026-10-01T19:42:58.000Z"
+      "original_evidence_hash": "ca42629f9e347c89c41ea240d9dd7b44d19f4438a43ee559c372636c8d10e3e8",
+      "replay_evidence_hash": "443d0c3b8e0c02c3cf0952976a74634d4d67f2a88af1f313b42ab0806529e86f",
+      "cleanroom_context_id": "dh_replay_DH-P-028_1792677314322_xbxz",
+      "timestamp": "2026-10-22T13:55:14.283Z"
     },
     {
       "case_id": "DH-P-029",
@@ -1477,10 +1477,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "945d507c1e34c5cde25d6a73c78296895295a9947df8027f9fd76b45f696a684",
-      "replay_evidence_hash": "04e35b1e9dfdcfc20c47081abb47b0d3ba6adeb4f17de35c85d335f2c27a6a76",
-      "cleanroom_context_id": "dh_replay_DH-P-029_1790883778111_6wpx",
-      "timestamp": "2026-10-01T19:42:58.071Z"
+      "original_evidence_hash": "7b19918761b332fb7f93d64b23a827428a541f5dbe761d3e4b2c3df7d2d5a6cd",
+      "replay_evidence_hash": "de3f97e330990aca015e017f7f987207807d343686ecb1459a446ac2513c0906",
+      "cleanroom_context_id": "dh_replay_DH-P-029_1792677314395_jkdg",
+      "timestamp": "2026-10-22T13:55:14.352Z"
     },
     {
       "case_id": "DH-P-030",
@@ -1488,10 +1488,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "62b6a46ab12bd9ec8b8bd02d86e7f8775b4028a83d2a229703f39543ee7792ad",
-      "replay_evidence_hash": "cec86f66ec54d62bf24917f46c183e14985b6e6c13ca98aed3d478cf61312091",
-      "cleanroom_context_id": "dh_replay_DH-P-030_1790883778183_g34a",
-      "timestamp": "2026-10-01T19:42:58.141Z"
+      "original_evidence_hash": "9c264b8473dbf4e8f5f4033ca1745ca04501dd2b562167c910c7ab51b240e8ce",
+      "replay_evidence_hash": "ee937a0c7da7752175aed2a5da68e59334d0ff0f3bcce20714a5249e0ae1a695",
+      "cleanroom_context_id": "dh_replay_DH-P-030_1792677314469_dalm",
+      "timestamp": "2026-10-22T13:55:14.428Z"
     },
     {
       "case_id": "DH-P-031",
@@ -1499,10 +1499,10 @@
       "original_result": "sat",
       "replay_result": "sat",
       "replay_match": true,
-      "original_evidence_hash": "56f717a79f90a168a3bc7a4fa30c6389796bcf6e71f38e62980d9942b9fb4c10",
-      "replay_evidence_hash": "becdde71b7ebd2a495e3388e2ea17ddc7c9b2ef5b4352c15c6df08b8ab670f13",
-      "cleanroom_context_id": "dh_replay_DH-P-031_1790883778253_ayh4",
-      "timestamp": "2026-10-01T19:42:58.213Z"
+      "original_evidence_hash": "4a756ff5ddebf97be04268eacf95d265915a843912cf71cd0c79e83e855a86c4",
+      "replay_evidence_hash": "7d0e6637ff6bd5dc9e4af9a1195852d45c383e72d01ba183497275278345315c",
+      "cleanroom_context_id": "dh_replay_DH-P-031_1792677314538_ooub",
+      "timestamp": "2026-10-22T13:55:14.499Z"
     },
     {
       "case_id": "DH-P-032",
@@ -1510,10 +1510,10 @@
       "original_result": "unsat",
       "replay_result": "unsat",
       "replay_match": true,
-      "original_evidence_hash": "a44d4a7dd8e22cc8aeb11f6f2d29989a60afdd61782a6974f76cb0075b775672",
-      "replay_evidence_hash": "47213ff19b76bab3835110bb7867de235d1c81102ace8aeffaf3a695c9c099f6",
-      "cleanroom_context_id": "dh_replay_DH-P-032_1790883778328_qkgm",
-      "timestamp": "2026-10-01T19:42:58.282Z"
+      "original_evidence_hash": "8c094a6af285e6dde9a3dc8cedafe6d01b6d811f3ca048b6b27a78295b00fd53",
+      "replay_evidence_hash": "6aca959c0cdf1552e34cfdd30a8d922fe5fc3c3c6292ac4f09f853fbfc5a9aec",
+      "cleanroom_context_id": "dh_replay_DH-P-032_1792677314620_v06z",
+      "timestamp": "2026-10-22T13:55:14.567Z"
     }
   ],
   "reconciliation_table": [
@@ -1832,8 +1832,8 @@
   },
   "tamper_test": {
     "test_name": "DH Cryptographic Proof Manifest Tamper Detection",
-    "original_root_hash": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
-    "tampered_root_hash": "a1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+    "original_root_hash": "4e88a82f27813209437ad6bf2612186ae5ee0aa1c5587420e0b2ecf8c82fe0bc",
+    "tampered_root_hash": "ae88a82f27813209437ad6bf2612186ae5ee0aa1c5587420e0b2ecf8c82fe0bc",
     "alarm_triggered": true,
     "tamper_detected": true,
     "passed": true,

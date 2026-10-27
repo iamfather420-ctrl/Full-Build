@@ -1,0 +1,57 @@
+name: Validate GATE-11 (non-production only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: fix/neon-gate11-role-and-rls-audit-20261020
+
+      - name: Install PostgreSQL 18 client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl ca-certificates
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/postgresql.gpg
+          echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-18
+          echo "PG18_BIN=/usr/lib/postgresql/18/bin" >> "$GITHUB_ENV"
+
+      - name: Apply candidate and re-audit (non-production only)
+        env:
+          NEON_VALIDATION_URL: ${{ secrets.NEON_VALIDATION_URL }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${NEON_VALIDATION_URL:-}" ]]; then
+            echo "::error::NEON_VALIDATION_URL secret is required. This workflow refuses to use the production URL."
+            exit 1
+          fi
+          if [[ "$NEON_VALIDATION_URL" == "$NEON_DATABASE_URL" ]]; then
+            echo "::error::NEON_VALIDATION_URL must be a non-production branch URL, not the production secret."
+            exit 1
+          fi
+          PSQL="${PG18_BIN}/psql"
+          echo "Applying candidate on validation branch only..."
+          "$PSQL" "$NEON_VALIDATION_URL" -f scripts/neon-gate11-remediation-candidate.sql
+          echo "Re-running read-only audit..."
+          "$PSQL" "$NEON_VALIDATION_URL" -f scripts/neon-gate11-readonly-audit.sql -o /tmp/validation-audit.txt
+          cat /tmp/validation-audit.txt
+
+      - name: Upload validation audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate11-validation-audit-${{ github.run_id }}
+          path: /tmp/validation-audit.txt
+          retention-days: 7

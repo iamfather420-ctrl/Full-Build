@@ -1,8 +1,8 @@
 {
   "test_name": "Artifact Tamper Sentinel Monitor",
-  "original_hash": "6fb82ddef2c7ee72fc6d6fa7fb8e0fb40af45d501fa8239f687900be200d4d2f",
+  "original_hash": "bdf4a458cd8d663a9bf691b6d62ce56df231165d5103d8a5d320cee9b89a1780",
   "tampered_payload_snippet": "Modifying operator 0 solver_result to sat",
-  "tampered_hash": "b4eb697c3cb51c5ff755d9e8b3bfd2b1d5188e10d111a327d8d3acab062aa495",
+  "tampered_hash": "2256607a6217426e8800dcf1cd8b1295d6ba95ddfcc2973d7cafca7209aa3370",
   "tamper_detected": true,
   "passed": true,
   "alarm_triggered": true

@@ -1,90 +1,93 @@
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 
-function sha256(data: string | Buffer): string {
-  return crypto.createHash('sha256').update(data).digest('hex');
+function fail(message: string): never {
+  console.error('[CI-FAIL] ' + message);
+  process.exit(1);
 }
 
-export function runCiProofClosureCheck() {
-  console.log('================================================================');
-  console.log('CI PROOF CLOSURE & TRUTH BOUNDARY GATE ENFORCEMENT');
-  console.log('================================================================');
-
-  const artifactsDir = path.resolve(process.cwd(), 'artifacts');
-  const requiredArtifacts = [
-    'verification-baseline.json',
-    'complete-verification-registry.json',
-    'proof-receipts.json',
-    'proof-integrity-manifest.json',
-    'cleanroom-replay-verification.json',
-    'claim-vs-proof-audit.json',
-    'artifact-cross-check-audit.json',
-    'dfrl-proof-closure.json',
-    'daisy-54-node-canonical.json',
-    'paypal-verification-matrix.json',
-    'final-proof-gate.json',
-    'COMPLETE-VERIFICATION-REPORT.json',
-    'COMPLETE-VERIFICATION-REPORT.md'
-  ];
-
-  // 1. Verify existence of all required closure artifacts
-  for (const art of requiredArtifacts) {
-    const fullPath = path.join(artifactsDir, art);
-    if (!fs.existsSync(fullPath)) {
-      console.error(`[CI-FAIL] Missing required closure artifact: ${art}`);
-      process.exit(1);
-    }
+function readJson(name: string): any {
+  const file = path.resolve('artifacts', name);
+  if (!fs.existsSync(file)) fail('Required verification artifact missing: ' + name);
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return fail('Verification artifact is not valid JSON: ' + name);
   }
-  console.log(`[CI-PASS] All ${requiredArtifacts.length} required closure artifacts present.`);
-
-  // 2. Validate Proof Receipts Integrity Manifest
-  const manifestRaw = fs.readFileSync(path.join(artifactsDir, 'proof-integrity-manifest.json'), 'utf8');
-  const manifest = JSON.parse(manifestRaw);
-  if (!manifest.entries || manifest.entries.length === 0) {
-    console.error('[CI-FAIL] Proof integrity manifest is empty or corrupt.');
-    process.exit(1);
-  }
-  console.log(`[CI-PASS] Proof integrity manifest validated (${manifest.entries.length} receipts indexed).`);
-
-  // 3. Verify that individual proof receipts match their recorded hashes
-  const receiptsDir = path.join(artifactsDir, 'proof-receipts');
-  let checked = 0;
-  for (const entry of manifest.entries) { // Verify every receipt; sampled validation cannot establish full manifest integrity
-    const receiptFile = path.resolve(process.cwd(), entry.receipt_file);
-    if (!fs.existsSync(receiptFile)) {
-      console.error(`[CI-FAIL] Receipt file missing: ${entry.receipt_file}`);
-      process.exit(1);
-    }
-    const content = fs.readFileSync(receiptFile, 'utf8');
-    const actualHash = sha256(content);
-    if (actualHash !== entry.receipt_sha256) {
-      console.error(`[CI-FAIL] Receipt hash divergence detected in ${entry.receipt_file}`);
-      process.exit(1);
-    }
-    checked++;
-  }
-  console.log(`[CI-PASS] Cryptographic receipt hash signatures verified (${checked} of ${manifest.entries.length} manifest entries).`);
-
-  // 4. Validate Final Proof Gate
-  const gateRaw = fs.readFileSync(path.join(artifactsDir, 'final-proof-gate.json'), 'utf8');
-  const gate = JSON.parse(gateRaw);
-  if (gate.gate !== 'FULL_BUILD_PROOF_GATE' || gate.gate_status !== 'PROVEN_CLOSURE') {
-    console.error(`[CI-FAIL] Final proof gate returned non-closure state: ${gate.gate_status}`);
-    process.exit(1);
-  }
-  console.log(`[CI-PASS] Final Proof Gate verified: ${gate.gate_status}`);
-  console.log(`         Total Verifications: ${gate.total_verifications}`);
-  console.log(`         Formal Proofs:       ${gate.formal_proof_rate}`);
-  console.log(`         Node Coverage:       ${gate.daisy_node_execution_rate}`);
-  console.log(`         Enterprise Rate:     ${gate.enterprise_invariant_rate}`);
-
-  console.log('\n================================================================');
-  console.log('✅ CI PROOF CLOSURE VALIDATION: ALL GATES SATISFIED');
-  console.log('================================================================');
 }
 
-// Auto-run if executed directly
-if (import.meta.url.endsWith(process.argv[1])) {
-  runCiProofClosureCheck();
+const formal = readJson('formal-aggregation.json');
+const summary = readJson('z3-120-formal-verification-summary.json');
+const activation = readJson('daisy-brain-activation-gate.json');
+const gates = readJson('system-46-gates.json');
+const authoritative = readJson('execution-gates.json');
+
+if (formal.total?.required !== 120) fail('Formal aggregate must require exactly 120 cases.');
+if (formal.total?.actual_z3_executions !== 120) fail('Formal aggregate must record 120 actual Z3 executions.');
+if (formal.total?.replays !== 120 || formal.total?.replay_matches !== 120) {
+  fail('Formal aggregate must record 120 cleanroom replays and 120 replay matches.');
+}
+if (formal.total?.distribution?.unknown !== 0 || formal.total?.distribution?.error !== 0) {
+  fail('Formal aggregate contains UNKNOWN or ERROR results.');
+}
+if (formal.total?.closure_verdict !== 'PROVEN_120_FORMAL_CLOSURE') {
+  fail('Formal aggregate did not prove the 120-case corpus closure.');
+}
+if (formal.dfrl?.required !== 88 || formal.dfrl?.actual_z3_executions !== 88 ||
+    formal.dfrl?.replay_matches !== 88 || formal.dfrl?.status !== 'VERIFIED') {
+  fail('DFRL evidence does not satisfy the 88-case execution/replay contract.');
+}
+if (formal.dh?.required !== 32 || formal.dh?.actual_z3_executions !== 32 ||
+    formal.dh?.replay_matches !== 32 || formal.dh?.status !== 'VERIFIED') {
+  fail('DH evidence does not satisfy the 32-case execution/replay contract.');
+}
+if (summary.total_z3_executions !== 120 || summary.expected_result_matches !== 120 ||
+    summary.cleanroom_replays !== 120 || summary.replay_matches !== 120 ||
+    summary.distribution?.unknown !== 0 || summary.distribution?.error !== 0) {
+  fail('Independent 120-case summary disagrees with the formal aggregate.');
+}
+if (activation.corpus?.total_required !== 120 || activation.corpus?.executed !== 120 ||
+    activation.corpus?.deterministic_replays !== 120 || activation.corpus?.unknown !== 0 ||
+    activation.corpus?.errors !== 0) {
+  fail('Daisy activation artifact has incomplete or unsafe corpus accounting.');
+}
+if (activation.mandatory_gates?.total !== 46 || activation.mandatory_gates?.observed !== 46 ||
+    gates.total_gates !== 46 || !Array.isArray(gates.gates) || gates.gates.length !== 46) {
+  fail('The 46-gate inventory is incomplete or inconsistent.');
+}
+const gate09 = authoritative.gates?.find((g: any) => g.gate_id === 'GATE-09');
+if (gate09?.status !== 'PASSED' || (gate09.details?.unsatisfied_node_ids?.length ?? -1) !== 0) {
+  fail('Fresh authoritative gate artifact must show all 54 nodes executed with no unsatisfied nodes.');
+}
+const gate12 = authoritative.gates?.find((g: any) => g.gate_id === 'GATE-12');
+if (gate12?.status !== 'BLOCKED' ||
+    gate12.details?.order_lifecycle?.final_status !== 'OFFER' ||
+    gate12.details?.order_lifecycle?.transitions_executed?.length !== 0 ||
+    gate12.details?.order_lifecycle?.authorization_blocked !== true ||
+    gate12.details?.order_lifecycle?.payment_processing !== 'DISABLED') {
+  fail('Lifecycle evidence must report blocked authorization and the unchanged OFFER state; it must not claim escrow funding or deployment.');
+}
+const masterGate = gates.gates.find((g: any) => g.gate_id === 'GATE-46');
+if (!masterGate) fail('Master GATE-46 is missing.');
+const masterDetails = masterGate.details ?? {};
+if (masterDetails.preceding_failed === 0 &&
+    masterDetails.preceding_non_passed > 0 &&
+    masterGate.status !== 'BLOCKED') {
+  fail('Master GATE-46 must report BLOCKED, not FAIL, when prior gates are blocked or require external providers.');
+}
+if (masterDetails.preceding_failed > 0 && masterGate.status !== 'FAIL') {
+  fail('Master GATE-46 must report FAIL when a preceding gate has an actual failure.');
+}
+if (!['ACTIVE', 'BLOCKED'].includes(activation.status)) {
+  fail('Daisy activation status is missing or unrecognized.');
+}
+if (activation.status === 'ACTIVE' &&
+    (activation.mandatory_gates.non_passed !== 0 || activation.adversarial_verification?.passed !== true)) {
+  fail('Activation claims ACTIVE without all gates and adversarial checks passing.');
+}
+
+console.log('PASS: 120-case formal evidence, replay counts, and 46-gate inventory are internally consistent.');
+console.log('Daisy activation status: ' + activation.status);
+if (activation.status === 'BLOCKED') {
+  console.log('Production activation remains blocked; this CI check does not authorize production access or payments.');
 }

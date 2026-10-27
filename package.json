@@ -21,11 +21,13 @@
     "verify:nodes": "tsx scripts/verify_nodes.ts",
     "verify:paypal": "tsx scripts/verify_paypal_dual_env.ts",
     "verify:authoritative": "tsx scripts/verify_authoritative.ts",
-    "verify:sandbox": "tsx scripts/verify_sandbox.ts",
     "verify:proof-closure": "tsx scripts/full_build_verification_closure.ts",
     "verify:ci": "tsx scripts/ci_proof_closure_check.ts",
     "verify:all": "tsx scripts/verify_authoritative.ts",
-    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts"
+    "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
+    "verify:release-safety": "node scripts/verify_release_safety.mjs",
+    "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
+    "verify:daisy-safety": "node scripts/verify_daisy_foundational_safety.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -46,7 +48,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.25.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",

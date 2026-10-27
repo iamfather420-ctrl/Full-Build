@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, Search, Filter, CheckCircle2, Shield, Download, FileText } from 'lucide-react';
 import { REAL_88_PARADOX_REGISTRY, DFRLParadoxItem } from '../data/paradoxData';
-import { generateDFRLFormalDossier } from '../services/dfrlFormalArtifacts';
 
 export const DFRLRegistryView: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -19,12 +18,25 @@ export const DFRLRegistryView: React.FC = () => {
   });
 
   const handleDownloadDossier = () => {
-    const dossier = generateDFRLFormalDossier();
+    const dossier = {
+      total_paradoxes: REAL_88_PARADOX_REGISTRY.length,
+      verified_count: 0,
+      formal_framework: 'Catalog export only. No solver execution or proof certification occurs during export.',
+      generated_at: Date.now(),
+      dossier_entries: REAL_88_PARADOX_REGISTRY.map(item => ({
+        code: item.code,
+        name: item.name,
+        domain: item.domain,
+        smt_assertion: item.z3_smt_assertion,
+        machine_status: 'NOT_EXECUTED',
+        certificate_hash: ''
+      }))
+    };
     const blob = new Blob([JSON.stringify(dossier, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `dfrl_complete_88_proof_dossier_${Date.now()}.json`;
+    a.download = `dfrl_88_catalog_export_${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -39,12 +51,11 @@ export const DFRLRegistryView: React.FC = () => {
               <BookOpen className="w-4 h-4" />
             </span>
             <h2 className="text-xl font-bold text-white tracking-tight">
-              DFRL 88-Paradox Machine-Checked Formal Registry
+              DFRL 88-Paradox Formal Catalog
             </h2>
           </div>
           <p className="text-sm text-slate-400 max-w-2xl">
-            Complete enumeration of 88 classical antinomies and foundational boundary problems.
-            Each paradox possesses machine-checked inductive invariants and SMT-LIB 2.0 assertions with zero speculative mocks.
+            Catalog of declared classical antinomies and foundational boundary problems. Listing an SMT-LIB assertion is not proof of execution; solver verification status is reported only by the actual verification runner.
           </p>
         </div>
 

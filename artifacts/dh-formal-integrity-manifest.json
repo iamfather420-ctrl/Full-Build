@@ -1,232 +1,232 @@
 {
   "manifest_name": "DH Formal Verification Integrity Manifest",
-  "commit_sha": "b992445d00e6f8e27bd0aeaf308ad2f17a64d142",
-  "timestamp": "2026-10-01T19:42:58.454Z",
-  "verification_root_sha256": "f1053fccfdc95442b73714394b7b44ab96b38f7952e521637b5c36ff86dc014b",
+  "commit_sha": "d86e3000e980a4ba6363e99bb918a782de215d20",
+  "timestamp": "2026-10-22T13:55:14.765Z",
+  "verification_root_sha256": "4e88a82f27813209437ad6bf2612186ae5ee0aa1c5587420e0b2ecf8c82fe0bc",
   "records_count": 32,
   "hashes": [
     {
       "case_id": "DH-P-001",
       "contract_hash": "11cbbe898d8930c0779b004a2d47e84d71e022f858e2174b047422582686c0e0",
-      "source_hash": "62ffb54061fd714cedc3bcbb2edc2df66ef43a8623ce2261e5ca5768cb1eb5cd",
-      "evidence_hash": "ccc80eb9816446a7f7064055a14fc01957d34611d0c41acb539a16686dd81938",
+      "source_hash": "1f48be8b88d4ad22e0f1f4931639cce8a1b7a0fc1928b5866814fcb58be3217d",
+      "evidence_hash": "8cca50ee3cdd025ecd7bfa77d8c633e7dfddf35ffd4e2638b0583646edc982d7",
       "verified": true
     },
     {
       "case_id": "DH-P-002",
       "contract_hash": "e57b5a664e449ee019af13e219086b5392abe3bb6494c71e9887e6940b2b9aca",
-      "source_hash": "514467013564a7055458c7b96a2ab10ba39d7d3aafe14054dc4a0a1fc3bd95cf",
-      "evidence_hash": "eac4fda623bd2fd006f43802032c7c476aa792d72499c0d709bfb1c92345c0d0",
+      "source_hash": "bce5b1d6006d1606e248f4dc3df2be3fe52ee72d9ea0ae6f3c705e80da65ae6e",
+      "evidence_hash": "afc278c921f35599675245de36cf6303c108bbc70b2ff1fadf1cb591893fc02a",
       "verified": true
     },
     {
       "case_id": "DH-P-003",
       "contract_hash": "da0866677fc71b8dc198f40cd92ce35b688144cb085c40944bbb7f6ea56032a7",
-      "source_hash": "206bed5787915d3ffbfe28049b46b86eb3fee239b77c3199404622653fd4b00a",
-      "evidence_hash": "5ce044335b4a1bf41c970d20c2b22a0fe6fa079e5ec5a7c97edecd74f3f7b7fd",
+      "source_hash": "25ce3ac1aa0c4bd0602b0d7f201df3254f0b0ca2bf64fed26730c473de64ac41",
+      "evidence_hash": "fbe4a106516481d23da7b9f1698d1ec06e6aebd39f6f5fe6d0d8b2e22b3a3a47",
       "verified": true
     },
     {
       "case_id": "DH-P-004",
       "contract_hash": "d967d270daec400141778e8c311550bbbe32b4d13a4a8f84e22e3b90229a0da2",
-      "source_hash": "3cb8d768e956760a958e55859f2dd379e9ff2f85980e03838ef16360e4a62a02",
-      "evidence_hash": "e7b58970b208a2f3b262b03a5d0a83cee960a2469cdb905f2e4fbd3e0c25bec2",
+      "source_hash": "0f39c663fae98d2054ac8b4e8c627977f009f15e19db72ad8c2d2bb394791ffe",
+      "evidence_hash": "da4510d0abba9d615aa3c12956afe76f765c3b4d0d011f180da50d960c1e3249",
       "verified": true
     },
     {
       "case_id": "DH-P-005",
       "contract_hash": "1444541927213fe0a47e50341b0b0993e83e9123a90f1472ae7ad7385ee74b57",
-      "source_hash": "aa86eb0d40e182a9e08fd7f994cd9f952ee9a37018d7ae3f400de05046708f97",
-      "evidence_hash": "710fceda8f0bf9b8e5f8989835404ba61f08687cb22b426803c9762df033181d",
+      "source_hash": "70a13806874b74e79bca85abdddb236b2a0ab8319a4da0cabdb3f63b8bad1cbf",
+      "evidence_hash": "e71334521615664f94742dd4254ba3a1c440487be36f2b9aaddc912ec95aa10f",
       "verified": true
     },
     {
       "case_id": "DH-P-006",
       "contract_hash": "a173700761f6143292920de4c2e2d6540e8ca373c8fa7b6970f7c73c565c4503",
-      "source_hash": "45ae2b9b2eff82e57c1660aa2137e28130812ea2e40e511c974796c426b42a48",
-      "evidence_hash": "df09135955c6bad23f339368a9d37550a03a4d7e9adab6950e2e6c3b2d360846",
+      "source_hash": "be1a2771a84e79c4e042adc6ae9d533daf4779cbb44f29c45adf9db7823ef189",
+      "evidence_hash": "49d01ed48ca4cee72913ed54b4df87e9733a9b2e06a4d2125e6c12924cce1871",
       "verified": true
     },
     {
       "case_id": "DH-P-007",
       "contract_hash": "24a29ce7c8507e9ffafdd642c735346dc1dff2636f8d6e134f99393682fe4fce",
-      "source_hash": "c157569ff9a9ceb8b066c45e07780994cb7bd34d0ca54717badb0911951cd656",
-      "evidence_hash": "ff2b566eabcd70d7bbfcaccee377eece7c51c71613d34759bca90efee3ab666c",
+      "source_hash": "6971d1fd09ef4c92a1ec8b552c6957ddf30ce7b97caaa8ac390dc73a1179a5d9",
+      "evidence_hash": "46d370710fcb609d30011fa6187cbd54ee4e049af2825b1adae62f826be62e01",
       "verified": true
     },
     {
       "case_id": "DH-P-008",
       "contract_hash": "a6beaf2656ad9a746bd0453fc0729f8b39c119425a51307b502d54ceaa68b732",
-      "source_hash": "0fefd37276eec1c14592a1e361a87bb2d0f603e7481e17b3ff6fdcb72b8f378f",
-      "evidence_hash": "256d2e8434106ce2dbc6061d73829c7fd36496e17d701e299f4a2409debc67cf",
+      "source_hash": "794a0a5b934b6d663d26fe0f26d780efaf2e603fcaa11daa3f065bc52d900686",
+      "evidence_hash": "b702c5f2a8cf52e53f0c405dc482790f1d1f20951bd22b26704328a66e07dd96",
       "verified": true
     },
     {
       "case_id": "DH-P-009",
       "contract_hash": "bf95417e8343f7ed9d7b733661681784e90d2f826c3fe6ce225c70dc4b57cdf6",
-      "source_hash": "c5859bd73e5a876d04146868cbb1fd38d668ab4bd867ecc500193cbea4c3eaf4",
-      "evidence_hash": "71e86449ad0f5a871601f451c4360ebae26c2a799f6d50b2dbafabe8709b8391",
+      "source_hash": "6568ac432658ccc98236a102fb21e9f491674693fcc6a2f5c8b0574ee27624dd",
+      "evidence_hash": "0e29eac1b2373926fbe0a9a9fa9fd25bdfcb1ac2939fa50c3bd43c4d7fc42eb1",
       "verified": true
     },
     {
       "case_id": "DH-P-010",
       "contract_hash": "ad95adfc61c8efd12eb2599722350369e75eb9030936eb5b8fb8cf942e358fda",
-      "source_hash": "c48e00114c6398e597f07401c0319cdb19f1bd0ed81220a40398e2882d095e19",
-      "evidence_hash": "8a73b3cdfb48960568b44cea0572dbff0ed4ba12d566effcad1319fa39cf88ed",
+      "source_hash": "dc4d05b2d5637ff5b9f2eef10334cdab1f9166366bb0b52d6761a24915d01c10",
+      "evidence_hash": "021ab5b602d8e3c80223c127eba31e353149df822e0bd8a9d87f5c8b77dd8ea9",
       "verified": true
     },
     {
       "case_id": "DH-P-011",
       "contract_hash": "e3d2c1102687b713ad86dcc06dddf53e58204829e52700297a4b2e643a49a0ed",
-      "source_hash": "501735fdfadbb659fe04ede9d44ace273754873dcaf7f590a399a04ce527e183",
-      "evidence_hash": "47d73c5ee4daf695c03070d1c97ea1416857f856e780ace95b9e2c5a6db1c0b9",
+      "source_hash": "22b6687d398df4ad295f7bfd7dda712a3099372c1609e4050a3ce14e470a9e1e",
+      "evidence_hash": "fa3deb251e944baa415a2efdb0b52ff50b814e84acabe0b616572c49e00e986a",
       "verified": true
     },
     {
       "case_id": "DH-P-012",
       "contract_hash": "fcb9e2a3ecd72afe5db962dbd93e9efa69a8ba91ed0f0604b79465845c5835d4",
-      "source_hash": "6467ba837a71e9f7deb3e4e26fdc80159c9890ea3e83fcf4f531dc9f89e864aa",
-      "evidence_hash": "479ce133453f4c91f7d3fc3583f2d9f20c8db295801b2efc0d842a51bfb53979",
+      "source_hash": "393976a2c51a3b71471b9daafdaa5c20d151ef60da74e7cff87a57d4c940e39f",
+      "evidence_hash": "62b389a09e7879f13146491a4614fc54cd38a8099a23a97dbaaa7857b20cc1ac",
       "verified": true
     },
     {
       "case_id": "DH-P-013",
       "contract_hash": "bb14ed62d2fd065afeb5ea93916d203db6141550d800620108b719d9ab36563f",
-      "source_hash": "7a9e4e48cf7851f0bd1850bf29d1dc8b1258dd144c329384a77704a5fa916376",
-      "evidence_hash": "dfbfe8d3275a36862ca261390d40eb8b4816917ac607ac4808f6925271b43e32",
+      "source_hash": "ec8a6aeb19bff02018fbc062a00580e8855ea5812173d0d4d7cfe98274bcac51",
+      "evidence_hash": "2173f4a914a579e1652d7d477c34b0f6d5b74ec93f5d9f9f7a09def8f5fe121d",
       "verified": true
     },
     {
       "case_id": "DH-P-014",
       "contract_hash": "bba56eda9a3e749e64cfa2168cf1985487684c50aee0f38a76104521c62c649f",
-      "source_hash": "472454c6b060b6c713813f23f0f12407bda66e5cf412ab9d2283da14bd069e23",
-      "evidence_hash": "b07c618b8cc80945beca1cb6a2f98e0a390631b51bd5c289c14f799af8d5420f",
+      "source_hash": "0dd76a9113006d4eae668bdb34d6ee2d6faf40d7b5ee7fa2cd5b092a963ee219",
+      "evidence_hash": "b4686a28401028ca3064a7bf588973988c9f01d5f37893e27423576a9e689114",
       "verified": true
     },
     {
       "case_id": "DH-P-015",
       "contract_hash": "99185786a3125ffd76d24f39dd0c7679be2c6030ea15e5a71c0649213cbab416",
-      "source_hash": "182698982fcb83e4132b71f2e0e6638955e397d94b36b2cbd25a768e66ee5c3d",
-      "evidence_hash": "a583067f97ede4e82505a500e52eca1ef8e2d40512d972c31ca31a70648e1f3f",
+      "source_hash": "5ac1d718c5e9982005b932ef341dca1353e47e7090945175a58a174cab6aae96",
+      "evidence_hash": "489d61e9a4e916ad5b2df06f49c77e022e5d23028b263db795ca85e2d31045cd",
       "verified": true
     },
     {
       "case_id": "DH-P-016",
       "contract_hash": "475cf3deb254afc74f21129f5934c6d7beab88f0684b16622957af988d1c1d74",
-      "source_hash": "8df37f38634bab21a6a67945f1677a1c0b5e20bca0a98bd04ca783c38912efff",
-      "evidence_hash": "7822e796621b8633566beee4ebccf5f90179d023ec83c1526cf85533098da073",
+      "source_hash": "4bb297e59b138ec2cf44e6866f800e21094f92361d61018eea84d61b95e3328c",
+      "evidence_hash": "78601a00aba76a0d320d0aa5999d98c1a2a5f6ff74b9f321b3646791bc43b604",
       "verified": true
     },
     {
       "case_id": "DH-P-017",
       "contract_hash": "0cb4feaf01b7a3874fdd803967f9dbd96ebdc507743fc1aeb3c045be9717fed1",
-      "source_hash": "14e45677e7688c6a43a142dfd20cc9ded61f1883911ee646e9f8aa265369cfe8",
-      "evidence_hash": "6371d0d0afab8eb5e62afab2029ed35e28130554b28e8b9ada1dca0937629aaf",
+      "source_hash": "57bb6105cb92ee25daf55d59b9c3b25086958c729d7d1fd6869a37cc03a6f484",
+      "evidence_hash": "6b2e43d78aeea09bfba7577979403ee7e8f882cf467c743c32acb84c3a5c9118",
       "verified": true
     },
     {
       "case_id": "DH-P-018",
       "contract_hash": "2efcdaf25b4077028e29b0a748d91f2fb1f15eb84fc69daae35c432ad9a67609",
-      "source_hash": "56c329a17bdce1f776027467e8626dcf4997a1346f44a3e46b8e28602a7e71dd",
-      "evidence_hash": "1518ebd4a83fa59b002160037bdeaa6062b2bc6f34d24cf4f881283ca4d272f0",
+      "source_hash": "ba15f04db1a4a2e5422579338cf1b0722688aeec93a62744da0c53ac7115da81",
+      "evidence_hash": "801a2c199805917c7cde6447f7fcee7e623e1781eb54b614518dbde39af24b1b",
       "verified": true
     },
     {
       "case_id": "DH-P-019",
       "contract_hash": "0c362edf28c66e138237c5b7c23653c31af3ac5a9d94e80eec789e956aefff9d",
-      "source_hash": "aad195fe57b670a87b3d24c45f1f919f4ca97e84ac65d9456ff412dda3d21d18",
-      "evidence_hash": "416d8274fd682f356bc77eb0c2d3f20abc6e006eb52b522bd62c99b394044e5b",
+      "source_hash": "3f0fd2fd58a73e03fef66f123c29fa7b4d073a7f96a59d9c048ec9940d6ea731",
+      "evidence_hash": "875903e631e7e13e7a79bcb9a108996013eae40070e1d3907aa3ee2694100d52",
       "verified": true
     },
     {
       "case_id": "DH-P-020",
       "contract_hash": "93903a9ec447542a4f47c8432c648e7ddbd38bb30c3a9402f188c0a9c8b91288",
-      "source_hash": "89164839a3d2d48092d272014a9cc3a841d6da1c48d904b808e1210678e36986",
-      "evidence_hash": "ae7ad138566162ce524a8f5c742d74d8862e8efa0607d1057770f843f2ae1c7d",
+      "source_hash": "f6d310142b7604509defda6cf5f475713b276dc6687d10b092eed501cd15bad9",
+      "evidence_hash": "3076f42d2c531e06a4d7a04b3944fb9c4e136b20105ba377ad5a002d8f0fd23f",
       "verified": true
     },
     {
       "case_id": "DH-P-021",
       "contract_hash": "85d7ee8c3e3bc69eacae3509c3bc58ba51a31b33cc82d216bd66a6a1f1763cb5",
-      "source_hash": "81f863f446fb8c8c321b4924116576945a363dd837fafab5077282f7d17de722",
-      "evidence_hash": "5117fd5ffb4258fe97f96490a92751b6cbb8f278d8d0c5daf2b23004216dfe51",
+      "source_hash": "995731d82ce75793863547ed15f8439a9b61e6a708f846cd359dc26426572510",
+      "evidence_hash": "9b3af169c673be5f961a470f3fbecd7d3d29946d85b7b7a10356a0f043b66cfd",
       "verified": true
     },
     {
       "case_id": "DH-P-022",
       "contract_hash": "cdeb57d2b4c688078255425810aa6257ebbfa4b69191e76141d68045c48c0575",
-      "source_hash": "d158fc747f4a8a02b1cfb188dc6863828a7ed0e0c3b1a230ce3273023001d29a",
-      "evidence_hash": "6ce11d16f80798a16e61da8eb3163d5ce06f54fe6df08703751b065f7088a4dc",
+      "source_hash": "6e8a8a2b67ec90fa1af2b8503d103375e2b876e372b9aebee79dd0a3283cb426",
+      "evidence_hash": "127c0ed4979150ae807d8930267c9386aed2864e0c404ff5e746da34a26ada50",
       "verified": true
     },
     {
       "case_id": "DH-P-023",
       "contract_hash": "b9b7139c39910bd1ce09cd90f6c52b7eb4be64aa1277e0eebd7eb281ae9d8dbb",
-      "source_hash": "540f1b1521add3c99a8e50e5e17376add711b0643ab19dc79a32be3ec581dde1",
-      "evidence_hash": "eb9cda105bd68dd3de0d316b8c32ed550245fe1e43a3567b53fb8ae6d914d750",
+      "source_hash": "8d559f221dd87ed914b953e22c28e8ef03035e8504aa10a6153bdeaeafb82822",
+      "evidence_hash": "8ccd4bdeda128490c72ac684a5e2d21b3700469f51a3de305d5ffedaf9fe7110",
       "verified": true
     },
     {
       "case_id": "DH-P-024",
       "contract_hash": "55cb367b04bdae2ad8aa26ec0599d243a221c5f854674132127b4015613cc3ae",
-      "source_hash": "8a402c1c6e1f2393ff2b36ba22bbe5be61d92c8e8aa9fadbfcbbbf62b72164c9",
-      "evidence_hash": "0de5226c0c6b70c05d31e125b063fac428747bfa5435fc3fcb4dffa3387e95a6",
+      "source_hash": "3ed6fd698bd9ccfbbaad2377e0301071859936b281e5f2014ac0701b6ef0c631",
+      "evidence_hash": "d4abaaf5e91e8291ad4ae302e53a1f4cdf7e1a92136181c22b11f5d82e12b4ca",
       "verified": true
     },
     {
       "case_id": "DH-P-025",
       "contract_hash": "6e5b8c801a5368abb1cf45ef1a391c24eb89bb2cc7f806e539b543fedfcf2c2b",
-      "source_hash": "4de3608bdf61f445544e51f12e36f8f2103c83aadd5f87a60dcde52e9916c58e",
-      "evidence_hash": "924806afdea81d16f671af7b2b094114d935af4716f4d448fc1ac6647932cdb9",
+      "source_hash": "ad5558041230a436f00b08f004b06c8e5d8355f8dc1ee2891a5dfcdfef87bc75",
+      "evidence_hash": "f3726d067c44692b760fad4d9495281f02bc4d8044bd78a9f612be1f40626b2a",
       "verified": true
     },
     {
       "case_id": "DH-P-026",
       "contract_hash": "43a1a50ebcc0ebf2a24c92859cd5efc91bd87935b8051e5120e777b34de3c0af",
-      "source_hash": "1fc4a644fb25ced4d40635c9c976a976cfd1670be7399c8834b4e12a421a8b91",
-      "evidence_hash": "5cbab69a7da7e9109a9745446d2fa8686f4d82f298c324f16981b9eecf7bf402",
+      "source_hash": "58230719cb3bd38f46a4b7215f65c839de4cc49875637d83455eb543c1ab970c",
+      "evidence_hash": "fa3c261aaf1434cdbabd58050e9463feff5cabeec1cc1a8e49d1542306373e5d",
       "verified": true
     },
     {
       "case_id": "DH-P-027",
       "contract_hash": "2eb36164861517004876d93b0d5438fb84a50026d22e243b1a0e1b25fea6d421",
-      "source_hash": "92792d52bff0625d32f2c31954879f052ba5ead20d477dd4694485f599053fbc",
-      "evidence_hash": "3c9630fc04e14c27ab97439c59c62dbe6c5ee34933e67281465aa38e5345ed81",
+      "source_hash": "75b7a723dbe5dbb7d5031e56935ebc2895e52431d1e306fd5d595e2134f61e55",
+      "evidence_hash": "e95cf4ec491f31ddb68edfb31038acc705a7ce36537d2834f52e4d10d4cbebc7",
       "verified": true
     },
     {
       "case_id": "DH-P-028",
       "contract_hash": "acb025e96d36d019a933b0e94de9bb43d2e2b96065ab7aecea558c055c6710d4",
-      "source_hash": "781cb88a8433b8cb17bf630532fe1e49b8fe11518b9fab424343a40418c8c800",
-      "evidence_hash": "6a818c9524c66ea794c3d091ca209d4e07688aaecabdd548c85de0d575aa7439",
+      "source_hash": "bf90b4be4607f2c30ce0899cb622788bfed080cdc2e80885cfb239e43f7b4e7a",
+      "evidence_hash": "ca42629f9e347c89c41ea240d9dd7b44d19f4438a43ee559c372636c8d10e3e8",
       "verified": true
     },
     {
       "case_id": "DH-P-029",
       "contract_hash": "ec382a18aba53784d9a386ef7c9f196b6af81e6431c6d3f2b1ddd1dc6cb8ce19",
-      "source_hash": "ef549d903a57cb3898bbf3bfdd2fa360ff101f22714bbdf3e6a9a93d158e886d",
-      "evidence_hash": "945d507c1e34c5cde25d6a73c78296895295a9947df8027f9fd76b45f696a684",
+      "source_hash": "606cdd4bacf6ff55ccd35429cb4abdc40f54048764500e5c5b6ec464a6952a17",
+      "evidence_hash": "7b19918761b332fb7f93d64b23a827428a541f5dbe761d3e4b2c3df7d2d5a6cd",
       "verified": true
     },
     {
       "case_id": "DH-P-030",
       "contract_hash": "c64b34e1c669d03a45e492dbc3abf3883fade37ceeeefc5cce92ec1817ece36a",
-      "source_hash": "c04e60aae049b2a3a5dce48a72f65bd71b9eaaaf15e876d959d4f73b2da8c362",
-      "evidence_hash": "62b6a46ab12bd9ec8b8bd02d86e7f8775b4028a83d2a229703f39543ee7792ad",
+      "source_hash": "59b4dcc819e1192ed653b0a21f36ed8fb0d24e6de016aaab282701af4c4b7989",
+      "evidence_hash": "9c264b8473dbf4e8f5f4033ca1745ca04501dd2b562167c910c7ab51b240e8ce",
       "verified": true
     },
     {
       "case_id": "DH-P-031",
       "contract_hash": "53977fafacb5eb31d35827d04b064e82c5ab2d2cf6f6fdf41ad6ec9c162b5c48",
-      "source_hash": "f00a9337c08219b63228fdc90cebc0562b6e0f2c809844b0d69c23c4e54f0895",
-      "evidence_hash": "56f717a79f90a168a3bc7a4fa30c6389796bcf6e71f38e62980d9942b9fb4c10",
+      "source_hash": "b1186009d3d492cdbdfe5852687854220accf5f3aec24e1a88ce55224a4004b6",
+      "evidence_hash": "4a756ff5ddebf97be04268eacf95d265915a843912cf71cd0c79e83e855a86c4",
       "verified": true
     },
     {
       "case_id": "DH-P-032",
       "contract_hash": "29ecbd0fc23699ebf606ad5d9226f11cdd51767515053b32f2ca52e7fd5770c8",
-      "source_hash": "1f3e556ee182213af0907ca99979be9db5c46f7670f33258152b6611912106d9",
-      "evidence_hash": "a44d4a7dd8e22cc8aeb11f6f2d29989a60afdd61782a6974f76cb0075b775672",
+      "source_hash": "60b3b6e2820ee9a2e8e46f519174e08cdb99f617a7cfca4e64017572b25bedef",
+      "evidence_hash": "8c094a6af285e6dde9a3dc8cedafe6d01b6d811f3ca048b6b27a78295b00fd53",
       "verified": true
     }
   ],
