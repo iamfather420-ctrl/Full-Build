@@ -55,7 +55,7 @@ app.get('/api/evidence/paradox-ledger', (_req, res) => {
   const commitIsKnown = /^[a-f0-9]{40}$/.test(runtimeCommit);
   const artifactNames = ['daisy-brain-activation-gate.json', 'z3-120-formal-verification-summary.json', 'system-46-gates.json', 'execution-gates.json'];
   const roots = [path.resolve(process.cwd(), 'artifacts'), path.resolve(process.cwd(), '..', 'artifacts'), path.resolve(process.cwd(), 'Solvex-core', 'artifacts')];
-  const artifactRoot = roots.find(root => artifactNames.some(name => existsSync(path.join(root, name))));
+  const artifactRoot = roots.find(root => artifactNames.every(name => existsSync(path.join(root, name))));
   const now = Date.now();
   const maxAgeMs = 24 * 60 * 60 * 1000;
   const sources: Record<string, any> = {};
