@@ -95,7 +95,7 @@ app.post('/api/github/unify', (_req, res) => {
 
 // Daisy uses the canonical foundational instruction and fails closed if either
 // that instruction or the configured model provider is unavailable. No fake AI
-// replies, payment-trigger blocks, or simulated operational success are returned.
+// replies, purchase-intent directives, or simulated operational success are returned.
 app.post('/api/chat', async (req, res) => {
   const prompt = typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : '';
   const rawHistory = Array.isArray(req.body?.messageHistory) ? req.body.messageHistory : [];
