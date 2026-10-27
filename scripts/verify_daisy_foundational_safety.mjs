@@ -7,6 +7,7 @@ const server = read('Solvex-core/server_native.ts');
 const entrypoint = read('Solvex-core/server.ts');
 const brain = read('src/brain/DaisyBrain.ts');
 const nativeUi = read('Solvex-core/src/App_native.tsx');
+const webview = read('app.js');
 
 assert.match(instruction, /Capability ≠ Authority ≠ Authorization ≠ Execution/);
 assert.match(instruction, /Human purpose comes first/);
@@ -33,4 +34,7 @@ assert.doesNotMatch(nativeUi, /UNIFIED CLEARING SETTLEMENT RECEIVED|checkout\\.s
 assert.match(nativeUi, /BLOCKED: PayPal and all payment processing are disabled/);
 assert.match(nativeUi, /a chat suggestion cannot authorize a purchase/);
 assert.doesNotMatch(nativeUi, /connectionId: isCurrentlyActive|status: isCurrentlyActive \\?/);
+assert.doesNotMatch(webview, /simulateActionInBrowser|Simulated drag & drop ingestion|Simulated run/);
+assert.match(webview, /native bridge unavailable/);
+assert.match(webview, /no simulated result was created/);
 console.log('PASS: canonical Daisy instruction is wired in; payment creation and simulated success paths fail closed.');
