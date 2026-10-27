@@ -217,7 +217,9 @@ app.post('/api/github/unify', (_req, res) => {
 });
 
 // Daisy uses the canonical foundational instruction and fails closed if either
-// that instruction or the con// Daisy: foundational instruction required. Prefer first-party local inference.
+// that instruction or the configured model provider is unavailable. No fake AI
+// replies, purchase-intent directives, or simulated operational success are returned.
+// Daisy: foundational instruction required. Prefer first-party local inference.
 // External Gemini only if explicitly opted in. Never invent successful intelligence.
 // Inference status for operators (no secrets).
 app.get('/api/inference/status', async (_req, res) => {
@@ -315,10 +317,6 @@ app.post('/api/chat', async (req, res) => {
       || 'External model providers are disabled. No prompt was sent to a third party; no first-party inference runtime is currently connected.',
     runtime: localOutcome.runtime,
   });
-});
-
-ODEL_REQUEST_FAILED', status: 'BLOCKED', error: 'The configured model request failed. No simulated response was generated.' });
-  }
 });
 
 // Setup Vite and Static files
