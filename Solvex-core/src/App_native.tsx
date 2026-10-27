@@ -31,7 +31,7 @@ export default function App() {
     {
       id: 'init_handshake',
       sender: 'system',
-      text: `[Handshake Active - Core Secure Mode]\n\nI am the dAIsy HaMINJA Sovereign Core, central intelligence engine for the SolveX Institutional Marketplace. My 54-node grid and dual-market routing gateways are online.\n\nType a request to examine a paradoxical failure (e.g. Paradox 58), analyze grid workloads, or ask to purchase an autonomous business template checkout.`,
+      text: `[Handshake Active - Core Secure Mode]\n\nI am the dAIsy HaMINJA Sovereign Core, central intelligence engine for the SolveX Institutional Marketplace. My 54-node grid and dual-market routing gateways are online.\n\nType a request to analyze a problem or inspect grid workloads. Payment processing is disabled; chat cannot authorize purchases.`,
       timestamp: new Date().toLocaleTimeString()
     }
   ]);
@@ -52,19 +52,15 @@ export default function App() {
     setNodes(prev => prev.map(n => n.id === updatedNode.id ? updatedNode : n));
   };
 
-  // Toggle provider connection state
-  const handleToggleProvider = (id: string) => {
-    setProviders(prev => prev.map(p => {
-      if (p.id === id) {
-        const isCurrentlyActive = p.status === 'active' || p.status === 'configured';
-        return {
-          ...p,
-          status: isCurrentlyActive ? 'inactive' : 'active',
-          connectionId: isCurrentlyActive ? undefined : `conn_${id}_0x${Math.random().toString(16).substring(2, 6)}`
-        };
-      }
-      return p;
-    }));
+  // Payment providers remain disconnected until a real, authorized integration exists.
+  const handleToggleProvider = (_id: string) => {
+    setProviders(prev => prev.map(p => ({ ...p, status: 'inactive', connectionId: undefined })));
+    setMessages(prev => [...prev, {
+      id: `msg_payment_blocked_${Date.now()}`,
+      sender: 'system',
+      text: 'BLOCKED: payment providers are not connected. No credentials were tested and no transaction was created.',
+      timestamp: new Date().toLocaleTimeString()
+    }]);
   };
 
   // Chat message submission handler
@@ -97,15 +93,6 @@ export default function App() {
         sender: 'ai',
         text: data.text,
         timestamp: new Date().toLocaleTimeString(),
-        metadata: data.trigger ? {
-          paymentAuthorized: true,
-          paymentDetails: {
-            amount: data.trigger.amount,
-            provider: data.trigger.provider,
-            checkoutUrl: `https://checkout.solvex.marketplace/pay?provider=${data.trigger.provider}&amount=${data.trigger.amount}`,
-            item: data.trigger.item || 'Autonomous Template Package'
-          }
-        } : undefined
       };
 
       setMessages(prev => [...prev, aiMsg]);
@@ -125,51 +112,27 @@ export default function App() {
     }
   };
 
-  // Add simulated success payment transaction to ledger
-  const handleAddTransaction = (provider: string, amount: number, item: string) => {
-    const successMsg: ChatMessage = {
-      id: `msg_success_${Date.now()}`,
+  // Never create a synthetic receipt or claim settlement succeeded.
+  const handleAddTransaction = (_provider: string, _amount: number, _item: string) => {
+    setMessages(prev => [...prev, {
+      id: `msg_payment_blocked_${Date.now()}`,
       sender: 'system',
-      text: `✅ [UNIFIED CLEARING SETTLEMENT RECEIVED]\n\nSovereign settlement of $${amount.toFixed(2)} USD completed successfully via ${provider.toUpperCase()}.\n\nItem Authorized: "${item}"\nClearing Ledger Hash: sha256:${Math.random().toString(16).substring(2, 10)}${Math.random().toString(16).substring(2, 10)}`,
+      text: 'BLOCKED: PayPal and all payment processing are disabled. No charge, transaction, receipt, or ledger entry was created.',
       timestamp: new Date().toLocaleTimeString()
-    };
-    setMessages(prev => [...prev, successMsg]);
-
-    // Update nodes load due to compilation activity
-    setNodes(prev => prev.map(n => n.id % 4 === 0 ? {
-      ...n,
-      load: Math.min(n.load + 15, 100),
-      activity: `Processing clearing ledger transaction validation.`
-    } : n));
+    }]);
   };
 
-  // Bind a recommended payment trigger from chat directly into sandbox
-  const handleSelectTrigger = (trigger: { amount: number; provider: string; item: string }) => {
-    setPaymentPreFill(trigger);
-    
-    // Switch to payments tab
+  // A model suggestion is not payment authorization. Keep the gateway closed.
+  const handleSelectTrigger = (_trigger: { amount: number; provider: string; item: string }) => {
+    setPaymentPreFill(null);
     setActiveTab('payments');
-
-    // Auto connect provider if inactive
-    setProviders(prev => prev.map(p => {
-      if (p.id === trigger.provider && p.status === 'inactive') {
-        return {
-          ...p,
-          status: 'active',
-          connectionId: `conn_${trigger.provider}_0x${Math.random().toString(16).substring(2, 6)}`
-        };
-      }
-      return p;
-    }));
-
-    // Post system message
-    const alertMsg: ChatMessage = {
-      id: `msg_alert_${Date.now()}`,
+    setProviders(prev => prev.map(p => ({ ...p, status: 'inactive', connectionId: undefined })));
+    setMessages(prev => [...prev, {
+      id: `msg_payment_blocked_${Date.now()}`,
       sender: 'system',
-      text: `🔄 Handshake parameters bound to Unified API checkout generator. Check transaction sandbox below to initialize checkout.`,
+      text: 'BLOCKED: a chat suggestion cannot authorize a purchase. PayPal and checkout are disabled; no provider was connected and no transaction was created.',
       timestamp: new Date().toLocaleTimeString()
-    };
-    setMessages(prev => [...prev, alertMsg]);
+    }]);
   };
 
   return (
