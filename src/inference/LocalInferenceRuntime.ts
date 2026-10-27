@@ -88,10 +88,10 @@ export class LocalInferenceRuntime implements InferenceRuntime {
       modelPath: this.modelPath,
       enginePath: this.enginePath,
       ready: this.ready,
-      offlineCapable: true,
+      offlineCapable: false,
       notes: this.ready
-        ? 'Local model and engine paths are present; generative calls use the first-party engine only.'
-        : 'Model weights and/or inference engine are not configured. Generative inference remains BLOCKED. Formal verification and deterministic logic are separate subsystems.',
+        ? 'Local model and engine paths are present; generative calls use the first-party engine only. Network isolation is not enforced by this runtime, so offline capability is not attested.'
+        : 'Model weights and/or inference engine are not configured. Generative inference remains BLOCKED. Network isolation is not enforced by this runtime, so offline capability is not attested. Formal verification and deterministic logic are separate subsystems.',
     };
   }
 
