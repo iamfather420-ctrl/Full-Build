@@ -5,6 +5,7 @@ const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf
 const instruction = read('DAISY_FOUNDATIONAL_SYSTEM_INSTRUCTION.md');
 const server = read('Solvex-core/server_native.ts');
 const entrypoint = read('Solvex-core/server.ts');
+const brain = read('src/brain/DaisyBrain.ts');
 
 assert.match(instruction, /Capability ≠ Authority ≠ Authorization ≠ Execution/);
 assert.match(instruction, /Human purpose comes first/);
@@ -20,5 +21,11 @@ assert.match(server, /GITHUB_LOOKUP_UNAVAILABLE/);
 assert.match(server, /UNIFICATION_NOT_IMPLEMENTED/);
 assert.match(server, /No simulated response was generated/);
 assert.doesNotMatch(server, /--allow-unauthenticated/);
+assert.match(brain, /private verifiedDFRLCount: number = 0/);
+assert.match(brain, /private verifiedReplayCount: number = 0/);
+assert.match(brain, /canonical_ledger_status: 'UNVERIFIED'/);
+assert.match(brain, /anti_mock_attestation: 'UNVERIFIED/);
+assert.match(brain, /mock_patterns_detected: null/);
+assert.doesNotMatch(brain, /canonical_ledger_status: 'PARITY_SYNCHRONIZED'/);
 
 console.log('PASS: canonical Daisy instruction is wired in; payment creation and simulated success paths fail closed.');
