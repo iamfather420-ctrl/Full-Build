@@ -4,10 +4,12 @@ import { readFileSync } from 'node:fs';
 const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const instruction = read('DAISY_FOUNDATIONAL_SYSTEM_INSTRUCTION.md');
 const server = read('Solvex-core/server_native.ts');
+const entrypoint = read('Solvex-core/server.ts');
 
 assert.match(instruction, /Capability ≠ Authority ≠ Authorization ≠ Execution/);
 assert.match(instruction, /Human purpose comes first/);
 assert.match(instruction, /Evidence comes before claims/);
+assert.match(entrypoint, /import ['\"]\.\/server_native['\"]/);
 assert.match(server, /readFileSync/);
 assert.match(server, /systemInstruction:\s*foundationalSystemInstruction/);
 assert.match(server, /FOUNDATIONAL_INSTRUCTION_UNAVAILABLE/);
