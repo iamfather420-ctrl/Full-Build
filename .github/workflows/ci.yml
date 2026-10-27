@@ -23,6 +23,8 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
+      - name: Daisy foundational instruction and no-simulated-success checks
+        run: bun run verify:daisy-safety
       - name: Payments-disabled boundary checks
         run: bun run verify:payments-disabled
       - name: Build
