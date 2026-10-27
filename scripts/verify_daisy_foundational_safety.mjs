@@ -35,6 +35,13 @@ assert.match(brain, /mock_patterns_detected: null/);
 assert.doesNotMatch(brain, /canonical_ledger_status: 'PARITY_SYNCHRONIZED'/);
 
 assert.doesNotMatch(nativeUi, /UNIFIED CLEARING SETTLEMENT RECEIVED|checkout\\.solvex\\.marketplace/);
+assert.match(nativeUi, /response\.ok/,
+  'Native UI must check HTTP success instead of treating non-2xx responses as successful chat replies.');
+assert.match(nativeUi, /payload\.status === 'BLOCKED'/,
+  'Native UI must preserve explicit BLOCKED state returned by the server.');
+assert.match(nativeUi, /No simulated reply or successful operation was generated/,
+  'Native UI network failures must not claim recovery or synthesize successful output.');
+
 assert.match(nativeUi, /BLOCKED: PayPal and all payment processing are disabled/);
 assert.match(nativeUi, /a chat suggestion cannot authorize a purchase/);
 assert.doesNotMatch(nativeUi, /connectionId: isCurrentlyActive|status: isCurrentlyActive \\?/);
