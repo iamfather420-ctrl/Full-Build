@@ -137,7 +137,7 @@ app.get('/api/evidence/paradox-ledger', (_req, res) => {
             ? 'BLOCKED: formal summary roots, run receipt, counts, or source commit do not match the activation record.'
             : !gatesComplete
               ? 'BLOCKED: current 46-gate report is incomplete or contains a non-passed gate.'
-              : 'BLOCKED: authoritative pipeline evidence is not bound to the same source revision.';
+              : 'BLOCKED: the authoritative pipeline has not passed all 15 gates, has production blockers, or is not bound to the same source revision.';
 
   return res.json({
     success: true, status: active ? 'ACTIVE' : 'BLOCKED', reason,
