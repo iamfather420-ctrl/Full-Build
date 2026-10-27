@@ -31,6 +31,8 @@ assert.ok(packageJson.scripts['verify:payments-disabled'], 'payments-disabled co
 
 const migrationMethod = neon.slice(neon.indexOf('public async runMigrations'), neon.indexOf('public async verifyRequiredTables'));
 const genericWriteMethod = neon.slice(neon.indexOf('public async insertRecord'), neon.indexOf('public async findTenantRecords'));
+assert.match(neon, /backend: 'PERSISTENCE_UNAVAILABLE',[\s\S]*configured: false/,
+  'unconfigured Neon must not be reported as an active SQLite backend');
 assert.match(migrationMethod, /BLOCKED: generic Neon migrations are disabled/);
 assert.match(genericWriteMethod, /BLOCKED: generic Neon writes are disabled/);
 assert.doesNotMatch(neon, /CREATE TABLE IF NOT EXISTS|ALTER TABLE|INSERT INTO/,
