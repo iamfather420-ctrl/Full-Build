@@ -42,8 +42,8 @@ assert.doesNotMatch(webview, /simulateActionInBrowser|Simulated drag & drop inge
 assert.match(webview, /native bridge unavailable/);
 assert.match(webview, /no simulated result was created/);
 assert.match(activationGate, /MAX_EVIDENCE_AGE_MS/);
-assert.match(activationGate, /source_commit_sha\\?\\.toLowerCase\\(\\) !== expectedCommit/);
-assert.match(activationGate, /gates\\?\\.total !== 46/);
+assert.ok(activationGate.includes('record.source_commit_sha?.toLowerCase() !== expectedCommit'));
+assert.ok(activationGate.includes('gates?.total !== 46'));
 assert.match(activationGate, /adversarial_verification/);
 assert.match(activationGate, /Corrupt or unreadable disk evidence must never fall back/);
 assert.match(activationGate, /fresh 120-case, adversarial, 46-gate evidence/);
