@@ -86,12 +86,24 @@ export default function App() {
         })
       });
 
-      const data = await response.json();
+      const data: unknown = await response.json().catch(() => null);
+      const payload = data && typeof data === 'object' ? data as Record<string, unknown> : {};
+      const responseText = typeof payload.text === 'string' && payload.text.trim()
+        ? payload.text
+        : typeof payload.error === 'string' && payload.error.trim()
+          ? payload.error
+          : typeof payload.message === 'string' && payload.message.trim()
+            ? payload.message
+            : 'The sovereign core returned no readable response. No successful operation is assumed.';
+      const isBlocked = !response.ok || payload.status === 'BLOCKED' || payload.success === false;
 
       const aiMsg: ChatMessage = {
         id: `msg_ai_${Date.now()}`,
         sender: 'ai',
-        text: data.text,
+        text: isBlocked
+          ? `[${typeof payload.status === 'string' ? payload.status : 'REQUEST_FAILED'}]
+${responseText}`
+          : responseText,
         timestamp: new Date().toLocaleTimeString(),
       };
 
@@ -102,7 +114,7 @@ export default function App() {
       const errorMsg: ChatMessage = {
         id: `msg_err_${Date.now()}`,
         sender: 'ai',
-        text: `⚠️ Communication link fracture identified. Resetting network transceiver ports...`,
+        text: 'BLOCKED: communication with the sovereign core failed. No simulated reply or successful operation was generated.',
         timestamp: new Date().toLocaleTimeString()
       };
       setMessages(prev => [...prev, errorMsg]);
