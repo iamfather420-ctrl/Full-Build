@@ -55,3 +55,18 @@ Daisy produces real responses through its own verified runtime **only when**:
 4. Evidence records `runtimeId`, `modelId`, and `modelVersion`
 
 Until then, `/api/chat` must continue returning `BLOCKED` / `FIRST_PARTY_MODEL_UNAVAILABLE` (or opt-in external provider if the creator sets the flag).
+
+
+## Evidence integration checkpoint — 2026-10-27
+
+The latest pull-request CI artifact bundle was inspected. The four Paradox Ledger evidence files agree on source commit `09f1aa8775e892d2d0b9e97c70c2e29b593b55af`, and the formal summary's combined root and run receipt match the activation record.
+
+The evidence is internally consistent but does **not** authorize activation:
+
+- 120/120 formal cases and replays matched; unknown and error counts are zero.
+- 42/46 system gates passed; three are blocked and one requires external providers.
+- The activation record and overall 46-gate verdict are both `BLOCKED`.
+- The 15-gate pipeline reports `BLOCKED_MISSING_EXTERNAL_CREDENTIALS`; trusted identity and signed tenant claims are unavailable.
+- The artifact source SHA is the CI-tested pull-request merge revision, not the current PR head SHA. The read-only Paradox Ledger must not treat these records as current for a different runtime commit. Regenerate evidence for the exact revision intended for runtime before any activation decision.
+
+This checkpoint is evidence reconciliation only. It does not configure providers, execute lifecycle transitions, activate Daisy, enable payments, or authorize deployment.
