@@ -47,4 +47,8 @@ assert.ok(activationGate.includes('gates?.total !== 46'));
 assert.match(activationGate, /adversarial_verification/);
 assert.match(activationGate, /Corrupt or unreadable disk evidence must never fall back/);
 assert.match(activationGate, /fresh 120-case, adversarial, 46-gate evidence/);
+assert.ok(brain.includes("status: brainActive ? brainClaimScope : 'BLOCKED'"));
+assert.ok(brain.includes("status: 'DISABLED'"));
+assert.ok(brain.includes("mode: 'NOT_ENABLED_UNVERIFIED'"));
+assert.ok(brain.includes("this.verifiedDFRLCount === 88 && this.verifiedReplayCount === 88 ? 'MODEL_VERIFIED' : 'UNVERIFIED'"));
 console.log('PASS: canonical Daisy instruction is wired in; payment creation and simulated success paths fail closed.');
