@@ -33,4 +33,13 @@ export class AuthService {
   public authorize(_user: UserContext | null | undefined, _action: string, _targetTenantId?: string): { authorized: boolean; reason: string } {
     return { authorized: false, reason: 'BLOCKED: verified identity and signed tenant claims are required.' };
   }
+
+  public requireVerifiedSession(_session: UserContext | null | undefined, _action: string, _targetTenantId?: string): { authenticated: boolean; authorized: boolean; status: 'BLOCKED'; reason: string } {
+    return {
+      authenticated: false,
+      authorized: false,
+      status: 'BLOCKED',
+      reason: 'BLOCKED: no verified first-party session is available for this action; identity provider and tenant claims are not yet implemented.'
+    };
+  }
 }
