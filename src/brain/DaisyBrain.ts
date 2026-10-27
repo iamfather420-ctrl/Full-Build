@@ -15,7 +15,7 @@ export interface CompleteBrainState {
   environment: 'local' | 'sandbox' | 'production';
   architecture: string;
   status: string;
-  claim_scope: brainActive && this.verifiedDFRLCount === 88 && this.verifiedReplayCount === 88 ? 'MODEL_VERIFIED' : 'UNVERIFIED' | 'LOCAL_VERIFIED' | 'SANDBOX_VERIFIED' | 'PRODUCTION_VERIFIED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'BLOCKED';
+  claim_scope: 'MODEL_VERIFIED' | 'LOCAL_VERIFIED' | 'SANDBOX_VERIFIED' | 'PRODUCTION_VERIFIED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'BLOCKED';
   intelligence_nexus: {
     total_nodes: number;
     code_executed_nodes: number;
