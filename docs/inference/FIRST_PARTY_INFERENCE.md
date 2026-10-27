@@ -58,7 +58,7 @@ Until then, `/api/chat` must continue returning `BLOCKED` / `FIRST_PARTY_MODEL_U
 
 ## Evidence integration checkpoint — 2026-10-27
 
-The latest PR validation bundle was downloaded and inspected. All four required workflows pass on PR head `fdf9b3d5edd354b433c97674f057dbeaeca9c523`. The generated evidence bundle is bound to the tested PR merge revision `481e3046c7703ca2556fff9f3541246a8e80f74d`; the four Paradox Ledger evidence files agree on that merge revision, and the formal summary's combined root and run receipt match the activation record.
+The latest PR validation bundle was downloaded and inspected. All four required workflows passed on code-bearing PR head `fdf9b3d5edd354b433c97674f057dbeaeca9c523`. The subsequent PR commit updates this checkpoint documentation only. The generated evidence bundle is bound to the tested PR merge revision `481e3046c7703ca2556fff9f3541246a8e80f74d`; the four Paradox Ledger evidence files agree on that merge revision, and the formal summary's combined root and run receipt match the activation record.
 
 The evidence is internally consistent but does **not** authorize activation:
 
