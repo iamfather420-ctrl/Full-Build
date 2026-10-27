@@ -118,7 +118,11 @@ app.get('/api/evidence/paradox-ledger', (_req, res) => {
     String(formal?.commit_sha || '').toLowerCase() === String(activation?.source_commit_sha || '').toLowerCase();
   const gatesComplete = gates?.total_gates === 46 && gateItems.length === 46 &&
     nonPassedGates.length === 0 && gates?.overall_verdict === 'VERIFIED_SOVEREIGN_CLOSURE';
-  const pipelineBound = pipeline?.gates_total === 15 &&
+  // A matching source SHA alone is not proof that the authoritative pipeline passed.
+  // Require every pipeline gate and an explicit PASSED verdict with no blockers.
+  const pipelineBound = pipeline?.gates_total === 15 && pipeline?.gates_passed === 15 &&
+    pipeline?.production_gate_verdict === 'PASSED' &&
+    Array.isArray(pipeline?.production_blockers) && pipeline.production_blockers.length === 0 &&
     String(pipeline?.commit_sha || '').toLowerCase() === String(activation?.source_commit_sha || '').toLowerCase();
   const active = Boolean(commitIsKnown && sourceFilesCurrent && activationValid && formalMatches && gatesComplete && pipelineBound);
   const reason = active
