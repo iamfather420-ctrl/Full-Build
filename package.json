@@ -26,7 +26,8 @@
     "verify:all": "tsx scripts/verify_authoritative.ts",
     "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
     "verify:release-safety": "node scripts/verify_release_safety.mjs",
-    "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs"
+    "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
+    "verify:daisy-safety": "node scripts/verify_daisy_foundational_safety.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
