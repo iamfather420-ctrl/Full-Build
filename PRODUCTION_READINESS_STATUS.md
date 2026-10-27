@@ -1,6 +1,34 @@
 # Production Readiness Status — SOLVEX + Daisy Haminja Full Build
 
-**Release verdict: NOT PRODUCTION-READY.** This pass closes several security defects and implements a trusted OIDC sign-in path plus an additive access-request migration, while keeping PayPal disabled. The app is deliberately configured to fail its production readiness probe until persistence integration and live deployment gates are completed. No live Neon database was contacted or mutated in this pass.
+**Release verdict: NOT PRODUCTION-READY.** This file contains historical working-archive notes as well as the current canonical-main status. Do not treat the historical section below as proof that those features exist in the current `main` tree or are deployed.
+
+## Current canonical `main` status — 2026-10-27
+
+Verified source and CI evidence:
+
+- The canonical creator-approved instruction is committed as `DAISY_FOUNDATIONAL_SYSTEM_INSTRUCTION.md` and wired into the native `Solvex-core/server_native.ts` chat path. If the instruction or configured model provider is unavailable, the route fails closed rather than returning a simulated answer.
+- Pull request #35 was merged. Its Build and Enterprise CI, 120-case verification, and formal-evidence stability workflows passed on the PR head.
+- Pull request #36 was merged after its Build and Enterprise CI, 120-case verification, and formal-evidence stability workflows passed. The legacy generic Neon migration and write methods now return blocked results and no longer issue schema DDL or generic `payload_json` writes.
+- Payment creation in the native subproject returns HTTP 410; the PayPal adapter in `src/payments/PayPalAdapter.ts` is intentionally disabled and makes no provider calls.
+- `src/auth/AuthService.ts` currently rejects local token issuance, rejects token verification, and denies authorization. `src/api/ApiRouter.ts` only permits the documented read-only health/status GET endpoints. **A functioning production authentication system is not yet implemented in this canonical source tree.**
+- `src/database/NeonPersistence.ts` can perform read-only connectivity/table/RLS checks, but generic domain reads/writes are not a completed typed persistence layer. The production domain operations are therefore not proven to persist safely across restarts or tenants.
+- The deployed Vercel project previously inspected uses `iamfather420-ctrl/Uarefake-1`, not this `Full-Build` repository. Merging to this repository does not deploy these changes to `uarefake.space`.
+
+### Remaining blockers before PayPal is the only blocker
+
+1. **First-party authentication and account lifecycle:** implement and independently test registration/invitation, secure password or passkey verification, server-side sessions, logout/revocation, account recovery, rate limiting, CSRF protections, audit records, and role/tenant authorization. Do not enable access or mint tokens until this is complete.
+2. **Typed Neon persistence:** map real domain columns for the existing database schema; implement explicit repository methods, tenant-scoped reads/writes, idempotency, restart readback, and two-tenant isolation tests. Use a staging clone and verified backup/restore before any migration. Generic migration/write methods are deliberately blocked.
+3. **Canonical deployment reconciliation:** determine the intended deployment target and merge/deploy the verified Full-Build implementation into the correct deployment source without replacing the existing source archive or changing live settings unsafely. Verify the actual canonical-domain deployment afterward.
+4. **Operational and release evidence:** regenerate the 46-gate and production-readiness evidence on the current commit; verify the complete source archive and checksums; run staging restore/rollback, monitoring, secrets, TLS, and incident-recovery checks. A successful CI run is not a production deployment.
+5. **PayPal:** keep disabled until items 1–4 pass. PayPal is not currently the only blocker.
+
+No live Neon migration, write, authentication enablement, Vercel environment change, or production deployment was performed by the PRs described above.
+
+---
+
+## Historical working-archive notes (retain as context; not proof of current-main implementation)
+
+The following sections record earlier work and test results from a separate working archive/revision. Validate each item against current source before relying on it.
 
 ## Implemented in this working archive
 
