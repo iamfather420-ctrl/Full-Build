@@ -88,7 +88,7 @@ export class NeonStore {
     const isConf = this.isConfigured();
     if (!isConf) {
       return {
-        backend: 'SQLITE_LOCAL',
+        backend: 'PERSISTENCE_UNAVAILABLE',
         configured: false,
         connected: false,
         tables_verified: 0,
