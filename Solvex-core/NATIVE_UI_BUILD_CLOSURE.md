@@ -1,29 +1,24 @@
 # Native UI build closure (2026-10-27)
 
-## Problem
-`Solvex-core/src/App_native.tsx` originally imported modules that were absent from the active tree. Fail-closed components were added to restore resolvable imports.
+## Recovery and integration update
+Original source modules were recovered from the Library archive `solvex-kernel-ui-final8.zip` and historical Full-Build commit `a5ae6a4`. The unmodified sources and supporting project files are preserved under `recovered-ui-source/solvex-final/`.
 
-## Recovery update
-Original UI source has now been located in the prior Library archive `solvex-kernel-ui-final8.zip` and historical Full-Build commit `a5ae6a4`. A historical source snapshot is preserved under `recovered-ui-source/solvex-final/` for review. The archived `PaymentGateway.tsx` variant differs from the historical Git blob; the safety review records the observed behavior of the Library archive version.
+The active native UI now uses a reviewed integration of the original panel layout and visual language while keeping unsafe original behaviors disabled.
 
-## Active native components
-The active modules remain fail-closed until reviewed replacements are prepared:
-- `PaymentGateway`: explicit BLOCKED state; no provider request or transaction success.
-- `ParadoxLedger`: informational only; no assertion of fresh formal verification.
-- `JitFactory`: no compile/publish path.
-- `CommandBar`: sends real requests to `/api/chat`; preserves server BLOCKED responses.
-- `NodeGrid` / `GithubUnifier`: re-export existing native implementations.
-- `main.tsx`: React entry for `index_native.html`.
+## Active component behavior
+- `PaymentGateway`: recovered-style provider list and transaction monitor layout; explicitly BLOCKED. Does not call `/api/pay/create`, connect a provider, show a checkout URL, or create a transaction.
+- `CommandBar`: recovered-style command console with safe inspection prompts. Sends user prompts to the server chat route. Chat output cannot authorize payments or other operations; payment-trigger metadata from the historical UI is not rendered.
+- `ParadoxLedger`: recovered-style read-only evidence panel. It does not display the original hardcoded efficacy/compliance claims or invent a registry/count/result. Current proof data is not yet wired to this panel.
+- `JitFactory`: recovered-style factory status panel. No timer-based simulated completion, compile, sign, fingerprint, publish, or deployment action is exposed.
+- `App_native.tsx`: removed unsupported claims that 54/54 nodes are running, 58 paradoxes are locked, hosting is Cloud Run, or ISO/SOC2 compliance is established. The node count is identified as a catalogue, not execution evidence.
 
-## Why the originals are not activated yet
-- Historical/archived PaymentGateway variants post to `/api/pay/create`; the Library archive version marks a session active without checking `response.ok`. The historical source also renders transaction references and checkout URLs. Payments remain disabled.
-- CommandBar contains autonomous-core/tether status claims and payment-trigger metadata. It must be reconciled with server-authoritative state and cannot authorize purchases.
-- ParadoxLedger displays hardcoded efficacy and compliance/security claims as verified. Those are not proof evidence.
-- JitFactory uses client-side timers and hardcoded deployment metadata to simulate successful build/deploy completion.
+## Remaining integration gap
+The original UI depends on additional registry and execution contracts that have not been proven to exist in the active native runtime. Therefore these panels preserve the visual intent, but the Paradox Ledger is not yet connected to the authoritative formal evidence registry and JIT Factory is not connected to a verified isolated executor. Do not describe the native app as fully integrated or production-ready.
 
-## Constraints
+## Safety constraints
 - No PayPal or other payment provider enabled.
-- No first-party inference runtime or model weights added.
-- No fabricated SAT/UNSAT evidence.
+- No checkout, escrow, transaction receipt, or synthetic success path.
+- No model weights or first-party inference runtime claimed as available.
+- No fabricated SAT/UNSAT evidence or compliance claims.
 - No production deployment or Neon schema mutation.
-- Keep the recovered source as an auditable reference; only activate a reviewed version that replaces simulated success with evidence-backed outcomes or explicit BLOCKED states.
+- Original sources remain preserved for audit; only evidence-backed, fail-closed behavior is active.
