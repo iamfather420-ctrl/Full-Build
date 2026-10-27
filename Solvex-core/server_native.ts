@@ -44,7 +44,7 @@ if (apiKey) {
     },
   });
 } else {
-  console.warn('⚠️ GEMINI_API_KEY is not defined in environment variables. Running in simulated fallback mode.');
+  console.warn('⚠️ GEMINI_API_KEY is not defined in environment variables. Daisy chat will return a blocked response until a model provider is configured.');
 }
 
 // Payment creation is deliberately disabled. Never fabricate transaction IDs,
