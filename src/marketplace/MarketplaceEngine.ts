@@ -1,6 +1,7 @@
 import { computeSha256, OfferEntity } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
+import { canTransition } from '../governance/GovernanceLifecycle';
 
 export interface DefensiblePriceResult {
   cost_basis_cents: number;
@@ -96,6 +97,12 @@ export class MarketplaceEngine {
       };
     }
 
+    // Governance: DRAFT/IN_REVIEW → PUBLISHED only after verified artifacts above.
+    const gov = canTransition('OFFER', 'IN_REVIEW', 'PUBLISHED');
+    if (!gov.allowed) {
+      return { success: false, error: gov.reason || 'Offer publication blocked by governance lifecycle.' };
+    }
+
     const priceCalc = this.calculateDefensiblePrice(costBasisCents, complexityFactor, riskClass);
     const offerId = `off_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const offer: OfferEntity = {
@@ -152,6 +159,11 @@ export class MarketplaceEngine {
       };
     }
 
+    const gov = canTransition('ORDER', 'DRAFT', 'ORDERED');
+    if (!gov.allowed) {
+      return { success: false, error: gov.reason || 'Order creation blocked by governance lifecycle.' };
+    }
+
     const orderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const order = {
       id: orderId,
@@ -161,6 +173,8 @@ export class MarketplaceEngine {
       proof_bundle_id: offer.proof_bundle_id,
       price_cents: offer.price_cents,
       status: 'OFFER' as const,
+      // Payment capture intentionally not attached. Fulfillment transition remains blocked.
+      payment_state: 'DISABLED',
       created_at: Date.now()
     };
 
@@ -182,9 +196,18 @@ export class MarketplaceEngine {
       'CREATE_ORDER',
       'ORDER',
       orderId,
-      { offerId, priceCents: order.price_cents }
+      { offerId, priceCents: order.price_cents, payment_state: 'DISABLED' }
     );
 
     return { success: true, order };
+  }
+
+  /** Explicitly blocked: never auto-fulfill or capture payment. */
+  public fulfillOrder(_tenantId: string, _orderId: string): { success: boolean; error: string } {
+    const gov = canTransition('ORDER', 'ORDERED', 'FULFILLED');
+    return {
+      success: false,
+      error: gov.reason || 'Order fulfillment is blocked until payment and fulfillment authorization exist.',
+    };
   }
 }
