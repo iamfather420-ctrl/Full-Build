@@ -1,0 +1,33 @@
+name: Native UI Build
+on:
+  pull_request:
+    paths:
+      - 'Solvex-core/**'
+      - '.github/workflows/native-ui-build.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'Solvex-core/**'
+      - '.github/workflows/native-ui-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-ui:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Solvex-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Materialize native package manifest
+        run: cp package_native.json package.json
+      - name: Install native dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build native UI and server bundle
+        run: npm run build
+      - name: Confirm native entry artifact exists
+        run: test -s dist/index_native.html && test -s dist/server.cjs
