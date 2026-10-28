@@ -74,6 +74,32 @@ async function main() {
   const adversarialOk = mutation.passed && fault.passed && tamper.passed;
   console.log(` -> Mutation: ${mutation.passed} Fault: ${fault.passed} Tamper: ${tamper.passed}`);
 
+  console.log('[120-GATE-DIAGNOSTICS]', JSON.stringify({
+    totalZ3Executions,
+    totalExpectedMatches,
+    totalReplays,
+    totalReplayMatches,
+    totalUnknown,
+    totalError,
+    dfrlOverallStatus: dfrlReport.overall_status,
+    dhOverallStatus: dhReport.overall_status,
+    dfrlResultsCount: dfrlReport.results.length,
+    dfrlUniqueIds: new Set(dfrlIds).size,
+    dfrlAllProved: dfrlReport.results.every(r => r.proved),
+    dfrlAllResultsSatOrUnsat: dfrlReport.results.every(r => r.solver_result === 'unsat' || r.solver_result === 'sat'),
+    dfrlReplayCount: dfrlReport.replays.length,
+    dfrlReplayIntegrity: dfrlReport.replays.every(r => r.replay_match &&
+      (r.original_result === 'unsat' || r.original_result === 'sat') &&
+      r.replay_result === r.original_result &&
+      r.original_assertion_hash === r.replay_assertion_hash),
+    dhResultsCount: dhReport.results.length,
+    dhUniqueIds: new Set(dhIds).size,
+    dfrlCasesValid,
+    dhCasesValid,
+    passed120,
+    adversarialOk
+  }));
+
   // 46-gate suite is required for ACTIVE; if unavailable, stay BLOCKED.
   let gatesPassed = 0;
   let gatesTotal = 0;
