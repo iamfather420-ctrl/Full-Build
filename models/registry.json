@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "registry_name": "DAISY_FIRST_PARTY_MODEL_REGISTRY",
+  "policy": {
+    "third_party_cloud_inference": "PROHIBITED",
+    "allowed_sources": ["local_file", "operator_mounted_path"],
+    "prohibited_providers": [
+      "google_gemini",
+      "openai",
+      "anthropic",
+      "xai_api",
+      "cohere",
+      "mistral_cloud",
+      "any_http_chat_completion_saas"
+    ],
+    "fail_closed": true
+  },
+  "model_root_env": "DAISY_MODEL_ROOT",
+  "default_model_root": "models",
+  "models": [
+    {
+      "id": "daisy-primary-gguf",
+      "role": "primary_chat",
+      "format": "gguf",
+      "relative_path": "gguf/daisy-primary.Q4_K_M.gguf",
+      "expected_sha256": null,
+      "min_bytes": 1048576,
+      "status": "SLOT_EMPTY",
+      "notes": "Primary offline chat model. Operator must install a licensed GGUF and set expected_sha256."
+    },
+    {
+      "id": "daisy-embed-onnx",
+      "role": "embeddings",
+      "format": "onnx",
+      "relative_path": "onnx/daisy-embed.onnx",
+      "expected_sha256": null,
+      "min_bytes": 1024,
+      "status": "SLOT_EMPTY",
+      "notes": "Optional local embeddings. Not required for chat BLOCKED→READY transition."
+    }
+  ],
+  "runtime": {
+    "enabled_env": "FIRST_PARTY_INFERENCE_ENABLED",
+    "runner_env": "FIRST_PARTY_INFERENCE_RUNTIME",
+    "runner_args_env": "FIRST_PARTY_INFERENCE_RUNTIME_ARGS",
+    "implementation": "cli_subprocess_or_native_binding",
+    "network": "forbidden_for_generation"
+  }
+}
