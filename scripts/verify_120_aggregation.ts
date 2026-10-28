@@ -114,14 +114,25 @@ async function main() {
   let gatesFailed = 0;
   try {
     const { System46Gates } = await import('../src/proofs/System46Gates');
-    const gates = System46Gates.getInstance?.() ?? (System46Gates as any);
-    const report = typeof gates.runAll === 'function' ? await gates.runAll() : null;
-    if (report) {
-      gatesTotal = report.total ?? report.gates?.length ?? 0;
-      gatesPassed = report.passed ?? 0;
-      gatesFailed = report.failed ?? Math.max(0, gatesTotal - gatesPassed);
-      fs.writeFileSync(path.join(outDir, 'system-46-gates.json'), JSON.stringify(report, null, 2));
-    }
+    const gates = System46Gates.getInstance();
+    const report = await gates.evaluateAll46Gates();
+    gatesTotal = report.total_gates;
+    gatesPassed = report.gates.filter(g => g.status === 'PASSED').length;
+    // BLOCKED and EXTERNAL_PROVIDER_REQUIRED are not passes; never exclude them.
+    gatesFailed = report.gates.filter(g => g.status !== 'PASSED').length;
+    fs.writeFileSync(path.join(outDir, 'system-46-gates.json'), JSON.stringify(report, null, 2));
+    console.log('[46-GATE-DIAGNOSTICS]', JSON.stringify({
+      total: gatesTotal,
+      passed: gatesPassed,
+      notPassed: gatesFailed,
+      blocked: report.blocked_count,
+      externalProviderRequired: report.external_provider_required_count,
+      failed: report.failed_count,
+      verdict: report.overall_verdict,
+      nonPassedGateIds: report.gates.filter(g => g.status !== 'PASSED').map(g => ({
+        gate_number: g.gate_number, gate_id: g.gate_id, status: g.status, name: g.name
+      }))
+    }));
   } catch (e: any) {
     console.warn('System46Gates not executed:', e?.message || e);
   }
