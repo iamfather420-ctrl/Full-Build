@@ -57,10 +57,18 @@ async function main() {
       r.replay_result === r.original_result &&
       r.original_assertion_hash === r.replay_assertion_hash);
   const dhCasesValid = dhReport.results.length === 32 && new Set(dhIds).size === 32 &&
-    dhReport.results.every(r => r.actual_result === r.expected_result && r.replay_result === r.actual_result &&
-      r.replay_match && r.claim_scope === 'MODEL_VERIFIED' &&
+    dhReport.results.every(r => r.verified &&
+      r.actual_result === r.expected_result &&
+      r.replay_result === r.actual_result &&
+      r.replay_match &&
+      ['MODEL_VERIFIED', 'MODEL_VERIFIED_BOUNDED', 'MODEL_VERIFIED_AXIOMATIC'].includes(r.scope) &&
       (r.actual_result === 'unsat' || r.actual_result === 'sat') &&
-      r.original_assertion_hash === r.replay_assertion_hash && r.certificate_sha256);
+      r.evidence_integrity === 'PASS' &&
+      r.source_integrity === 'PASS' &&
+      typeof r.contract_hash === 'string' && /^[a-f0-9]{64}$/i.test(r.contract_hash) &&
+      typeof r.source_hash === 'string' && /^[a-f0-9]{64}$/i.test(r.source_hash) &&
+      typeof r.source_content_hash === 'string' && /^[a-f0-9]{64}$/i.test(r.source_content_hash) &&
+      typeof r.evidence_hash === 'string' && /^[a-f0-9]{64}$/i.test(r.evidence_hash));
 
   const passed120 = totalZ3Executions === 120 && totalExpectedMatches === 120 &&
     totalReplays === 120 && totalReplayMatches === 120 && totalUnknown === 0 && totalError === 0 &&
