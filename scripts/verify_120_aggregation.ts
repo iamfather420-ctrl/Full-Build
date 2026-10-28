@@ -216,8 +216,18 @@ async function main() {
   console.log(`Wrote ${outPath}`);
   console.log(`Activation Gate Verdict:   ${activationGate.status}`);
   console.log(passed120 && adversarialOk ? 'AGGREGATION: corpus+adversarial OK' : 'AGGREGATION: FAIL');
-  // Exit 0 only when brain would activate; missing gate file is no longer a silent gap.
-  process.exit(brainActive ? 0 : 1);
+
+  // Formal verification success ≠ Daisy activation.
+  // Exit 0 when the 120 corpus + adversarial checks pass and the activation artifact
+  // was written. brainActive may still be BLOCKED (e.g. GATE-11 EXTERNAL_PROVIDER_REQUIRED).
+  // Never force ACTIVE; never treat intentional BLOCKED activation as a formal failure.
+  const formalOk = passed120 && adversarialOk && fs.existsSync(gatePath);
+  if (formalOk && !brainActive) {
+    console.log(
+      'FORMAL_OK_ACTIVATION_BLOCKED: 120/adversarial passed; activation remains BLOCKED until all 46 gates PASS (including external providers when required).'
+    );
+  }
+  process.exit(formalOk ? 0 : 1);
 }
 
 main().catch((e) => {
