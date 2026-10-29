@@ -175,6 +175,11 @@ async function main() {
   let gatesFailed = 0;
   let gatesReport: any = null;
   try {
+    // Remove any checked-in or stale result first: a child crash must never
+    // let this run accept gate evidence from an earlier commit or workflow.
+    const gateArtifactPath = path.join(outDir, 'system-46-gates.json');
+    if (fs.existsSync(gateArtifactPath)) fs.unlinkSync(gateArtifactPath);
+
     // Run the 46-gate suite in a child process. The 120-case WASM corpus creates
     // many solver contexts; re-running the authoritative pipeline in this same
     // process can exhaust the WASM heap (~2 GiB) after the corpus has completed.
@@ -184,9 +189,11 @@ async function main() {
       stdio: 'inherit',
       timeout: 80 * 60 * 1000
     });
-    const gateArtifactPath = path.join(outDir, 'system-46-gates.json');
     if (!fs.existsSync(gateArtifactPath)) throw new Error('Isolated 46-gate process produced no system-46-gates.json artifact');
     gatesReport = JSON.parse(fs.readFileSync(gateArtifactPath, 'utf8'));
+    if (gatesReport.source_commit_sha !== commitSha || gatesReport.isolated_process !== true) {
+      throw new Error('Isolated 46-gate artifact provenance mismatch; activation remains BLOCKED');
+    }
     gatesTotal = gatesReport.total_gates;
     gatesPassed = gatesReport.gates.filter((g: any) => g.status === 'PASSED').length;
     // BLOCKED and EXTERNAL_PROVIDER_REQUIRED are not passes; never exclude them.
