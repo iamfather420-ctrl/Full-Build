@@ -234,7 +234,9 @@ export class DFRLFormalVerifier {
       execution_id: executionId,
       solver_result: solverResult,
       expected_solver_result: item.expected_solver_result,
-      proved: solverResult === item.expected_solver_result,
+      // Fail closed: this verifier currently has no SAT-model extraction/recheck implementation.
+      // A SAT solver response alone is not a verified witness.
+      proved: false,
       claim_scope: 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
@@ -290,10 +292,14 @@ export class DFRLFormalVerifier {
     const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}`;
     const replayEvidenceHash = computeSha256(replayCertSeed);
 
+    // A matching SAT replay is not sufficient: the independent witness must also be
+    // extracted and re-asserted in a fresh context. That path is not implemented here.
+    const replayWitnessRechecked = false;
     const match =
       replayResult === originalResult.solver_result &&
       originalResult.solver_result === item.expected_solver_result &&
-      (replayResult === 'unsat' || replayResult === 'sat');
+      (replayResult === 'unsat' || replayResult === 'sat') &&
+      (replayResult !== 'sat' || replayWitnessRechecked);
 
     return {
       operator_id: item.code,
@@ -349,7 +355,10 @@ export class DFRLFormalVerifier {
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
     const allExpectedResultsMatched = results.every((r, index) =>
-      r.solver_result === REAL_88_PARADOX_REGISTRY[index].expected_solver_result && r.proved
+      r.solver_result === REAL_88_PARADOX_REGISTRY[index].expected_solver_result &&
+      r.proved &&
+      r.sat_witness_recheck_passed === true &&
+      typeof r.sat_witness_model_sha256 === 'string' && /^[a-f0-9]{64}$/i.test(r.sat_witness_model_sha256)
     );
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
