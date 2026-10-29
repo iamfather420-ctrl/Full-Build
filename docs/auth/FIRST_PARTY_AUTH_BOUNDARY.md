@@ -66,3 +66,7 @@ Still required before any route activation:
 6. Add account recovery and audited invitation administration. Keep production auth blocked until all tests and the 46-gate evidence pass on the exact commit.
 
 No production database, secret, credential, runtime route, authentication setting, payment setting, or deployment was changed by this work.
+
+- `src/auth/FirstPartyAuthRouter.ts` now provides an **opt-in, unmounted** Express router for register/login/session/logout. It requires an exact HTTPS origin allowlist and explicit `enabled: true`, rejects cross-origin mutations, sets only a `__Host-` Secure/HttpOnly/SameSite=Lax cookie, never returns the session token in JSON, and clears/revokes sessions on logout. It returns unavailable while disabled. The application does not mount this router, and no public login route is active.
+- `scripts/test_first_party_auth_router.ts` exercises origin rejection, cookie flags, token omission, session/logout behavior, and the disabled fail-closed state with a mocked service.
+- The shared Neon rate limiter atomically reserves attempts under a row lock across replicas; successful authentication clears the counter. The in-memory limiter test double follows the same attempt-reservation contract.
