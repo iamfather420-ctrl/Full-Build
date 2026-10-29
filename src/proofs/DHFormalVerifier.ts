@@ -275,7 +275,8 @@ export class DHFormalVerifier {
 
         if (checkRes === 'unsat') return { result: 'unsat', solver_version: this.solverVersion, duration_ms: dur };
         if (checkRes === 'sat') {
-          const modelText = solver.model().toString();
+          const model = await solver.model();
+          const modelText = String(model);
           const witnessCheck = await independentlyCheckSatWitness(z3, smtString, modelText);
           return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur, model_text: modelText, model_sha256: witnessCheck.model_sha256, witness_recheck_passed: witnessCheck.passed, error: witnessCheck.passed ? undefined : (witnessCheck.error || 'Independent SAT witness recheck did not return SAT.') };
         }
