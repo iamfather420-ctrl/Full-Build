@@ -16,7 +16,6 @@ export interface DFRLVerificationResult {
   solver_version: string;
   execution_id: string;
   solver_result: 'unsat' | 'sat' | 'unknown' | 'error' | 'formal_execution_not_performed';
-  /** True when Z3 returned a determinate SAT/UNSAT result and the independent replay matched it. */
   proved: boolean;
   claim_scope: 'MODEL_VERIFIED';
   execution_duration_ms: number;
@@ -228,9 +227,7 @@ export class DFRLFormalVerifier {
       solver_version: this.solverVersion,
       execution_id: executionId,
       solver_result: solverResult,
-      // A determinate SAT result is valid solver evidence too; the expected polarity
-      // must be checked by the corpus contract, not inferred from SAT/UNSAT alone.
-      proved: solverResult === 'unsat' || solverResult === 'sat',
+      proved: solverResult === 'unsat',
       claim_scope: 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
@@ -286,11 +283,9 @@ export class DFRLFormalVerifier {
     const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}`;
     const replayEvidenceHash = computeSha256(replayCertSeed);
 
-    // Replay integrity means the independent solver reproduces the exact result.
-    // SAT and UNSAT are both determinate outcomes; unknown/error never pass.
     const match =
-      (originalResult.solver_result === 'unsat' || originalResult.solver_result === 'sat') &&
-      replayResult === originalResult.solver_result;
+      replayResult === originalResult.solver_result &&
+      originalResult.solver_result === 'unsat';
 
     return {
       operator_id: item.code,
@@ -345,12 +340,10 @@ export class DFRLFormalVerifier {
     const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
-    const allResolved = executed === REAL_88_PARADOX_REGISTRY.length &&
-      unsatCount + satCount === REAL_88_PARADOX_REGISTRY.length &&
-      unknownCount === 0 && errorCount === 0 && notExecutedCount === 0;
+    const allUnsat = unsatCount === REAL_88_PARADOX_REGISTRY.length;
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
-      allResolved && allReplayed ? 'VERIFIED' : (executed > 0 ? 'PARTIAL' : 'FAILED');
+      allUnsat && allReplayed ? 'VERIFIED' : (unsatCount > 0 ? 'PARTIAL' : 'FAILED');
 
     const rootHash = computeSha256(
       results.map(r => `${r.operator_id}:${r.actual_smt_assertion_hash}:${r.solver_result}:${r.certificate_sha256}`).join('|')
