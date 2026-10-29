@@ -205,7 +205,8 @@ export class DFRLFormalVerifier {
       if (res === 'unsat') solverResult = 'unsat';
       else if (res === 'sat') {
         solverResult = 'sat';
-        satWitnessModel = solver.model().toString();
+        const model = await solver.model();
+        satWitnessModel = String(model);
       } else solverResult = 'unknown';
     } catch (err: any) {
       solverResult = 'error';
