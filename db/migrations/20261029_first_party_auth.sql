@@ -141,10 +141,13 @@ SET search_path = pg_catalog, public, solvex_private AS $$
 BEGIN
   IF p_token_hash !~ '^[0-9a-f]{64}$' OR p_expires_at <= p_created_at OR NOT EXISTS (
     SELECT 1 FROM solvex_private.auth_credentials c
+    JOIN public.users u ON u.id = c.user_id AND u.tenant_id = c.tenant_id
     JOIN public.tenant_memberships m ON m.user_id = c.user_id AND m.tenant_id = c.tenant_id
+    JOIN public.roles r ON r.id = m.role_id AND r.tenant_id = m.tenant_id
     JOIN public.tenants t ON t.id = c.tenant_id
     WHERE c.user_id = p_user_id AND c.tenant_id = p_tenant_id
-      AND c.disabled = false AND m.status = 'ACTIVE' AND t.status = 'ACTIVE'
+      AND c.disabled = false AND u.status = 'ACTIVE' AND m.status = 'ACTIVE'
+      AND COALESCE(r.status, 'ACTIVE') = 'ACTIVE' AND t.status = 'ACTIVE'
   ) THEN RETURN false; END IF;
   INSERT INTO solvex_private.auth_sessions(token_hash, tenant_id, user_id, created_at, expires_at, revoked_at)
     VALUES (p_token_hash, p_tenant_id, p_user_id, p_created_at, p_expires_at, NULL);
