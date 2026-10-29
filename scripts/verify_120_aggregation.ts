@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import cp from 'child_process';
+import { createHash } from 'node:crypto';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { buildFormalEvidenceHashes } from '../src/proofs/formalEvidenceHash';
@@ -139,14 +140,32 @@ async function main() {
   const artifactsDir = path.resolve(process.cwd(), 'artifacts');
   if (!fs.existsSync(artifactsDir)) fs.mkdirSync(artifactsDir, { recursive: true });
 
-  // Execute the authoritative 46-gate truth-boundary suite before allowing brain activation.
-  // Inject the real filesystem/platform so the nested authoritative pipeline refreshes its own gate artifacts.
-  AuthoritativeVerificationPipeline.setNodePlatform({ execSync: cp.execSync, fs, path });
-  setDiskDbChecker((p: string) => fs.existsSync(p));
-  const gatesReport = await System46Gates.getInstance().evaluateAll46Gates();
-  fs.writeFileSync(path.join(artifactsDir, 'system-46-gates.json'), JSON.stringify(gatesReport, null, 2), 'utf8');
+  // Run 46 gates in a fresh Node process to release the Z3 WASM heap.
+  let gatesReport: any = null;
+  let gatesPassed = 0;
+  let gatesTotal = 0;
+  let gatesFailed = 0;
+  try {
+    const gateArtifactPath = path.join(artifactsDir, 'system-46-gates.json');
+    if (fs.existsSync(gateArtifactPath)) fs.unlinkSync(gateArtifactPath);
+    cp.execFileSync(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'scripts/verify_46_gates.ts'], {
+      stdio: 'inherit',
+      timeout: 80 * 60 * 1000
+    });
+    if (!fs.existsSync(gateArtifactPath)) throw new Error('Isolated 46-gate process produced no artifact');
+    gatesReport = JSON.parse(fs.readFileSync(gateArtifactPath, 'utf8'));
+    if (gatesReport.source_commit_sha !== commitSha || gatesReport.isolated_process !== true ||
+        gatesReport.total_gates !== 46 || gatesReport.gates?.length !== 46 ||
+        new Set(gatesReport.gates.map((g: any) => g.gate_id)).size !== 46) {
+      throw new Error('Isolated 46-gate provenance or inventory mismatch; activation remains BLOCKED');
+    }
+    gatesTotal = gatesReport.total_gates;
+    gatesPassed = gatesReport.gates.filter((g: any) => g.status === 'PASSED').length;
+    gatesFailed = gatesReport.gates.filter((g: any) => g.status !== 'PASSED').length;
+  } catch (e: any) {
+    console.warn('System46Gates isolated process not completed; activation remains BLOCKED:', e?.message || e);
+  }
 
-  const nonPassedGates = gatesReport.gates.filter(g => g.status !== 'PASSED');
   const brainActive = passed120 && adversarialVerificationPassed &&
     gatesReport.gates.length === 46 && nonPassedGates.length === 0;
 
@@ -440,7 +459,26 @@ ${reconciliationTable.map(row => {
 1. **DFRL SMT premise mutation:** ${adversarialVerification.dfrl_mutation.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dfrl_mutation.details}
 2. **DFRL failure injection:** ${adversarialVerification.dfrl_failure_injection.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dfrl_failure_injection.notes}
 3. **DFRL artifact tamper:** ${adversarialVerification.dfrl_tamper_alarm.passed ? 'PASSED' : 'FAILED'}
-4. **DH SMT premise mutation:** ${adversarialVerification.dh_smt_mutation.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dh_smt_mutation.details}
+4. **DH   // Hash exact generated artifact bytes after all writers finish; exclude this manifest itself.
+  const hashTargets = ['formal-aggregation.json', 'z3-120-formal-verification-summary.json',
+    'daisy-brain-activation-gate.json', 'system-46-gates.json', 'execution-gates.json',
+    'final-forensic-report.json'];
+  const artifactSha256: Record<string, string> = {};
+  for (const name of hashTargets) {
+    const file = path.join(artifactsDir, name);
+    if (fs.existsSync(file)) artifactSha256[name] = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  }
+  fs.writeFileSync(path.join(artifactsDir, 'formal-artifact-sha256.json'), JSON.stringify({
+    schema: 'SOLVEX_DAISY_GENERATED_ARTIFACT_HASH_MANIFEST_V1',
+    source_commit_sha: commitSha,
+    generated_at: new Date().toISOString(),
+    corpus_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256,
+    artifact_sha256: artifactSha256,
+    missing_expected_artifacts: hashTargets.filter(name => !artifactSha256[name])
+  }, null, 2), 'utf8');
+
+SMT premise mutation:** ${adversarialVerification.dh_smt_mutation.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dh_smt_mutation.details}
 5. **DH failure injection:** ${adversarialVerification.dh_failure_injection.passed ? 'PASSED' : 'FAILED'} — ${adversarialVerification.dh_failure_injection.details}
 6. **DH artifact tamper:** ${adversarialVerification.dh_artifact_tamper.passed ? 'PASSED' : 'FAILED'}
 7. **Contract hash integrity:** ${adversarialVerification.contract_hash_integrity ? 'PASSED' : 'FAILED'}
