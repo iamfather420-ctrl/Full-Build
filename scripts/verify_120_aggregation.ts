@@ -224,7 +224,7 @@ async function main() {
       total: 46,
       observed: gatesReport?.gates?.length ?? gatesTotal,
       passed: gatesPassed,
-      failed: gatesFailed,
+      failed: gatesReport?.failed_count ?? 0,
       blocked: gatesReport?.blocked_count ?? 0,
       external_provider_required: gatesReport?.external_provider_required_count ?? 0,
       non_passed: gatesFailed
