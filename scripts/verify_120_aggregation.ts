@@ -72,7 +72,41 @@ async function main() {
       typeof r.source_content_hash === 'string' && /^[a-f0-9]{64}$/i.test(r.source_content_hash) &&
       typeof r.evidence_hash === 'string' && /^[a-f0-9]{64}$/i.test(r.evidence_hash));
 
-  const passed120 = totalZ3Executions === 120 && totalExpectedMatches === 120 &&
+  // Bind this run to the exact checkout and preserve expected SAT case identities.
+  const dfrlRootSha256 = dfrlReport.verification_root_sha256;
+  const dhRootSha256 = dhReport.verification_root_sha256;
+  const combinedRootSha256 = computeSha256(JSON.stringify({
+    schema: 'SOLVEX_DAISY_FORMAL_CORPUS_ROOT_V1',
+    source_commit_sha: commitSha,
+    dfrl_root_sha256: dfrlRootSha256,
+    dh_root_sha256: dhRootSha256
+  }));
+  const runEvidenceSha256 = computeSha256(JSON.stringify({
+    schema: 'SOLVEX_DAISY_FORMAL_RUN_RECEIPT_V1',
+    source_commit_sha: commitSha,
+    dfrl_execution_id: dfrlReport.execution_id,
+    dfrl_timestamp: dfrlReport.timestamp,
+    dh_execution_id: dhReport.execution_id,
+    dh_timestamp: dhReport.timestamp,
+    dfrl_root_sha256: dfrlRootSha256,
+    dh_root_sha256: dhRootSha256,
+    expected_matches: totalExpectedMatches,
+    replay_matches: totalReplayMatches,
+    unknown: totalUnknown,
+    errors: totalError
+  }));
+  const expectedDfrlSatCaseIds = REAL_88_PARADOX_REGISTRY.filter(r => r.expected_solver_result === 'sat').map(r => r.code).sort();
+  const observedDfrlSatCaseIds = dfrlReport.results.filter(r => r.solver_result === 'sat').map(r => r.operator_id || r.code || '').sort();
+  const replayedDfrlSatCaseIds = dfrlReport.replays.filter(r => r.replay_result === 'sat').map(r => r.operator_id).sort();
+  const expectedDhSatCaseIds = dhReport.results.filter(r => r.expected_result === 'sat').map(r => r.case_id).sort();
+  const observedDhSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
+  const replayedDhSatCaseIds = dhReport.results.filter(r => r.replay_result === 'sat').map(r => r.case_id).sort();
+  const satIdentityMatches = JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(observedDfrlSatCaseIds) &&
+    JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(replayedDfrlSatCaseIds) &&
+    JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(observedDhSatCaseIds) &&
+    JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(replayedDhSatCaseIds);
+
+  const passed120 = satIdentityMatches && totalZ3Executions === 120 && totalExpectedMatches === 120 &&
     totalReplays === 120 && totalReplayMatches === 120 && totalUnknown === 0 && totalError === 0 &&
     dfrlReport.overall_status === 'VERIFIED' && dhReport.overall_status === 'VERIFIED' &&
     dhReport.blocked_count === 0 && dfrlCasesValid && dhCasesValid;
@@ -190,40 +224,6 @@ async function main() {
       non_passed: gatesFailed
     }
   };
-
-  // Bind this run to the exact checkout and preserve expected SAT case identities.
-  const dfrlRootSha256 = dfrlReport.verification_root_sha256;
-  const dhRootSha256 = dhReport.verification_root_sha256;
-  const combinedRootSha256 = computeSha256(JSON.stringify({
-    schema: 'SOLVEX_DAISY_FORMAL_CORPUS_ROOT_V1',
-    source_commit_sha: commitSha,
-    dfrl_root_sha256: dfrlRootSha256,
-    dh_root_sha256: dhRootSha256
-  }));
-  const runEvidenceSha256 = computeSha256(JSON.stringify({
-    schema: 'SOLVEX_DAISY_FORMAL_RUN_RECEIPT_V1',
-    source_commit_sha: commitSha,
-    dfrl_execution_id: dfrlReport.execution_id,
-    dfrl_timestamp: dfrlReport.timestamp,
-    dh_execution_id: dhReport.execution_id,
-    dh_timestamp: dhReport.timestamp,
-    dfrl_root_sha256: dfrlRootSha256,
-    dh_root_sha256: dhRootSha256,
-    expected_matches: totalExpectedMatches,
-    replay_matches: totalReplayMatches,
-    unknown: totalUnknown,
-    errors: totalError
-  }));
-  const expectedDfrlSatCaseIds = REAL_88_PARADOX_REGISTRY.filter(r => r.expected_solver_result === 'sat').map(r => r.code).sort();
-  const observedDfrlSatCaseIds = dfrlReport.results.filter(r => r.solver_result === 'sat').map(r => r.operator_id || r.code || '').sort();
-  const replayedDfrlSatCaseIds = dfrlReport.replays.filter(r => r.replay_result === 'sat').map(r => r.operator_id).sort();
-  const expectedDhSatCaseIds = dhReport.results.filter(r => r.expected_result === 'sat').map(r => r.case_id).sort();
-  const observedDhSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
-  const replayedDhSatCaseIds = dhReport.results.filter(r => r.replay_result === 'sat').map(r => r.case_id).sort();
-  const satIdentityMatches = JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(observedDfrlSatCaseIds) &&
-    JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(replayedDfrlSatCaseIds) &&
-    JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(observedDhSatCaseIds) &&
-    JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(replayedDhSatCaseIds);
 
   // Write the canonical closure artifact names consumed by scripts/ci_proof_closure_check.ts.
   // All values below are derived from this run's verifier outputs; no result is hand-edited.
