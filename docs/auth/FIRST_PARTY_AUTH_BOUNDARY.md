@@ -28,3 +28,17 @@ The service is intentionally not wired to public routes yet. Its constructor req
 `scripts/test_first_party_auth.ts` uses explicitly in-memory test doubles to verify service behavior. Passing that suite proves only the tested service contract under those test doubles. It does not prove persistence durability, multi-replica rate limiting, route security, production identity, or production readiness.
 
 No live database was connected or changed. No production credential was added. Authentication and payments remain disabled in the canonical runtime until the complete chain is reviewed and verified.
+
+## Confirmed Neon integration contract (read-only inspection, 2026-10-29)
+
+The Neon production branch was inspected read-only; no secret values or application rows were read.
+
+- Canonical `public.users` is tenant-scoped and has a unique `(tenant_id, email)` constraint. The current schema does not include password salt/hash columns.
+- `public.tenant_memberships` has a unique `(tenant_id, user_id)` constraint and a `role_id` foreign key to `public.roles`.
+- RLS policies on `users`, `tenants`, `tenant_memberships`, `roles`, and `permissions` use `solvex_private.current_claims()` to require the signed tenant context.
+- `solvex_private.current_claims()` expects an HMAC-SHA-256 token formatted as `base64(JSON claims).hex_signature`; claims include `user_id`, `tenant_id`, `email`, `role`, `issued_at`, and `expires_at`. Its maximum lifetime is 15 minutes and it reads `app.auth_token` from PostgreSQL session settings.
+- `solvex_private.auth_context_ready()` returned `true`, which proves a sufficiently long database-side secret record exists. It does **not** prove that the application has the matching secret, that signing/verification is correctly wired, or that login works.
+
+`src/auth/TenantContextToken.ts` implements the database's observed token format and validation rules. Its token is an internal database-context token, not a browser session token. The eventual repository must set `app.auth_token` using `SET LOCAL` inside the same transaction as each tenant-scoped query; it must never expose this token to a client. The HMAC secret must be provisioned and compared through a safe validation procedure without logging or displaying it.
+
+The current `FirstPartyAuthService` account lookup is now explicitly tenant-scoped to match the canonical `(tenant_id, email)` key. A transactional adapter must also create the corresponding `users` and `tenant_memberships` rows, reference an already-provisioned least-privilege role, and reject registration if any part cannot commit atomically.
