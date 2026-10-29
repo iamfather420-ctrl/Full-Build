@@ -30,6 +30,28 @@ This checklist is a release gate, not evidence that the tasks have passed. The c
 - [ ] Execute backup/restore, deployment rollback, dependency outage, OIDC outage, and Neon outage drills.
 - [ ] Run the full 46 real-world production gates and attach evidence for every gate. The 120-case SAT-witness corpus is a formal corpus result, not a substitute for those gates.
 
+## Read-only production reconciliation — 2026-10-29
+
+These are observed facts from read-only Neon/Vercel inspection. They are not a production-change authorization.
+
+### Neon schema and tenant security
+
+- Inspected Neon project `SolveX`, production branch `br-soft-dawn-b4wkrjox`. The catalog lists 37 tables in `public` and one table in `solvex_private`.
+- RLS is enabled and forced on 36 public tables. `public._migrations` and `solvex_private.auth_secrets` have RLS disabled; both require explicit privilege review. The latter was not granted to `solvex_app_runtime` or `solvex_runtime_login_v2`, but is granted to the owner and legacy `solvex_runtime_login`.
+- All ordinary tenant tables inspected use policies comparing `tenant_id` to `solvex_private.current_claims()->>'tenant_id'`. Payment-specific tables have explicit `false` policies and remain default-deny.
+- **Open policy defect to fix in a reviewed staging migration:** `public.tenants` is protected by the same `tenant_id` predicate, but its observed row has `tenant_id IS NULL` and `tenant_id` is not the primary key. Confirm the intended model and test a policy using the tenant primary key before any production migration.
+- **Critical role issue:** legacy `solvex_runtime_login` can log in, has `BYPASSRLS`, `CREATEDB`, `CREATEROLE`, membership in `neon_superuser`, and access to `auth_secrets`. Do not use this role for application runtime. No production role changes were made.
+- `solvex_runtime_login_v2` has `BYPASSRLS=false`, but `NOINHERIT` and no direct table privileges were observed. It is a member of `solvex_app_runtime`; the application must demonstrate its intended role-switch/privilege path in a staging integration test before readiness can pass.
+- The live database has no verified typed repository integration from this audit. `NeonStore.runMigrations()` and generic writes remain deliberately blocked; successful connectivity or RLS catalog checks are not proof of persistence, restart readback, or cross-tenant isolation.
+
+### Vercel, backups, and rollback
+
+- The Vercel project `uarefake` reports `live=false`; its latest deployment is `READY` but has `target=null` and is sourced from `iamfather420-ctrl/Uarefake-1`, branch `feat/daisy-self-hosted-auth-20261027`, commit `8ce7976d79c06e841341829a1a05be9d4d2fdcbd`—not `Full-Build/main`.
+- The custom domain `uarefake.space` is currently marked verified. Domain verification does not prove the correct repository/branch is serving production.
+- `.github/workflows/daily-backup.yml` creates a code archive and Neon custom-format dump, checks `gzip -t` and `pg_restore --list`, and uploads 30-day artifacts. This is archive/dump integrity, **not** a full restore test.
+- Neon exposes an archived `solvex-recovery-drill-2026-10-14` branch with restore metadata, but this audit did not establish a current application-level restore/readback test or a production deployment rollback drill.
+- No Vercel promotion/deployment, Neon mutation, role change, credential change, or payment operation was performed during this inspection.
+
 ## Payment policy
 
 - PayPal, checkout, capture, credential testing, provider OAuth, and payment webhooks are disabled and not required for this release.

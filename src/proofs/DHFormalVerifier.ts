@@ -20,6 +20,7 @@
 
 import { AUTHORITATIVE_32_DH_CONTRACTS, DHAuthoritativeContract, DHScope } from '../formal/dhAuthoritativeFormalContracts';
 import { computeSha256 } from '../database/DatabaseSchema';
+import { independentlyCheckSatWitness } from './satWitness';
 
 export type { DHScope };
 export type { DHAuthoritativeContract as DHFormalContract };
@@ -37,6 +38,11 @@ export interface DHFormalVerificationResult {
   actual_result: 'unsat' | 'sat' | 'unknown' | 'error';
   replay_result: 'unsat' | 'sat' | 'unknown' | 'error';
   replay_match: boolean;
+  sat_witness_model?: string;
+  sat_witness_model_sha256?: string;
+  sat_witness_recheck_passed?: boolean;
+  replay_witness_model_sha256?: string;
+  replay_witness_recheck_passed?: boolean;
   verified: boolean;
   scope: DHScope;
   solver: string;
@@ -64,6 +70,8 @@ export interface DHReplayRecord {
   original_evidence_hash: string;
   replay_evidence_hash: string;
   cleanroom_context_id: string;
+  replay_witness_model_sha256?: string;
+  replay_witness_recheck_passed?: boolean;
   timestamp: string;
 }
 
@@ -202,7 +210,7 @@ export class DHFormalVerifier {
         return platformContext.fs.readFileSync(sourceFilePath, 'utf8');
       }
     } catch {}
-    return `CANONICAL_SOURCE_REF:${sourceFilePath}:DH_BOOTSTRAP_PARADOX_REGISTRY_V1`;
+    return '';
   }
 
   /**
@@ -250,7 +258,7 @@ export class DHFormalVerifier {
    */
   public async executeInFreshZ3Context(
     smtString: string
-  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; error?: string }> {
+  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; model_text?: string; model_sha256?: string; witness_recheck_passed?: boolean; error?: string }> {
     const start = performance.now();
     try {
       const z3 = await this.getZ3Module();
@@ -266,7 +274,12 @@ export class DHFormalVerifier {
         const dur = performance.now() - start;
 
         if (checkRes === 'unsat') return { result: 'unsat', solver_version: this.solverVersion, duration_ms: dur };
-        if (checkRes === 'sat') return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur };
+        if (checkRes === 'sat') {
+          const model = await solver.model();
+          const modelText = String(model);
+          const witnessCheck = await independentlyCheckSatWitness(z3, smtString, modelText);
+          return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur, model_text: modelText, model_sha256: witnessCheck.model_sha256, witness_recheck_passed: witnessCheck.passed, error: witnessCheck.passed ? undefined : (witnessCheck.error || 'Independent SAT witness recheck did not return SAT.') };
+        }
         return { result: 'unknown', solver_version: this.solverVersion, duration_ms: dur };
       } catch (subErr: any) {
         return {
@@ -307,20 +320,22 @@ export class DHFormalVerifier {
     const cleanroomContextId = `dh_replay_${contract.case_id}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const replayOutcome = await this.executeInFreshZ3Context(contract.z3_smt_assertion);
     const replayResult = replayOutcome.result;
-    const replayMatch = actualResult === replayResult;
+    const replayMatch = actualResult === replayResult &&
+      (actualResult !== 'sat' || (execOutcome.witness_recheck_passed === true && replayOutcome.witness_recheck_passed === true));
 
-    const evidenceSeed = `${contract.case_id}:${contract.contract_hash}:${sourceHash}:${actualResult}:${replayResult}:${commitSha}`;
+    const evidenceSeed = `${contract.case_id}:${contract.contract_hash}:${sourceHash}:${actualResult}:${replayResult}:${execOutcome.model_sha256 || 'NO_SAT_WITNESS'}:${execOutcome.witness_recheck_passed === true}:${replayOutcome.model_sha256 || 'NO_REPLAY_SAT_WITNESS'}:${replayOutcome.witness_recheck_passed === true}:${commitSha}`;
     const evidenceHash = computeSha256(evidenceSeed);
 
-    const replaySeed = `${contract.case_id}:${cleanroomContextId}:${contract.contract_hash}:${replayResult}:${commitSha}`;
+    const replaySeed = `${contract.case_id}:${cleanroomContextId}:${contract.contract_hash}:${replayResult}:${replayOutcome.model_sha256 || 'NO_REPLAY_SAT_WITNESS'}:${replayOutcome.witness_recheck_passed === true}:${commitSha}`;
     const replayEvidenceHash = computeSha256(replaySeed);
 
     // Algorithmic verification status derivation
     const resultMatch = actualResult === contract.expected_result;
     const nonError = actualResult !== 'unknown' && actualResult !== 'error';
     const evidencePass = computeSha256(evidenceSeed) === evidenceHash;
-    const sourcePass = sourceHash.length === 64;
-    const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass;
+    const sourcePass = sourceContent.length > 0 && sourceHash.length === 64;
+    const witnessPass = actualResult !== 'sat' || (execOutcome.witness_recheck_passed === true && replayOutcome.witness_recheck_passed === true);
+    const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass && witnessPass;
 
     const result: DHFormalVerificationResult = {
       case_id: contract.case_id,
@@ -335,6 +350,11 @@ export class DHFormalVerifier {
       actual_result: actualResult,
       replay_result: replayResult,
       replay_match: replayMatch,
+      sat_witness_model: execOutcome.model_text,
+      sat_witness_model_sha256: execOutcome.model_sha256,
+      sat_witness_recheck_passed: execOutcome.witness_recheck_passed,
+      replay_witness_model_sha256: replayOutcome.model_sha256,
+      replay_witness_recheck_passed: replayOutcome.witness_recheck_passed,
       verified,
       scope: contract.scope,
       solver: 'z3-wasm',
@@ -361,6 +381,8 @@ export class DHFormalVerifier {
       original_evidence_hash: evidenceHash,
       replay_evidence_hash: replayEvidenceHash,
       cleanroom_context_id: cleanroomContextId,
+      replay_witness_model_sha256: replayOutcome.model_sha256,
+      replay_witness_recheck_passed: replayOutcome.witness_recheck_passed,
       timestamp
     };
 

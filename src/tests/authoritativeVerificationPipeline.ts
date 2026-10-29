@@ -9,6 +9,7 @@ let injectedPlatform: NodePlatformContext | null = null;
 import { PreflightService } from '../services/preflight';
 import { runEnterpriseVerification } from './enterpriseVerification';
 import { DFRLFormalVerifier } from '../proofs/DFRLFormalVerifier';
+import { isDfrl88GatePassed, dfrl88GateDetails } from '../proofs/dfrlGatePredicate';
 import { runDaisy54NodeCoverage } from './daisy54NodeCoverage';
 import { runPersistenceVerification } from './persistenceVerification';
 import { SqliteStore } from '../database/SqliteStore';
@@ -260,7 +261,7 @@ export class AuthoritativeVerificationPipeline {
     const g6Start = performance.now();
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
     const dfrlReport = await dfrlVerifier.verifyAll88();
-    const dfrlOk = dfrlReport.unsat_count === 88 && dfrlReport.overall_status === 'VERIFIED';
+    const dfrlOk = isDfrl88GatePassed(dfrlReport);
     recordGate(
       6,
       'GATE-06',
@@ -268,17 +269,7 @@ export class AuthoritativeVerificationPipeline {
       'MODEL',
       dfrlOk ? 'PASSED' : 'FAILED',
       performance.now() - g6Start,
-      {
-        total_propositions: dfrlReport.total_propositions,
-        attempted: dfrlReport.attempted,
-        executed: dfrlReport.executed,
-        unsat_proved_count: dfrlReport.unsat_count,
-        authored_models_count: dfrlReport.authored_models_count,
-        generated_models_count: dfrlReport.generated_models_count,
-        solver_engine: dfrlReport.solver_engine,
-        solver_version: dfrlReport.solver_version,
-        root_sha256: dfrlReport.verification_root_sha256
-      }
+      dfrl88GateDetails(dfrlReport)
     );
 
     writeArtifact('dfrl-88-verification.json', JSON.stringify(dfrlReport, null, 2));
@@ -503,9 +494,15 @@ export class AuthoritativeVerificationPipeline {
       transitionAttempts.length === plannedTransitions.length &&
       transitionAttempts.every(t => t.success) &&
       actualFinalStatus === 'DEPLOYED';
-    const lifecycleBlocked = !e2eOk && transitionAttempts.some(t =>
-      !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
-    );
+    // Classify explicit authorization-denial responses as BLOCKED without coupling
+    // the safety verdict to one exact error sentence. A missing order or illegal
+    // transition remains FAILED; only an explicit BLOCKED response mentioning
+    // identity, authorization, session, or tenant claims qualifies as an auth block.
+    const lifecycleBlocked = !e2eOk && transitionAttempts.some(t => {
+      const reason = t.error || '';
+      return !t.success && /\bBLOCKED\b/i.test(reason) &&
+        /(identity|authori[sz]ation|session|tenant claim)/i.test(reason);
+    });
     const lifecycleGateStatus: GateResult['status'] = e2eOk
       ? 'PASSED'
       : lifecycleBlocked ? 'BLOCKED' : 'FAILED';

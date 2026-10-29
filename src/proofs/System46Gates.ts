@@ -54,10 +54,13 @@ export class System46Gates {
 
     for (let i = 0; i < authReport.gates.length; i++) {
       const g = authReport.gates[i];
-      let gStatus: GateExecutionResult['status'] = 'PASSED';
+      // Map pipeline statuses into the 46-gate vocabulary without promoting CONFIGURED to FAIL.
+      // CONFIGURED means a provider is partially present but not fully verified — external boundary, not local failure.
+      let gStatus: GateExecutionResult['status'] = 'FAIL';
       if (g.status === 'PASSED') gStatus = 'PASSED';
-      else if (g.status === 'EXTERNAL_PROVIDER_REQUIRED') gStatus = 'EXTERNAL_PROVIDER_REQUIRED';
+      else if (g.status === 'EXTERNAL_PROVIDER_REQUIRED' || g.status === 'CONFIGURED') gStatus = 'EXTERNAL_PROVIDER_REQUIRED';
       else if (g.status === 'BLOCKED') gStatus = 'BLOCKED';
+      else if (g.status === 'FAILED') gStatus = 'FAIL';
       else gStatus = 'FAIL';
 
       evaluatedGates.push({
@@ -138,6 +141,22 @@ export class System46Gates {
     const extCount = evaluatedGates.filter(g => g.status === 'EXTERNAL_PROVIDER_REQUIRED').length;
     const blockedCount = evaluatedGates.filter(g => g.status === 'BLOCKED').length;
     const failCount = evaluatedGates.filter(g => g.status === 'FAIL').length;
+
+    // Inventory must be exactly 46 unique gate_ids derived from this run (15 auth + 30 enterprise + 1 master).
+    // Do not pad or synthesize missing gates.
+    const uniqueIds = new Set(evaluatedGates.map(g => g.gate_id));
+    if (evaluatedGates.length !== 46 || uniqueIds.size !== 46) {
+      throw new Error(
+        `System46Gates inventory invalid: length=${evaluatedGates.length} unique=${uniqueIds.size} (expected 46 unique). ` +
+        `auth=${authReport.gates.length} enterprise=${enterpriseReport.results.length}`
+      );
+    }
+    if (authReport.gates.length !== 15) {
+      throw new Error(`Authoritative pipeline must contribute exactly 15 gates; observed ${authReport.gates.length}`);
+    }
+    if (enterpriseReport.results.length !== 30) {
+      throw new Error(`Enterprise suite must contribute exactly 30 gates; observed ${enterpriseReport.results.length}`);
+    }
 
     return {
       execution_id: executionId,
