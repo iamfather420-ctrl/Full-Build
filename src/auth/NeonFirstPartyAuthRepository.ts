@@ -68,6 +68,20 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
     return new NeonFirstPartyAuthRepository(new Pool({ connectionString }) as unknown as PoolLike);
   }
 
+  private async assertRuntimeIdentity(client: Queryable): Promise<void> {
+    const result = await client.query<{ session_user: string; current_role: string; bypass_rls: boolean }>(`
+      SELECT session_user,
+             current_user AS current_role,
+             COALESCE((SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user), false) AS bypass_rls
+    `);
+    const identity = result.rows[0];
+    if (identity?.session_user !== 'solvex_runtime_login_v2' ||
+        identity.current_role !== 'solvex_app_runtime' ||
+        identity.bypass_rls !== false) {
+      throw new Error('BLOCKED: database session must be solvex_runtime_login_v2 -> solvex_app_runtime with BYPASSRLS=false.');
+    }
+  }
+
   private async withRuntimeRole<T>(work: (client: Queryable) => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
     let began = false;
@@ -75,6 +89,7 @@ export class NeonFirstPartyAuthRepository implements FirstPartyAuthRepository {
       await client.query('BEGIN');
       began = true;
       await client.query('SET LOCAL ROLE solvex_app_runtime');
+      await this.assertRuntimeIdentity(client);
       const result = await work(client);
       await client.query('COMMIT');
       began = false;
@@ -198,6 +213,15 @@ export class NeonAuthRateLimiter implements LoginRateLimiter {
     try {
       await client.query('BEGIN');
       await client.query('SET LOCAL ROLE solvex_app_runtime');
+      const identity = await client.query<{ session_user: string; current_role: string; bypass_rls: boolean }>(`
+        SELECT session_user,
+               current_user AS current_role,
+               COALESCE((SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user), false) AS bypass_rls
+      `);
+      const role = identity.rows[0];
+      if (role?.session_user !== 'solvex_runtime_login_v2' || role.current_role !== 'solvex_app_runtime' || role.bypass_rls !== false) {
+        throw new Error('BLOCKED: database session must be solvex_runtime_login_v2 -> solvex_app_runtime with BYPASSRLS=false.');
+      }
       const result = await client.query<{ value: T }>(sql, params);
       await client.query('COMMIT');
       return result.rows[0]?.value as T;
