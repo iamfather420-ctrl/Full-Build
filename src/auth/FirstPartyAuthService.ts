@@ -47,8 +47,8 @@ export interface InvitationRegistration {
 export interface FirstPartyAuthRepository {
   /** Must atomically validate/consume a single-use invitation, create a CUSTOMER account and membership. */
   registerFromInvitation(invitationTokenHash: string, input: InvitationRegistration): Promise<AuthIdentity | null>;
-  findCredentialByEmail(normalizedEmail: string): Promise<CredentialRecord | null>;
-  findCredentialByUserId(userId: string): Promise<CredentialRecord | null>;
+  findCredentialByEmailAndTenant(normalizedEmail: string, tenantId: string): Promise<CredentialRecord | null>;
+  findCredentialByUserIdAndTenant(userId: string, tenantId: string): Promise<CredentialRecord | null>;
   findMembership(userId: string, tenantId: string): Promise<MembershipRecord | null>;
   createSession(session: SessionRecord): Promise<void>;
   findSession(tokenHash: string): Promise<SessionRecord | null>;
@@ -181,7 +181,7 @@ export class FirstPartyAuthService {
       return { ok: false, error: 'LOGIN_TEMPORARILY_UNAVAILABLE' };
     }
 
-    const credential = await this.repository.findCredentialByEmail(email);
+    const credential = await this.repository.findCredentialByEmailAndTenant(email, requestedTenantId);
     // Always perform a password KDF even for unknown users to reduce account-enumeration timing.
     const salt = credential ? Buffer.from(credential.passwordSalt, 'hex') : Buffer.alloc(16, 0x5a);
     const expected = credential ? Buffer.from(credential.passwordHash, 'hex') : Buffer.alloc(SCRYPT_KEY_LENGTH, 0);
@@ -228,7 +228,7 @@ export class FirstPartyAuthService {
       return { valid: false, error: 'SESSION_INVALID_OR_EXPIRED' };
     }
 
-    const credential = await this.repository.findCredentialByUserId(session.userId);
+    const credential = await this.repository.findCredentialByUserIdAndTenant(session.userId, session.tenantId);
     // Repositories that do not support ID lookup cannot verify current account status.
     if (!credential || credential.disabled) return { valid: false, error: 'ACCOUNT_UNAVAILABLE' };
     const membership = await this.repository.findMembership(session.userId, session.tenantId);
