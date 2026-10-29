@@ -76,3 +76,16 @@ No production database, secret, credential, runtime route, authentication settin
 - No invitation-admin HTTP endpoint is mounted. The current database has no active CUSTOMER role rows and the matching `SOVEREIGN_AUTH_SECRET` has not been validated, so real issuance remains fail-closed until staging verification and an approved admin bootstrap path.
 
 **Bootstrap clarification from the read-only schema inspection:** the inspected Neon branch's `public.roles` table returned zero rows, not merely zero CUSTOMER rows. Therefore neither customer registration nor owner/admin invitation issuance can be activated until the human-controlled bootstrap process provisions tenant roles and an authorized first owner. This migration intentionally does not create tenants, users, or privileged role assignments.
+
+## Rehearsal-branch database validation (2026-10-29)
+
+Because Neon rejected creation of a new temporary branch at the project branch limit, the additive migration was applied only to the existing, explicitly named `solvex-tenant-auth-rehearsal-2026-10-16` branch (`br-dark-smoke-b4iu7i2t`). The canonical `production` branch was not modified.
+
+Read-only verification on the rehearsal branch confirmed:
+- All five new private tables exist: invitations, credentials, sessions, rate limits, and auth audit.
+- New auth functions are owned by `neondb_owner`, whose `rolbypassrls` is true; the application role `solvex_app_runtime` has `BYPASSRLS=false`, `NOINHERIT`, and `NOLOGIN`.
+- New functions pin `search_path=pg_catalog, public, solvex_private`; `solvex_app_runtime` can execute the explicitly granted routines; PUBLIC cannot execute those routines.
+- Direct SELECT on `solvex_private.auth_credentials` is denied to both `solvex_app_runtime` and PUBLIC.
+- A real PostgreSQL negative-path test admitted five rate-limit reservations, denied the sixth, rejected invitation issuance without a signed tenant context, and rejected an invalid invitation. The test ran inside a rollback-only exception subtransaction; follow-up counts confirmed no test invitation, user, or rate-limit row remained.
+
+**Remaining integration blocker:** this rehearsal branch did not have `solvex_runtime_login_v2`. The available Neon role-creation action generated a role with elevated `BYPASSRLS`/`CREATEROLE` flags; it was immediately deleted after inspection rather than retained or used. The adapter therefore remains unconnected to a live login role. A least-privilege login role must be provisioned through an approved administrative path with `NOINHERIT NOBYPASSRLS NOCREATEROLE`, and membership only in `solvex_app_runtime`, before real adapter/session tests can run. No generated role password is stored in the repository or documentation.
