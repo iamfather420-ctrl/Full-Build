@@ -61,6 +61,8 @@ jobs:
         run: npm run test:auth-neon-adapter
       - name: Secure auth router contract tests (mock service; not production readiness)
         run: npm run test:auth-router
+      - name: Invitation admin contract tests (mock database; not production readiness)
+        run: npm run test:auth-invitation-admin
 
       - name: Production preflight
         if: github.event_name == 'workflow_dispatch' && inputs.production_release
