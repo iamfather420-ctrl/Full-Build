@@ -163,7 +163,7 @@ export class DFRLFormalVerifier {
     const timestamp = new Date().toISOString();
     const assertionHash = computeSha256(item.formal_invariant);
     const smtHash = computeSha256(item.z3_smt_assertion);
-    const expected = item.expected_solver_result === 'sat' ? 'sat' : 'unsat';
+    const expected = item.expected_solver_result;
 
     const z3Mod = await this.getZ3Module();
     if (!z3Mod) {
