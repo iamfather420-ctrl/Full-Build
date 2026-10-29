@@ -29,6 +29,17 @@ jobs:
         run: bunx esbuild Solvex-core/server.ts --bundle --platform=node --format=cjs --packages=external --outfile=/tmp/solvex-core-server.cjs
       - name: Payments-disabled boundary checks
         run: bun run verify:payments-disabled
+      - name: First-party auth boundary tests (in-memory adapters; not production readiness)
+        run: bun run test:auth-boundary
+      - name: Verify auth SQL migration boundaries
+        run: bun run verify:auth-migration
+
+      - name: Neon auth repository adapter contract tests (mocked; not live DB verification)
+        run: bun run test:auth-neon-adapter
+      - name: Secure auth router contract tests (mock service; not production readiness)
+        run: bun run test:auth-router
+      - name: Invitation admin contract tests (mock database; not production readiness)
+        run: bun run test:auth-invitation-admin
       - name: Build
         run: bun run build
       - name: TypeScript
