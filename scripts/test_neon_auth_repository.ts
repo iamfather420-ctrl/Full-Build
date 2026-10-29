@@ -7,6 +7,7 @@ class FakeClient {
   released = false;
   async query<T = Row>(sql: string, params: unknown[] = []): Promise<{ rows: T[]; rowCount: number }> {
     this.queries.push({ sql, params });
+    if (sql.includes('SELECT session_user')) return { rows: [{ session_user: 'solvex_runtime_login_v2', current_role: 'solvex_app_runtime', bypass_rls: false } as T], rowCount: 1 };
     if (sql.includes('auth_register_from_invitation')) {
       return { rows: [{ user_id: 'u-1', email: 'person@example.test', tenant_id: 't-1', role: 'CUSTOMER' } as T], rowCount: 1 };
     }
