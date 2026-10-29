@@ -345,6 +345,33 @@ async function main() {
     )
   );
   console.log(`Wrote ${outPath}`);
+
+  // Hash the exact generated artifact bytes after all writers have completed.
+  // This manifest excludes itself to avoid a self-referential hash.
+  const hashTargets = [
+    'formal-aggregation.json',
+    'z3-120-formal-verification-summary.json',
+    'daisy-brain-activation-gate.json',
+    'system-46-gates.json',
+    'execution-gates.json',
+    path.basename(outPath)
+  ];
+  const artifactHashes: Record<string, string> = {};
+  for (const name of hashTargets) {
+    const file = path.join(outDir, name);
+    if (fs.existsSync(file)) artifactHashes[name] = computeSha256(fs.readFileSync(file, 'utf8'));
+  }
+  const artifactHashManifest = {
+    schema: 'SOLVEX_DAISY_GENERATED_ARTIFACT_HASH_MANIFEST_V1',
+    source_commit_sha: commitSha,
+    generated_at: new Date().toISOString(),
+    verification_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256,
+    artifact_sha256: artifactHashes,
+    missing_expected_artifacts: hashTargets.filter(name => !artifactHashes[name])
+  };
+  fs.writeFileSync(path.join(outDir, 'formal-artifact-sha256.json'), JSON.stringify(artifactHashManifest, null, 2));
+  console.log('[ARTIFACT-SHA256]', JSON.stringify(artifactHashManifest));
   console.log(`Activation Gate Verdict:   ${activationGate.status}`);
   console.log(passed120 && adversarialOk ? 'AGGREGATION: corpus+adversarial OK' : 'AGGREGATION: FAIL');
 
