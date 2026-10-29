@@ -41,7 +41,7 @@ for (const name of functionNames) {
 }
 
 assert.match(sql, /WHERE tenant_id = v_inv\.tenant_id AND name = 'CUSTOMER'/, 'registration must require a pre-provisioned CUSTOMER role');
-assert.match(sql, /used_at IS NULL AND expires_at > p_now FOR UPDATE/, 'invitation consumption must lock and reject replay');
+assert.match(sql, /used_at IS NULL AND revoked_at IS NULL AND expires_at > p_now FOR UPDATE/, 'invitation consumption must lock and reject replay or revoked invitations');
 assert.match(sql, /SELECT \* INTO v_row FROM solvex_private\.auth_rate_limits WHERE key_hash = p_key_hash FOR UPDATE/, 'rate-limit attempts must serialize across replicas');
 assert.match(sql, /GRANT USAGE ON SCHEMA solvex_private TO solvex_app_runtime;/, 'runtime role must receive only schema usage and explicit function grants');
 console.log('PASS: auth migration static safety checks (additive tables, pinned SECURITY DEFINER search paths, narrow function grants, invitation row lock, atomic rate limiter).');
