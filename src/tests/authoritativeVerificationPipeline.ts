@@ -260,7 +260,35 @@ export class AuthoritativeVerificationPipeline {
     const g6Start = performance.now();
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
     const dfrlReport = await dfrlVerifier.verifyAll88();
-    const dfrlOk = dfrlReport.unsat_count === 88 && dfrlReport.overall_status === 'VERIFIED';
+    const validWitnessHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+    const dfrlOk =
+      dfrlReport.total_propositions === 88 &&
+      dfrlReport.attempted === 88 &&
+      dfrlReport.executed === 88 &&
+      dfrlReport.results.length === 88 &&
+      new Set(dfrlReport.results.map(r => r.operator_id)).size === 88 &&
+      dfrlReport.sat_count === 88 &&
+      dfrlReport.unsat_count === 0 &&
+      dfrlReport.unknown_count === 0 &&
+      dfrlReport.error_count === 0 &&
+      dfrlReport.not_executed_count === 0 &&
+      dfrlReport.results.every(r =>
+        r.expected_solver_result === 'sat' &&
+        r.solver_result === 'sat' &&
+        r.proved === true &&
+        r.sat_witness_recheck_passed === true &&
+        validWitnessHash(r.sat_witness_model_sha256)
+      ) &&
+      dfrlReport.replays.length === 88 &&
+      dfrlReport.replays.every(r =>
+        r.replay_match &&
+        r.original_result === 'sat' &&
+        r.replay_result === 'sat' &&
+        r.replay_witness_recheck_passed === true &&
+        validWitnessHash(r.replay_witness_model_sha256)
+      ) &&
+      dfrlReport.deterministic_replays_matched === 88 &&
+      dfrlReport.overall_status === 'VERIFIED';
     recordGate(
       6,
       'GATE-06',
@@ -272,7 +300,11 @@ export class AuthoritativeVerificationPipeline {
         total_propositions: dfrlReport.total_propositions,
         attempted: dfrlReport.attempted,
         executed: dfrlReport.executed,
-        unsat_proved_count: dfrlReport.unsat_count,
+        expected_solver_result: 'sat',
+        sat_count: dfrlReport.sat_count,
+        unsat_count: dfrlReport.unsat_count,
+        sat_witnesses_rechecked: dfrlReport.results.filter(r => r.sat_witness_recheck_passed === true).length,
+        deterministic_replays_matched: dfrlReport.deterministic_replays_matched,
         authored_models_count: dfrlReport.authored_models_count,
         generated_models_count: dfrlReport.generated_models_count,
         solver_engine: dfrlReport.solver_engine,
