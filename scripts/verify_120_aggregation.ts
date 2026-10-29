@@ -284,7 +284,7 @@ async function main() {
       dfrl: { expected: expectedDfrlSatCaseIds, observed: observedDfrlSatCaseIds, replayed: replayedDfrlSatCaseIds },
       dh: { expected: expectedDhSatCaseIds, observed: observedDhSatCaseIds, replayed: replayedDhSatCaseIds },
       identities_match: satIdentityMatches,
-      witness_model_extraction: 'NOT_IMPLEMENTED_BY_CURRENT_WASM_VERIFIER'
+      witness_model_extraction: satWitnessModelsVerified ? 'VERIFIED' : 'BLOCKED'
     },
     timestamp: new Date().toISOString(),
     total_z3_executions: totalZ3Executions,
