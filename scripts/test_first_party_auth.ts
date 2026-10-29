@@ -98,6 +98,17 @@ assert.ok(repository.sessions.has(tokenHash), 'session lookup must use the hashe
 assert.equal(await auth.logout(login.sessionToken!), true);
 assert.equal((await auth.verifySession(login.sessionToken!)).valid, false, 'revoked sessions must be rejected');
 
+const membershipSession = await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-a');
+assert.equal(membershipSession.ok, true);
+repository.memberships.set(`user-1:tenant-a`, { tenantId: 'tenant-a', role: 'CUSTOMER', active: false });
+assert.equal((await auth.verifySession(membershipSession.sessionToken!)).valid, false, 'membership revocation must invalidate existing sessions');
+repository.memberships.set(`user-1:tenant-a`, { tenantId: 'tenant-a', role: 'CUSTOMER', active: true });
+
+for (let i = 0; i < 5; i++) {
+  assert.equal((await auth.login('unknown@example.test', 'not-a-valid-password', 'tenant-a')).error, 'INVALID_CREDENTIALS');
+}
+assert.equal((await auth.login('unknown@example.test', 'not-a-valid-password', 'tenant-a')).error, 'LOGIN_TEMPORARILY_UNAVAILABLE', 'rate limiter must block repeated attempts');
+
 const expiring = await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-a');
 assert.equal(expiring.ok, true);
 now += 60 * 60 * 1000;
