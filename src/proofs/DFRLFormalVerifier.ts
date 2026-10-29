@@ -1,5 +1,6 @@
 import { REAL_88_PARADOX_REGISTRY, DFRLParadoxItem, ModelClassification, ModelScope } from '../data/paradoxData';
 import { computeSha256 } from '../database/DatabaseSchema';
+import { independentlyCheckSatWitness } from './satWitness';
 
 export interface DFRLVerificationResult {
   operator_id: string;
@@ -16,6 +17,11 @@ export interface DFRLVerificationResult {
   solver_version: string;
   execution_id: string;
   solver_result: 'unsat' | 'sat' | 'unknown' | 'error' | 'formal_execution_not_performed';
+  expected_solver_result: 'unsat' | 'sat';
+  sat_witness_model?: string;
+  sat_witness_model_sha256?: string;
+  sat_witness_recheck_result?: 'sat' | 'unsat' | 'unknown' | 'error';
+  sat_witness_recheck_passed?: boolean;
   proved: boolean;
   claim_scope: 'MODEL_VERIFIED';
   execution_duration_ms: number;
@@ -36,6 +42,8 @@ export interface ReplayVerificationRecord {
   original_evidence_hash: string;
   replay_evidence_hash: string;
   replay_match: boolean;
+  replay_witness_model_sha256?: string;
+  replay_witness_recheck_passed?: boolean;
 }
 
 export interface DFRL88VerificationReport {
@@ -174,6 +182,7 @@ export class DFRLFormalVerifier {
         solver_version: this.solverVersion,
         execution_id: executionId,
         solver_result: 'formal_execution_not_performed',
+        expected_solver_result: expected,
         proved: false,
         claim_scope: 'MODEL_VERIFIED',
         execution_duration_ms: Number(duration.toFixed(3)),
@@ -185,6 +194,8 @@ export class DFRLFormalVerifier {
 
     let solverResult: DFRLVerificationResult['solver_result'] = 'unknown';
     let execError: string | undefined = undefined;
+    let satWitnessModel: string | undefined;
+    let satWitnessCheck: Awaited<ReturnType<typeof independentlyCheckSatWitness>> | undefined;
 
     try {
       const ctx = this.getPrimaryContext(z3Mod);
@@ -192,15 +203,22 @@ export class DFRLFormalVerifier {
       await solver.fromString(item.z3_smt_assertion);
       const res = await solver.check();
       if (res === 'unsat') solverResult = 'unsat';
-      else if (res === 'sat') solverResult = 'sat';
-      else solverResult = 'unknown';
+      else if (res === 'sat') {
+        solverResult = 'sat';
+        satWitnessModel = solver.model().toString();
+      } else solverResult = 'unknown';
     } catch (err: any) {
       solverResult = 'error';
       execError = err?.message || String(err);
     }
 
+    if (solverResult === 'sat') {
+      satWitnessCheck = await independentlyCheckSatWitness(z3Mod, item.z3_smt_assertion, satWitnessModel || '');
+    }
+    const satWitnessPassed = solverResult !== 'sat' || satWitnessCheck?.passed === true;
+    const satWitnessHash = satWitnessCheck?.model_sha256;
     const duration = performance.now() - start;
-    const certSeed = `${item.code}:${item.formal_invariant}:${smtHash}:${solverResult}:${executionId}`;
+    const certSeed = `${item.code}:${item.formal_invariant}:${smtHash}:${solverResult}:${satWitnessHash || 'NO_SAT_WITNESS'}:${satWitnessPassed}:${executionId}`;
 
     return {
       operator_id: item.code,
@@ -217,7 +235,12 @@ export class DFRLFormalVerifier {
       solver_version: this.solverVersion,
       execution_id: executionId,
       solver_result: solverResult,
-      proved: solverResult === expected,
+      expected_solver_result: expected,
+      sat_witness_model: satWitnessModel,
+      sat_witness_model_sha256: satWitnessHash,
+      sat_witness_recheck_result: satWitnessCheck?.result,
+      sat_witness_recheck_passed: satWitnessCheck?.passed,
+      proved: solverResult === expected && satWitnessPassed,
       claim_scope: 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
@@ -250,20 +273,27 @@ export class DFRLFormalVerifier {
     }
 
     let replayResult = 'unknown';
+    let replayWitnessModel: string | undefined;
+    let replayWitnessCheck: Awaited<ReturnType<typeof independentlyCheckSatWitness>> | undefined;
     try {
       const replayCtx = this.getCleanroomContext(z3Mod);
       const replaySolver = new replayCtx.Solver();
       await replaySolver.fromString(item.z3_smt_assertion);
       const res = await replaySolver.check();
       replayResult = res;
+      if (res === 'sat') replayWitnessModel = replaySolver.model().toString();
     } catch {
       replayResult = 'error';
     }
 
-    const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}`;
-    const match =
-      replayResult === originalResult.solver_result &&
-      (originalResult.solver_result === 'unsat' || originalResult.solver_result === 'sat');
+    if (replayResult === 'sat') {
+      replayWitnessCheck = await independentlyCheckSatWitness(z3Mod, item.z3_smt_assertion, replayWitnessModel || '');
+    }
+    const replayWitnessHash = replayWitnessCheck?.model_sha256;
+    const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}:${replayWitnessHash || 'NO_SAT_WITNESS'}:${replayWitnessCheck?.passed === true}`;
+    const match = replayResult === originalResult.solver_result &&
+      (originalResult.solver_result === 'unsat' || originalResult.solver_result === 'sat') &&
+      (replayResult !== 'sat' || (replayWitnessCheck?.passed === true && originalResult.sat_witness_recheck_passed === true));
 
     return {
       operator_id: item.code,
@@ -275,7 +305,9 @@ export class DFRLFormalVerifier {
       replay_result: replayResult,
       original_evidence_hash: originalResult.certificate_sha256,
       replay_evidence_hash: computeSha256(replayCertSeed),
-      replay_match: match
+      replay_match: match,
+      replay_witness_model_sha256: replayWitnessHash,
+      replay_witness_recheck_passed: replayWitnessCheck?.passed
     };
   }
 
