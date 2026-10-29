@@ -44,3 +44,25 @@ The Neon production branch was inspected read-only; no secret values or applicat
 The current `FirstPartyAuthService` account lookup is now explicitly tenant-scoped to match the canonical `(tenant_id, email)` key. A transactional adapter must also create the corresponding `users` and `tenant_memberships` rows, reference an already-provisioned least-privilege role, and reject registration if any part cannot commit atomically.
 
 - Read-only role metadata also showed the legacy `solvex_runtime_login` role is a member of `neon_superuser`; it must **not** be used by the application. `solvex_runtime_login_v2` is configured with `NOINHERIT` and is a member of `solvex_app_runtime`. The eventual database adapter must deliberately establish the least-privilege role inside each transaction and verify its effective role/privileges; do not assume membership privileges are inherited automatically.
+
+## Durable adapter and staged migration added
+
+- `db/migrations/20261029_first_party_auth.sql` adds private credential, invitation, session, audit, and shared rate-limit tables plus narrowly scoped database functions. Registration consumes an invitation under a row lock and creates the account, credential and CUSTOMER membership atomically. It fails closed if the tenant is inactive, the invitation is invalid/expired/reused, the account already exists, or the tenant has no active CUSTOMER role. It does not create or promote roles.
+- `src/auth/NeonFirstPartyAuthRepository.ts` implements the repository against those functions. Each operation opens a transaction, applies `SET LOCAL ROLE solvex_app_runtime`, uses bound SQL parameters, commits only after success, and propagates database failures. The limiter is shared in Neon rather than process-local.
+- `scripts/test_neon_auth_repository.ts` tests the adapter's transaction, tenant-parameter binding, least-privilege role selection, and failure propagation using a mocked pool. This is not live Neon verification.
+
+## Migration execution safety and outstanding proof
+
+The migration has **not** been applied to any database. Before it can be applied even to staging, review the SQL, run it only through the repository's approved migration workflow, and verify the executing/migration owner has the required privileges. The SECURITY DEFINER functions must be owned by a specifically reviewed role with the required table access and RLS bypass capability; the application connection itself must not have BYPASSRLS. Verify function ownership, fixed search paths, PUBLIC execute revocations, and grants to `solvex_app_runtime` after migration. Never use the legacy `solvex_runtime_login` role, which read-only role metadata showed is a member of `neon_superuser`.
+
+The existing database currently has no seeded `CUSTOMER` roles in the inspected branch, so invitation registration is intentionally unable to complete until a tenant's CUSTOMER role has been provisioned through an approved administrative path. The migration does not invent tenants or seed sample data.
+
+Still required before any route activation:
+1. Stage and review/apply the additive migration, then run schema/function-owner/privilege checks.
+2. Create CUSTOMER role records through a trusted tenant-admin procedure; build and audit invitation issuance/revocation (only token hashes stored).
+3. Verify the runtime connection can `SET LOCAL ROLE solvex_app_runtime` and cannot bypass RLS; verify each security-definer routine's owner, grants and transaction behavior.
+4. Run real integration tests against a disposable staging Neon branch: invitation race/replay, duplicate-email race, restart readback, revoked membership/session, expired sessions, role changes, concurrent rate-limit attempts, cross-tenant isolation and RLS policy enforcement.
+5. Add a reviewed HTTP layer with secure HttpOnly cookies, SameSite/CSRF protections, origin checks, no token in JSON, and safe cookie clearing.
+6. Add account recovery and audited invitation administration. Keep production auth blocked until all tests and the 46-gate evidence pass on the exact commit.
+
+No production database, secret, credential, runtime route, authentication setting, payment setting, or deployment was changed by this work.
