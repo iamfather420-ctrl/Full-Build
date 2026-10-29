@@ -10,6 +10,7 @@ import {
   type MembershipRecord,
   type SessionRecord,
 } from '../src/auth/FirstPartyAuthService';
+import { createTenantContextToken, verifyTenantContextToken } from '../src/auth/TenantContextToken';
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 
@@ -118,5 +119,19 @@ const disabledCredential = repository.credentials.get('tenant-a:person@example.t
 disabledCredential.disabled = true;
 assert.equal((await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-a')).ok, false, 'disabled accounts must be rejected');
 
-console.log('PASS: first-party auth boundary tests (invitation, scrypt password hash, opaque hashed sessions, tenant membership, non-enumerating failures, revocation, expiry, disabled accounts).');
+const contextSecret = 'test-only-secret-with-at-least-32-characters';
+const contextIdentity = { userId: 'user-1', email: 'person@example.test', tenantId: 'tenant-a', role: 'CUSTOMER' as const };
+const contextToken = createTenantContextToken(contextIdentity, contextSecret, now, 60_000);
+const contextCheck = verifyTenantContextToken(contextToken, contextSecret, now);
+assert.equal(contextCheck.valid, true, 'internal DB context token must validate');
+assert.equal(contextCheck.claims?.tenant_id, 'tenant-a');
+assert.equal(contextCheck.claims?.expires_at! - contextCheck.claims?.issued_at!, 60_000);
+assert.equal(verifyTenantContextToken(contextToken, 'wrong-secret-that-is-also-long-enough', now).valid, false, 'wrong secret must fail');
+assert.equal(verifyTenantContextToken(`${contextToken.slice(0, -1)}0`, contextSecret, now).valid, false, 'tampering must fail');
+assert.equal(verifyTenantContextToken(contextToken, contextSecret, now + 60_000).valid, false, 'expired DB context token must fail');
+assert.throws(() => createTenantContextToken(contextIdentity, 'short', now), /at least 32 characters/);
+assert.throws(() => createTenantContextToken(contextIdentity, contextSecret, now, 16 * 60 * 1000), /15 minutes/);
+
+console.log('PASS: first-party auth boundary tests (invitation, scrypt password hash, opaque hashed sessions, tenant membership, non-enumerating failures, revocation, expiry, disabled accounts, rate limiting).');
+console.log('PASS: database HMAC context token matches the SQL verifier contract (standard Base64 payload, SHA-256 HMAC, role/tenant claims, 15-minute maximum, expiry and tamper rejection).');
 console.log('LIMITATION: these tests use an in-memory repository and limiter; they do not prove durable storage or production readiness.');
