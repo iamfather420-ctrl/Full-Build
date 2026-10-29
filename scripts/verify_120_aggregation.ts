@@ -164,6 +164,11 @@ async function main() {
       replay_match: replay?.replay_match,
       assertion_hash: r.actual_smt_assertion_hash,
       replay_assertion_hash: replay?.replay_assertion_hash,
+      sat_witness_recheck_result: r.sat_witness_recheck_result,
+      sat_witness_recheck_passed: r.sat_witness_recheck_passed,
+      sat_witness_model_sha256: r.sat_witness_model_sha256,
+      replay_witness_recheck_passed: replay?.replay_witness_recheck_passed,
+      replay_witness_model_sha256: replay?.replay_witness_model_sha256,
       error: r.error
     }];
   });
