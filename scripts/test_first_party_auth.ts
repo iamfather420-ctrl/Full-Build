@@ -52,8 +52,13 @@ class MemoryRepository implements FirstPartyAuthRepository {
 
 class MemoryLimiter implements LoginRateLimiter {
   failures = new Map<string, number>();
-  async allow(key: string) { return (this.failures.get(key) ?? 0) < 5; }
-  async recordFailure(key: string) { this.failures.set(key, (this.failures.get(key) ?? 0) + 1); }
+  async allow(key: string) {
+    const attempts = this.failures.get(key) ?? 0;
+    if (attempts >= 5) return false;
+    this.failures.set(key, attempts + 1);
+    return true;
+  }
+  async recordFailure(_key: string) { /* attempt was already reserved atomically by allow() */ }
   async clear(key: string) { this.failures.delete(key); }
 }
 
