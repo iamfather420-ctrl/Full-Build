@@ -16,6 +16,8 @@ for (const table of ['auth_invitations', 'auth_credentials', 'auth_sessions', 'a
 
 const functionNames = [
   'auth_register_from_invitation',
+  'auth_create_invitation',
+  'auth_revoke_invitation',
   'auth_find_credential_by_email',
   'auth_find_credential_by_user',
   'auth_find_membership',
