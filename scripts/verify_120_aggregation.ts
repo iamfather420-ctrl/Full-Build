@@ -3,6 +3,7 @@ import path from 'path';
 import cp from 'child_process';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
+import { computeSha256 } from '../src/database/DatabaseSchema';
 
 async function main() {
   console.log('================================================================');
@@ -122,7 +123,7 @@ async function main() {
     gatesPassed = report.gates.filter(g => g.status === 'PASSED').length;
     // BLOCKED and EXTERNAL_PROVIDER_REQUIRED are not passes; never exclude them.
     gatesFailed = report.gates.filter(g => g.status !== 'PASSED').length;
-    fs.writeFileSync(path.join(outDir, 'system-46-gates.json'), JSON.stringify(report, null, 2));
+    fs.writeFileSync(path.join(outDir, 'system-46-gates.json'), JSON.stringify({ ...report, source_commit_sha: commitSha }, null, 2));
     console.log('[46-GATE-DIAGNOSTICS]', JSON.stringify({
       total: gatesTotal,
       passed: gatesPassed,
@@ -153,6 +154,9 @@ async function main() {
       ? '120/120 formal corpus and adversarial checks passed; all 46 system gates are PASSED.'
       : 'Activation blocked until formal corpus, adversarial checks, and all 46 system gates pass; no provider or blocked gate may be excluded.',
     commit_sha: commitSha,
+    source_commit_sha: commitSha,
+    verification_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256,
     timestamp: new Date().toISOString(),
     corpus: {
       total_required: 120,
@@ -183,6 +187,33 @@ async function main() {
     }
   };
 
+  // Bind this run to the exact checkout and preserve expected SAT case identities.
+  const dfrlRootSha256 = dfrlReport.verification_root_sha256;
+  const dhRootSha256 = dhReport.verification_root_sha256;
+  const combinedRootSha256 = computeSha256(JSON.stringify({
+    schema: 'SOLVEX_DAISY_FORMAL_CORPUS_ROOT_V1',
+    source_commit_sha: commitSha,
+    dfrl_root_sha256: dfrlRootSha256,
+    dh_root_sha256: dhRootSha256
+  }));
+  const runEvidenceSha256 = computeSha256(JSON.stringify({
+    schema: 'SOLVEX_DAISY_FORMAL_RUN_RECEIPT_V1',
+    source_commit_sha: commitSha,
+    dfrl_execution_id: dfrlReport.execution_id,
+    dfrl_timestamp: dfrlReport.timestamp,
+    dh_execution_id: dhReport.execution_id,
+    dh_timestamp: dhReport.timestamp,
+    dfrl_root_sha256: dfrlRootSha256,
+    dh_root_sha256: dhRootSha256,
+    expected_matches: totalExpectedMatches,
+    replay_matches: totalReplayMatches,
+    unknown: totalUnknown,
+    errors: totalError
+  }));
+  const expectedSatCaseIds = dhReport.results.filter(r => r.expected_result === 'sat').map(r => r.case_id).sort();
+  const observedSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
+  const replayedSatCaseIds = dhReport.results.filter(r => r.replay_result === 'sat').map(r => r.case_id).sort();
+
   // Write the canonical closure artifact names consumed by scripts/ci_proof_closure_check.ts.
   // All values below are derived from this run's verifier outputs; no result is hand-edited.
   const totalUnsat = dfrlReport.unsat_count + dhReport.unsat_count;
@@ -193,6 +224,12 @@ async function main() {
   const formalAggregationArtifact = {
     aggregation_name: 'Z3_120_FORMAL_AGGREGATION',
     commit_sha: sourceCommitSha,
+    source_commit_sha: sourceCommitSha,
+    verification_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256,
+    expected_sat_case_ids: expectedSatCaseIds,
+    observed_sat_case_ids: observedSatCaseIds,
+    replayed_sat_case_ids: replayedSatCaseIds,
     timestamp: new Date().toISOString(),
     dfrl: {
       required: 88, actual_z3_executions: dfrlReport.executed,
@@ -220,6 +257,12 @@ async function main() {
   const summaryArtifact = {
     aggregation_name: 'Z3_120_FORMAL_VERIFICATION_SUMMARY',
     commit_sha: sourceCommitSha,
+    source_commit_sha: sourceCommitSha,
+    verification_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256,
+    expected_sat_case_ids: expectedSatCaseIds,
+    observed_sat_case_ids: observedSatCaseIds,
+    replayed_sat_case_ids: replayedSatCaseIds,
     timestamp: new Date().toISOString(),
     total_z3_executions: totalZ3Executions,
     expected_result_matches: totalExpectedMatches,
