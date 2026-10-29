@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import cp from 'node:child_process';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
+import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
 import { System46Gates } from '../src/proofs/System46Gates';
 
 /**
@@ -11,10 +12,16 @@ import { System46Gates } from '../src/proofs/System46Gates';
  * This script emits a gate artifact only when the real suite returns a report.
  */
 async function main(): Promise<void> {
-  DHFormalVerifier.setPlatform({
+  // Supply the real Node platform to both verifiers and the authoritative
+  // pipeline. Without this injection the pipeline silently skips CLI checks
+  // and artifact writes, producing weaker evidence than the gate names imply.
+  const nodePlatform = {
     execSync: cp.execSync,
-    fs
-  });
+    fs,
+    path
+  };
+  DHFormalVerifier.setPlatform(nodePlatform);
+  AuthoritativeVerificationPipeline.setNodePlatform(nodePlatform);
 
   const startedAt = new Date().toISOString();
   console.log('[46-GATE-ISOLATED] Starting independent 46-gate evaluation.');
