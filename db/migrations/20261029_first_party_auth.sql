@@ -231,7 +231,14 @@ $$;
 
 REVOKE ALL ON TABLE solvex_private.auth_invitations, solvex_private.auth_credentials,
   solvex_private.auth_sessions, solvex_private.auth_audit FROM PUBLIC;
-REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA solvex_private FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_register_from_invitation(text,text,text,text,bigint) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_find_credential_by_email(text,text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_find_credential_by_user(text,text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_find_membership(text,text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_create_session(text,text,text,bigint,bigint) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_find_session(text) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_revoke_session(text,bigint) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION solvex_private.auth_append_audit(text,text,text,bigint,text) FROM PUBLIC;
 
 GRANT USAGE ON SCHEMA solvex_private TO solvex_app_runtime;
 GRANT EXECUTE ON FUNCTION solvex_private.auth_register_from_invitation(text,text,text,text,bigint) TO solvex_app_runtime;
