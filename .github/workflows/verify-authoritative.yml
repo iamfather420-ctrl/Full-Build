@@ -2,7 +2,7 @@ name: Authoritative 120-Case Verification
 
 on:
   push:
-    branches: [main, master, feat/canonical-registry-daisy-haminja-20261028]
+    branches: [main, master, feat/canonical-registry-daisy-haminja-20261028, fix/z3-wasm-memory-isolation-20261029]
   pull_request:
     branches: [main, master]
   workflow_dispatch:

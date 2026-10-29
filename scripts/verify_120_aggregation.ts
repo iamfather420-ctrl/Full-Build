@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import cp from 'child_process';
+import { createHash } from 'node:crypto';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { computeSha256 } from '../src/database/DatabaseSchema';
@@ -150,35 +151,73 @@ async function main() {
     adversarialOk
   }));
 
+  // Print precise failing DFRL identities before the separate 46-gate process starts.
+  // This preserves actionable evidence even if a later stage exhausts memory.
+  const dfrlFailures = dfrlReport.results.flatMap((r, index) => {
+    const replay = dfrlReport.replays[index];
+    if (r.proved && replay?.replay_match) return [];
+    return [{
+      case_id: r.operator_id || r.code,
+      expected: r.expected_solver_result,
+      observed: r.solver_result,
+      proved: r.proved,
+      replay_result: replay?.replay_result,
+      replay_match: replay?.replay_match,
+      assertion_hash: r.actual_smt_assertion_hash,
+      replay_assertion_hash: replay?.replay_assertion_hash,
+      sat_witness_recheck_result: r.sat_witness_recheck_result,
+      sat_witness_recheck_passed: r.sat_witness_recheck_passed,
+      sat_witness_model_sha256: r.sat_witness_model_sha256,
+      replay_witness_recheck_passed: replay?.replay_witness_recheck_passed,
+      replay_witness_model_sha256: replay?.replay_witness_model_sha256,
+      error: r.error
+    }];
+  });
+  console.log('[DFRL-CASE-FAILURES]', JSON.stringify(dfrlFailures));
+
   // 46-gate suite is required for ACTIVE; if unavailable, stay BLOCKED.
   let gatesPassed = 0;
   let gatesTotal = 0;
   let gatesFailed = 0;
   let gatesReport: any = null;
   try {
-    const { System46Gates } = await import('../src/proofs/System46Gates');
-    const gates = System46Gates.getInstance();
-    const report = await gates.evaluateAll46Gates();
-    gatesReport = report;
-    gatesTotal = report.total_gates;
-    gatesPassed = report.gates.filter(g => g.status === 'PASSED').length;
+    // Remove any checked-in or stale result first: a child crash must never
+    // let this run accept gate evidence from an earlier commit or workflow.
+    const gateArtifactPath = path.join(outDir, 'system-46-gates.json');
+    if (fs.existsSync(gateArtifactPath)) fs.unlinkSync(gateArtifactPath);
+
+    // Run the 46-gate suite in a child process. The 120-case WASM corpus creates
+    // many solver contexts; re-running the authoritative pipeline in this same
+    // process can exhaust the WASM heap (~2 GiB) after the corpus has completed.
+    // A separate process gives the gate suite a fresh WASM heap; any child failure
+    // remains BLOCKED and is never treated as a pass.
+    cp.execFileSync(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'scripts/verify_46_gates.ts'], {
+      stdio: 'inherit',
+      timeout: 80 * 60 * 1000
+    });
+    if (!fs.existsSync(gateArtifactPath)) throw new Error('Isolated 46-gate process produced no system-46-gates.json artifact');
+    gatesReport = JSON.parse(fs.readFileSync(gateArtifactPath, 'utf8'));
+    if (gatesReport.source_commit_sha !== commitSha || gatesReport.isolated_process !== true) {
+      throw new Error('Isolated 46-gate artifact provenance mismatch; activation remains BLOCKED');
+    }
+    gatesTotal = gatesReport.total_gates;
+    gatesPassed = gatesReport.gates.filter((g: any) => g.status === 'PASSED').length;
     // BLOCKED and EXTERNAL_PROVIDER_REQUIRED are not passes; never exclude them.
-    gatesFailed = report.gates.filter(g => g.status !== 'PASSED').length;
-    fs.writeFileSync(path.join(outDir, 'system-46-gates.json'), JSON.stringify({ ...report, source_commit_sha: commitSha }, null, 2));
+    gatesFailed = gatesReport.gates.filter((g: any) => g.status !== 'PASSED').length;
     console.log('[46-GATE-DIAGNOSTICS]', JSON.stringify({
       total: gatesTotal,
       passed: gatesPassed,
       notPassed: gatesFailed,
-      blocked: report.blocked_count,
-      externalProviderRequired: report.external_provider_required_count,
-      failed: report.failed_count,
-      verdict: report.overall_verdict,
-      nonPassedGateIds: report.gates.filter(g => g.status !== 'PASSED').map(g => ({
+      blocked: gatesReport.blocked_count,
+      externalProviderRequired: gatesReport.external_provider_required_count,
+      failed: gatesReport.failed_count,
+      verdict: gatesReport.overall_verdict,
+      nonPassedGateIds: gatesReport.gates.filter((g: any) => g.status !== 'PASSED').map((g: any) => ({
         gate_number: g.gate_number, gate_id: g.gate_id, status: g.status, name: g.name
       }))
     }));
   } catch (e: any) {
-    console.warn('System46Gates not executed:', e?.message || e);
+    console.warn('System46Gates isolated process not completed; activation remains BLOCKED:', e?.message || e);
   }
 
   const brainActive =
@@ -359,7 +398,7 @@ async function main() {
   const artifactHashes: Record<string, string> = {};
   for (const name of hashTargets) {
     const file = path.join(outDir, name);
-    if (fs.existsSync(file)) artifactHashes[name] = computeSha256(fs.readFileSync(file, 'utf8'));
+    if (fs.existsSync(file)) artifactHashes[name] = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
   }
   const artifactHashManifest = {
     schema: 'SOLVEX_DAISY_GENERATED_ARTIFACT_HASH_MANIFEST_V1',
