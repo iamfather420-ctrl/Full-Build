@@ -54,7 +54,7 @@ export interface FirstPartyAuthRepository {
   findSession(tokenHash: string): Promise<SessionRecord | null>;
   revokeSession(tokenHash: string, revokedAt: number): Promise<boolean>;
   appendAuthAudit(event: {
-    event: 'REGISTERED' | 'LOGIN_SUCCEEDED' | 'LOGIN_REJECTED' | 'SESSION_REVOKED';
+    event: 'REGISTERED' | 'LOGIN_SUCCEEDED' | 'LOGIN_REJECTED' | 'REGISTRATION_REJECTED' | 'SESSION_REVOKED';
     userId?: string;
     tenantId?: string;
     occurredAt: number;
@@ -143,13 +143,20 @@ export class FirstPartyAuthService {
     const email = normalizeEmail(emailInput);
     if (!validEmail(email)) return { ok: false, error: 'INVALID_INPUT' };
     if (!this.validPassword(password)) return { ok: false, error: 'PASSWORD_POLICY_FAILED' };
+    const rateKey = sha256(`register:${email}`);
+    const now = this.now();
+    if (!await this.rateLimiter.allow(rateKey, now)) {
+      await this.repository.appendAuthAudit({ event: 'REGISTRATION_REJECTED', occurredAt: now, reason: 'RATE_LIMITED' });
+      return { ok: false, error: 'REGISTRATION_TEMPORARILY_UNAVAILABLE' };
+    }
     if (typeof invitationToken !== 'string' || invitationToken.length < 32 || invitationToken.length > 512) {
+      await this.rateLimiter.recordFailure(rateKey, now);
+      await this.repository.appendAuthAudit({ event: 'REGISTRATION_REJECTED', occurredAt: now, reason: 'INVITATION_REQUIRED' });
       return { ok: false, error: 'INVITATION_REQUIRED' };
     }
 
     const salt = randomBytes(16);
     const passwordHash = (await scrypt(password, salt)).toString('hex');
-    const now = this.now();
     const identity = await this.repository.registerFromInvitation(sha256(invitationToken), {
       email,
       passwordSalt: salt.toString('hex'),
@@ -157,10 +164,12 @@ export class FirstPartyAuthService {
       now,
     });
     if (!identity) {
-      await this.repository.appendAuthAudit({ event: 'LOGIN_REJECTED', occurredAt: now, reason: 'INVITATION_INVALID_OR_ACCOUNT_EXISTS' });
+      await this.rateLimiter.recordFailure(rateKey, now);
+      await this.repository.appendAuthAudit({ event: 'REGISTRATION_REJECTED', occurredAt: now, reason: 'INVITATION_INVALID_OR_ACCOUNT_EXISTS' });
       return { ok: false, error: 'INVITATION_INVALID_OR_ACCOUNT_EXISTS' };
     }
 
+    await this.rateLimiter.clear(rateKey);
     await this.repository.appendAuthAudit({ event: 'REGISTERED', userId: identity.userId, tenantId: identity.tenantId, occurredAt: now });
     return this.createSession(identity, now);
   }
