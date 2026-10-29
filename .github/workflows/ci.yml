@@ -31,7 +31,9 @@ jobs:
         run: bun run verify:payments-disabled
       - name: First-party auth boundary tests (in-memory adapters; not production readiness)
         run: bun run test:auth-boundary
-      - name: Build
+
+      - name: Neon auth repository adapter contract tests (mocked; not live DB verification)
+        run: bun run test:auth-neon-adapter      - name: Build
         run: bun run build
       - name: TypeScript
         run: bun run lint
