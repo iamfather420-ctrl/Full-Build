@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master, feat/canonical-registry-daisy-haminja-20261028, fix/z3-wasm-memory-isolation-20261029]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, fix/z3-wasm-memory-isolation-20261029]
   workflow_dispatch:
     inputs:
       production_release:
@@ -53,6 +53,8 @@ jobs:
 
       - name: Verify payments remain disabled
         run: npm run verify:payments-disabled
+      - name: First-party auth boundary tests (in-memory adapters; not production readiness)
+        run: npm run test:auth-boundary
 
       - name: Production preflight
         if: github.event_name == 'workflow_dispatch' && inputs.production_release
