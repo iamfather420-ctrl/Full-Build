@@ -105,8 +105,14 @@ async function main() {
     JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(replayedDfrlSatCaseIds) &&
     JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(observedDhSatCaseIds) &&
     JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(replayedDhSatCaseIds);
+  const validHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+  const satWitnessModelsVerified =
+    dfrlReport.results.filter(r => r.solver_result === 'sat').every(r => r.sat_witness_recheck_passed === true && validHash(r.sat_witness_model_sha256)) &&
+    dfrlReport.replays.filter(r => r.replay_result === 'sat').every(r => r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256)) &&
+    dhReport.results.filter(r => r.actual_result === 'sat').every(r => r.sat_witness_recheck_passed === true && validHash(r.sat_witness_model_sha256)) &&
+    dhReport.results.filter(r => r.replay_result === 'sat').every(r => r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256));
 
-  const passed120 = satIdentityMatches && totalZ3Executions === 120 && totalExpectedMatches === 120 &&
+  const passed120 = satIdentityMatches && satWitnessModelsVerified && totalZ3Executions === 120 && totalExpectedMatches === 120 &&
     totalReplays === 120 && totalReplayMatches === 120 && totalUnknown === 0 && totalError === 0 &&
     dfrlReport.overall_status === 'VERIFIED' && dhReport.overall_status === 'VERIFIED' &&
     dhReport.blocked_count === 0 && dfrlCasesValid && dhCasesValid;
@@ -206,7 +212,7 @@ async function main() {
       dh_cases_valid: dhCasesValid,
       passed_120: passed120,
     sat_case_identities_match: satIdentityMatches,
-    sat_witness_model_extraction: 'NOT_IMPLEMENTED_BY_CURRENT_WASM_VERIFIER'
+    sat_witness_model_extraction: satWitnessModelsVerified ? 'VERIFIED' : 'BLOCKED'
     },
     adversarial_verification: {
       passed: adversarialOk,
