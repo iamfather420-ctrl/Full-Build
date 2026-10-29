@@ -4,6 +4,7 @@ import cp from 'child_process';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { computeSha256 } from '../src/database/DatabaseSchema';
+import { REAL_88_PARADOX_REGISTRY } from '../src/data/paradoxData';
 
 async function main() {
   console.log('================================================================');
@@ -142,6 +143,7 @@ async function main() {
 
   const brainActive =
     passed120 &&
+    satIdentityMatches &&
     adversarialOk &&
     gatesTotal > 0 &&
     gatesPassed === gatesTotal &&
@@ -168,7 +170,9 @@ async function main() {
       errors: totalError,
       dfrl_cases_valid: dfrlCasesValid,
       dh_cases_valid: dhCasesValid,
-      passed_120: passed120
+      passed_120: passed120,
+    sat_case_identities_match: satIdentityMatches,
+    sat_witness_model_extraction: 'NOT_IMPLEMENTED_BY_CURRENT_WASM_VERIFIER'
     },
     adversarial_verification: {
       passed: adversarialOk,
@@ -210,9 +214,16 @@ async function main() {
     unknown: totalUnknown,
     errors: totalError
   }));
-  const expectedSatCaseIds = dhReport.results.filter(r => r.expected_result === 'sat').map(r => r.case_id).sort();
-  const observedSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
-  const replayedSatCaseIds = dhReport.results.filter(r => r.replay_result === 'sat').map(r => r.case_id).sort();
+  const expectedDfrlSatCaseIds = REAL_88_PARADOX_REGISTRY.filter(r => r.expected_solver_result === 'sat').map(r => r.code).sort();
+  const observedDfrlSatCaseIds = dfrlReport.results.filter(r => r.solver_result === 'sat').map(r => r.operator_id || r.code || '').sort();
+  const replayedDfrlSatCaseIds = dfrlReport.replays.filter(r => r.replay_result === 'sat').map(r => r.operator_id).sort();
+  const expectedDhSatCaseIds = dhReport.results.filter(r => r.expected_result === 'sat').map(r => r.case_id).sort();
+  const observedDhSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
+  const replayedDhSatCaseIds = dhReport.results.filter(r => r.replay_result === 'sat').map(r => r.case_id).sort();
+  const satIdentityMatches = JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(observedDfrlSatCaseIds) &&
+    JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(replayedDfrlSatCaseIds) &&
+    JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(observedDhSatCaseIds) &&
+    JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(replayedDhSatCaseIds);
 
   // Write the canonical closure artifact names consumed by scripts/ci_proof_closure_check.ts.
   // All values below are derived from this run's verifier outputs; no result is hand-edited.
@@ -227,9 +238,12 @@ async function main() {
     source_commit_sha: sourceCommitSha,
     verification_root_sha256: combinedRootSha256,
     run_evidence_sha256: runEvidenceSha256,
-    expected_sat_case_ids: expectedSatCaseIds,
-    observed_sat_case_ids: observedSatCaseIds,
-    replayed_sat_case_ids: replayedSatCaseIds,
+    sat_case_identities: {
+      dfrl: { expected: expectedDfrlSatCaseIds, observed: observedDfrlSatCaseIds, replayed: replayedDfrlSatCaseIds },
+      dh: { expected: expectedDhSatCaseIds, observed: observedDhSatCaseIds, replayed: replayedDhSatCaseIds },
+      identities_match: satIdentityMatches,
+      witness_model_extraction: 'NOT_IMPLEMENTED_BY_CURRENT_WASM_VERIFIER'
+    },
     timestamp: new Date().toISOString(),
     dfrl: {
       required: 88, actual_z3_executions: dfrlReport.executed,
@@ -260,9 +274,12 @@ async function main() {
     source_commit_sha: sourceCommitSha,
     verification_root_sha256: combinedRootSha256,
     run_evidence_sha256: runEvidenceSha256,
-    expected_sat_case_ids: expectedSatCaseIds,
-    observed_sat_case_ids: observedSatCaseIds,
-    replayed_sat_case_ids: replayedSatCaseIds,
+    sat_case_identities: {
+      dfrl: { expected: expectedDfrlSatCaseIds, observed: observedDfrlSatCaseIds, replayed: replayedDfrlSatCaseIds },
+      dh: { expected: expectedDhSatCaseIds, observed: observedDhSatCaseIds, replayed: replayedDhSatCaseIds },
+      identities_match: satIdentityMatches,
+      witness_model_extraction: 'NOT_IMPLEMENTED_BY_CURRENT_WASM_VERIFIER'
+    },
     timestamp: new Date().toISOString(),
     total_z3_executions: totalZ3Executions,
     expected_result_matches: totalExpectedMatches,
