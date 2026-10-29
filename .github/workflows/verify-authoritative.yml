@@ -57,6 +57,8 @@ jobs:
         run: npm run test:auth-boundary
       - name: Neon auth repository adapter contract tests (mocked; not live DB verification)
         run: npm run test:auth-neon-adapter
+      - name: Secure auth router contract tests (mock service; not production readiness)
+        run: npm run test:auth-router
 
       - name: Production preflight
         if: github.event_name == 'workflow_dispatch' && inputs.production_release
