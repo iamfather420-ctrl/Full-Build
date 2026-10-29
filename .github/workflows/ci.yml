@@ -33,7 +33,8 @@ jobs:
         run: bun run test:auth-boundary
 
       - name: Neon auth repository adapter contract tests (mocked; not live DB verification)
-        run: bun run test:auth-neon-adapter      - name: Build
+        run: bun run test:auth-neon-adapter
+      - name: Build
         run: bun run build
       - name: TypeScript
         run: bun run lint
