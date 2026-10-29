@@ -11,7 +11,7 @@
 - Tenant membership re-checks on every session verification; roles are loaded from the repository, not accepted from client input.
 - Generic invalid-credential responses, an injected rate-limiter contract, and audit-event hooks.
 
-The service is intentionally not wired to public routes yet. Its constructor requires an explicit repository and rate limiter, and the production implementations do not exist in this branch. This avoids accidentally treating an in-memory adapter as durable security infrastructure.
+The service is not wired to public routes. This branch now contains a Neon repository adapter and shared database-backed rate limiter, plus an opt-in but unmounted HTTP router. The adapter is not yet proven against a correctly provisioned least-privilege runtime login; do not treat mocked adapter tests as live integration evidence.
 
 ## Required next implementation
 
@@ -27,7 +27,7 @@ The service is intentionally not wired to public routes yet. Its constructor req
 
 `scripts/test_first_party_auth.ts` uses explicitly in-memory test doubles to verify service behavior. Passing that suite proves only the tested service contract under those test doubles. It does not prove persistence durability, multi-replica rate limiting, route security, production identity, or production readiness.
 
-No live database was connected or changed. No production credential was added. Authentication and payments remain disabled in the canonical runtime until the complete chain is reviewed and verified.
+A non-production Neon rehearsal branch was connected and changed by applying this additive migration; the canonical production branch was not modified. No production credential was added. Authentication and payments remain disabled in the canonical runtime until the complete chain is reviewed and verified.
 
 ## Confirmed Neon integration contract (read-only inspection, 2026-10-29)
 
@@ -43,7 +43,7 @@ The Neon production branch was inspected read-only; no secret values or applicat
 
 The current `FirstPartyAuthService` account lookup is now explicitly tenant-scoped to match the canonical `(tenant_id, email)` key. A transactional adapter must also create the corresponding `users` and `tenant_memberships` rows, reference an already-provisioned least-privilege role, and reject registration if any part cannot commit atomically.
 
-- Read-only role metadata also showed the legacy `solvex_runtime_login` role is a member of `neon_superuser`; it must **not** be used by the application. `solvex_runtime_login_v2` is configured with `NOINHERIT` and is a member of `solvex_app_runtime`. The eventual database adapter must deliberately establish the least-privilege role inside each transaction and verify its effective role/privileges; do not assume membership privileges are inherited automatically.
+- On the canonical branch, read-only role metadata showed the legacy `solvex_runtime_login` role is a member of `neon_superuser`; it must **not** be used by the application. `solvex_runtime_login_v2` had previously been observed on the canonical branch as a least-privilege login member of `solvex_app_runtime`. However, the isolated rehearsal branch currently does **not** contain `solvex_runtime_login_v2**`; it therefore lacks the login identity required by the adapter. Do not infer role provisioning across branches.
 
 ## Durable adapter and staged migration added
 
@@ -53,7 +53,7 @@ The current `FirstPartyAuthService` account lookup is now explicitly tenant-scop
 
 ## Migration execution safety and outstanding proof
 
-The migration has **not** been applied to any database. Before it can be applied even to staging, review the SQL, run it only through the repository's approved migration workflow, and verify the executing/migration owner has the required privileges. The SECURITY DEFINER functions must be owned by a specifically reviewed role with the required table access and RLS bypass capability; the application connection itself must not have BYPASSRLS. Verify function ownership, fixed search paths, PUBLIC execute revocations, and grants to `solvex_app_runtime` after migration. Never use the legacy `solvex_runtime_login` role, which read-only role metadata showed is a member of `neon_superuser`.
+The migration was applied only to the existing non-production rehearsal branch `solvex-tenant-auth-rehearsal-2026-10-16` (`br-dark-smoke-b4iu7i2t`) after temporary-branch creation was blocked by the project branch limit. It was not applied to the canonical production branch. Before further staging use, review the SQL and verify the migration owner and all grants. Read-only checks on the rehearsal branch confirmed six auth tables, 14 EXECUTE grants to `solvex_app_runtime`, zero PUBLIC EXECUTE grants, and zero invitation/credential/session rows. The branch currently has one tenant, zero role rows, and does not contain `solvex_runtime_login_v2`; therefore the real application adapter cannot yet complete its required role chain. The SECURITY DEFINER functions must be owned by a specifically reviewed role with the required table access and RLS bypass capability; the application connection itself must not have BYPASSRLS. Verify function ownership, fixed search paths, PUBLIC execute revocations, and grants to `solvex_app_runtime` after migration. Never use the legacy `solvex_runtime_login` role, which read-only role metadata showed is a member of `neon_superuser`.
 
 The existing database currently has no seeded `CUSTOMER` roles in the inspected branch, so invitation registration is intentionally unable to complete until a tenant's CUSTOMER role has been provisioned through an approved administrative path. The migration does not invent tenants or seed sample data.
 
