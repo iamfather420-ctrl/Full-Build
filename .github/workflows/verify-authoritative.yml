@@ -166,25 +166,31 @@ jobs:
       - name: Fail if verification did not produce 120/120
         if: always()
         run: |
-          if [ ! -f artifacts/formal-aggregation.json ] || [ ! -f artifacts/z3-120-formal-verification-summary.json ]; then
-            echo "Missing fresh formal aggregation artifacts"
+          if [ ! -f artifacts/formal-aggregation.json ] || [ ! -f artifacts/z3-120-formal-verification-summary.json ] || [ ! -f artifacts/daisy-brain-activation-gate.json ]; then
+            echo "Missing fresh formal aggregation, summary, or activation-gate artifact"
             exit 1
           fi
           node -e '
             const f = require("./artifacts/formal-aggregation.json");
             const s = require("./artifacts/z3-120-formal-verification-summary.json");
-            const ok = f.total?.required === 120 && f.total?.actual_z3_executions === 120 &&
+            const g = require("./artifacts/daisy-brain-activation-gate.json");
+            const executionOk = f.total?.required === 120 && f.total?.actual_z3_executions === 120 &&
                        f.total?.replays === 120 && f.total?.replay_matches === 120 &&
                        f.total?.distribution?.unknown === 0 && f.total?.distribution?.error === 0 &&
                        s.total_z3_executions === 120 && s.expected_result_matches === 120 &&
                        s.cleanroom_replays === 120 && s.replay_matches === 120 &&
                        s.distribution?.unknown === 0 && s.distribution?.error === 0 &&
                        f.sat_case_identities?.identities_match === true;
-            if (!ok) {
-              console.error("120-case gate FAILED", {total:f.total, summary:s});
+            const witnessOk = g.corpus?.passed_120 === true &&
+                       g.corpus?.sat_case_identities_match === true &&
+                       g.corpus?.sat_witness_model_extraction === "VERIFIED";
+            if (!executionOk || !witnessOk) {
+              console.error("120-case proof closure FAILED", {
+                executionOk, witnessOk, corpus:g.corpus, total:f.total, summary:s
+              });
               process.exit(1);
             }
-            console.log("120-case execution/replay accounting PASSED; independent SAT witness verification remains a separate closure requirement.");
+            console.log("120-case execution, deterministic replay, SAT identity, and independent SAT-witness checks PASSED. Production activation is evaluated separately by the 46-gate verdict.");
           '
 
 # Combined 120-case authoritative gate execution trigger: DFRL 88 + DH-P 32.
