@@ -340,7 +340,8 @@ export class DFRLFormalVerifier {
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
     const expectedMatches = results.filter((r, idx) => {
       const item = REAL_88_PARADOX_REGISTRY[idx];
-      const expected = item?.expected_solver_result === 'sat' ? 'sat' : 'unsat';
+      if (!item || (item.expected_solver_result !== 'sat' && item.expected_solver_result !== 'unsat')) return false;
+      const expected = item.expected_solver_result;
       return r.solver_result === expected && r.proved;
     }).length;
     const allExpected = expectedMatches === REAL_88_PARADOX_REGISTRY.length;
@@ -378,9 +379,10 @@ export class DFRLFormalVerifier {
   }
 
   public async runSmtMutationTest(): Promise<SMTMutationTestResult> {
-    const targetItem =
-      REAL_88_PARADOX_REGISTRY.find(i => (i.expected_solver_result ?? 'unsat') === 'unsat')
-      || REAL_88_PARADOX_REGISTRY[0];
+    const targetItem = REAL_88_PARADOX_REGISTRY.find(i => i.expected_solver_result === 'unsat');
+    if (!targetItem) {
+      return { test_name: 'DFRL Operator SMT Invariant Mutation Test', target_operator_id: 'NONE', original_assertion: '', original_assertion_hash: '', mutated_assertion: '', mutated_assertion_hash: '', passed: false, details: 'No contract-declared UNSAT case exists for mutation testing.' };
+    }
     const originalSmt = targetItem.z3_smt_assertion;
     const originalHash = computeSha256(originalSmt);
     const mutatedSmt = originalSmt.replace('(assert (not (and', '(assert (and').replace(/\)\)\s*$/, ')');
