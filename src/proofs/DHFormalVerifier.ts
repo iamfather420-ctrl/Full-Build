@@ -20,6 +20,7 @@
 
 import { AUTHORITATIVE_32_DH_CONTRACTS, DHAuthoritativeContract, DHScope } from '../formal/dhAuthoritativeFormalContracts';
 import { computeSha256 } from '../database/DatabaseSchema';
+import { independentlyCheckSatWitness } from './satWitness';
 
 export type { DHScope };
 export type { DHAuthoritativeContract as DHFormalContract };
@@ -37,6 +38,11 @@ export interface DHFormalVerificationResult {
   actual_result: 'unsat' | 'sat' | 'unknown' | 'error';
   replay_result: 'unsat' | 'sat' | 'unknown' | 'error';
   replay_match: boolean;
+  sat_witness_model?: string;
+  sat_witness_model_sha256?: string;
+  sat_witness_recheck_passed?: boolean;
+  replay_witness_model_sha256?: string;
+  replay_witness_recheck_passed?: boolean;
   verified: boolean;
   scope: DHScope;
   solver: string;
@@ -64,6 +70,8 @@ export interface DHReplayRecord {
   original_evidence_hash: string;
   replay_evidence_hash: string;
   cleanroom_context_id: string;
+  replay_witness_model_sha256?: string;
+  replay_witness_recheck_passed?: boolean;
   timestamp: string;
 }
 
@@ -250,7 +258,7 @@ export class DHFormalVerifier {
    */
   public async executeInFreshZ3Context(
     smtString: string
-  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; error?: string }> {
+  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; model_text?: string; model_sha256?: string; witness_recheck_passed?: boolean; error?: string }> {
     const start = performance.now();
     try {
       const z3 = await this.getZ3Module();
@@ -266,7 +274,11 @@ export class DHFormalVerifier {
         const dur = performance.now() - start;
 
         if (checkRes === 'unsat') return { result: 'unsat', solver_version: this.solverVersion, duration_ms: dur };
-        if (checkRes === 'sat') return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur };
+        if (checkRes === 'sat') {
+          const modelText = solver.model().toString();
+          const witnessCheck = await independentlyCheckSatWitness(z3, smtString, modelText);
+          return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur, model_text: modelText, model_sha256: witnessCheck.model_sha256, witness_recheck_passed: witnessCheck.passed, error: witnessCheck.passed ? undefined : (witnessCheck.error || 'Independent SAT witness recheck did not return SAT.') };
+        }
         return { result: 'unknown', solver_version: this.solverVersion, duration_ms: dur };
       } catch (subErr: any) {
         return {
