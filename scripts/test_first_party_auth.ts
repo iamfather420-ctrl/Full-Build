@@ -20,20 +20,21 @@ class MemoryRepository implements FirstPartyAuthRepository {
   invitations = new Map<string, { tenantId: string; expiresAt: number; consumed: boolean }>();
   audit: Array<{ event: string; userId?: string; tenantId?: string; occurredAt: number; reason?: string }> = [];
   nextId = 0;
+  private accountKey(tenantId: string, email: string) { return `${tenantId}:${email}`; }
 
   async registerFromInvitation(tokenHash: string, input: InvitationRegistration): Promise<AuthIdentity | null> {
     const invite = this.invitations.get(tokenHash);
-    if (!invite || invite.consumed || invite.expiresAt <= input.now || this.credentials.has(input.email)) return null;
+    if (!invite || invite.consumed || invite.expiresAt <= input.now || this.credentials.has(this.accountKey(invite.tenantId, input.email))) return null;
     invite.consumed = true;
     const userId = `user-${++this.nextId}`;
     const record: CredentialRecord = { userId, email: input.email, passwordSalt: input.passwordSalt, passwordHash: input.passwordHash, disabled: false };
-    this.credentials.set(input.email, record);
+    this.credentials.set(this.accountKey(invite.tenantId, input.email), record);
     this.memberships.set(`${userId}:${invite.tenantId}`, { tenantId: invite.tenantId, role: 'CUSTOMER', active: true });
     return { userId, email: input.email, tenantId: invite.tenantId, role: 'CUSTOMER' };
   }
 
-  async findCredentialByEmail(email: string) { return this.credentials.get(email) ?? null; }
-  async findCredentialByUserId(userId: string) { return [...this.credentials.values()].find((c) => c.userId === userId) ?? null; }
+  async findCredentialByEmailAndTenant(email: string, tenantId: string) { return this.credentials.get(this.accountKey(tenantId, email)) ?? null; }
+  async findCredentialByUserIdAndTenant(userId: string, tenantId: string) { return [...this.credentials.entries()].find(([key, c]) => key.startsWith(`${tenantId}:`) && c.userId === userId)?.[1] ?? null; }
   async findMembership(userId: string, tenantId: string) { return this.memberships.get(`${userId}:${tenantId}`) ?? null; }
   async createSession(session: SessionRecord) { this.sessions.set(session.tokenHash, { ...session }); }
   async findSession(tokenHash: string) { return this.sessions.get(tokenHash) ?? null; }
@@ -102,7 +103,7 @@ assert.equal(expiring.ok, true);
 now += 60 * 60 * 1000;
 assert.equal((await auth.verifySession(expiring.sessionToken!)).valid, false, 'expired sessions must be rejected');
 
-const disabledCredential = repository.credentials.get('person@example.test')!;
+const disabledCredential = repository.credentials.get('tenant-a:person@example.test')!;
 disabledCredential.disabled = true;
 assert.equal((await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-a')).ok, false, 'disabled accounts must be rejected');
 
