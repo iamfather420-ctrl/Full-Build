@@ -45,6 +45,9 @@ jobs:
           npx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
 
+      - name: Build native UI
+        run: npm run build:native-ui
+
       - name: Verify fail-closed release safety
         run: npm run verify:release-safety
 
