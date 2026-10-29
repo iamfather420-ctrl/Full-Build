@@ -45,7 +45,7 @@ class MemoryRepository implements FirstPartyAuthRepository {
     session.revokedAt = revokedAt;
     return true;
   }
-  async appendAuthAudit(event: { event: 'REGISTERED' | 'LOGIN_SUCCEEDED' | 'LOGIN_REJECTED' | 'SESSION_REVOKED'; userId?: string; tenantId?: string; occurredAt: number; reason?: string }) {
+  async appendAuthAudit(event: { event: 'REGISTERED' | 'LOGIN_SUCCEEDED' | 'LOGIN_REJECTED' | 'REGISTRATION_REJECTED' | 'SESSION_REVOKED'; userId?: string; tenantId?: string; occurredAt: number; reason?: string }) {
     this.audit.push(event);
   }
 }
@@ -78,6 +78,11 @@ assert.equal([...repository.sessions.values()][0].tokenHash, hash(registered.ses
 
 const reusedInvite = await auth.register('other@example.test', 'correct-horse-battery-staple', invite);
 assert.equal(reusedInvite.ok, false, 'single-use invitation cannot be replayed');
+
+for (let i = 0; i < 5; i++) {
+  assert.equal((await auth.register('attacker@example.test', 'correct-horse-battery-staple', 'unknown-invitation-token-0123456789')).ok, false);
+}
+assert.equal((await auth.register('attacker@example.test', 'correct-horse-battery-staple', 'unknown-invitation-token-0123456789')).error, 'REGISTRATION_TEMPORARILY_UNAVAILABLE', 'registration must be throttled before expensive password hashing');
 
 const login = await auth.login('PERSON@example.test', 'correct-horse-battery-staple', 'tenant-a');
 assert.equal(login.ok, true);
