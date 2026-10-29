@@ -13,15 +13,15 @@
 
 The service is not wired to public routes. This branch now contains a Neon repository adapter and shared database-backed rate limiter, plus an opt-in but unmounted HTTP router. The adapter is not yet proven against a correctly provisioned least-privilege runtime login; do not treat mocked adapter tests as live integration evidence.
 
-## Required next implementation
+## Remaining implementation and verification
 
-1. Implement a reviewed, transactional repository against the existing canonical Neon schema or a separately reviewed additive migration. The adapter must not use generic `payload_json`, silently fall back to in-memory/SQLite mock storage, or execute migrations on a live database.
-2. Implement a shared, atomic rate limiter suitable for the deployment topology.
-3. Add integration tests for invitation replay, concurrent registration, password verification, disabled accounts, membership revocation, tenant isolation, session revocation, session expiry, restart readback, and database failure.
-4. Add HTTP routes only after the durable repository exists. Set the opaque session token only in an `HttpOnly; Secure; SameSite=Lax` cookie, protect cookie-authenticated mutations with same-origin/CSRF controls, and never return session tokens in JSON for browser clients.
-5. Configure the trusted first-party account recovery and invitation-administration process; do not let a registering user select `OWNER` or `ADMIN`.
-6. Keep the existing `src/auth/AuthService.ts` production boundary fail-closed until the new service has a reviewed adapter and route-level security tests.
-7. Regenerate the authoritative 46-gate evidence on the exact commit after integration. The auth gate must remain blocked while any required proof is absent.
+1. **Adapter implemented; live role-chain proof blocked.** `NeonFirstPartyAuthRepository` and the shared Neon rate limiter exist, but the rehearsal branch lacks `solvex_runtime_login_v2`. Provision only through an approved administrative path; never use the legacy privileged login.
+2. **Migration staged on rehearsal only.** The additive migration is present on the feature branch and was applied to the named non-production rehearsal branch. It has not been applied to canonical production.
+3. **Integration tests still required.** Run invitation replay/concurrency, duplicate-email races, password verification, disabled accounts, membership/session revocation, tenant isolation, expiry, restart readback, concurrent rate limits, and database-outage tests against a disposable branch after the least-privilege login and CUSTOMER role are provisioned.
+4. **Router implemented but unmounted.** Keep it disabled and unmounted until live persistence, role, secret-match, CSRF/origin, and route security tests pass. It uses an exact HTTPS origin allowlist and Secure/HttpOnly/SameSite cookie; browser session tokens are not returned in JSON.
+5. **Recovery and owner bootstrap remain unresolved.** Establish a human-controlled first-owner and account-recovery process. Do not let self-registration select `OWNER` or `ADMIN`.
+6. Keep the existing `src/auth/AuthService.ts` production boundary fail-closed until the complete chain is reviewed and independently verified.
+7. Regenerate authoritative 46-gate evidence on the exact final commit. The auth gate must remain blocked while any required proof is absent.
 
 ## Verification scope
 
@@ -43,7 +43,7 @@ The Neon production branch was inspected read-only; no secret values or applicat
 
 The current `FirstPartyAuthService` account lookup is now explicitly tenant-scoped to match the canonical `(tenant_id, email)` key. A transactional adapter must also create the corresponding `users` and `tenant_memberships` rows, reference an already-provisioned least-privilege role, and reject registration if any part cannot commit atomically.
 
-- On the canonical branch, read-only role metadata showed the legacy `solvex_runtime_login` role is a member of `neon_superuser`; it must **not** be used by the application. `solvex_runtime_login_v2` had previously been observed on the canonical branch as a least-privilege login member of `solvex_app_runtime`. However, the isolated rehearsal branch currently does **not** contain `solvex_runtime_login_v2**`; it therefore lacks the login identity required by the adapter. Do not infer role provisioning across branches.
+- On the canonical branch, read-only role metadata showed the legacy `solvex_runtime_login` role is a member of `neon_superuser`; it must **not** be used by the application. `solvex_runtime_login_v2` had previously been observed on the canonical branch as a least-privilege login member of `solvex_app_runtime`. However, the isolated rehearsal branch currently does **not** contain `solvex_runtime_login_v2`; it therefore lacks the login identity required by the adapter. Do not infer role provisioning across branches.
 
 ## Durable adapter and staged migration added
 
@@ -58,11 +58,11 @@ The migration was applied only to the existing non-production rehearsal branch `
 The existing database currently has no seeded `CUSTOMER` roles in the inspected branch, so invitation registration is intentionally unable to complete until a tenant's CUSTOMER role has been provisioned through an approved administrative path. The migration does not invent tenants or seed sample data.
 
 Still required before any route activation:
-1. Stage and review/apply the additive migration, then run schema/function-owner/privilege checks.
-2. Create CUSTOMER role records through a trusted tenant-admin procedure; build and audit invitation issuance/revocation (only token hashes stored).
-3. Verify the runtime connection can `SET LOCAL ROLE solvex_app_runtime` and cannot bypass RLS; verify each security-definer routine's owner, grants and transaction behavior.
+1. The additive migration is already applied to the named rehearsal branch; perform any further migration changes only through a reviewed, approved workflow.
+2. Provision CUSTOMER and authorized first-owner roles through a trusted human-controlled bootstrap process; no role rows currently exist on the rehearsal branch.
+3. Provision the missing least-privilege login on rehearsal, verify `SET LOCAL ROLE solvex_app_runtime`, and confirm RLS cannot be bypassed. Recheck every SECURITY DEFINER owner, fixed search path, grant and transaction behavior.
 4. Run real integration tests against a disposable staging Neon branch: invitation race/replay, duplicate-email race, restart readback, revoked membership/session, expired sessions, role changes, concurrent rate-limit attempts, cross-tenant isolation and RLS policy enforcement.
-5. Add a reviewed HTTP layer with secure HttpOnly cookies, SameSite/CSRF protections, origin checks, no token in JSON, and safe cookie clearing.
+5. Keep the implemented HTTP router unmounted until the application/database secret match, live persistence, CSRF/origin controls and route tests are independently proven.
 6. Add account recovery and audited invitation administration. Keep production auth blocked until all tests and the 46-gate evidence pass on the exact commit.
 
 No production database, secret, credential, runtime route, authentication setting, payment setting, or deployment was changed by this work.
