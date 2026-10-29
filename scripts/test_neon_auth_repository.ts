@@ -63,6 +63,7 @@ const brokenPool = {
     return {
       async query<T = Row>(sql: string): Promise<{ rows: T[]; rowCount: number }> {
         if (sql === 'COMMIT') throw new Error('commit failed');
+        if (sql.includes('SELECT session_user')) return { rows: [{ session_user: 'solvex_runtime_login_v2', current_role: 'solvex_app_runtime', bypass_rls: false } as T], rowCount: 1 };
         return { rows: [], rowCount: 0 };
       },
       release() {},
@@ -71,6 +72,20 @@ const brokenPool = {
 };
 const brokenRepository = new NeonFirstPartyAuthRepository(brokenPool);
 await assert.rejects(() => brokenRepository.findSession('f'.repeat(64)), /commit failed/, 'database transaction failures must propagate rather than simulate success');
+
+const wrongRolePool = {
+  async connect() {
+    return {
+      async query<T = Row>(sql: string): Promise<{ rows: T[]; rowCount: number }> {
+        if (sql.includes('SELECT session_user')) return { rows: [{ session_user: 'solvex_runtime_login', current_role: 'solvex_app_runtime', bypass_rls: false } as T], rowCount: 1 };
+        return { rows: [], rowCount: 0 };
+      },
+      release() {},
+    };
+  },
+};
+const wrongRoleRepository = new NeonFirstPartyAuthRepository(wrongRolePool);
+await assert.rejects(() => wrongRoleRepository.findSession('f'.repeat(64)), /BYPASSRLS=false/, 'legacy privileged login identity must be rejected');
 
 console.log('PASS: Neon auth adapter uses transactions, explicit least-privilege role, bound tenant parameters, typed function results, and fail-closed error propagation.');
 console.log('LIMITATION: this is a mocked adapter contract test, not a live Neon integration or RLS-isolation test.');
