@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import cp from 'child_process';
+import { createHash } from 'node:crypto';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { computeSha256 } from '../src/database/DatabaseSchema';
@@ -397,7 +398,7 @@ async function main() {
   const artifactHashes: Record<string, string> = {};
   for (const name of hashTargets) {
     const file = path.join(outDir, name);
-    if (fs.existsSync(file)) artifactHashes[name] = computeSha256(fs.readFileSync(file, 'utf8'));
+    if (fs.existsSync(file)) artifactHashes[name] = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
   }
   const artifactHashManifest = {
     schema: 'SOLVEX_DAISY_GENERATED_ARTIFACT_HASH_MANIFEST_V1',
