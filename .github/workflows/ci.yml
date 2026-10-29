@@ -31,6 +31,8 @@ jobs:
         run: bun run verify:payments-disabled
       - name: First-party auth boundary tests (in-memory adapters; not production readiness)
         run: bun run test:auth-boundary
+      - name: Verify auth SQL migration boundaries
+        run: bun run verify:auth-migration
 
       - name: Neon auth repository adapter contract tests (mocked; not live DB verification)
         run: bun run test:auth-neon-adapter
