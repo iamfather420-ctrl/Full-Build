@@ -63,8 +63,9 @@ export interface FirstPartyAuthRepository {
 }
 
 export interface LoginRateLimiter {
-  /** Must use shared, atomic storage in a multi-replica deployment. */
+  /** Atomically reserves one attempt; must use shared storage in a multi-replica deployment. */
   allow(key: string, now: number): Promise<boolean>;
+  /** Records failure metadata after a reserved attempt; must not increment the attempt counter again. */
   recordFailure(key: string, now: number): Promise<void>;
   clear(key: string): Promise<void>;
 }
