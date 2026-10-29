@@ -500,7 +500,7 @@ export class AuthoritativeVerificationPipeline {
     // identity, authorization, session, or tenant claims qualifies as an auth block.
     const lifecycleBlocked = !e2eOk && transitionAttempts.some(t => {
       const reason = t.error || '';
-      return !t.success && /\\bBLOCKED\\b/i.test(reason) &&
+      return !t.success && /\bBLOCKED\b/i.test(reason) &&
         /(identity|authori[sz]ation|session|tenant claim)/i.test(reason);
     });
     const lifecycleGateStatus: GateResult['status'] = e2eOk
