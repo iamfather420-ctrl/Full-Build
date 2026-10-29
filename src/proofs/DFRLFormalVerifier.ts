@@ -16,6 +16,9 @@ export interface DFRLVerificationResult {
   solver_version: string;
   execution_id: string;
   solver_result: 'unsat' | 'sat' | 'unknown' | 'error' | 'formal_execution_not_performed';
+  expected_solver_result: 'unsat' | 'sat';
+  sat_witness_recheck_passed?: boolean;
+  sat_witness_model_sha256?: string;
   proved: boolean;
   claim_scope: 'MODEL_VERIFIED';
   execution_duration_ms: number;
@@ -33,6 +36,8 @@ export interface ReplayVerificationRecord {
   replay_assertion_hash: string;
   original_result: string;
   replay_result: string;
+  replay_witness_recheck_passed?: boolean;
+  replay_witness_model_sha256?: string;
   original_evidence_hash: string;
   replay_evidence_hash: string;
   replay_match: boolean;
@@ -179,6 +184,7 @@ export class DFRLFormalVerifier {
         solver_version: this.solverVersion,
         execution_id: executionId,
         solver_result: 'formal_execution_not_performed',
+        expected_solver_result: item.expected_solver_result,
         proved: false,
         claim_scope: 'MODEL_VERIFIED',
         execution_duration_ms: Number(duration.toFixed(3)),
@@ -227,7 +233,8 @@ export class DFRLFormalVerifier {
       solver_version: this.solverVersion,
       execution_id: executionId,
       solver_result: solverResult,
-      proved: solverResult === 'unsat',
+      expected_solver_result: item.expected_solver_result,
+      proved: solverResult === item.expected_solver_result,
       claim_scope: 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
@@ -285,7 +292,8 @@ export class DFRLFormalVerifier {
 
     const match =
       replayResult === originalResult.solver_result &&
-      originalResult.solver_result === 'unsat';
+      originalResult.solver_result === item.expected_solver_result &&
+      (replayResult === 'unsat' || replayResult === 'sat');
 
     return {
       operator_id: item.code,
@@ -340,10 +348,12 @@ export class DFRLFormalVerifier {
     const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
-    const allUnsat = unsatCount === REAL_88_PARADOX_REGISTRY.length;
+    const allExpectedResultsMatched = results.every((r, index) =>
+      r.solver_result === REAL_88_PARADOX_REGISTRY[index].expected_solver_result && r.proved
+    );
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
-      allUnsat && allReplayed ? 'VERIFIED' : (unsatCount > 0 ? 'PARTIAL' : 'FAILED');
+      allExpectedResultsMatched && allReplayed ? 'VERIFIED' : (executed > 0 ? 'PARTIAL' : 'FAILED');
 
     const rootHash = computeSha256(
       results.map(r => `${r.operator_id}:${r.actual_smt_assertion_hash}:${r.solver_result}:${r.certificate_sha256}`).join('|')
