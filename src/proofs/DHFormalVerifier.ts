@@ -210,7 +210,7 @@ export class DHFormalVerifier {
         return platformContext.fs.readFileSync(sourceFilePath, 'utf8');
       }
     } catch {}
-    return `CANONICAL_SOURCE_REF:${sourceFilePath}:DH_BOOTSTRAP_PARADOX_REGISTRY_V1`;
+    return '';
   }
 
   /**
@@ -319,20 +319,22 @@ export class DHFormalVerifier {
     const cleanroomContextId = `dh_replay_${contract.case_id}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const replayOutcome = await this.executeInFreshZ3Context(contract.z3_smt_assertion);
     const replayResult = replayOutcome.result;
-    const replayMatch = actualResult === replayResult;
+    const replayMatch = actualResult === replayResult &&
+      (actualResult !== 'sat' || (execOutcome.witness_recheck_passed === true && replayOutcome.witness_recheck_passed === true));
 
-    const evidenceSeed = `${contract.case_id}:${contract.contract_hash}:${sourceHash}:${actualResult}:${replayResult}:${commitSha}`;
+    const evidenceSeed = `${contract.case_id}:${contract.contract_hash}:${sourceHash}:${actualResult}:${replayResult}:${execOutcome.model_sha256 || 'NO_SAT_WITNESS'}:${execOutcome.witness_recheck_passed === true}:${replayOutcome.model_sha256 || 'NO_REPLAY_SAT_WITNESS'}:${replayOutcome.witness_recheck_passed === true}:${commitSha}`;
     const evidenceHash = computeSha256(evidenceSeed);
 
-    const replaySeed = `${contract.case_id}:${cleanroomContextId}:${contract.contract_hash}:${replayResult}:${commitSha}`;
+    const replaySeed = `${contract.case_id}:${cleanroomContextId}:${contract.contract_hash}:${replayResult}:${replayOutcome.model_sha256 || 'NO_REPLAY_SAT_WITNESS'}:${replayOutcome.witness_recheck_passed === true}:${commitSha}`;
     const replayEvidenceHash = computeSha256(replaySeed);
 
     // Algorithmic verification status derivation
     const resultMatch = actualResult === contract.expected_result;
     const nonError = actualResult !== 'unknown' && actualResult !== 'error';
     const evidencePass = computeSha256(evidenceSeed) === evidenceHash;
-    const sourcePass = sourceHash.length === 64;
-    const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass;
+    const sourcePass = sourceContent.length > 0 && sourceHash.length === 64;
+    const witnessPass = actualResult !== 'sat' || (execOutcome.witness_recheck_passed === true && replayOutcome.witness_recheck_passed === true);
+    const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass && witnessPass;
 
     const result: DHFormalVerificationResult = {
       case_id: contract.case_id,
@@ -347,6 +349,11 @@ export class DHFormalVerifier {
       actual_result: actualResult,
       replay_result: replayResult,
       replay_match: replayMatch,
+      sat_witness_model: execOutcome.model_text,
+      sat_witness_model_sha256: execOutcome.model_sha256,
+      sat_witness_recheck_passed: execOutcome.witness_recheck_passed,
+      replay_witness_model_sha256: replayOutcome.model_sha256,
+      replay_witness_recheck_passed: replayOutcome.witness_recheck_passed,
       verified,
       scope: contract.scope,
       solver: 'z3-wasm',
@@ -373,6 +380,8 @@ export class DHFormalVerifier {
       original_evidence_hash: evidenceHash,
       replay_evidence_hash: replayEvidenceHash,
       cleanroom_context_id: cleanroomContextId,
+      replay_witness_model_sha256: replayOutcome.model_sha256,
+      replay_witness_recheck_passed: replayOutcome.witness_recheck_passed,
       timestamp
     };
 
