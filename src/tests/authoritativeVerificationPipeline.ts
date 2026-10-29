@@ -494,9 +494,15 @@ export class AuthoritativeVerificationPipeline {
       transitionAttempts.length === plannedTransitions.length &&
       transitionAttempts.every(t => t.success) &&
       actualFinalStatus === 'DEPLOYED';
-    const lifecycleBlocked = !e2eOk && transitionAttempts.some(t =>
-      !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
-    );
+    // Classify explicit authorization-denial responses as BLOCKED without coupling
+    // the safety verdict to one exact error sentence. A missing order or illegal
+    // transition remains FAILED; only an explicit BLOCKED response mentioning
+    // identity, authorization, session, or tenant claims qualifies as an auth block.
+    const lifecycleBlocked = !e2eOk && transitionAttempts.some(t => {
+      const reason = t.error || '';
+      return !t.success && /\\bBLOCKED\\b/i.test(reason) &&
+        /(identity|authori[sz]ation|session|tenant claim)/i.test(reason);
+    });
     const lifecycleGateStatus: GateResult['status'] = e2eOk
       ? 'PASSED'
       : lifecycleBlocked ? 'BLOCKED' : 'FAILED';
