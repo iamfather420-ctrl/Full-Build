@@ -31,7 +31,8 @@
     "verify:daisy-safety": "node scripts/verify_daisy_foundational_safety.mjs",
     "test:auth-boundary": "tsx scripts/test_first_party_auth.ts",
     "test:auth-neon-adapter": "tsx scripts/test_neon_auth_repository.ts",
-    "test:auth-router": "tsx scripts/test_first_party_auth_router.ts"
+    "test:auth-router": "tsx scripts/test_first_party_auth_router.ts",
+    "verify:auth-migration": "node scripts/verify_first_party_auth_migration.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
