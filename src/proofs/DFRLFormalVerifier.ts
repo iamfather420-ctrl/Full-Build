@@ -443,6 +443,7 @@ export class DFRLFormalVerifier {
       formal_invariant: 'Syntax error must fail closed and never prove UNSAT.',
       machine_checked_status: 'VERIFIED',
       z3_smt_assertion: '(assert (this_is_an_undefined_operator 123 456))',
+      expected_solver_result: 'unsat',
       proof_bundle_ref: 'PB-FAULT-001'
     };
     const res = await this.verifyProposition(malformedItem);
