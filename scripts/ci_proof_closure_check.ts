@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 function fail(message: string): never {
   console.error('[CI-FAIL] ' + message);
@@ -22,19 +23,36 @@ const summary = readJson('z3-120-formal-verification-summary.json');
 const activation = readJson('daisy-brain-activation-gate.json');
 const gates = readJson('system-46-gates.json');
 const authoritative = readJson('execution-gates.json');
+const artifactManifest = readJson('formal-artifact-sha256.json');
 const checkoutSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim().toLowerCase();
 for (const [name, sha] of [
   ['formal-aggregation.json', formal.source_commit_sha ?? formal.commit_sha],
   ['z3-120-formal-verification-summary.json', summary.source_commit_sha ?? summary.commit_sha],
   ['daisy-brain-activation-gate.json', activation.source_commit_sha ?? activation.commit_sha],
   ['system-46-gates.json', gates.source_commit_sha],
-  ['execution-gates.json', authoritative.commit_sha]
+  ['execution-gates.json', authoritative.commit_sha],
+  ['formal-artifact-sha256.json', artifactManifest.source_commit_sha]
 ] as const) {
   if (typeof sha !== 'string' || sha.toLowerCase() !== checkoutSha) {
     fail(name + ' is stale or not bound to checked-out source SHA ' + checkoutSha + '; observed ' + String(sha));
   }
 }
 
+if (artifactManifest.schema !== 'SOLVEX_DAISY_GENERATED_ARTIFACT_HASH_MANIFEST_V1' ||
+    artifactManifest.source_commit_sha?.toLowerCase() !== checkoutSha ||
+    !artifactManifest.verification_root_sha256 || !artifactManifest.run_evidence_sha256) {
+  fail('Generated artifact SHA-256 manifest is missing source/root/run binding.');
+}
+if (!artifactManifest.artifact_sha256 || !Array.isArray(artifactManifest.missing_expected_artifacts) ||
+    artifactManifest.missing_expected_artifacts.length !== 0) {
+  fail('Generated artifact SHA-256 manifest is incomplete.');
+}
+for (const [name, expectedHash] of Object.entries(artifactManifest.artifact_sha256 as Record<string, string>)) {
+  const file = path.resolve('artifacts', name);
+  if (!fs.existsSync(file)) fail('Hashed artifact is missing: ' + name);
+  const actualHash = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  if (actualHash !== expectedHash) fail('Generated artifact SHA-256 mismatch: ' + name);
+}
 if (formal.total?.required !== 120) fail('Formal aggregate must require exactly 120 cases.');
 if (formal.total?.actual_z3_executions !== 120) fail('Formal aggregate must record 120 actual Z3 executions.');
 if (formal.total?.replays !== 120 || formal.total?.replay_matches !== 120) {
