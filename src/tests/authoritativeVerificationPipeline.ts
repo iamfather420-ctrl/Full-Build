@@ -705,7 +705,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       },
       gateways: {
         neon: hasNeon ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
-        paypal: hasPayPal ? 'CONFIGURED' : 'CONFIGURATION_REQUIRED',
+        paypal: 'DISABLED_BY_POLICY',
         stripe: 'PROHIBITED_BLOCKED'
       }
     };
@@ -786,9 +786,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    } else if (env === 'sandbox' && hasPayPal && ppCreds?.environment === 'sandbox') {
-      claimScopeVerdict = 'SANDBOX_VERIFIED';
-    } else {
+    }    } else {
       claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     }
 
