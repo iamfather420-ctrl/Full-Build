@@ -44,17 +44,16 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
   const expandedResults = rawResults.results.filter(r => !baseline18Ids.includes(r.node_id) && !gatewayIds.includes(r.node_id));
 
   // Determine any unsatisfied nodes
+  const operationallySatisfied = (r: SubsystemExecutionResult) =>
+    r.status === 'SUCCESS' || r.status === 'PROHIBITED_BLOCKED';
+
   const unsatisfied = rawResults.results.filter(
-    r => !r.registered || !r.instantiated || !r.reachable || !r.executed || !r.output_asserted || !r.evidence_generated
+    r => !r.registered || !r.instantiated || !r.reachable || !r.executed ||
+      !r.output_asserted || !r.evidence_generated || !operationallySatisfied(r)
   );
 
   const allExecuted = rawResults.results.every(r => r.executed === true);
-  const noUnexpectedFailures = rawResults.results.every(r =>
-    r.status === 'SUCCESS' ||
-    r.status === 'PROVIDER_REQUIRED' ||
-    r.status === 'PROHIBITED_BLOCKED' ||
-    r.status === 'FAIL_CLOSED'
-  );
+  const noUnexpectedFailures = rawResults.results.every(operationallySatisfied);
 
   return {
     total_nodes: rawResults.total,
