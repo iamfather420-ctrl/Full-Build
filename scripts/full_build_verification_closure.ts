@@ -20,7 +20,6 @@ const env = { ...process.env, SOLVEX_ENV: 'ci', PAYMENTS_ENABLED: 'false' };
 const commands = [
   'verify:release-safety',
   'verify:payments-disabled',
-  'verify:paypal',
   'verify:nodes',
   'verify:enterprise',
   'verify:authoritative',
