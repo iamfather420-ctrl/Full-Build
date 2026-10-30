@@ -277,10 +277,10 @@ export class DHFormalVerifier {
               }
               if (depth !== 0) { assignments.length = 0; break; }
             } else {
-              while (valueEnd < modelText.length && !/\\s|\\)/.test(modelText[valueEnd])) valueEnd++;
+              while (valueEnd < modelText.length && !/\s|\)/.test(modelText[valueEnd])) valueEnd++;
             }
             const value = modelText.slice(valueStart, valueEnd).trim();
-            if (!value || /[\\r\\n]/.test(value)) { assignments.length = 0; break; }
+            if (!value || /[\r\n]/.test(value)) { assignments.length = 0; break; }
             assignments.push('(assert (= ' + symbol + ' ' + value + '))');
           }
           let witnessRecheckPassed = false;
