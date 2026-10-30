@@ -11,6 +11,15 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    # The ci GitHub Environment supplies its own scoped Neon validation database URL.
+    # This job never targets the production environment.
+    environment:
+      name: ci
+      deployment: false
+    env:
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      SOLVEX_ENV: ci
+      PAYMENTS_ENABLED: 'false'
     timeout-minutes: 25
     steps:
       - name: Checkout

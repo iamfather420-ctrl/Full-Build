@@ -16,14 +16,23 @@ for (const name of artifactNames) {
 }
 
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-const env = { ...process.env, SOLVEX_ENV: 'ci', PAYMENTS_ENABLED: 'false' };
+const closureRunId = `closure_${Date.now()}_${process.pid}`;
+const env = {
+  ...process.env,
+  SOLVEX_ENV: 'ci',
+  PAYMENTS_ENABLED: 'false',
+  SOLVEX_CLOSURE_RUN_ID: closureRunId
+};
+// Keep one authoritative execution path. The 15-gate pipeline already
+// exercises enterprise invariants and 54-node coverage; the 120-case
+// aggregation owns the DFRL+DH corpus and 46-gate run. Avoid invoking those
+// same suites again through their standalone aliases.
 const commands = [
   'verify:release-safety',
   'verify:payments-disabled',
-  'verify:paypal',
-  'verify:nodes',
-  'verify:enterprise',
-  'verify:authoritative',
+  // verify:120 creates the commit-bound DFRL report and the isolated 46-gate
+  // pipeline, which also emits execution-gates.json. Do not rerun the
+  // authoritative pipeline as a separate duplicate step.
   'verify:120',
   'verify:ci'
 ];

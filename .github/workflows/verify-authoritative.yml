@@ -17,13 +17,16 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     # PR validation uses a non-production environment; production checks remain protected.
+    # Environment-scoped secrets supply NEON_DATABASE_URL for ci vs production.
     environment:
       name: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       deployment: false
     env:
       SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
-      NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
+      # Same secret name as Build and Enterprise CI. Resolved from the job environment
+      # (ci or production). Do not use NEON_VALIDATION_URL — it left PR runs empty.
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     timeout-minutes: 30
 
@@ -32,6 +35,27 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Report Neon credential presence (no value)
+        run: |
+          # Never print the secret. Only AVAILABLE vs MISSING for operators.
+          if [ -n "${NEON_DATABASE_URL:-}" ]; then
+            echo "NEON_DATABASE_URL: AVAILABLE"
+            echo "NEON_DATABASE_URL_LENGTH: ${#NEON_DATABASE_URL}"
+            case "$NEON_DATABASE_URL" in
+              postgres://*|postgresql://*) echo "NEON_DATABASE_URL_SCHEME: postgresql" ;;
+              *) echo "NEON_DATABASE_URL_SCHEME: unexpected" ;;
+            esac
+          else
+            echo "NEON_DATABASE_URL: MISSING"
+            echo "Hint: add Environment secret NEON_DATABASE_URL on GitHub Environment 'ci'"
+            echo "      (Settings → Environments → ci → Environment secrets)."
+            echo "      Repository secrets with the same name also work for this job."
+            echo "GATE-11 will remain EXTERNAL_PROVIDER_REQUIRED until this is AVAILABLE"
+            echo "and NeonStore.connect() succeeds."
+          fi
+          echo "SOLVEX_ENV=${SOLVEX_ENV:-}"
+          echo "PAYMENTS_ENABLED=${PAYMENTS_ENABLED:-}"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

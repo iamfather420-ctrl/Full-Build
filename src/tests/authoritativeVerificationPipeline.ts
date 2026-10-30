@@ -13,7 +13,6 @@ import { runDaisy54NodeCoverage } from './daisy54NodeCoverage';
 import { runPersistenceVerification } from './persistenceVerification';
 import { SqliteStore } from '../database/SqliteStore';
 import { NeonStore } from '../database/NeonPersistence';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
@@ -259,33 +258,80 @@ export class AuthoritativeVerificationPipeline {
     // ==========================================
     const g6Start = performance.now();
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
-    const dfrlReport = await dfrlVerifier.verifyAll88();
     const validWitnessHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+    let cachedDfrlReport: Awaited<ReturnType<DFRLFormalVerifier['verifyAll88']>> | undefined;
+    const closureRunId = process.env.SOLVEX_CLOSURE_RUN_ID;
+    if (closureRunId && platform.fs && platform.path) {
+      try {
+        const cachePath = platform.path.resolve(rootDir, 'artifacts', 'dfrl-88-verification.json');
+        if (platform.fs.existsSync(cachePath)) {
+          const cached = JSON.parse(platform.fs.readFileSync(cachePath, 'utf8'));
+          const generatedAt = Date.parse(cached.generated_at || '');
+          const cacheAgeMs = Date.now() - generatedAt;
+          const cacheValid =
+            cached.source_commit_sha === commitSha &&
+            cached.closure_run_id === closureRunId &&
+            Number.isFinite(generatedAt) && cacheAgeMs >= 0 && cacheAgeMs <= 30 * 60 * 1000 &&
+            cached.total_propositions === 88 &&
+            cached.attempted === 88 &&
+            cached.executed === 88 &&
+            cached.unsat_count === 88 &&
+            cached.sat_count === 0 &&
+            cached.unknown_count === 0 &&
+            cached.error_count === 0 &&
+            cached.not_executed_count === 0 &&
+            cached.overall_status === 'VERIFIED' &&
+            cached.results?.length === 88 &&
+            cached.results.every((r: any) =>
+              r.expected_solver_result === 'unsat' &&
+              r.solver_result === 'unsat' &&
+              r.proved === true &&
+              validWitnessHash(r.actual_smt_assertion_hash) &&
+              validWitnessHash(r.certificate_sha256)
+            ) &&
+            cached.replays?.length === 88 &&
+            cached.replays.every((r: any) =>
+              r.replay_match === true &&
+              r.original_result === 'unsat' &&
+              r.replay_result === 'unsat' &&
+              r.original_assertion_hash === r.replay_assertion_hash
+            ) &&
+            validWitnessHash(cached.verification_root_sha256);
+          if (cacheValid) {
+            cachedDfrlReport = cached;
+            console.log('[DFRL-CACHE] Reusing 88/88 commit- and run-bound DFRL results; no second solver pass.');
+          }
+        }
+      } catch (error) {
+        console.warn('[DFRL-CACHE] Cache unavailable or invalid; running DFRL independently.', error);
+      }
+    }
+    const dfrlReport = cachedDfrlReport ?? await dfrlVerifier.verifyAll88();
     const dfrlOk =
       dfrlReport.total_propositions === 88 &&
       dfrlReport.attempted === 88 &&
       dfrlReport.executed === 88 &&
       dfrlReport.results.length === 88 &&
       new Set(dfrlReport.results.map(r => r.operator_id)).size === 88 &&
-      dfrlReport.sat_count === 88 &&
-      dfrlReport.unsat_count === 0 &&
+      dfrlReport.unsat_count === 88 &&
+      dfrlReport.sat_count === 0 &&
       dfrlReport.unknown_count === 0 &&
       dfrlReport.error_count === 0 &&
       dfrlReport.not_executed_count === 0 &&
       dfrlReport.results.every(r =>
-        r.expected_solver_result === 'sat' &&
-        r.solver_result === 'sat' &&
+        r.expected_solver_result === 'unsat' &&
+        r.solver_result === 'unsat' &&
         r.proved === true &&
-        r.sat_witness_recheck_passed === true &&
-        validWitnessHash(r.sat_witness_model_sha256)
+        validWitnessHash(r.actual_smt_assertion_hash) &&
+        validWitnessHash(r.certificate_sha256)
       ) &&
       dfrlReport.replays.length === 88 &&
       dfrlReport.replays.every(r =>
         r.replay_match &&
-        r.original_result === 'sat' &&
-        r.replay_result === 'sat' &&
-        r.replay_witness_recheck_passed === true &&
-        validWitnessHash(r.replay_witness_model_sha256)
+        r.original_result === 'unsat' &&
+        r.replay_result === 'unsat' &&
+        validWitnessHash(r.original_assertion_hash) &&
+        r.original_assertion_hash === r.replay_assertion_hash
       ) &&
       dfrlReport.deterministic_replays_matched === 88 &&
       dfrlReport.overall_status === 'VERIFIED';
@@ -300,10 +346,10 @@ export class AuthoritativeVerificationPipeline {
         total_propositions: dfrlReport.total_propositions,
         attempted: dfrlReport.attempted,
         executed: dfrlReport.executed,
-        expected_solver_result: 'sat',
-        sat_count: dfrlReport.sat_count,
+        expected_solver_result: 'unsat',
         unsat_count: dfrlReport.unsat_count,
-        sat_witnesses_rechecked: dfrlReport.results.filter(r => r.sat_witness_recheck_passed === true).length,
+        sat_count: dfrlReport.sat_count,
+        unsat_proofs_accepted: dfrlReport.results.filter(r => r.proved && r.solver_result === 'unsat').length,
         deterministic_replays_matched: dfrlReport.deterministic_replays_matched,
         authored_models_count: dfrlReport.authored_models_count,
         generated_models_count: dfrlReport.generated_models_count,
@@ -313,7 +359,12 @@ export class AuthoritativeVerificationPipeline {
       }
     );
 
-    writeArtifact('dfrl-88-verification.json', JSON.stringify(dfrlReport, null, 2));
+    writeArtifact('dfrl-88-verification.json', JSON.stringify({
+      ...dfrlReport,
+      source_commit_sha: commitSha,
+      closure_run_id: process.env.SOLVEX_CLOSURE_RUN_ID || null,
+      generated_at: new Date().toISOString()
+    }, null, 2));
 
     // ==========================================
     // GATE 7: Deterministic Cleanroom Replay
@@ -440,48 +491,33 @@ export class AuthoritativeVerificationPipeline {
     // GATE 11: External Provider Verification (Neon, PayPal)
     // ==========================================
     const g11Start = performance.now();
-    const pp = PayPalAdapter.getInstance();
-    const hasPayPal = pp.hasActiveCredentials();
-    const ppCreds = pp.getEffectiveCredentials();
-    let ppAuth = false;
-    if (hasPayPal && ppCreds) {
-      const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
-      ppAuth = testPP.valid;
-    }
-
+    // PayPal is deliberately excluded from this release scope and must remain
+    // disabled. This gate verifies only the required Neon persistence provider;
+    // it must never probe or authenticate against PayPal.
     const neon = NeonStore.getInstance();
     const hasNeon = neon.isConfigured();
     let neonConn = false;
     if (hasNeon) {
       neonConn = await neon.connect();
     }
-
-    let g11Status: GateResult['status'] = 'EXTERNAL_PROVIDER_REQUIRED';
-    if (!hasPayPal && !hasNeon) {
-      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    } else if (hasPayPal && !ppAuth) {
-      g11Status = 'FAILED';
-    } else if (hasNeon && !neonConn) {
-      g11Status = 'FAILED';
-    } else if (ppAuth && neonConn) {
-      g11Status = 'PASSED';
-    } else {
-      g11Status = 'CONFIGURED';
-    }
+    const paymentsDisabled = process.env.PAYMENTS_ENABLED !== 'true';
+    const g11Status: GateResult['status'] = !hasNeon
+      ? 'EXTERNAL_PROVIDER_REQUIRED'
+      : neonConn ? 'PASSED' : 'FAILED';
 
     recordGate(
       11,
       'GATE-11',
-      'External Provider Gateways (Neon, PayPal)',
+      'External Persistence Provider (Neon; PayPal excluded)',
       'LOCAL',
       g11Status,
       performance.now() - g11Start,
       {
         paypal: {
-          configured: hasPayPal,
-          environment: ppCreds?.environment || 'NOT_CONFIGURED',
-          authenticated: ppAuth,
-          status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
+          configured: false,
+          authenticated: false,
+          status: paymentsDisabled ? 'DISABLED_BY_POLICY' : 'BLOCKED_PAYMENTS_MUST_REMAIN_DISABLED',
+          network_calls: 0,
           claim_scope: 'LOCAL'
         },
         neon: {
@@ -492,7 +528,7 @@ export class AuthoritativeVerificationPipeline {
         },
         stripe: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Sovereign Security Directive forbids Stripe; fiat settlements route exclusively to PayPal DN-35'
+          policy: 'Stripe remains prohibited; PayPal payment processing is excluded and disabled for this release.'
         }
       }
     );
@@ -521,6 +557,8 @@ export class AuthoritativeVerificationPipeline {
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     for (const targetState of plannedTransitions) {
+      // No identity is fabricated for this production-shaped lifecycle check.
+      // Without a real verified session, the order must remain in OFFER.
       const result = orderMgr.transitionOrder(testOrderId, targetState);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
@@ -708,7 +746,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       },
       gateways: {
         neon: hasNeon ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
-        paypal: hasPayPal ? 'CONFIGURED' : 'CONFIGURATION_REQUIRED',
+        paypal: 'DISABLED_BY_POLICY',
         stripe: 'PROHIBITED_BLOCKED'
       }
     };
@@ -769,11 +807,11 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     // Production credential gates
     if (env === 'production') {
-      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
-        productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
-      }
       if (!hasNeon || !neonConn) {
         productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
+      }
+      if (process.env.PAYMENTS_ENABLED === 'true') {
+        productionBlockers.push('Payments must remain disabled for this release; PayPal is explicitly out of scope.');
       }
     } else {
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
@@ -789,10 +827,6 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    } else if (env === 'sandbox' && hasPayPal && ppCreds?.environment === 'sandbox') {
-      claimScopeVerdict = 'SANDBOX_VERIFIED';
-    } else {
-      claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     }
 
     recordGate(

@@ -8,12 +8,12 @@ The active native UI now uses a reviewed integration of the original panel layou
 ## Active component behavior
 - `PaymentGateway`: recovered-style provider list and transaction monitor layout; explicitly BLOCKED. Does not call `/api/pay/create`, connect a provider, show a checkout URL, or create a transaction.
 - `CommandBar`: recovered-style command console with safe inspection prompts. Sends user prompts to the server chat route. Chat output cannot authorize payments or other operations; payment-trigger metadata from the historical UI is not rendered.
-- `ParadoxLedger`: recovered-style read-only evidence panel. It does not display the original hardcoded efficacy/compliance claims or invent a registry/count/result. Current proof data is not yet wired to this panel.
+- `ParadoxLedger`: now reads the local `/api/proof-status` endpoint. The server projects only the current formal aggregation, 120-case summary, 46-gate report, and activation artifact. It reports `VERIFIED` only when the artifacts agree on the source commit and that commit matches the configured runtime commit; otherwise it remains `UNVERIFIED` or `UNAVAILABLE`. The panel is read-only and reports activation separately from corpus verification.
 - `JitFactory`: recovered-style factory status panel. No timer-based simulated completion, compile, sign, fingerprint, publish, or deployment action is exposed.
 - `App_native.tsx`: removed unsupported claims that 54/54 nodes are running, 58 paradoxes are locked, hosting is Cloud Run, or ISO/SOC2 compliance is established. The node count is identified as a catalogue, not execution evidence.
 
 ## Remaining integration gap
-The original UI depends on additional registry and execution contracts that have not been proven to exist in the active native runtime. Therefore these panels preserve the visual intent, but the Paradox Ledger is not yet connected to the authoritative formal evidence registry and JIT Factory is not connected to a verified isolated executor. Do not describe the native app as fully integrated or production-ready.
+The Paradox Ledger is source-wired to the authoritative artifact projection, but the endpoint has not yet been validated against a deployed runtime with commit-bound artifacts. The JIT Factory is still not connected to a verified isolated executor; it must remain BLOCKED. The 54-node CUJ run is coverage evidence, not proof that every subsystem is integrated end-to-end. Do not describe the native app as fully integrated or production-ready.
 
 ## Safety constraints
 - No PayPal or other payment provider enabled.
