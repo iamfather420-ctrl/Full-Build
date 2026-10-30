@@ -1,8 +1,10 @@
 name: Authoritative 120-Case Verification
 
-# Pull-request and main-branch verification is owned by ci.yml.
-# Keep this workflow manual for an explicitly approved release check.
 on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
     inputs:
       production_release:
