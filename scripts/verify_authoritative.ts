@@ -57,7 +57,8 @@ async function main() {
     } catch {
       productionFixtureBlocked = true;
     } finally {
-      process.env.NODE_ENV = previousNodeEnv;
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
     }
     if (!productionFixtureBlocked) throw new Error('CI identity fixture was available in production mode.');
     console.log('[AUTH-BOUNDARY] token issuance blocked; test fixture is in-memory, tenant-bound, role-checked, and production-disabled.');
