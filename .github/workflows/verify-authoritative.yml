@@ -17,13 +17,16 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     # PR validation uses a non-production environment; production checks remain protected.
+    # Environment-scoped secrets supply NEON_DATABASE_URL for ci vs production.
     environment:
       name: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       deployment: false
     env:
       SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
-      NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
+      # Same secret name as Build and Enterprise CI. Resolved from the job environment
+      # (ci or production). Do not use NEON_VALIDATION_URL — it left PR runs empty.
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     timeout-minutes: 30
 
