@@ -506,16 +506,15 @@ export class AuthoritativeVerificationPipeline {
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     let lifecycleUser: UserContext | undefined;
-    if (process.env.SOLVEX_ENV === 'ci' && process.env.AUTH_MODE === 'local_hs256') {
-      const auth = AuthService.getInstance();
-      const token = auth.createSignedToken(
-        'daisy-ci-verifier',
-        'TENANT_ENTERPRISE_DEMO',
-        'ci-verifier@solvex.invalid',
-        'OWNER'
-      );
-      const identity = auth.verifyToken(token);
-      if (identity.valid && identity.user) lifecycleUser = identity.user;
+    if (process.env.SOLVEX_ENV === 'ci' && process.env.SOLVEX_TEST_IDENTITY_ENABLED === 'true') {
+      // This object exists only in this process for the CI lifecycle test. It is
+      // not a signed session, is never persisted, and cannot be issued in production.
+      lifecycleUser = AuthService.getInstance().createVerificationFixture({
+        user_id: 'daisy-ci-verifier',
+        tenant_id: 'TENANT_ENTERPRISE_DEMO',
+        email: 'ci-verifier@solvex.invalid',
+        role: 'OWNER'
+      });
     }
     for (const targetState of plannedTransitions) {
       const result = orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
