@@ -19,8 +19,8 @@ export interface NodeCoverageReport {
   results: SubsystemExecutionResult[];
   breakdown: {
     baseline_internal_18: SubsystemExecutionResult[];
-    expanded_internal_33: SubsystemExecutionResult[];
-    gateways_3: SubsystemExecutionResult[];
+    expanded_internal_34: SubsystemExecutionResult[];
+    gateways_2: SubsystemExecutionResult[];
   };
 }
 
@@ -75,8 +75,8 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     results: rawResults.results,
     breakdown: {
       baseline_internal_18: baselineResults,
-      expanded_internal_33: expandedResults,
-      gateways_3: gatewayResults
+      expanded_internal_34: expandedResults,
+      gateways_2: gatewayResults
     }
   };
 }
