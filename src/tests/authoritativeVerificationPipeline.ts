@@ -682,7 +682,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       },
       gateways: {
         neon: hasNeon ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
-        paypal: hasPayPal ? 'CONFIGURED' : 'CONFIGURATION_REQUIRED',
+        paypal: 'PROHIBITED_BLOCKED',
         stripe: 'PROHIBITED_BLOCKED'
       }
     };
@@ -743,9 +743,6 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     // Production credential gates
     if (env === 'production') {
-      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
-        productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
-      }
       if (!hasNeon || !neonConn) {
         productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
       }
@@ -763,7 +760,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    } else if (env === 'sandbox' && hasPayPal && ppCreds?.environment === 'sandbox') {
+    } else if (env === 'sandbox' && hasNeon && neonConn) {
       claimScopeVerdict = 'SANDBOX_VERIFIED';
     } else {
       claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
