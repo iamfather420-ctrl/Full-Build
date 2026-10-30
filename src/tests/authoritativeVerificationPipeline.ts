@@ -506,7 +506,7 @@ export class AuthoritativeVerificationPipeline {
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     let lifecycleUser: UserContext | undefined;
-    if (env === 'ci' && process.env.AUTH_MODE === 'local_hs256') {
+    if (process.env.SOLVEX_ENV === 'ci' && process.env.AUTH_MODE === 'local_hs256') {
       const auth = AuthService.getInstance();
       const token = auth.createSignedToken(
         'daisy-ci-verifier',
