@@ -37,7 +37,7 @@ export class NeonStore {
   }
 
   private constructor() {
-    this.databaseUrl = (typeof process !== 'undefined' && (process.env?.NEON_DATABASE_URL || process.env?.DATABASE_URL)) || null;
+    this.databaseUrl = (typeof process !== 'undefined' && (process.env?.DATABASE_RUNTIME_URL || process.env?.NEON_DATABASE_URL)) || null;
   }
 
   public static getInstance(): NeonStore {
@@ -58,7 +58,7 @@ export class NeonStore {
     this.restartReadbackVerified = false;
     if (!this.isConfigured()) {
       this.isConnected = false;
-      this.lastError = 'NEON_DATABASE_URL or DATABASE_URL not configured';
+      this.lastError = 'DATABASE_RUNTIME_URL or NEON_DATABASE_URL not configured';
       return false;
     }
 
@@ -95,7 +95,7 @@ export class NeonStore {
         total_required_tables: this.totalRequiredTables,
         tenant_isolation_verified: false,
         restart_readback_verified: false,
-        notes: 'NEON_DATABASE_URL and DATABASE_URL are not configured. Cloud persistence is unverified; local fallback selection must be reported separately by the caller.'
+        notes: 'DATABASE_RUNTIME_URL and NEON_DATABASE_URL are not configured. Cloud persistence is unverified; local fallback selection must be reported separately by the caller.'
       };
     }
 
