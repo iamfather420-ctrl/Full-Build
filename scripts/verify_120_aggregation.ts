@@ -26,9 +26,24 @@ async function main() {
   const outDir = path.join(process.cwd(), 'artifacts');
   fs.mkdirSync(outDir, { recursive: true });
 
-  console.log('\n[STAGE 1/2] Executing 88 DFRL Operators through Microsoft Research Z3...');
-  const dfrlVerifier = DFRLFormalVerifier.getInstance();
-  const dfrlReport = await dfrlVerifier.verifyAll88();
+  const reuseDfrlReport = process.argv.includes('--reuse-dfrl-report');
+  let dfrlReport: Awaited<ReturnType<DFRLFormalVerifier['verifyAll88']>>;
+  if (reuseDfrlReport) {
+    const dfrlArtifactPath = path.join(outDir, 'dfrl-88-verification.json');
+    if (!fs.existsSync(dfrlArtifactPath)) {
+      throw new Error('Commit-bound DFRL artifact is missing; run verify:authoritative first or use verify:120 for a full standalone run.');
+    }
+    const stored = JSON.parse(fs.readFileSync(dfrlArtifactPath, 'utf8'));
+    if (stored.source_commit_sha !== commitSha) {
+      throw new Error(`DFRL artifact source commit mismatch: expected ${commitSha}, got ${String(stored.source_commit_sha || 'missing')}`);
+    }
+    dfrlReport = stored;
+    console.log('\n[STAGE 1/2] Reusing commit-bound DFRL 88-case report; no DFRL solver/replay rerun.');
+  } else {
+    console.log('\n[STAGE 1/2] Executing 88 DFRL Operators through Microsoft Research Z3...');
+    const dfrlVerifier = DFRLFormalVerifier.getInstance();
+    dfrlReport = await dfrlVerifier.verifyAll88();
+  }
   console.log(` -> DFRL Executed:       ${dfrlReport.executed} / ${dfrlReport.total_operators}`);
   console.log(` -> DFRL status:         ${dfrlReport.overall_status}`);
   console.log(` -> DFRL Replays:        ${dfrlReport.deterministic_replays_matched} / ${dfrlReport.total_operators}`);
