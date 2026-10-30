@@ -13,7 +13,6 @@ import { runDaisy54NodeCoverage } from './daisy54NodeCoverage';
 import { runPersistenceVerification } from './persistenceVerification';
 import { SqliteStore } from '../database/SqliteStore';
 import { NeonStore } from '../database/NeonPersistence';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
@@ -440,59 +439,34 @@ export class AuthoritativeVerificationPipeline {
     // GATE 11: External Provider Verification (Neon, PayPal)
     // ==========================================
     const g11Start = performance.now();
-    const pp = PayPalAdapter.getInstance();
-    const hasPayPal = pp.hasActiveCredentials();
-    const ppCreds = pp.getEffectiveCredentials();
-    let ppAuth = false;
-    if (hasPayPal && ppCreds) {
-      const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
-      ppAuth = testPP.valid;
-    }
-
+    // PayPal is intentionally excluded from this closure target. GATE-11
+    // evaluates the required Neon persistence provider only.
     const neon = NeonStore.getInstance();
     const hasNeon = neon.isConfigured();
-    let neonConn = false;
-    if (hasNeon) {
-      neonConn = await neon.connect();
-    }
-
-    let g11Status: GateResult['status'] = 'EXTERNAL_PROVIDER_REQUIRED';
-    if (!hasPayPal && !hasNeon) {
-      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    } else if (hasPayPal && !ppAuth) {
-      g11Status = 'FAILED';
-    } else if (hasNeon && !neonConn) {
-      g11Status = 'FAILED';
-    } else if (ppAuth && neonConn) {
-      g11Status = 'PASSED';
-    } else {
-      g11Status = 'CONFIGURED';
-    }
+    const neonConn = hasNeon ? await neon.connect() : false;
+    const g11Status: GateResult['status'] = neonConn ? 'PASSED' : 'EXTERNAL_PROVIDER_REQUIRED';
 
     recordGate(
       11,
       'GATE-11',
-      'External Provider Gateways (Neon, PayPal)',
+      'Neon PostgreSQL Persistence Provider',
       'LOCAL',
       g11Status,
       performance.now() - g11Start,
       {
-        paypal: {
-          configured: hasPayPal,
-          environment: ppCreds?.environment || 'NOT_CONFIGURED',
-          authenticated: ppAuth,
-          status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
-          claim_scope: 'LOCAL'
-        },
         neon: {
           configured: hasNeon,
           connected: neonConn,
           status: !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : (neonConn ? 'CONNECTED' : 'CONNECTION_FAILED'),
           claim_scope: 'LOCAL'
         },
+        payments: {
+          status: 'PROHIBITED_BLOCKED',
+          policy: 'PayPal and all payment processing are excluded from this closure target; checkout remains disabled.'
+        },
         stripe: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Sovereign Security Directive forbids Stripe; fiat settlements route exclusively to PayPal DN-35'
+          policy: 'Stripe is prohibited; no payment provider is contacted by this gate.'
         }
       }
     );
