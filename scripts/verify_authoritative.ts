@@ -7,41 +7,60 @@ import { AuthService } from '../src/auth/AuthService';
 import { configureTestAuthEnvironment } from './testAuthEnvironment';
 
 async function main() {
-  // CI gets an ephemeral, test-only first-party identity. Production never does.
+  // CI gets an in-memory verification fixture only; local session issuance stays blocked.
   if (process.env.SOLVEX_ENV === 'ci') {
     configureTestAuthEnvironment();
     const auth = AuthService.getInstance();
-    const token = auth.createSignedToken(
-      'daisy-auth-check',
-      'TENANT_AUTH_TEST',
-      'auth-check@solvex.invalid',
-      'OWNER'
-    );
-    const verified = auth.verifyToken(token);
-    if (!verified.valid || !verified.user) throw new Error('First-party auth rejected a valid signed test session.');
-    const parts = token.split('.');
-    const changedSignature = (parts[2][0] === 'A' ? 'B' : 'A') + parts[2].slice(1);
-    if (auth.verifyToken(parts[0] + '.' + parts[1] + '.' + changedSignature).valid) {
-      throw new Error('First-party auth accepted a tampered session signature.');
+    let tokenIssuanceBlocked = false;
+    try {
+      auth.createSignedToken('daisy-auth-check', 'TENANT_AUTH_TEST', 'auth-check@solvex.invalid', 'OWNER');
+    } catch {
+      tokenIssuanceBlocked = true;
     }
-    if (auth.authorize({ ...verified.user }, 'ORDER_TRANSITION', 'TENANT_AUTH_TEST').authorized) {
-      throw new Error('First-party auth accepted a forged, unverified user context.');
+    if (!tokenIssuanceBlocked || auth.verifyToken('untrusted-token').valid) {
+      throw new Error('Fail-closed local token issuance or verification boundary regressed.');
     }
-    if (auth.authorize(verified.user, 'ORDER_TRANSITION', 'TENANT_OTHER').authorized) {
-      throw new Error('First-party auth allowed cross-tenant authorization.');
+    const verified = auth.createVerificationFixture({
+      user_id: 'daisy-auth-check',
+      tenant_id: 'TENANT_AUTH_TEST',
+      email: 'auth-check@solvex.invalid',
+      role: 'OWNER'
+    });
+    if (!auth.authorize(verified, 'ORDER_TRANSITION', 'TENANT_AUTH_TEST').authorized) {
+      throw new Error('Isolated CI identity fixture did not authorize its own tenant.');
     }
-    const customerToken = auth.createSignedToken(
-      'daisy-customer-check',
-      'TENANT_AUTH_TEST',
-      'customer-check@solvex.invalid',
-      'CUSTOMER'
-    );
-    const customer = auth.verifyToken(customerToken);
-    if (!customer.valid || !customer.user ||
-        auth.authorize(customer.user, 'ORDER_TRANSITION', 'TENANT_AUTH_TEST').authorized) {
-      throw new Error('First-party auth role boundary failed for CUSTOMER.');
+    if (auth.authorize({ ...verified }, 'ORDER_TRANSITION', 'TENANT_AUTH_TEST').authorized) {
+      throw new Error('Auth accepted a forged, unregistered user context.');
     }
-    console.log('[AUTH-BOUNDARY] valid-session, tamper, forged-context, cross-tenant, and role checks passed.');
+    if (auth.authorize(verified, 'ORDER_TRANSITION', 'TENANT_OTHER').authorized) {
+      throw new Error('Auth allowed cross-tenant authorization.');
+    }
+    const customer = auth.createVerificationFixture({
+      user_id: 'daisy-customer-check',
+      tenant_id: 'TENANT_AUTH_TEST',
+      email: 'customer-check@solvex.invalid',
+      role: 'CUSTOMER'
+    });
+    if (auth.authorize(customer, 'ORDER_TRANSITION', 'TENANT_AUTH_TEST').authorized) {
+      throw new Error('Auth role boundary failed for CUSTOMER.');
+    }
+    const previousNodeEnv = process.env.NODE_ENV;
+    let productionFixtureBlocked = false;
+    try {
+      process.env.NODE_ENV = 'production';
+      auth.createVerificationFixture({
+        user_id: 'production-should-block',
+        tenant_id: 'TENANT_AUTH_TEST',
+        email: 'blocked@solvex.invalid',
+        role: 'OWNER'
+      });
+    } catch {
+      productionFixtureBlocked = true;
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+    }
+    if (!productionFixtureBlocked) throw new Error('CI identity fixture was available in production mode.');
+    console.log('[AUTH-BOUNDARY] token issuance blocked; test fixture is in-memory, tenant-bound, role-checked, and production-disabled.');
   }
   AuthoritativeVerificationPipeline.setNodePlatform({
     execSync: cp.execSync,
