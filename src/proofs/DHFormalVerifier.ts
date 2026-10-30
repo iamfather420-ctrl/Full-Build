@@ -264,10 +264,24 @@ export class DHFormalVerifier {
           for (const declaration of declarations) {
             const symbol = declaration[1];
             const sort = declaration[2];
-            const pattern = new RegExp('\\(define-fun\\s+' + symbol + '\\s+\\(\\)\\s+' + sort + '\\s+([^\\s()]+)\\s*\\)');
-            const match = modelText.match(pattern);
+            const marker = new RegExp('\\(define-fun\\s+' + symbol + '\\s+\\(\\)\\s+' + sort + '\\s+');
+            const match = marker.exec(modelText);
             if (!match) { assignments.length = 0; break; }
-            assignments.push('(assert (= ' + symbol + ' ' + match[1] + '))');
+            const valueStart = match.index + match[0].length;
+            let valueEnd = valueStart;
+            if (modelText[valueStart] === '(') {
+              let depth = 0;
+              for (; valueEnd < modelText.length; valueEnd++) {
+                if (modelText[valueEnd] === '(') depth++;
+                else if (modelText[valueEnd] === ')' && --depth === 0) { valueEnd++; break; }
+              }
+              if (depth !== 0) { assignments.length = 0; break; }
+            } else {
+              while (valueEnd < modelText.length && !/\\s|\\)/.test(modelText[valueEnd])) valueEnd++;
+            }
+            const value = modelText.slice(valueStart, valueEnd).trim();
+            if (!value || /[\\r\\n]/.test(value)) { assignments.length = 0; break; }
+            assignments.push('(assert (= ' + symbol + ' ' + value + '))');
           }
           let witnessRecheckPassed = false;
           let witnessSha256: string | undefined;
