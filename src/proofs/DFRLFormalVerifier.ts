@@ -152,11 +152,6 @@ export class DFRLFormalVerifier {
     return this.cleanroomContext;
   }
 
-  /**
-   * Execute actual SMT-LIB assertion for an individual DFRL operator.
-   * NEVER uses generic p == !p contradiction.
-   * If Z3 is unavailable or errors: returns error/formal_execution_not_performed, NEVER unsat.
-   */
   public async verifyProposition(
     item: DFRLParadoxItem,
     executionId: string = `exec_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
@@ -168,7 +163,6 @@ export class DFRLFormalVerifier {
 
     const z3Mod = await this.getZ3Module();
     if (!z3Mod) {
-      // FAIL-CLOSED: Solver unavailable. NEVER convert to unsat.
       const duration = performance.now() - start;
       const certSeed = `${item.code}:${item.formal_invariant}:${smtHash}:formal_execution_not_performed`;
       return {
@@ -200,16 +194,12 @@ export class DFRLFormalVerifier {
     try {
       const ctx = this.getPrimaryContext(z3Mod);
       const solver = new ctx.Solver();
-
-      // EXECUTE THE ACTUAL OPERATOR SMT ASSERTION DIRECTLY
       await solver.fromString(item.z3_smt_assertion);
       const res = await solver.check();
-
       if (res === 'unsat') solverResult = 'unsat';
       else if (res === 'sat') solverResult = 'sat';
       else solverResult = 'unknown';
     } catch (err: any) {
-      // FAIL-CLOSED: SMT parsing or execution exception. NEVER convert to unsat.
       solverResult = 'error';
       execError = err?.message || String(err);
     }
@@ -234,8 +224,6 @@ export class DFRLFormalVerifier {
       execution_id: executionId,
       solver_result: solverResult,
       expected_solver_result: item.expected_solver_result,
-      // Fail closed: this verifier currently has no SAT-model extraction/recheck implementation.
-      // A SAT solver response alone is not a verified witness.
       proved: false,
       claim_scope: 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
@@ -246,15 +234,6 @@ export class DFRLFormalVerifier {
     };
   }
 
-  /**
-   * Run cleanroom independent replay for an operator:
-   * 1. Reconstruct operator assertion from canonical registry data;
-   * 2. Create fresh solver context;
-   * 3. Rebuild Z3 AST via fresh parser;
-   * 4. Execute assertion again;
-   * 5. Independently produce result;
-   * 6. Compare independently generated result and hashes against original.
-   */
   public async replayPropositionCleanroom(
     item: DFRLParadoxItem,
     originalResult: DFRLVerificationResult
@@ -279,7 +258,6 @@ export class DFRLFormalVerifier {
 
     let replayResult = 'unknown';
     try {
-      // Independent cleanroom context
       const replayCtx = this.getCleanroomContext(z3Mod);
       const replaySolver = new replayCtx.Solver();
       await replaySolver.fromString(item.z3_smt_assertion);
@@ -291,9 +269,6 @@ export class DFRLFormalVerifier {
 
     const replayCertSeed = `${item.code}:${item.formal_invariant}:${computeSha256(item.z3_smt_assertion)}:${replayResult}`;
     const replayEvidenceHash = computeSha256(replayCertSeed);
-
-    // A matching SAT replay is not sufficient: the independent witness must also be
-    // extracted and re-asserted in a fresh context. That path is not implemented here.
     const replayWitnessRechecked = false;
     const match =
       replayResult === originalResult.solver_result &&
@@ -315,16 +290,11 @@ export class DFRLFormalVerifier {
     };
   }
 
-  /**
-   * Run full verification for all 88 DFRL propositions + independent cleanroom replays
-   */
   public async verifyAll88(): Promise<DFRL88VerificationReport> {
     const overallExecId = `dfrl_exec_${Date.now()}`;
     const timestamp = new Date().toISOString();
-
     const results: DFRLVerificationResult[] = [];
     const replays: ReplayVerificationRecord[] = [];
-
     let attempted = 0;
     let executed = 0;
     let unsatCount = 0;
@@ -337,15 +307,12 @@ export class DFRLFormalVerifier {
       attempted++;
       const res = await this.verifyProposition(item, overallExecId);
       results.push(res);
-
       if (res.solver_result !== 'formal_execution_not_performed') executed++;
       if (res.solver_result === 'unsat') unsatCount++;
       else if (res.solver_result === 'sat') satCount++;
       else if (res.solver_result === 'unknown') unknownCount++;
       else if (res.solver_result === 'error') errorCount++;
       else notExecutedCount++;
-
-      // Independent cleanroom replay
       const replayRec = await this.replayPropositionCleanroom(item, res);
       replays.push(replayRec);
     }
@@ -394,18 +361,10 @@ export class DFRLFormalVerifier {
     };
   }
 
-  /**
-   * Run SMT mutation test against an ACTUAL DFRL SMT assertion.
-   * Original: ranking metric refutation theorem -> UNSAT
-   * Mutated: removes refutation negation -> SAT
-   */
   public async runSmtMutationTest(): Promise<SMTMutationTestResult> {
-    const targetItem = REAL_88_PARADOX_REGISTRY[20]; // DFRL-P-021
+    const targetItem = REAL_88_PARADOX_REGISTRY[20];
     const originalSmt = targetItem.z3_smt_assertion;
     const originalHash = computeSha256(originalSmt);
-
-    // Actual mutation: invert refutation constraint (not (and ...)) to (and ...)
-    // That turns the theorem contradiction into an achievable state: SAT
     const mutatedSmt = originalSmt.replace('(assert (not (and', '(assert (and').replace(/\)\)\s*$/, ')');
     const mutatedHash = computeSha256(mutatedSmt);
 
@@ -430,19 +389,14 @@ export class DFRLFormalVerifier {
     }
 
     const { Context } = z3Mod;
-
-    // Execute original
     const ctxOrig = new Context('mut_orig');
     const solverOrig = new ctxOrig.Solver();
     await solverOrig.fromString(originalSmt);
     const origRes = await solverOrig.check();
-
-    // Execute mutated
     const ctxMut = new Context('mut_pert');
     const solverMut = new ctxMut.Solver();
     await solverMut.fromString(mutatedSmt);
     const mutRes = await solverMut.check();
-
     const mutationDetected = origRes === 'unsat' && mutRes === 'sat';
 
     return {
@@ -466,10 +420,6 @@ export class DFRLFormalVerifier {
     };
   }
 
-  /**
-   * Inject actual solver failure through the production DFRL verification path:
-   * Verify that malformed SMT produces ERROR and proved=false, NEVER UNSAT.
-   */
   public async runZ3FailureInjectionTest(): Promise<Z3FailureInjectionTestResult> {
     const malformedItem: DFRLParadoxItem = {
       code: 'DFRL-P-FAULT-INJECTION',
@@ -482,7 +432,8 @@ export class DFRLFormalVerifier {
       formal_invariant: 'Syntax error must fail closed and never prove UNSAT.',
       machine_checked_status: 'VERIFIED',
       z3_smt_assertion: '(assert (this_is_an_undefined_operator 123 456))',
-      proof_bundle_ref: 'PB-FAULT-001'
+      proof_bundle_ref: 'PB-FAULT-001',
+      expected_solver_result: 'unsat' as const
     };
 
     const res = await this.verifyProposition(malformedItem);
@@ -508,9 +459,6 @@ export class DFRLFormalVerifier {
     return this.runZ3FailureInjectionTest();
   }
 
-  /**
-   * Cryptographic artifact tampering test
-   */
   public runArtifactTamperTest(report: DFRL88VerificationReport): ArtifactTamperTestResult {
     const originalHash = report.verification_root_sha256;
     const tamperedPayload = JSON.parse(JSON.stringify(report));
