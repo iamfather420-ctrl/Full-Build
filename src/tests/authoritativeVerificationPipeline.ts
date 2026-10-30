@@ -17,7 +17,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
-import { AuthService } from '../auth/AuthService';
+import { AuthService, UserContext } from '../auth/AuthService';
 
 export interface GateResult {
   gate_index: number;
@@ -505,7 +505,7 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
-    let lifecycleUser;
+    let lifecycleUser: UserContext | undefined;
     if (env === 'ci' && process.env.AUTH_MODE === 'local_hs256') {
       const auth = AuthService.getInstance();
       const token = auth.createSignedToken(
