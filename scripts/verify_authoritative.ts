@@ -3,11 +3,46 @@ import fs from 'fs';
 import path from 'path';
 import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
+import { AuthService } from '../src/auth/AuthService';
 import { configureTestAuthEnvironment } from './testAuthEnvironment';
 
 async function main() {
   // CI gets an ephemeral, test-only first-party identity. Production never does.
-  if (process.env.SOLVEX_ENV === 'ci') configureTestAuthEnvironment();
+  if (process.env.SOLVEX_ENV === 'ci') {
+    configureTestAuthEnvironment();
+    const auth = AuthService.getInstance();
+    const token = auth.createSignedToken(
+      'daisy-auth-check',
+      'TENANT_AUTH_TEST',
+      'auth-check@solvex.invalid',
+      'OWNER'
+    );
+    const verified = auth.verifyToken(token);
+    if (!verified.valid || !verified.user) throw new Error('First-party auth rejected a valid signed test session.');
+    const parts = token.split('.');
+    const changedSignature = (parts[2][0] === 'A' ? 'B' : 'A') + parts[2].slice(1);
+    if (auth.verifyToken(parts[0] + '.' + parts[1] + '.' + changedSignature).valid) {
+      throw new Error('First-party auth accepted a tampered session signature.');
+    }
+    if (auth.authorize({ ...verified.user }, 'ORDER_TRANSITION', 'TENANT_AUTH_TEST').authorized) {
+      throw new Error('First-party auth accepted a forged, unverified user context.');
+    }
+    if (auth.authorize(verified.user, 'ORDER_TRANSITION', 'TENANT_OTHER').authorized) {
+      throw new Error('First-party auth allowed cross-tenant authorization.');
+    }
+    const customerToken = auth.createSignedToken(
+      'daisy-customer-check',
+      'TENANT_AUTH_TEST',
+      'customer-check@solvex.invalid',
+      'CUSTOMER'
+    );
+    const customer = auth.verifyToken(customerToken);
+    if (!customer.valid || !customer.user ||
+        auth.authorize(customer.user, 'ORDER_TRANSITION', 'TENANT_AUTH_TEST').authorized) {
+      throw new Error('First-party auth role boundary failed for CUSTOMER.');
+    }
+    console.log('[AUTH-BOUNDARY] valid-session, tamper, forged-context, cross-tenant, and role checks passed.');
+  }
   AuthoritativeVerificationPipeline.setNodePlatform({
     execSync: cp.execSync,
     fs,
