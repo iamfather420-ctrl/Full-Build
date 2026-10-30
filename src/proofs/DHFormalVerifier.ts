@@ -55,6 +55,8 @@ export interface DHFormalVerificationResult {
   limitation?: string;
   sat_witness_recheck_passed?: boolean;
   sat_witness_model_sha256?: string;
+  replay_witness_recheck_passed?: boolean;
+  replay_witness_model_sha256?: string;
 }
 
 export interface DHReplayRecord {
@@ -358,7 +360,9 @@ export class DHFormalVerifier {
         ? 'SAT model extraction or independent fresh-context witness recheck failed; SAT status is not proof.'
         : undefined,
       sat_witness_recheck_passed: actualResult === 'sat' ? execOutcome.witness_recheck_passed === true : undefined,
-      sat_witness_model_sha256: actualResult === 'sat' ? execOutcome.witness_sha256 : undefined
+      sat_witness_model_sha256: actualResult === 'sat' ? execOutcome.witness_sha256 : undefined,
+      replay_witness_recheck_passed: replayResult === 'sat' ? replayOutcome.witness_recheck_passed === true : undefined,
+      replay_witness_model_sha256: replayResult === 'sat' ? replayOutcome.witness_sha256 : undefined
     };
 
     const replay: DHReplayRecord = {
