@@ -20,10 +20,10 @@ async function main() {
   console.log(`EXECUTED NODES:            ${rep.executed_count}`);
   console.log(`OUTPUT ASSERTED NODES:     ${rep.output_asserted_count}`);
   console.log(`EVIDENCE GENERATED NODES:  ${rep.evidence_generated_count}`);
-  console.log(`UNSATISFIED NODES:         ${rep.unsatisfied_node_ids.length === 0 ? 'NONE' : rep.unsatisfied_node_ids.join(', ')}`);
+  console.log(`UNSATISFIED NODES:         ${rep.unsatisfied_node_ids.length === 0 ? 'NONE' : rep.unsatisfied_node_ids.join(', ')}`);\n  console.log(`PROVIDER REQUIRED NODES:   ${rep.provider_required_node_ids.length === 0 ? 'NONE' : rep.provider_required_node_ids.join(', ')}`);\n  console.log(`NOT EXECUTED NODES:        ${rep.not_executed_node_ids.length === 0 ? 'NONE' : rep.not_executed_node_ids.join(', ')}`);
   console.log(`BASELINE INTERNAL (18):    ${rep.internal_previously_covered}`);
-  console.log(`EXPANDED INTERNAL (33):    ${rep.internal_newly_covered}`);
-  console.log(`EXTERNAL GATEWAYS (3):     ${rep.external_gateways}`);
+  console.log(`EXPANDED INTERNAL (34):    ${rep.internal_newly_covered}`);
+  console.log(`EXTERNAL GATEWAYS (2):     ${rep.external_gateways}`);
   console.log(`STRIPE PROHIBITED GUARD:   ${rep.policy_interlocks}`);
   console.log(`ALL SUBSYSTEMS SATISFIED:  ${rep.all_passed ? 'YES' : 'NO'}`);
   console.log('===========================================================');
