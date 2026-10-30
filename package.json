@@ -16,6 +16,7 @@
     "verify:dfrl": "tsx scripts/verify_dfrl.ts",
     "verify:dh-formal": "tsx scripts/verify_dh_formal.ts",
     "verify:120": "tsx scripts/verify_120_aggregation.ts",
+    "verify:120:reuse": "tsx scripts/verify_120_aggregation.ts --reuse-dfrl-report",
     "verify:formal-aggregation": "tsx scripts/verify_120_aggregation.ts",
     "verify:proofs": "tsx scripts/verify_dfrl.ts",
     "verify:nodes": "tsx scripts/verify_nodes.ts",
