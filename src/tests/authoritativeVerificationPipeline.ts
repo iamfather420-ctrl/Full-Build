@@ -444,12 +444,24 @@ export class AuthoritativeVerificationPipeline {
     const neon = NeonStore.getInstance();
     const hasNeon = neon.isConfigured();
     const neonConn = hasNeon ? await neon.connect() : false;
-    const g11Status: GateResult['status'] = neonConn ? 'PASSED' : 'EXTERNAL_PROVIDER_REQUIRED';
+    const neonTables = neonConn
+      ? await neon.verifyRequiredTables()
+      : { verified: 0, required: 27, missing: [] as string[] };
+    const neonRls = neonConn
+      ? await neon.verifyRlsPosture()
+      : { success: false, public_tables: 0, rls_enabled_tables: 0, forced_rls_tables: 0, policy_count: 0, current_role: null, current_role_bypass_rls: null, tables_without_rls: [] as string[], tables_without_policy: [] as string[] };
+    const neonReady = neonConn &&
+      neonTables.verified === neonTables.required &&
+      neonTables.missing.length === 0 &&
+      neonRls.success;
+    const g11Status: GateResult['status'] = neonReady
+      ? 'PASSED'
+      : !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : 'FAILED';
 
     recordGate(
       11,
       'GATE-11',
-      'Neon PostgreSQL Persistence Provider',
+      'Neon PostgreSQL Runtime, Schema & RLS Gate',
       'LOCAL',
       g11Status,
       performance.now() - g11Start,
@@ -457,7 +469,21 @@ export class AuthoritativeVerificationPipeline {
         neon: {
           configured: hasNeon,
           connected: neonConn,
-          status: !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : (neonConn ? 'CONNECTED' : 'CONNECTION_FAILED'),
+          required_tables: neonTables.required,
+          verified_tables: neonTables.verified,
+          missing_tables: neonTables.missing,
+          rls: {
+            success: neonRls.success,
+            public_tables: neonRls.public_tables,
+            rls_enabled_tables: neonRls.rls_enabled_tables,
+            forced_rls_tables: neonRls.forced_rls_tables,
+            policy_count: neonRls.policy_count,
+            current_role: neonRls.current_role,
+            current_role_bypass_rls: neonRls.current_role_bypass_rls,
+            tables_without_rls: neonRls.tables_without_rls,
+            tables_without_policy: neonRls.tables_without_policy
+          },
+          status: !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : (neonReady ? 'VERIFIED' : 'FAILED'),
           claim_scope: 'LOCAL'
         },
         payments: {
@@ -743,8 +769,8 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     // Production credential gates
     if (env === 'production') {
-      if (!hasNeon || !neonConn) {
-        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
+      if (!neonReady) {
+        productionBlockers.push('GATE-11 Neon runtime connection, required-table verification, or forced tenant RLS verification failed.');
       }
     } else {
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
