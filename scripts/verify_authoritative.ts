@@ -3,8 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
+import { configureTestAuthEnvironment } from './testAuthEnvironment';
 
 async function main() {
+  // CI gets an ephemeral, test-only first-party identity. Production never does.
+  if (process.env.SOLVEX_ENV === 'ci') configureTestAuthEnvironment();
   AuthoritativeVerificationPipeline.setNodePlatform({
     execSync: cp.execSync,
     fs,
