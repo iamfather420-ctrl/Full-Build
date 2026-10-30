@@ -18,6 +18,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
+import { AuthService } from '../auth/AuthService';
 
 export interface GateResult {
   gate_index: number;
@@ -520,8 +521,20 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
+    let lifecycleUser;
+    if (env === 'ci' && process.env.AUTH_MODE === 'local_hs256') {
+      const auth = AuthService.getInstance();
+      const token = auth.createSignedToken(
+        'daisy-ci-verifier',
+        'TENANT_ENTERPRISE_DEMO',
+        'ci-verifier@solvex.invalid',
+        'OWNER'
+      );
+      const identity = auth.verifyToken(token);
+      if (identity.valid && identity.user) lifecycleUser = identity.user;
+    }
     for (const targetState of plannedTransitions) {
-      const result = orderMgr.transitionOrder(testOrderId, targetState);
+      const result = orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
       if (!result.success) break;
