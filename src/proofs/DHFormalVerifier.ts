@@ -286,7 +286,7 @@ export class DHFormalVerifier {
           let witnessRecheckPassed = false;
           let witnessSha256: string | undefined;
           if (declarations.length > 0 && assignments.length === declarations.length) {
-            const witnessSmt = source.replace(/\(check-sat\)\s*$/i, assignments.join('\n') + '\n(check-sat)');
+            const witnessSmt = source.replace(/\(check-sat\)/gi, assignments.join('\n') + '\n(check-sat)');
             const witnessContext = new z3.Context('dh_witness_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
             const witnessSolver = new witnessContext.Solver();
             await witnessSolver.fromString(witnessSmt);
