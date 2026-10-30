@@ -595,17 +595,15 @@ export class DaisySubsystemExecutors {
 
       // 30. DN-30: Independent Oracle Attestor
       case 'DN-30': {
-        const witness = 'ORACLE_WITNESS_SEAL_V1';
-        const signature = computeSha256(witness + ':ED25519_KEY_ATTEST');
         return {
           node_id: 'DN-30',
           name: 'Independent Oracle Attestor',
           category: 'AUDIT',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: signature.length === 64 ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { oracle_signature: signature }
+          evidence: { oracle_attestation_available: false, execution_performed: false, required_runtime: 'Independent oracle signature verifier', fail_closed: true }
         };
       }
 
