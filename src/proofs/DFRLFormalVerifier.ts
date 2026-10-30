@@ -476,6 +476,8 @@ export class DFRLFormalVerifier {
       name: 'Simulated Malformed SMT Input',
       domain: 'FAULT_INJECTION',
       category: 'FAIL_CLOSED_TEST',
+      // Required registry metadata only; malformed SMT must still return ERROR.
+      expected_solver_result: 'unsat',
       model_classification: 'AUTHORED_MODEL',
       model_scope: 'MODEL_ONLY',
       classical_antinomy: 'Malformed syntax injection.',
