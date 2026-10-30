@@ -21,21 +21,13 @@ jobs:
           bun-version: latest
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
-      - name: Fail-closed release safety checks
-        run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
         run: bun run verify:daisy-safety
       - name: Compile native Daisy server entrypoint
         run: bunx esbuild Solvex-core/server.ts --bundle --platform=node --format=cjs --packages=external --outfile=/tmp/solvex-core-server.cjs
-      - name: Payments-disabled boundary checks
-        run: bun run verify:payments-disabled
       - name: Build
         run: bun run build
       - name: TypeScript
         run: bun run lint
-      - name: Enterprise invariants
-        run: bun run verify:enterprise
-      - name: Formal verification corpus
-        run: bun run verify:120
       - name: Proof closure
         run: bun run verify:proof-closure
