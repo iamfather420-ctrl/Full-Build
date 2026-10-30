@@ -25,6 +25,8 @@ jobs:
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
         run: bun run verify:daisy-safety
+      - name: First-party inference fail-closed tests
+        run: bun run test:local-inference
       - name: Compile native Daisy server entrypoint
         run: bunx esbuild Solvex-core/server.ts --bundle --platform=node --format=cjs --packages=external --outfile=/tmp/solvex-core-server.cjs
       - name: Payments-disabled boundary checks
