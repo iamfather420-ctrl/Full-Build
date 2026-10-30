@@ -786,8 +786,6 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    }    } else {
-      claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     }
 
     recordGate(
