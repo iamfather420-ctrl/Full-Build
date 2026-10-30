@@ -283,13 +283,31 @@ export class DHFormalVerifier {
           }
           let witnessRecheckPassed = false;
           let witnessSha256: string | undefined;
-          if (declarations.length > 0 && assignments.length === declarations.length) {
-            const witnessSmt = source.replace(/\(check-sat\)/gi, assignments.join('\n') + '\n(check-sat)');
+          const checkSatCount = (source.match(/\(check-sat\)/gi) || []).length;
+          const declarationCommandCount = (source.match(/\(declare-/gi) || []).length;
+          // Only accept the explicitly supported scalar-constant fragment.
+          // Every declaration must be represented in the model, and exactly one
+          // check-sat command must be present. Unsupported forms remain blocked.
+          if (
+            declarations.length > 0 &&
+            assignments.length === declarations.length &&
+            declarationCommandCount === declarations.length &&
+            checkSatCount === 1
+          ) {
+            // Remove check-sat/exit commands from the input. Feed the canonical
+            // assertions and every extracted assignment into a fresh solver,
+            // then call check() exactly once on that reconstructed formula.
+            const witnessBase = source
+              .replace(/\(check-sat\)\s*/gi, '')
+              .replace(/\(exit\)\s*/gi, '');
+            const witnessSmt = witnessBase + '\n' + assignments.join('\n');
             const witnessContext = new z3.Context('dh_witness_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
             const witnessSolver = new witnessContext.Solver();
             await witnessSolver.fromString(witnessSmt);
             witnessRecheckPassed = (await witnessSolver.check()) === 'sat';
-            if (witnessRecheckPassed) witnessSha256 = computeSha256(assignments.join('\n'));
+            if (witnessRecheckPassed) {
+              witnessSha256 = computeSha256([this.solverVersion, source, assignments.join('\n')].join('\n'));
+            }
           }
           return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur, witness_sha256: witnessSha256, witness_recheck_passed: witnessRecheckPassed };
         }
