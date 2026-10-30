@@ -4,11 +4,8 @@ import path from 'node:path';
 import { System46Gates } from '../src/proofs/System46Gates';
 import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
-import { configureTestAuthEnvironment } from './testAuthEnvironment';
 
 async function main() {
-  // Isolated CI-only identity for exercising the local lifecycle path.
-  if (process.env.SOLVEX_ENV === 'ci') configureTestAuthEnvironment();
   const root = process.cwd();
   const artifactsDir = path.join(root, 'artifacts');
   fs.mkdirSync(artifactsDir, { recursive: true });
