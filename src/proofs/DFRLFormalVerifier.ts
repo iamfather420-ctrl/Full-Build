@@ -376,7 +376,8 @@ export class DFRLFormalVerifier {
       attempted,
       executed,
       unsat_count: unsatCount,
-      unsat_proved_count: unsatCount,
+      // Count proved UNSAT results, never raw solver statuses as proof.
+      unsat_proved_count: results.filter(r => r.solver_result === 'unsat' && r.proved).length,
       sat_count: satCount,
       unknown_count: unknownCount,
       error_count: errorCount,
