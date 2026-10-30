@@ -227,18 +227,14 @@ export class PreflightService {
       };
     };
 
-    // 1. PayPal Sandbox / Default Credentials
-    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_ID', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_ID', 'PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_SANDBOX_CLIENT_SECRET', false, (v) => v.length >= 8, ['PAYPAL_SANDBOX_SECRET', 'PAYPAL_SANDBOX_KEY', 'PAYPAL_CLIENT_SECRET']));
+    // 1. Payments must remain disabled for this closure target.
+    items.push(checkVar('PAYMENTS_ENABLED', true, (v) => v.trim().toLowerCase() === 'false'));
 
-    // 2. PayPal Live Credentials (Required in Production)
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_ID', true, (v) => v.length >= 8, ['PAYPAL_LIVE_ID', 'PAYPAL_CLIENT_ID']));
-    items.push(checkVar('PAYPAL_LIVE_CLIENT_SECRET', true, (v) => v.length >= 8, ['PAYPAL_LIVE_SECRET', 'PAYPAL_CLIENT_SECRET']));
+    // 2. Application runtime must use the least-privilege database credential.
+    // DATABASE_URL is reserved for migration-only operations and is never a runtime alias.
+    items.push(checkVar('DATABASE_RUNTIME_URL', true, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://'), ['NEON_DATABASE_URL']));
 
-    // 3. NEON_DATABASE_URL
-    items.push(checkVar('NEON_DATABASE_URL', false, (v) => v.startsWith('postgres://') || v.startsWith('postgresql://')));
-
-    // 4. GEMINI_API_KEY
+    // 3. GEMINI_API_KEY remains optional; first-party inference is not replaced by a required third-party API. 
     items.push(checkVar('GEMINI_API_KEY', false, (v) => v.length >= 10));
 
     return items;
