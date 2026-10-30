@@ -306,18 +306,15 @@ export class DaisySubsystemExecutors {
 
       // 15. DN-15: Multi-Tenant Partition Manager
       case 'DN-15': {
-        const k1 = computeSha256('TENANT_A_SECRET');
-        const k2 = computeSha256('TENANT_B_SECRET');
-        const isolated = k1 !== k2;
         return {
           node_id: 'DN-15',
           name: 'Multi-Tenant Partition Manager',
           category: 'SECURITY',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: isolated ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { isolated }
+          evidence: { cross_tenant_isolation_test_available: false, execution_performed: false, required_runtime: 'Tenant-scoped database isolation test', fail_closed: true }
         };
       }
 
@@ -390,18 +387,15 @@ export class DaisySubsystemExecutors {
 
       // 19. DN-19: Bitrot & Drift Detection Oracle
       case 'DN-19': {
-        const expected = computeSha256('EXPECTED_CANONICAL_SPEC');
-        const actual = computeSha256('EXPECTED_CANONICAL_SPEC');
-        const drift = expected !== actual;
         return {
           node_id: 'DN-19',
           name: 'Bitrot & Drift Detection Oracle',
           category: 'AUDIT',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: !drift ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { bitrot_detected: drift, digest: expected }
+          evidence: { canonical_source_monitor_available: false, execution_performed: false, required_runtime: 'Canonical source hash monitor', fail_closed: true }
         };
       }
 
@@ -748,33 +742,15 @@ export class DaisySubsystemExecutors {
 
       // 38. DN-38: Sovereign Settlement Escrow Program
       case 'DN-38': {
-        const testDeposit = {
-          escrow_id: `escrow_sov_${Date.now()}`,
-          buyer_id: 'BUYER_SOVEREIGN',
-          seller_id: 'SELLER_SOVEREIGN',
-          amount_cents: 10000,
-          currency: 'USD',
-          timelock_block: 1000,
-          status: 'LOCKED',
-          settlement_engine: 'SOVEREIGN_CRYPTOGRAPHIC_ESCROW'
-        };
-        const escrowHash = computeSha256(JSON.stringify(testDeposit));
         return {
           node_id: 'DN-38',
           name: 'Sovereign Settlement Escrow Program',
           category: 'SETTLEMENT',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: 'SUCCESS',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: {
-            escrow_id: testDeposit.escrow_id,
-            settlement_engine: testDeposit.settlement_engine,
-            escrow_hash: escrowHash,
-            timelock_enforced: true,
-            multisig_verified: true,
-            fail_closed: true
-          }
+          evidence: { escrow_runtime_available: false, execution_performed: false, required_runtime: 'Authorized escrow state machine with verified timelock and multisig', fail_closed: true }
         };
       }
 
