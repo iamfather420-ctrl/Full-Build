@@ -107,11 +107,55 @@ async function main() {
     JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(observedDhSatCaseIds) &&
     JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(replayedDhSatCaseIds);
   const validHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+  // The DH corpus must contain exactly two SAT contracts. Emit their concrete
+  // execution and replay witness receipts, and make this a hard part of 120/120.
+  const dhSatWitnessRecords = dhReport.results
+    .filter(r => r.expected_result === 'sat')
+    .map(r => ({
+      case_id: r.case_id,
+      expected_result: r.expected_result,
+      actual_result: r.actual_result,
+      replay_result: r.replay_result,
+      verified: r.verified,
+      replay_match: r.replay_match,
+      execution_witness_recheck_passed: r.sat_witness_recheck_passed === true,
+      execution_model_sha256: r.sat_witness_model_sha256,
+      replay_witness_recheck_passed: r.replay_witness_recheck_passed === true,
+      replay_model_sha256: r.replay_witness_model_sha256,
+      contract_hash: r.contract_hash,
+      source_hash: r.source_hash,
+      source_content_hash: r.source_content_hash,
+      evidence_hash: r.evidence_hash
+    }));
+  const dhSatWitnessRecordsValid = dhSatWitnessRecords.length === 2 &&
+    new Set(dhSatWitnessRecords.map(r => r.case_id)).size === 2 &&
+    dhSatWitnessRecords.every(r =>
+      r.expected_result === 'sat' &&
+      r.actual_result === 'sat' &&
+      r.replay_result === 'sat' &&
+      r.verified === true &&
+      r.replay_match === true &&
+      r.execution_witness_recheck_passed &&
+      validHash(r.execution_model_sha256) &&
+      r.replay_witness_recheck_passed &&
+      validHash(r.replay_model_sha256) &&
+      validHash(r.contract_hash) &&
+      validHash(r.source_hash) &&
+      validHash(r.source_content_hash) &&
+      validHash(r.evidence_hash));
+  console.log('[DH-SAT-WITNESS-RECORDS]', JSON.stringify({
+    expected_count: 2,
+    observed_count: dhSatWitnessRecords.length,
+    records_valid: dhSatWitnessRecordsValid,
+    records: dhSatWitnessRecords
+  }));
+
   const satWitnessModelsVerified =
     dfrlReport.results.filter(r => r.solver_result === 'sat').every(r => r.sat_witness_recheck_passed === true && validHash(r.sat_witness_model_sha256)) &&
     dfrlReport.replays.filter(r => r.replay_result === 'sat').every(r => r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256)) &&
     dhReport.results.filter(r => r.actual_result === 'sat').every(r => r.sat_witness_recheck_passed === true && validHash(r.sat_witness_model_sha256)) &&
-    dhReport.results.filter(r => r.replay_result === 'sat').every(r => r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256));
+    dhReport.results.filter(r => r.replay_result === 'sat').every(r => r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256)) &&
+    dhSatWitnessRecordsValid;
 
   const passed120 = satIdentityMatches && satWitnessModelsVerified && totalZ3Executions === 120 && totalExpectedMatches === 120 &&
     totalReplays === 120 && totalReplayMatches === 120 && totalUnknown === 0 && totalError === 0 &&
@@ -145,6 +189,10 @@ async function main() {
       r.original_assertion_hash === r.replay_assertion_hash),
     dhResultsCount: dhReport.results.length,
     dhUniqueIds: new Set(dhIds).size,
+    dhSatWitnessRecordsExpected: 2,
+    dhSatWitnessRecordsObserved: dhSatWitnessRecords.length,
+    dhSatWitnessRecordsValid,
+    dhSatWitnessRecords,
     dfrlCasesValid,
     dhCasesValid,
     passed120,
@@ -287,7 +335,11 @@ async function main() {
       dfrl: { expected: expectedDfrlSatCaseIds, observed: observedDfrlSatCaseIds, replayed: replayedDfrlSatCaseIds },
       dh: { expected: expectedDhSatCaseIds, observed: observedDhSatCaseIds, replayed: replayedDhSatCaseIds },
       identities_match: satIdentityMatches,
-      witness_model_extraction: satWitnessModelsVerified ? 'VERIFIED' : 'BLOCKED'
+      witness_model_extraction: satWitnessModelsVerified ? 'VERIFIED' : 'BLOCKED',
+      dh_sat_witness_records_expected: 2,
+      dh_sat_witness_records_observed: dhSatWitnessRecords.length,
+      dh_sat_witness_records_valid: dhSatWitnessRecordsValid,
+      dh_sat_witness_records: dhSatWitnessRecords
     },
     timestamp: new Date().toISOString(),
     dfrl: {
