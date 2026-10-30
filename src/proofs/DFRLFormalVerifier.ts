@@ -478,7 +478,7 @@ export class DFRLFormalVerifier {
       domain: 'FAULT_INJECTION',
       category: 'FAIL_CLOSED_TEST',
       // Required registry metadata only; malformed SMT must still return ERROR.
-      expected_solver_result: 'unsat',
+      expected_solver_result: 'sat',
       model_classification: 'AUTHORED_MODEL',
       model_scope: 'MODEL_ONLY',
       classical_antinomy: 'Malformed syntax injection.',
