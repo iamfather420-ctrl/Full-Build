@@ -2,23 +2,21 @@
  * PROJECT AGATE / DAISY / SOLVEX
  * AUTHORITATIVE DH FORMAL THEOREM VERIFIER (verify:dh-formal)
  *
- * Implements real Microsoft Research Z3 WebAssembly solver executions for all 32 authentic DH records
- * (DH-P-001 through DH-P-032) from the local registry: src/paradoxes/DHBootstrapParadoxRegistry.ts.
+ * Executes the 32 authoritative DH contracts with the Z3 WebAssembly solver.
+ * Each execution and replay uses a separate fresh Z3 context.
  *
- * REQUIREMENTS ENFORCED:
- * 1. Fresh Z3 context per execution and replay (no shared contexts).
- * 2. Dynamic Git commit SHA from repository HEAD at runtime.
- * 3. Source hash computed from actual source content of DHBootstrapParadoxRegistry.ts.
- * 4. SAT is NOT verified until a concrete model is extracted and independently rechecked.
- * 5. Distinct case_id, proposition, contract hash, execution, replay, and evidence record per case.
- * 6. Exact formal scopes: MODEL_VERIFIED, MODEL_VERIFIED_BOUNDED, MODEL_VERIFIED_AXIOMATIC.
- * 7. Comprehensive adversarial test suite (mutation, failure injection, artifact tamper, fail-closed guards).
+ * SAT handling currently extracts scalar declare-const values of Bool, Int,
+ * and Real sorts from the printed model and reasserts those assignments in a
+ * fresh context. This is deliberately limited: function interpretations,
+ * arrays, uninterpreted sorts, and general SMT-LIB model serialization are
+ * not covered. Any SAT contract requiring unsupported model content must
+ * remain unverified. The helper is not yet a complete general-purpose SMT-LIB
+ * model checker.
  *
- * IMPORTANT: This implementation currently has no SAT model extraction or independent witness
- * recheck. SAT cases therefore remain unverified and the suite cannot report VERIFIED.
- */
-
-import { AUTHORITATIVE_32_DH_CONTRACTS, DHAuthoritativeContract, DHScope } from '../formal/dhAuthoritativeFormalContracts';
+ * Evidence hashes and source hashes are integrity fingerprints; they are not
+ * standalone mathematical proofs. The 120-case aggregation and 46-gate
+ * activation boundary remain independently authoritative.
+ */import { AUTHORITATIVE_32_DH_CONTRACTS, DHAuthoritativeContract, DHScope } from '../formal/dhAuthoritativeFormalContracts';
 import { computeSha256 } from '../database/DatabaseSchema';
 
 export type { DHScope };
