@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 
@@ -56,6 +56,95 @@ app.post('/api/pay/create', (_req, res) => {
     status: 'BLOCKED',
     message: 'Payment processing is disabled pending a separately reviewed PayPal integration.'
   });
+});
+
+// Read-only proof projection. Artifacts are trusted only when all required files
+// agree on the source commit and that commit is explicitly bound to this runtime.
+app.get('/api/proof-status', (_req, res) => {
+  const required = [
+    'formal-aggregation.json',
+    'z3-120-formal-verification-summary.json',
+    'system-46-gates.json',
+    'daisy-brain-activation-gate.json'
+  ];
+  const roots = [
+    path.join(process.cwd(), 'artifacts'),
+    path.join(process.cwd(), '..', 'artifacts')
+  ];
+  const artifactRoot = roots.find(root => required.every(name => existsSync(path.join(root, name))));
+  if (!artifactRoot) {
+    return res.status(503).json({
+      status: 'UNAVAILABLE',
+      code: 'PROOF_ARTIFACTS_NOT_FOUND',
+      message: 'No complete authoritative proof artifact set is available to this runtime.'
+    });
+  }
+
+  try {
+    const readJson = (name: string) => JSON.parse(readFileSync(path.join(artifactRoot, name), 'utf8'));
+    const formal = readJson('formal-aggregation.json');
+    const summary = readJson('z3-120-formal-verification-summary.json');
+    const gates = readJson('system-46-gates.json');
+    const activation = readJson('daisy-brain-activation-gate.json');
+    const sourceCommit = String(formal.source_commit_sha || formal.commit_sha || '');
+    const summaryCommit = String(summary.source_commit_sha || summary.commit_sha || '');
+    const gatesCommit = String(gates.source_commit_sha || '');
+    const runtimeCommit = String(
+      process.env.VERCEL_GIT_COMMIT_SHA ||
+      process.env.GIT_COMMIT_SHA ||
+      process.env.SOLVEX_SOURCE_COMMIT_SHA ||
+      ''
+    );
+    const commitBound = /^[a-f0-9]{40}$/i.test(sourceCommit) &&
+      sourceCommit === summaryCommit &&
+      sourceCommit === gatesCommit &&
+      /^[a-f0-9]{40}$/i.test(runtimeCommit) &&
+      sourceCommit === runtimeCommit;
+    const corpus = {
+      required: Number(formal.total?.required ?? summary.total_required ?? 120),
+      executed: Number(formal.total?.actual_z3_executions ?? summary.total_z3_executions ?? 0),
+      expected_matches: Number(summary.expected_result_matches ?? 0),
+      replays: Number(formal.total?.replays ?? summary.cleanroom_replays ?? 0),
+      replay_matches: Number(summary.replay_matches ?? 0),
+      distribution: summary.distribution || formal.total?.distribution || null
+    };
+    const corpusVerified = corpus.required === 120 &&
+      corpus.executed === 120 &&
+      corpus.expected_matches === 120 &&
+      corpus.replays === 120 &&
+      corpus.replay_matches === 120 &&
+      Number(corpus.distribution?.unknown ?? 0) === 0 &&
+      Number(corpus.distribution?.error ?? 0) === 0;
+    const gateSummary = {
+      total: Number(gates.total_gates || gates.total || 0),
+      passed: Number(gates.gates_passed || 0),
+      blocked: Number(gates.blocked_count || 0),
+      external_provider_required: Number(gates.external_provider_required_count || 0),
+      failed: Number(gates.failed_count || 0),
+      verdict: String(gates.overall_verdict || 'BLOCKED')
+    };
+    const status = commitBound && corpusVerified ? 'VERIFIED' : 'UNVERIFIED';
+    return res.json({
+      status,
+      source_commit_sha: sourceCommit || null,
+      runtime_commit_sha: runtimeCommit || null,
+      commit_bound: commitBound,
+      corpus_verified: corpusVerified,
+      corpus,
+      activation: {
+        status: String(activation.status || activation.activation_status || 'BLOCKED'),
+        gates: gateSummary
+      },
+      generated_at: summary.timestamp || formal.timestamp || null,
+      claim_scope: 'READ_ONLY_ARTIFACT_PROJECTION'
+    });
+  } catch {
+    return res.status(500).json({
+      status: 'UNVERIFIED',
+      code: 'PROOF_ARTIFACT_PARSE_FAILED',
+      message: 'The proof artifact set could not be parsed; no result is asserted.'
+    });
+  }
 });
 
 // Return only repositories actually received from GitHub. No fabricated fallback dataset.
