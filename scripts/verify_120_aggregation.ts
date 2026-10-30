@@ -5,7 +5,6 @@ import { createHash } from 'node:crypto';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { computeSha256 } from '../src/database/DatabaseSchema';
-import { REAL_88_PARADOX_REGISTRY } from '../src/data/paradoxData';
 
 async function main() {
   console.log('================================================================');
