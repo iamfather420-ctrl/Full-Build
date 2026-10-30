@@ -53,6 +53,8 @@ export interface DHFormalVerificationResult {
   duration_ms: number;
   error?: string;
   limitation?: string;
+  sat_witness_recheck_passed?: boolean;
+  sat_witness_model_sha256?: string;
 }
 
 export interface DHReplayRecord {
@@ -65,6 +67,8 @@ export interface DHReplayRecord {
   replay_evidence_hash: string;
   cleanroom_context_id: string;
   timestamp: string;
+  replay_witness_recheck_passed?: boolean;
+  replay_witness_model_sha256?: string;
 }
 
 export interface DH32VerificationReport {
@@ -235,7 +239,7 @@ export class DHFormalVerifier {
 
   public async executeInFreshZ3Context(
     smtString: string
-  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; error?: string }> {
+  ): Promise<{ result: 'unsat' | 'sat' | 'unknown' | 'error'; solver_version: string; duration_ms: number; error?: string; witness_sha256?: string; witness_recheck_passed?: boolean }> {
     const start = performance.now();
     try {
       const z3 = await this.getZ3Module();
@@ -248,7 +252,33 @@ export class DHFormalVerifier {
         const checkRes = await solver.check();
         const dur = performance.now() - start;
         if (checkRes === 'unsat') return { result: 'unsat', solver_version: this.solverVersion, duration_ms: dur };
-        if (checkRes === 'sat') return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur };
+        if (checkRes === 'sat') {
+          // Extract only simple explicit constants from the actual Z3 model.
+          // Complex interpretations remain blocked rather than being guessed.
+          const source = smtString.split('\n').filter(line => !line.trim().startsWith(';')).join('\n');
+          const declarations = Array.from(source.matchAll(/\(declare-const\s+([A-Za-z_][A-Za-z0-9_]*)\s+(Bool|Int|Real)\s*\)/g));
+          const modelText = solver.model().toString();
+          const assignments: string[] = [];
+          for (const declaration of declarations) {
+            const symbol = declaration[1];
+            const sort = declaration[2];
+            const pattern = new RegExp('\\(define-fun\\s+' + symbol + '\\s+\\(\\)\\s+' + sort + '\\s+([^\\s()]+)\\s*\\)');
+            const match = modelText.match(pattern);
+            if (!match) { assignments.length = 0; break; }
+            assignments.push('(assert (= ' + symbol + ' ' + match[1] + '))');
+          }
+          let witnessRecheckPassed = false;
+          let witnessSha256: string | undefined;
+          if (declarations.length > 0 && assignments.length === declarations.length) {
+            const witnessSmt = source.replace(/\(check-sat\)\s*$/i, assignments.join('\n') + '\n(check-sat)');
+            const witnessContext = new z3.Context('dh_witness_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+            const witnessSolver = new witnessContext.Solver();
+            await witnessSolver.fromString(witnessSmt);
+            witnessRecheckPassed = (await witnessSolver.check()) === 'sat';
+            if (witnessRecheckPassed) witnessSha256 = computeSha256(assignments.join('\n'));
+          }
+          return { result: 'sat', solver_version: this.solverVersion, duration_ms: dur, witness_sha256: witnessSha256, witness_recheck_passed: witnessRecheckPassed };
+        }
         return { result: 'unknown', solver_version: this.solverVersion, duration_ms: dur };
       } catch (subErr: any) {
         return { result: 'error', solver_version: this.solverVersion, duration_ms: performance.now() - start, error: subErr?.message || String(subErr) };
@@ -285,9 +315,14 @@ export class DHFormalVerifier {
     const evidencePass = computeSha256(evidenceSeed) === evidenceHash;
     const sourcePass = sourceHash.length === 64;
 
-    // A matching SAT status is not a witness. No model is extracted or independently
-    // re-asserted in a second context in this verifier, so SAT must remain unverified.
-    const satWitnessVerified = false;
+    // SAT requires extracted model assignments that survive a separate fresh-context recheck.
+    const satWitnessVerified = actualResult === 'sat' &&
+      execOutcome.witness_recheck_passed === true &&
+      replayOutcome.witness_recheck_passed === true &&
+      typeof execOutcome.witness_sha256 === 'string' &&
+      /^[a-f0-9]{64}$/i.test(execOutcome.witness_sha256) &&
+      typeof replayOutcome.witness_sha256 === 'string' &&
+      /^[a-f0-9]{64}$/i.test(replayOutcome.witness_sha256);
     const verified = resultMatch && replayMatch && nonError && evidencePass && sourcePass &&
       (actualResult !== 'sat' || satWitnessVerified);
 
@@ -320,8 +355,10 @@ export class DHFormalVerifier {
       duration_ms: Number((execOutcome.duration_ms + replayOutcome.duration_ms).toFixed(3)),
       error: execOutcome.error || replayOutcome.error,
       limitation: actualResult === 'sat' && !satWitnessVerified
-        ? 'SAT model extraction and independent witness recheck are not implemented; SAT status is not proof.'
-        : undefined
+        ? 'SAT model extraction or independent fresh-context witness recheck failed; SAT status is not proof.'
+        : undefined,
+      sat_witness_recheck_passed: actualResult === 'sat' ? execOutcome.witness_recheck_passed === true : undefined,
+      sat_witness_model_sha256: actualResult === 'sat' ? execOutcome.witness_sha256 : undefined
     };
 
     const replay: DHReplayRecord = {
@@ -333,7 +370,9 @@ export class DHFormalVerifier {
       original_evidence_hash: evidenceHash,
       replay_evidence_hash: replayEvidenceHash,
       cleanroom_context_id: cleanroomContextId,
-      timestamp
+      timestamp,
+      replay_witness_recheck_passed: replayResult === 'sat' ? replayOutcome.witness_recheck_passed === true : undefined,
+      replay_witness_model_sha256: replayResult === 'sat' ? replayOutcome.witness_sha256 : undefined
     };
     return { result, replay };
   }
