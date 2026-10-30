@@ -313,7 +313,7 @@ export class AuthoritativeVerificationPipeline {
       }
     );
 
-    writeArtifact('dfrl-88-verification.json', JSON.stringify(dfrlReport, null, 2));
+    writeArtifact('dfrl-88-verification.json', JSON.stringify({ ...dfrlReport, source_commit_sha: commitSha }, null, 2));
 
     // ==========================================
     // GATE 7: Deterministic Cleanroom Replay
