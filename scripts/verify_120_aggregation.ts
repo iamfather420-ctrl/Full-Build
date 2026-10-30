@@ -5,7 +5,6 @@ import { createHash } from 'node:crypto';
 import { DFRLFormalVerifier } from '../src/proofs/DFRLFormalVerifier';
 import { DHFormalVerifier } from '../src/proofs/DHFormalVerifier';
 import { computeSha256 } from '../src/database/DatabaseSchema';
-import { REAL_88_PARADOX_REGISTRY } from '../src/data/paradoxData';
 
 async function main() {
   console.log('================================================================');
@@ -42,22 +41,36 @@ async function main() {
 
   const totalZ3Executions = dfrlReport.executed + dhReport.executed;
   const dfrlExpectedMatches = dfrlReport.results.filter(r =>
-    r.proved && (r.solver_result === 'unsat' || r.solver_result === 'sat') && r.claim_scope === 'MODEL_VERIFIED'
+    r.expected_solver_result === 'unsat' && r.solver_result === 'unsat' &&
+    r.proved === true && r.claim_scope === 'MODEL_VERIFIED'
   ).length;
-  const totalExpectedMatches = dfrlExpectedMatches + dhReport.expected_result_matches;
   const totalReplays = dfrlReport.replays.length + dhReport.results.length;
   const totalReplayMatches = dfrlReport.deterministic_replays_matched + dhReport.replay_matches;
+  const totalExpectedMatches = dfrlExpectedMatches + dhReport.expected_result_matches;
   const totalUnknown = dfrlReport.unknown_count + dhReport.unknown_count;
   const totalError = dfrlReport.error_count + dhReport.error_count;
 
   const dfrlIds = dfrlReport.results.map(r => r.operator_id || r.code);
   const dhIds = dhReport.results.map(r => r.case_id);
+  const dfrlExpectedUnsat = dfrlReport.results.filter(r => r.expected_solver_result === 'unsat').length;
+  const dfrlObservedUnsat = dfrlReport.results.filter(r => r.solver_result === 'unsat').length;
+  const dfrlProvedUnsat = dfrlReport.results.filter(r =>
+    r.expected_solver_result === 'unsat' && r.solver_result === 'unsat' && r.proved === true
+  ).length;
+  const dfrlMatchingUnsatReplays = dfrlReport.replays.filter(r =>
+    r.replay_match === true && r.original_result === 'unsat' &&
+    r.replay_result === 'unsat' && r.original_assertion_hash === r.replay_assertion_hash
+  ).length;
   const dfrlCasesValid = dfrlReport.results.length === 88 && new Set(dfrlIds).size === 88 &&
-    dfrlReport.results.every(r => r.proved && (r.solver_result === 'unsat' || r.solver_result === 'sat')) &&
-    dfrlReport.replays.length === 88 &&
-    dfrlReport.replays.every(r => r.replay_match &&
-      (r.original_result === 'unsat' || r.original_result === 'sat') &&
-      r.replay_result === r.original_result &&
+    dfrlExpectedUnsat === 88 && dfrlObservedUnsat === 88 && dfrlProvedUnsat === 88 &&
+    dfrlReport.unsat_count === 88 && dfrlReport.unsat_proved_count === 88 &&
+    dfrlReport.sat_count === 0 && dfrlReport.unknown_count === 0 &&
+    dfrlReport.error_count === 0 && dfrlReport.not_executed_count === 0 &&
+    dfrlReport.results.every(r => r.expected_solver_result === 'unsat' &&
+      r.solver_result === 'unsat' && r.proved === true) &&
+    dfrlReport.replays.length === 88 && dfrlMatchingUnsatReplays === 88 &&
+    dfrlReport.replays.every(r => r.replay_match === true &&
+      r.original_result === 'unsat' && r.replay_result === 'unsat' &&
       r.original_assertion_hash === r.replay_assertion_hash);
   const dhCasesValid = dhReport.results.length === 32 && new Set(dhIds).size === 32 &&
     dhReport.results.every(r => r.verified &&
@@ -96,20 +109,13 @@ async function main() {
     unknown: totalUnknown,
     errors: totalError
   }));
-  const expectedDfrlSatCaseIds = REAL_88_PARADOX_REGISTRY.filter(r => r.expected_solver_result === 'sat').map(r => r.code).sort();
-  const observedDfrlSatCaseIds = dfrlReport.results.filter(r => r.solver_result === 'sat').map(r => r.operator_id || r.code || '').sort();
-  const replayedDfrlSatCaseIds = dfrlReport.replays.filter(r => r.replay_result === 'sat').map(r => r.operator_id).sort();
   const expectedDhSatCaseIds = dhReport.results.filter(r => r.expected_result === 'sat').map(r => r.case_id).sort();
   const observedDhSatCaseIds = dhReport.results.filter(r => r.actual_result === 'sat').map(r => r.case_id).sort();
   const replayedDhSatCaseIds = dhReport.results.filter(r => r.replay_result === 'sat').map(r => r.case_id).sort();
-  const satIdentityMatches = JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(observedDfrlSatCaseIds) &&
-    JSON.stringify(expectedDfrlSatCaseIds) === JSON.stringify(replayedDfrlSatCaseIds) &&
-    JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(observedDhSatCaseIds) &&
+  const satIdentityMatches = JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(observedDhSatCaseIds) &&
     JSON.stringify(expectedDhSatCaseIds) === JSON.stringify(replayedDhSatCaseIds);
   const validHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
   const satWitnessModelsVerified =
-    dfrlReport.results.filter(r => r.solver_result === 'sat').every(r => r.sat_witness_recheck_passed === true && validHash(r.sat_witness_model_sha256)) &&
-    dfrlReport.replays.filter(r => r.replay_result === 'sat').every(r => r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256)) &&
     dhReport.results.filter(r => r.actual_result === 'sat').every(r => r.sat_witness_recheck_passed === true && validHash(r.sat_witness_model_sha256)) &&
     dhReport.results.filter(r => r.replay_result === 'sat').every(r => r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256));
 
@@ -137,11 +143,10 @@ async function main() {
     dfrlResultsCount: dfrlReport.results.length,
     dfrlUniqueIds: new Set(dfrlIds).size,
     dfrlAllProved: dfrlReport.results.every(r => r.proved),
-    dfrlAllResultsSatOrUnsat: dfrlReport.results.every(r => r.solver_result === 'unsat' || r.solver_result === 'sat'),
+    dfrlAllResultsUnsat: dfrlReport.results.every(r => r.expected_solver_result === 'unsat' && r.solver_result === 'unsat'),
     dfrlReplayCount: dfrlReport.replays.length,
     dfrlReplayIntegrity: dfrlReport.replays.every(r => r.replay_match &&
-      (r.original_result === 'unsat' || r.original_result === 'sat') &&
-      r.replay_result === r.original_result &&
+      r.original_result === 'unsat' && r.replay_result === 'unsat' &&
       r.original_assertion_hash === r.replay_assertion_hash),
     dhResultsCount: dhReport.results.length,
     dhUniqueIds: new Set(dhIds).size,
@@ -155,7 +160,8 @@ async function main() {
   // This preserves actionable evidence even if a later stage exhausts memory.
   const dfrlFailures = dfrlReport.results.flatMap((r, index) => {
     const replay = dfrlReport.replays[index];
-    if (r.proved && replay?.replay_match) return [];
+    if (r.expected_solver_result === 'unsat' && r.solver_result === 'unsat' && r.proved && replay?.replay_match &&
+      replay.original_result === 'unsat' && replay.replay_result === 'unsat') return [];
     return [{
       case_id: r.operator_id || r.code,
       expected: r.expected_solver_result,
@@ -247,6 +253,10 @@ async function main() {
       deterministic_replays: totalReplayMatches,
       unknown: totalUnknown,
       errors: totalError,
+      dfrl_expected_unsat: dfrlExpectedUnsat,
+      dfrl_observed_unsat: dfrlObservedUnsat,
+      dfrl_proved_unsat: dfrlProvedUnsat,
+      dfrl_matching_unsat_replays: dfrlMatchingUnsatReplays,
       dfrl_cases_valid: dfrlCasesValid,
       dh_cases_valid: dhCasesValid,
       passed_120: passed120,
@@ -284,7 +294,6 @@ async function main() {
     verification_root_sha256: combinedRootSha256,
     run_evidence_sha256: runEvidenceSha256,
     sat_case_identities: {
-      dfrl: { expected: expectedDfrlSatCaseIds, observed: observedDfrlSatCaseIds, replayed: replayedDfrlSatCaseIds },
       dh: { expected: expectedDhSatCaseIds, observed: observedDhSatCaseIds, replayed: replayedDhSatCaseIds },
       identities_match: satIdentityMatches,
       witness_model_extraction: satWitnessModelsVerified ? 'VERIFIED' : 'BLOCKED'
@@ -293,6 +302,8 @@ async function main() {
     dfrl: {
       required: 88, actual_z3_executions: dfrlReport.executed,
       replays: dfrlReport.replays.length, replay_matches: dfrlReplayMatches,
+      expected_unsat: dfrlExpectedUnsat, observed_unsat: dfrlObservedUnsat,
+      proved_unsat: dfrlProvedUnsat, matching_unsat_replays: dfrlMatchingUnsatReplays,
       unsat_count: dfrlReport.unsat_count, sat_count: dfrlReport.sat_count,
       unknown_count: dfrlReport.unknown_count, error_count: dfrlReport.error_count,
       root_hash: dfrlReport.verification_root_sha256, status: dfrlReport.overall_status
@@ -320,7 +331,6 @@ async function main() {
     verification_root_sha256: combinedRootSha256,
     run_evidence_sha256: runEvidenceSha256,
     sat_case_identities: {
-      dfrl: { expected: expectedDfrlSatCaseIds, observed: observedDfrlSatCaseIds, replayed: replayedDfrlSatCaseIds },
       dh: { expected: expectedDhSatCaseIds, observed: observedDhSatCaseIds, replayed: replayedDhSatCaseIds },
       identities_match: satIdentityMatches,
       witness_model_extraction: satWitnessModelsVerified ? 'VERIFIED' : 'BLOCKED'
@@ -332,7 +342,7 @@ async function main() {
     replay_matches: totalReplayMatches,
     distribution: { unsat: totalUnsat, sat: totalSat, unknown: totalUnknown, error: totalError },
     subsystems: {
-      dfrl: { total_required: 88, executed: dfrlReport.executed, expected_matches: dfrlExpectedMatches, replays_matched: dfrlReplayMatches, root_hash: dfrlReport.verification_root_sha256, status: dfrlReport.overall_status },
+      dfrl: { total_required: 88, executed: dfrlReport.executed, expected_unsat: dfrlExpectedUnsat, observed_unsat: dfrlObservedUnsat, proved_unsat: dfrlProvedUnsat, matching_unsat_replays: dfrlMatchingUnsatReplays, expected_matches: dfrlExpectedMatches, replays_matched: dfrlReplayMatches, root_hash: dfrlReport.verification_root_sha256, status: dfrlReport.overall_status },
       dh: { total_required: 32, executed: dhReport.executed, expected_matches: dhReport.expected_result_matches, replays_matched: dhReplayMatches, sat_count: dhReport.sat_count, unsat_count: dhReport.unsat_count, status: dhReport.overall_status }
     },
     activation_gate: passed120 ? 'PROVEN_120_FORMAL_CLOSURE' : 'BLOCKED'

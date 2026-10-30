@@ -260,33 +260,32 @@ export class AuthoritativeVerificationPipeline {
     const g6Start = performance.now();
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
     const dfrlReport = await dfrlVerifier.verifyAll88();
-    const validWitnessHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+    const expectedUnsatCount = dfrlReport.results.filter(r => r.expected_solver_result === 'unsat').length;
+    const observedUnsatCount = dfrlReport.results.filter(r => r.solver_result === 'unsat').length;
+    const provedUnsatCount = dfrlReport.results.filter(r =>
+      r.expected_solver_result === 'unsat' && r.solver_result === 'unsat' && r.proved === true
+    ).length;
+    const matchingUnsatReplayCount = dfrlReport.replays.filter(r =>
+      r.replay_match === true && r.original_result === 'unsat' && r.replay_result === 'unsat' &&
+      r.original_assertion_hash === r.replay_assertion_hash
+    ).length;
     const dfrlOk =
       dfrlReport.total_propositions === 88 &&
       dfrlReport.attempted === 88 &&
       dfrlReport.executed === 88 &&
       dfrlReport.results.length === 88 &&
       new Set(dfrlReport.results.map(r => r.operator_id)).size === 88 &&
-      dfrlReport.sat_count === 88 &&
-      dfrlReport.unsat_count === 0 &&
-      dfrlReport.unknown_count === 0 &&
-      dfrlReport.error_count === 0 &&
-      dfrlReport.not_executed_count === 0 &&
-      dfrlReport.results.every(r =>
-        r.expected_solver_result === 'sat' &&
-        r.solver_result === 'sat' &&
-        r.proved === true &&
-        r.sat_witness_recheck_passed === true &&
-        validWitnessHash(r.sat_witness_model_sha256)
-      ) &&
+      expectedUnsatCount === 88 && observedUnsatCount === 88 &&
+      provedUnsatCount === 88 && matchingUnsatReplayCount === 88 &&
+      dfrlReport.unsat_count === 88 && dfrlReport.unsat_proved_count === 88 &&
+      dfrlReport.sat_count === 0 && dfrlReport.unknown_count === 0 &&
+      dfrlReport.error_count === 0 && dfrlReport.not_executed_count === 0 &&
+      dfrlReport.results.every(r => r.expected_solver_result === 'unsat' &&
+        r.solver_result === 'unsat' && r.proved === true) &&
       dfrlReport.replays.length === 88 &&
-      dfrlReport.replays.every(r =>
-        r.replay_match &&
-        r.original_result === 'sat' &&
-        r.replay_result === 'sat' &&
-        r.replay_witness_recheck_passed === true &&
-        validWitnessHash(r.replay_witness_model_sha256)
-      ) &&
+      dfrlReport.replays.every(r => r.replay_match === true &&
+        r.original_result === 'unsat' && r.replay_result === 'unsat' &&
+        r.original_assertion_hash === r.replay_assertion_hash) &&
       dfrlReport.deterministic_replays_matched === 88 &&
       dfrlReport.overall_status === 'VERIFIED';
     recordGate(
@@ -300,10 +299,13 @@ export class AuthoritativeVerificationPipeline {
         total_propositions: dfrlReport.total_propositions,
         attempted: dfrlReport.attempted,
         executed: dfrlReport.executed,
-        expected_solver_result: 'sat',
+        expected_solver_result: 'unsat',
+        expected_unsat_count: expectedUnsatCount,
+        observed_unsat_count: observedUnsatCount,
+        proved_unsat_count: provedUnsatCount,
+        matching_unsat_replays: matchingUnsatReplayCount,
         sat_count: dfrlReport.sat_count,
         unsat_count: dfrlReport.unsat_count,
-        sat_witnesses_rechecked: dfrlReport.results.filter(r => r.sat_witness_recheck_passed === true).length,
         deterministic_replays_matched: dfrlReport.deterministic_replays_matched,
         authored_models_count: dfrlReport.authored_models_count,
         generated_models_count: dfrlReport.generated_models_count,
