@@ -101,20 +101,25 @@ app.get('/api/proof-status', (_req, res) => {
       /^[a-f0-9]{40}$/i.test(runtimeCommit) &&
       sourceCommit === runtimeCommit;
     const corpus = {
-      required: Number(formal.total?.required ?? summary.total_required ?? 120),
+      required: Number(formal.total?.required ?? summary.total_required ?? 0),
       executed: Number(formal.total?.actual_z3_executions ?? summary.total_z3_executions ?? 0),
       expected_matches: Number(summary.expected_result_matches ?? 0),
       replays: Number(formal.total?.replays ?? summary.cleanroom_replays ?? 0),
       replay_matches: Number(summary.replay_matches ?? 0),
       distribution: summary.distribution || formal.total?.distribution || null
     };
-    const corpusVerified = corpus.required === 120 &&
+    const distribution = corpus.distribution;
+    const distributionComplete = Boolean(distribution) &&
+      Number.isFinite(Number(distribution?.unknown)) &&
+      Number.isFinite(Number(distribution?.error));
+    const corpusVerified = distributionComplete &&
+      corpus.required === 120 &&
       corpus.executed === 120 &&
       corpus.expected_matches === 120 &&
       corpus.replays === 120 &&
       corpus.replay_matches === 120 &&
-      Number(corpus.distribution?.unknown ?? 0) === 0 &&
-      Number(corpus.distribution?.error ?? 0) === 0;
+      Number(distribution?.unknown) === 0 &&
+      Number(distribution?.error) === 0;
     const gateSummary = {
       total: Number(gates.total_gates || gates.total || 0),
       passed: Number(gates.gates_passed || 0),
