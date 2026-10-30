@@ -13,7 +13,6 @@ import { runDaisy54NodeCoverage } from './daisy54NodeCoverage';
 import { runPersistenceVerification } from './persistenceVerification';
 import { SqliteStore } from '../database/SqliteStore';
 import { NeonStore } from '../database/NeonPersistence';
-import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
@@ -441,48 +440,33 @@ export class AuthoritativeVerificationPipeline {
     // GATE 11: External Provider Verification (Neon, PayPal)
     // ==========================================
     const g11Start = performance.now();
-    const pp = PayPalAdapter.getInstance();
-    const hasPayPal = pp.hasActiveCredentials();
-    const ppCreds = pp.getEffectiveCredentials();
-    let ppAuth = false;
-    if (hasPayPal && ppCreds) {
-      const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
-      ppAuth = testPP.valid;
-    }
-
+    // PayPal is deliberately excluded from this release scope and must remain
+    // disabled. This gate verifies only the required Neon persistence provider;
+    // it must never probe or authenticate against PayPal.
     const neon = NeonStore.getInstance();
     const hasNeon = neon.isConfigured();
     let neonConn = false;
     if (hasNeon) {
       neonConn = await neon.connect();
     }
-
-    let g11Status: GateResult['status'] = 'EXTERNAL_PROVIDER_REQUIRED';
-    if (!hasPayPal && !hasNeon) {
-      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    } else if (hasPayPal && !ppAuth) {
-      g11Status = 'FAILED';
-    } else if (hasNeon && !neonConn) {
-      g11Status = 'FAILED';
-    } else if (ppAuth && neonConn) {
-      g11Status = 'PASSED';
-    } else {
-      g11Status = 'CONFIGURED';
-    }
+    const paymentsDisabled = process.env.PAYMENTS_ENABLED !== 'true';
+    const g11Status: GateResult['status'] = !hasNeon
+      ? 'EXTERNAL_PROVIDER_REQUIRED'
+      : neonConn ? 'PASSED' : 'FAILED';
 
     recordGate(
       11,
       'GATE-11',
-      'External Provider Gateways (Neon, PayPal)',
+      'External Persistence Provider (Neon; PayPal excluded)',
       'LOCAL',
       g11Status,
       performance.now() - g11Start,
       {
         paypal: {
-          configured: hasPayPal,
-          environment: ppCreds?.environment || 'NOT_CONFIGURED',
-          authenticated: ppAuth,
-          status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
+          configured: false,
+          authenticated: false,
+          status: paymentsDisabled ? 'DISABLED_BY_POLICY' : 'BLOCKED_PAYMENTS_MUST_REMAIN_DISABLED',
+          network_calls: 0,
           claim_scope: 'LOCAL'
         },
         neon: {
@@ -493,7 +477,7 @@ export class AuthoritativeVerificationPipeline {
         },
         stripe: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Sovereign Security Directive forbids Stripe; fiat settlements route exclusively to PayPal DN-35'
+          policy: 'Stripe remains prohibited; PayPal payment processing is excluded and disabled for this release.'
         }
       }
     );
@@ -782,11 +766,11 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     // Production credential gates
     if (env === 'production') {
-      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
-        productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
-      }
       if (!hasNeon || !neonConn) {
         productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
+      }
+      if (process.env.PAYMENTS_ENABLED === 'true') {
+        productionBlockers.push('Payments must remain disabled for this release; PayPal is explicitly out of scope.');
       }
     } else {
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
