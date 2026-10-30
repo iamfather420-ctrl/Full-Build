@@ -17,7 +17,6 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
-import { AuthService, UserContext } from '../auth/AuthService';
 
 export interface GateResult {
   gate_index: number;
@@ -505,19 +504,10 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
-    let lifecycleUser: UserContext | undefined;
-    if (process.env.SOLVEX_ENV === 'ci' && process.env.SOLVEX_TEST_IDENTITY_ENABLED === 'true') {
-      // This object exists only in this process for the CI lifecycle test. It is
-      // not a signed session, is never persisted, and cannot be issued in production.
-      lifecycleUser = AuthService.getInstance().createVerificationFixture({
-        user_id: 'daisy-ci-verifier',
-        tenant_id: 'TENANT_ENTERPRISE_DEMO',
-        email: 'ci-verifier@solvex.invalid',
-        role: 'OWNER'
-      });
-    }
     for (const targetState of plannedTransitions) {
-      const result = orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
+      // No identity is fabricated for this production-shaped lifecycle check.
+      // Without a real verified session, the order must remain in OFFER.
+      const result = orderMgr.transitionOrder(testOrderId, targetState);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
       if (!result.success) break;
