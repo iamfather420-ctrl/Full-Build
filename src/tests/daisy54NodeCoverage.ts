@@ -9,6 +9,8 @@ export interface NodeCoverageReport {
   output_asserted_count: number;
   evidence_generated_count: number;
   unsatisfied_node_ids: string[];
+  provider_required_node_ids: string[];
+  not_executed_node_ids: string[];
   internal_previously_covered: number;
   internal_newly_covered: number;
   external_gateways: number;
@@ -63,6 +65,8 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     output_asserted_count: rawResults.output_asserted,
     evidence_generated_count: rawResults.evidence_generated,
     unsatisfied_node_ids: unsatisfied.map(u => u.node_id),
+    provider_required_node_ids: rawResults.results.filter(r => r.status === 'PROVIDER_REQUIRED').map(r => r.node_id),
+    not_executed_node_ids: rawResults.results.filter(r => !r.executed).map(r => r.node_id),
     internal_previously_covered: baselineResults.length,
     internal_newly_covered: expandedResults.length,
     external_gateways: gatewayResults.length,
