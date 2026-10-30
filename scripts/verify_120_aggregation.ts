@@ -29,6 +29,20 @@ async function main() {
   console.log('\n[STAGE 1/2] Executing 88 DFRL Operators through Microsoft Research Z3...');
   const dfrlVerifier = DFRLFormalVerifier.getInstance();
   const dfrlReport = await dfrlVerifier.verifyAll88();
+  // Publish a run-scoped report so the isolated 46-gate pipeline can reuse
+  // this exact DFRL execution instead of spending another WASM run on it.
+  // Reuse is allowed only when the source commit and closure run ID match.
+  const dfrlCacheArtifact = {
+    ...dfrlReport,
+    source_commit_sha: commitSha,
+    closure_run_id: process.env.SOLVEX_CLOSURE_RUN_ID || null,
+    generated_at: new Date().toISOString()
+  };
+  fs.writeFileSync(
+    path.join(outDir, 'dfrl-88-verification.json'),
+    JSON.stringify(dfrlCacheArtifact, null, 2),
+    'utf8'
+  );
   console.log(` -> DFRL Executed:       ${dfrlReport.executed} / ${dfrlReport.total_operators}`);
   console.log(` -> DFRL status:         ${dfrlReport.overall_status}`);
   console.log(` -> DFRL Replays:        ${dfrlReport.deterministic_replays_matched} / ${dfrlReport.total_operators}`);
