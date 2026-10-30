@@ -11,6 +11,15 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    # Use the dedicated CI environment and its non-production Neon validation credential.
+    # Never expose the production NEON_DATABASE_URL to pull-request validation.
+    environment:
+      name: ci
+      deployment: false
+    env:
+      NEON_DATABASE_URL: ${{ secrets.NEON_VALIDATION_URL }}
+      SOLVEX_ENV: ci
+      PAYMENTS_ENABLED: 'false'
     timeout-minutes: 25
     steps:
       - name: Checkout
