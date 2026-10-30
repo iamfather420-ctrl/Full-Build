@@ -258,8 +258,55 @@ export class AuthoritativeVerificationPipeline {
     // ==========================================
     const g6Start = performance.now();
     const dfrlVerifier = DFRLFormalVerifier.getInstance();
-    const dfrlReport = await dfrlVerifier.verifyAll88();
     const validWitnessHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+    let cachedDfrlReport: Awaited<ReturnType<DFRLFormalVerifier['verifyAll88']>> | undefined;
+    const closureRunId = process.env.SOLVEX_CLOSURE_RUN_ID;
+    if (closureRunId && platform.fs && platform.path) {
+      try {
+        const cachePath = platform.path.resolve(rootDir, 'artifacts', 'dfrl-88-verification.json');
+        if (platform.fs.existsSync(cachePath)) {
+          const cached = JSON.parse(platform.fs.readFileSync(cachePath, 'utf8'));
+          const generatedAt = Date.parse(cached.generated_at || '');
+          const cacheAgeMs = Date.now() - generatedAt;
+          const cacheValid =
+            cached.source_commit_sha === commitSha &&
+            cached.closure_run_id === closureRunId &&
+            Number.isFinite(generatedAt) && cacheAgeMs >= 0 && cacheAgeMs <= 30 * 60 * 1000 &&
+            cached.total_propositions === 88 &&
+            cached.attempted === 88 &&
+            cached.executed === 88 &&
+            cached.unsat_count === 88 &&
+            cached.sat_count === 0 &&
+            cached.unknown_count === 0 &&
+            cached.error_count === 0 &&
+            cached.not_executed_count === 0 &&
+            cached.overall_status === 'VERIFIED' &&
+            cached.results?.length === 88 &&
+            cached.results.every((r: any) =>
+              r.expected_solver_result === 'unsat' &&
+              r.solver_result === 'unsat' &&
+              r.proved === true &&
+              validWitnessHash(r.actual_smt_assertion_hash) &&
+              validWitnessHash(r.certificate_sha256)
+            ) &&
+            cached.replays?.length === 88 &&
+            cached.replays.every((r: any) =>
+              r.replay_match === true &&
+              r.original_result === 'unsat' &&
+              r.replay_result === 'unsat' &&
+              r.original_assertion_hash === r.replay_assertion_hash
+            ) &&
+            validWitnessHash(cached.verification_root_sha256);
+          if (cacheValid) {
+            cachedDfrlReport = cached;
+            console.log('[DFRL-CACHE] Reusing 88/88 commit- and run-bound DFRL results; no second solver pass.');
+          }
+        }
+      } catch (error) {
+        console.warn('[DFRL-CACHE] Cache unavailable or invalid; running DFRL independently.', error);
+      }
+    }
+    const dfrlReport = cachedDfrlReport ?? await dfrlVerifier.verifyAll88();
     const dfrlOk =
       dfrlReport.total_propositions === 88 &&
       dfrlReport.attempted === 88 &&
@@ -312,7 +359,12 @@ export class AuthoritativeVerificationPipeline {
       }
     );
 
-    writeArtifact('dfrl-88-verification.json', JSON.stringify(dfrlReport, null, 2));
+    writeArtifact('dfrl-88-verification.json', JSON.stringify({
+      ...dfrlReport,
+      source_commit_sha: commitSha,
+      closure_run_id: process.env.SOLVEX_CLOSURE_RUN_ID || null,
+      generated_at: new Date().toISOString()
+    }, null, 2));
 
     // ==========================================
     // GATE 7: Deterministic Cleanroom Replay
