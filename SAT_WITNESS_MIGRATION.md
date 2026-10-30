@@ -1,5 +1,10 @@
 # SAT Witness Migration
 
+> **Current status: INCOMPLETE / BLOCKED.** The committed DFRL SMT assertions are not a 88-case SAT-witness corpus: the latest authoritative CI execution returned UNSAT for all 88 DFRL assertions. The registry had incorrectly labelled those assertions as SAT. The source metadata and verifier are being corrected to match the actual encoded queries. This does not complete the 120-case SAT-witness migration.
+>
+> The DH verifier still does not extract concrete SAT models or independently re-assert witnesses. Any DH SAT case therefore remains unverified. Do not use the historical native-Z3 note below as evidence that the current WASM verifier has completed the migration.
+
+
 This build changes the 120-case formal corpus from contradiction/refutation
 propositions to explicitly bounded, witness-oriented propositions.
 
