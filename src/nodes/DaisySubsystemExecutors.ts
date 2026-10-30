@@ -798,65 +798,57 @@ export class DaisySubsystemExecutors {
 
       // 40. DN-40: Lean4 Theorem Verification Bridge
       case 'DN-40': {
-        const mockLeanCertificate = '(theorem russell_empty : False := by contradiction)';
-        const certHash = computeSha256(mockLeanCertificate);
         return {
           node_id: 'DN-40',
           name: 'Lean4 Theorem Verification Bridge',
           category: 'LOGIC_SOLVER',
-          executed: true,
-          claim_scope: 'MODEL',
-          status: 'SUCCESS',
+          executed: false,
+          claim_scope: 'LOCAL',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { kernel: 'Lean4_Type_Theory', cert_digest: certHash, verified: true }
+          evidence: { runtime_available: false, execution_performed: false, required_runtime: 'Lean4 kernel', fail_closed: true }
         };
       }
 
       // 41. DN-41: Isabelle/HOL Proof Ingestion Node
       case 'DN-41': {
-        const holProof = 'lemma zeno_halv: "d > 0 ==> d / 2 < d" by auto';
-        const certHash = computeSha256(holProof);
         return {
           node_id: 'DN-41',
           name: 'Isabelle/HOL Proof Ingestion Node',
           category: 'LOGIC_SOLVER',
-          executed: true,
-          claim_scope: 'MODEL',
-          status: 'SUCCESS',
+          executed: false,
+          claim_scope: 'LOCAL',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { logic: 'Higher_Order_Logic', cert_digest: certHash, verified: true }
+          evidence: { runtime_available: false, execution_performed: false, required_runtime: 'Isabelle/HOL kernel', fail_closed: true }
         };
       }
 
       // 42. DN-42: Coq Gallina Specification Node
       case 'DN-42': {
-        const coqTerm = 'Inductive Nat : Set := O | S (n : Nat).';
-        const certHash = computeSha256(coqTerm);
         return {
           node_id: 'DN-42',
           name: 'Coq Gallina Specification Node',
           category: 'LOGIC_SOLVER',
-          executed: true,
-          claim_scope: 'MODEL',
-          status: 'SUCCESS',
+          executed: false,
+          claim_scope: 'LOCAL',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { calculus: 'Inductive_Constructions', cert_digest: certHash, verified: true }
+          evidence: { runtime_available: false, execution_performed: false, required_runtime: 'Coq kernel', fail_closed: true }
         };
       }
 
       // 43. DN-43: Daisy Brain Autonomous Planner
       case 'DN-43': {
-        const goals = ['INTAKE', 'VERIFICATION', 'SETTLEMENT'];
-        const planGraph = goals.map((g, idx) => ({ stage: idx + 1, goal: g, status: 'PLANNED' }));
         return {
           node_id: 'DN-43',
           name: 'Daisy Brain Autonomous Planner',
           category: 'CORE_KERNEL',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: planGraph.length === 3 ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { plan_stages: planGraph.length, graph: planGraph }
+          evidence: { planner_runtime_available: false, execution_performed: false, required_runtime: 'Daisy planning runtime', fail_closed: true }
         };
       }
 
@@ -878,83 +870,71 @@ export class DaisySubsystemExecutors {
 
       // 45. DN-45: Two Generals Consensus Barrier Node
       case 'DN-45': {
-        // Formal proof of impossibility of common knowledge over unreliable communications
-        const unreliabilityAcknowledged = true;
-        const barrierEnforced = true;
         return {
           node_id: 'DN-45',
           name: 'Two Generals Consensus Barrier Node',
           category: 'LOGIC_SOLVER',
-          executed: true,
+          executed: false,
           claim_scope: 'MODEL',
-          status: barrierEnforced ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { impossibility_enforced: true, common_knowledge_lossy_bound: 'UNSAT' }
+          evidence: { formal_model_available: false, execution_performed: false, required_runtime: 'Two-generals formal proof model', fail_closed: true }
         };
       }
 
       // 46. DN-46: Chandy-Lamport Distributed Snapshot
       case 'DN-46': {
-        const processStates = { P1: { state: 'COMMITTED' }, P2: { state: 'COMMITTED' } };
-        const snapshotDigest = computeSha256(JSON.stringify(processStates));
         return {
           node_id: 'DN-46',
           name: 'Chandy-Lamport Distributed Snapshot',
           category: 'PERSISTENCE',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: 'SUCCESS',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { consistent_cut_digest: snapshotDigest }
+          evidence: { distributed_runtime_available: false, execution_performed: false, required_runtime: 'Distributed process/snapshot runtime', fail_closed: true }
         };
       }
 
       // 47. DN-47: Raft Consensus State Machine
       case 'DN-47': {
-        const term = 1;
-        const leader = 'NODE_DAISY_LEADER';
-        const logEntries = [{ index: 1, term: 1, cmd: 'INITIALIZE_CONSENSUS' }];
         return {
           node_id: 'DN-47',
           name: 'Raft Consensus State Machine',
           category: 'CORE_KERNEL',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: 'SUCCESS',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { current_term: term, leader, log_length: logEntries.length }
+          evidence: { consensus_runtime_available: false, execution_performed: false, required_runtime: 'Raft multi-node runtime', fail_closed: true }
         };
       }
 
       // 48. DN-48: Lamport Vector Clock Sequencer
       case 'DN-48': {
-        const clock = { N1: 1, N2: 2, N3: 0 };
-        clock.N1 += 1;
         return {
           node_id: 'DN-48',
           name: 'Lamport Vector Clock Sequencer',
           category: 'CORE_KERNEL',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: clock.N1 === 2 ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { vector_clock: clock, causal_order: 'VALID' }
+          evidence: { distributed_clock_runtime_available: false, execution_performed: false, required_runtime: 'Distributed vector-clock runtime', fail_closed: true }
         };
       }
 
       // 49. DN-49: License Generation & Proof Tokenizer
       case 'DN-49': {
-        const licenseSeed = 'SOL_DH-S-001:TENANT_ENTERPRISE';
-        const licenseKey = `LIC-${computeSha256(licenseSeed).slice(0, 32).toUpperCase()}`;
         return {
           node_id: 'DN-49',
           name: 'License Generation & Proof Tokenizer',
           category: 'MARKETPLACE',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: licenseKey.startsWith('LIC-') ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { license_key: licenseKey }
+          evidence: { signing_authority_available: false, execution_performed: false, required_runtime: 'Authorized license-signing service', fail_closed: true }
         };
       }
 
@@ -969,57 +949,49 @@ export class DaisySubsystemExecutors {
           claim_scope: 'LOCAL',
           status: 'SUCCESS',
           duration_ms: performance.now() - start,
-          evidence: { heap_used_bytes: mem?.heapUsed || 0, telemetry_online: true }
+          evidence: { heap_used_bytes: mem?.heapUsed || 0, telemetry_scope: 'LOCAL_PROCESS_SAMPLE', aggregation_service_connected: false }
         };
       }
 
       // 51. DN-51: Hardware Security Module (HSM) Proxy
       case 'DN-51': {
-        const hsmRootProof = computeSha256('FIPS_140_3_LEVEL_4_ENCLAVE_ROOT_ATTEST');
         return {
           node_id: 'DN-51',
           name: 'Hardware Security Module (HSM) Proxy',
           category: 'SECURITY',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: 'SUCCESS',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { hsm_attestation_hash: hsmRootProof }
+          evidence: { hsm_available: false, execution_performed: false, required_runtime: 'Hardware-backed HSM attestation', fail_closed: true }
         };
       }
 
       // 52. DN-52: Ed25519 Cryptographic Signer
       case 'DN-52': {
-        const message = 'SOVEREIGN_TRANSACTION_PAYLOAD';
-        const sig = computeSha256(message + ':ED25519_KEY');
         return {
           node_id: 'DN-52',
           name: 'Ed25519 Cryptographic Signer',
           category: 'SECURITY',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: sig.length === 64 ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { signature: sig, verified: true }
+          evidence: { ed25519_signing_key_available: false, execution_performed: false, required_runtime: 'Authorized Ed25519 key provider', fail_closed: true }
         };
       }
 
       // 53. DN-53: Zero-Knowledge Range Proof Engine
       case 'DN-53': {
-        const value = 2500;
-        const min = 0;
-        const max = 10000;
-        const inRange = value >= min && value <= max;
-        const commitment = computeSha256(`VALUE_COMMITMENT_${value}`);
         return {
           node_id: 'DN-53',
           name: 'Zero-Knowledge Range Proof Engine',
           category: 'SECURITY',
-          executed: true,
+          executed: false,
           claim_scope: 'LOCAL',
-          status: inRange ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
-          evidence: { in_range: inRange, commitment }
+          evidence: { zk_prover_available: false, execution_performed: false, required_runtime: 'Zero-knowledge range-proof prover', fail_closed: true }
         };
       }
 
@@ -1088,7 +1060,7 @@ export class DaisySubsystemExecutors {
           category: nodeDef ? nodeDef.category : 'CORE_KERNEL',
           registered: isRegistered,
           instantiated: false,
-          reachable: true,
+          reachable: false,
           executed: false,
           output_asserted: false,
           evidence_generated: false,
