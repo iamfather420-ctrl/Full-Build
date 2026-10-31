@@ -108,12 +108,15 @@ export class DaisyActivationGate {
     if (typeof window === 'undefined' && typeof process !== 'undefined' && typeof process.cwd === 'function') {
       try {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const fsMod = typeof require === 'function' ? require('fs') : null;
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const pathMod = typeof require === 'function' ? require('path') : null;
+        const reqFn = typeof require === 'function' ? require : (process.getBuiltinModule ? (id: string) => process.getBuiltinModule(id) : null);
+        const fsMod = reqFn ? reqFn('fs') : null;
+        const pathMod = reqFn ? reqFn('path') : null;
         if (!fsMod || !pathMod) return null;
 
-        const file = pathMod.resolve(process.cwd(), this.RELATIVE_PATH);
+        const configuredPath = process.env?.DAISY_ACTIVATION_EVIDENCE_PATH?.trim();
+        const file = configuredPath
+          ? pathMod.resolve(configuredPath)
+          : pathMod.resolve(process.cwd(), this.RELATIVE_PATH);
         if (!fsMod.existsSync(file)) return null;
 
         const data = JSON.parse(fsMod.readFileSync(file, 'utf8')) as DaisyActivationGateRecord;

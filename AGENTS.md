@@ -47,3 +47,13 @@
 5. SAFETY & SECURITY:
    - Ensure that all tethering operations are restricted to the user's authorized local containers.
    - Do not transmit sensitive environment variables or API keys unless explicitly requested and encrypted.
+
+
+## Daisy local-only model registry and evidence boundary
+
+- Daisy native chat uses only the explicitly configured local inference executable. Do not route prompts to OpenAI, Gemini, hosted inference, remote wrappers, or any cloud fallback. A static download of the pinned model weights is allowed; it is not an inference API.
+- The default registered model is Qwen3 1.7B GGUF Q4_K_M. Keep its source revision, Apache-2.0 license, expected byte size, and SHA-256 in `daisy-ai-os/models/registry.json`. The local model file is a separate installation and must remain excluded from source archives and Git.
+- Do not report model readiness unless the installed weights match the registered exact size and SHA-256 and the configured local `llama-cli` is executable. Do not expose local model or engine filesystem paths through HTTP. Missing, mismatched, or unusable dependencies block chat; never return a fabricated response.
+- Keep provider/API credentials out of the local inference subprocess. For Qwen3, preserve its ChatML prompt format and offline CLI mode. The CLI's offline option is not an OS-level network sandbox; accurately distinguish application non-use of external AI from host-level network isolation.
+- Preserve Uarefake, SOLVEX, Daisy verification logic, and source-bound evidence. A running UI, verified model file, or successful model response is not proof that the formal OS activation gate passed. Keep activation and production claims fail-closed until their original proof requirements independently pass.
+- Native filesystem, audit, and network tools remain unavailable unless backed by real implementations and the existing signed human authorization kernel. Do not label placeholders or unsupported results as working functionality.

@@ -13,7 +13,7 @@ export interface DFRLParadoxItem {
   machine_checked_status: 'VERIFIED' | 'EQUIVALENT_FAMILY' | 'SMT_CERTIFIED';
   z3_smt_assertion: string;
   proof_bundle_ref: string;
-  expected_solver_result: 'sat' | 'sat';
+  expected_solver_result: 'sat' | 'unsat';
 }
 
 export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [

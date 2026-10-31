@@ -1,4 +1,4 @@
-import { computeSha256 } from '../database/DatabaseSchema';
+import { computeSha256 } from '../database/DatabaseSchema.ts';
 
 export class MMTAIProtocol {
   private static instance: MMTAIProtocol | null = null;

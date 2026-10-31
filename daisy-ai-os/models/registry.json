@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "defaultModelId": "qwen3-1.7b-instruct-q4_k_m",
+  "models": [
+    {
+      "id": "qwen3-1.7b-instruct-q4_k_m",
+      "displayName": "Qwen3 1.7B Instruct · Q4_K_M",
+      "version": "Qwen3-1.7B-Q4_K_M · source revision bd59ef4c",
+      "architecture": "qwen3",
+      "parameterCount": 1700000000,
+      "contextLength": 32768,
+      "format": "GGUF",
+      "quantization": "Q4_K_M",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "baseModel": "Qwen/Qwen3-1.7B",
+      "modelCardUrl": "https://huggingface.co/unsloth/Qwen3-1.7B-GGUF",
+      "sourceRepository": "unsloth/Qwen3-1.7B-GGUF",
+      "sourceRevision": "bd59ef4c1c7af8b7ade0d473f3ab0d48b9f1d338",
+      "file": {
+        "name": "Qwen3-1.7B-Q4_K_M.gguf",
+        "sizeBytes": 1107409472,
+        "sha256": "b139949c5bd74937ad8ed8c8cf3d9ffb1e99c866c823204dc42c0d91fa181897",
+        "downloadUrl": "https://huggingface.co/unsloth/Qwen3-1.7B-GGUF/resolve/bd59ef4c1c7af8b7ade0d473f3ab0d48b9f1d338/Qwen3-1.7B-Q4_K_M.gguf?download=true"
+      },
+      "runtime": {
+        "engine": "llama.cpp",
+        "executable": "llama-cli",
+        "minimumQwen3Support": "b5092",
+        "promptTemplate": "qwen3-chatml"
+      },
+      "description": "Compact local chat weights. Runtime use is local-only; the registered file is verified by exact size and SHA-256 before Daisy enables chat."
+    }
+  ]
+}

@@ -9,6 +9,7 @@
     "start": "tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
+    "package:source": "node scripts/package_daisy_source.mjs",
     "lint": "tsc --noEmit",
     "test:formal-hash": "tsx scripts/test_formal_evidence_hash.ts",
     "test:local-inference": "tsx scripts/test_local_inference_runtime.ts",

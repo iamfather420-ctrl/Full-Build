@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>Daisy Haminja · Local AI OS</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main class="frame">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Daisy Haminja local OS home"><span class="brand-mark" aria-hidden="true">D</span><span><strong>DAISY</strong><small>HAMINJA · LOCAL OS</small></span></a>
+      <div class="status-wrap"><span id="state-dot" class="dot" aria-hidden="true"></span><span id="state-label">Connecting to local runtime…</span><button id="refresh" class="quiet-button" type="button">Refresh</button></div>
+    </header>
+    <section class="intro" aria-labelledby="title">
+      <p class="eyebrow">FIRST-PARTY · LOOPBACK ONLY · NO REMOTE AI</p>
+      <h1 id="title">A private workspace,<br><em>running on your machine.</em></h1>
+      <p class="intro-copy">Daisy chat is routed exclusively to a locally configured model and inference engine. If either is unavailable, the request is blocked—never replaced with a simulated reply or sent to an external AI provider.</p>
+    </section>
+    <section class="status-panel" aria-label="Runtime status">
+      <div class="panel-heading"><div><p class="eyebrow">LOCAL RUNTIME</p><h2>System status</h2></div><span id="claim-chip" class="chip">CHECKING</span></div>
+      <dl class="status-grid">
+        <div><dt>OS activation</dt><dd id="activation">—</dd></div>
+        <div><dt>Claim scope</dt><dd id="claim-scope">—</dd></div>
+        <div><dt>Inference</dt><dd id="inference-state">—</dd></div>
+        <div><dt>Model</dt><dd id="model-id">Not configured</dd></div>
+        <div class="wide"><dt>Runtime note</dt><dd id="runtime-note">Connecting to the local server…</dd></div>
+      </dl>
+    </section>
+    <section class="status-panel model-registry-panel" aria-labelledby="registry-title">
+      <div class="panel-heading"><div><p class="eyebrow">LOCAL MODEL REGISTRY</p><h2 id="registry-title">Registered model</h2></div><span id="registry-state" class="chip blocked">CHECKING</span></div>
+      <dl class="status-grid">
+        <div class="wide"><dt>Model and version</dt><dd id="registry-model">Loading registry…</dd></div>
+        <div><dt>Format / quantization</dt><dd id="registry-format">—</dd></div>
+        <div><dt>License</dt><dd id="registry-license">—</dd></div>
+        <div><dt>Expected weight size</dt><dd id="registry-size">—</dd></div>
+        <div><dt>Weight integrity</dt><dd id="registry-integrity">—</dd></div>
+        <div><dt>Local engine</dt><dd id="registry-engine">—</dd></div>
+        <div class="wide"><dt>Registered SHA-256</dt><dd id="registry-sha">—</dd></div>
+      </dl>
+      <div class="registry-links"><a id="registry-card" href="https://huggingface.co/unsloth/Qwen3-1.7B-GGUF" target="_blank" rel="noopener noreferrer">Model card</a><a id="registry-download" href="https://huggingface.co/unsloth/Qwen3-1.7B-GGUF" target="_blank" rel="noopener noreferrer">Static weight file</a></div>
+    </section>
+    <section class="chat-panel" aria-labelledby="chat-title">
+      <div class="panel-heading"><div><p class="eyebrow">LOCAL INFERENCE</p><h2 id="chat-title">Talk with Daisy</h2></div><span class="private-label">THIS TAB ONLY</span></div>
+      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions text">
+        <div class="empty-state" id="empty-state"><span class="empty-mark" aria-hidden="true">D</span><p>Messages stay in this browser tab. The local inference service does not persist conversation history.</p></div>
+      </div>
+      <div id="notice" class="notice" role="status" aria-live="polite"></div>
+      <form id="chat-form" class="composer">
+        <label class="sr-only" for="prompt">Message Daisy</label>
+        <textarea id="prompt" rows="2" maxlength="8000" placeholder="Ask Daisy something…" autocomplete="off" required></textarea>
+        <button id="send" class="send-button" type="submit" disabled><span>Send</span><span aria-hidden="true">↗</span></button>
+      </form>
+      <p class="composer-note">Local model and executable must be configured by the operator. No cloud fallback.</p>
+    </section>
+    <footer><span>DAISY HAMINJA · LOCAL MODE</span><span id="updated">Not connected</span></footer>
+  </main>
+</body>
+</html>

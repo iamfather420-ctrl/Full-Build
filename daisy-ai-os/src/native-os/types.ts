@@ -10,7 +10,8 @@ export type ClaimScope =
   | 'LOCAL_VERIFIED'
   | 'SANDBOX_VERIFIED'
   | 'PRODUCTION_VERIFIED'
-  | 'EXTERNAL_PROVIDER_REQUIRED';
+  | 'EXTERNAL_PROVIDER_REQUIRED'
+  | 'BLOCKED';
 
 export type DaisyCapability =
   | 'daisy_brain'
