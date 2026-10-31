@@ -77,7 +77,7 @@ const duplicate = structuredClone(bundle);
 duplicate.chains = [bundle.chains[0], bundle.chains[0]];
 bothReject('both reject a duplicate approval', duplicate);
 const tamperedRecovery = structuredClone(bundle);
-tamperedRecovery.chains[0].recovered_artifact = `${bundle.chains[0].source}\nCORRUPT`;
+tamperedRecovery.chains[0].execution.sandbox.recovery.artifact = `${bundle.chains[0].source}\nCORRUPT`;
 bothReject('both reject a tampered recovery artifact', tamperedRecovery);
 
 const sealedPath = `/workspace/artifacts/evidence/lifecycle/${evidenceVersion}/${evidenceSeal.sha256}.json`;
