@@ -26,6 +26,16 @@ Verified source and CI evidence:
 
 No live Neon migration, write, authentication enablement, Vercel environment change, or production deployment was performed by the PRs described above.
 
+## Candidate branch update — local-only Daisy AI OS — 2026-10-30
+
+The following evidence is from the `manus/daisy-native-security-20261030` candidate branch, not canonical `main` and not a production deployment. It does not close the separate authentication, persistence, archive, formal-evidence, or operations blockers listed above.
+
+- Daisy's local model registry pins Qwen3 1.7B Instruct GGUF Q4_K_M from `unsloth/Qwen3-1.7B-GGUF` at revision `bd59ef4c1c7af8b7ade0d473f3ab0d48b9f1d338`. The artifact is 1,107,409,472 bytes with SHA-256 `b139949c5bd74937ad8ed8c8cf3d9ffb1e99c866c823204dc42c0d91fa181897`. The downloaded file was independently measured and hashed in this sandbox. Weights remain separate from tracked source.
+- The registry exposes source/license/format/size/hash and separate file-integrity and local-engine states without returning local filesystem paths. Chat requires the exact registered file and an executable local `llama-cli`; absent or mismatched dependencies block the route. Qwen3 uses ChatML and llama.cpp's offline/single-turn invocation. Provider credentials are not forwarded to the child process.
+- An ARM64 Linux build of llama.cpp `0.8.0-dev` (commit `8956c76`) accepted the configured CLI flags. An actual local-server smoke test bound to `127.0.0.1`, reported the registered weights as `verified` and the engine as `executable`, then returned the locally generated reply `Hello! How can I assist you today?` in 5,176 ms. The response was parsed to exclude CLI banners and prompt echoes. No external AI endpoint was called.
+- `npm test --prefix daisy-ai-os`: **PASS** for the local OS security/server suite and registry integrity/readiness suite. `npm run test:local-inference`: **PASS**. `npm run lint`: **PASS**. `npm run build`: **PASS**, with existing warnings for externalized Node-only browser imports, unprocessed Tailwind at-rules, and a JavaScript chunk over 500 kB.
+- Model inference availability does **not** activate or certify the OS. In the same smoke test, formal activation and claim scope correctly remained **BLOCKED**. This branch is not a production-ready release.
+
 ---
 
 ## Historical working-archive notes (retain as context; not proof of current-main implementation)

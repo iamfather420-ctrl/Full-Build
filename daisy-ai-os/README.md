@@ -1,33 +1,54 @@
 # Daisy Haminja Local OS
 
-This native Node runtime binds only to `127.0.0.1` and serves a self-contained status/chat page at `/`. Chat calls only the configured local inference executable through the first-party runtime in `../src/inference/LocalInferenceRuntime.ts`; this application does not call a remote AI API and has no cloud-model fallback. If the local model or executable is missing or fails, the chat endpoint returns a blocked/error status and no substitute answer.
+Daisy's native Node runtime serves a local status and chat interface and binds only to `127.0.0.1`. It uses the pinned Qwen3 1.7B Q4_K_M GGUF file through a local `llama.cpp` `llama-cli` executable. There is no remote AI API, provider key, cloud-model fallback, or synthetic chat response. Model readiness is fail-closed: Daisy checks the registered file's exact byte size and SHA-256 and requires an executable named `llama-cli` before enabling chat.
 
-## Run
+## Requirements and setup
 
-Use Node.js 22.13 or newer, from this directory:
+Use Node.js 22.13 or newer and CMake plus a C++ compiler. From this directory:
+
+```sh
+npm run models:download
+cp .env.example .env
+```
+
+The installer streams the pinned 1.1 GB GGUF artifact to `models/Qwen3-1.7B-Q4_K_M.gguf`. It verifies the downloaded byte count and SHA-256 against `models/registry.json` before atomically moving it into place. Weights and partial downloads are ignored by Git and are not included in the source archive. The installer never downloads or executes an inference engine.
+
+Build `llama.cpp` locally using its upstream CMake project:
+
+```sh
+git clone https://github.com/ggml-org/llama.cpp.git
+cmake -S llama.cpp -B llama.cpp/build -DCMAKE_BUILD_TYPE=Release -DGGML_CUDA=OFF
+cmake --build llama.cpp/build --config Release --target llama-cli -j
+```
+
+Set `DAISY_INFERENCE_ENGINE` in `.env` to the absolute path of the resulting `llama.cpp/build/bin/llama-cli` executable (Windows: the corresponding `llama-cli.exe`). The default model identity and file path are already registered. If you want to store the weights elsewhere, set `DAISY_MODEL_PATH` to the absolute local GGUF path. Do not select a different model file without updating its reviewed registry entry and checksums.
+
+Start Daisy from this directory:
 
 ```sh
 npm start
 ```
 
-The service listens on port 3090 by default. `PORT` can select a different valid port (1024–65535); the bind address remains loopback-only. Visit `http://127.0.0.1:3090/` from the same device. The local UI keeps conversation history in the current browser tab only. The service has no conversation database.
+It listens on `http://127.0.0.1:3090` by default. `PORT` can select a different valid port from 1024 through 65535; the bind address remains loopback-only. Open that URL on the same device. The status page displays model provenance, license, file size, expected SHA-256, verified weight state and engine state. `GET /api/health` and `GET /api/models` provide the local runtime and model-registry status. Chat history stays in the current browser tab and is not saved to a conversation database.
 
-## Local inference
+## Model and inference details
 
-Set `DAISY_MODEL_PATH` to a local model file and `DAISY_INFERENCE_ENGINE` to a local executable implementing the CLI contract `ENGINE --model MODEL_PATH --prompt PROMPT`. Optional labels are `DAISY_MODEL_ID` and `DAISY_MODEL_VERSION`. `DAISY_SYSTEM_PROMPT` may provide a local system instruction. No model weights are included in this repository or the uploaded archive; without both a readable model file and executable engine, inference remains `MODEL_UNAVAILABLE`.
+The immutable registry pins `Qwen3-1.7B-Q4_K_M.gguf` from the `unsloth/Qwen3-1.7B-GGUF` repository at revision `bd59ef4c1c7af8b7ade0d473f3ab0d48b9f1d338`. It records the model card, Apache-2.0 license, 1,107,409,472-byte expected size, and SHA-256 `b139949c5bd74937ad8ed8c8cf3d9ffb1e99c866c823204dc42c0d91fa181897`. The hash and exact size are checked on first inspection and whenever the file's recorded size or modification time changes.
 
-The runtime passes `DAISY_INFERENCE_OFFLINE=1` to the child process as a hint, not as an OS-level network sandbox. The runtime reports `offlineCapable: false`; configure a genuinely local executable and apply OS network restrictions if strict offline execution is required. Do not point the engine path at a network client or remote proxy.
+For Qwen3, Daisy serializes system/user/assistant turns as ChatML and invokes the registered local CLI with single-turn and offline options plus bounded context and output settings. Sampling is not deterministic. Provider credentials are not forwarded into the child process. `--offline` is an engine option, not an OS-level network sandbox: the Daisy application does not make external AI calls, but operators who require a system-wide offline guarantee should enforce network restrictions at the operating-system level. Do not configure a remote wrapper as the inference executable.
+
+If the model file is absent, its integrity differs, or `llama-cli` is missing or not executable, chat remains blocked and the UI shows the reason. The runtime does not generate a substitute answer. The separately verified activation/proof gate remains blocked unless its source-bound evidence requirements are met; a running server or available local model does not imply that the operating system's formal activation gate passed.
 
 ## Native tools and authorization
 
-`POST /api/tools/invoke` is bound to loopback and requires an HMAC-SHA-256 authorization signed by a human-rooted operator with `DAISY_OS_PERMISSION_SECRET` (at least 32 characters). Authorizations are bound to actor, subject, resource, action, and expiry; consumed IDs are single-use within the current process. No endpoint issues authorization tokens. In this process-only implementation, replay IDs are in memory and are not durable across restart. `mem_summary` and `proc_status` return process-scoped telemetry; filesystem listing, audit-tail, and node-ping are explicitly `NOT_IMPLEMENTED` rather than returning invented data.
-
-The OS activation gate remains blocked unless the root gate accepts a fresh, commit-bound activation record with the required 120-case, adversarial, 46-gate, and hash-shape fields. That gate checks record metadata; it does not independently rerun the Z3 proofs or recompute evidence contents/hashes, so an accepted `ACTIVE` record is not by itself independent verification of those artifacts. A responsive HTTP server does not imply that the AI OS or model is active.
+`POST /api/tools/invoke` is loopback-only and requires an HMAC-SHA-256 authorization signed by a human-rooted operator using `DAISY_OS_PERMISSION_SECRET` (at least 32 characters). Authorizations are bound to actor, subject, resource, action and expiry. Consumed IDs are single-use in the current process, but replay IDs are not durable across restarts. No endpoint issues authorization tokens. `mem_summary` and `proc_status` return process-scoped telemetry. Filesystem listing, audit-tail and node-ping remain explicitly `NOT_IMPLEMENTED`; Daisy does not invent their results.
 
 ## Checks
+
+Run the regression suite with Node 22.13 or newer:
 
 ```sh
 npm test
 ```
 
-The test suite uses only Node's local loopback interface and verifies authorization, unsupported-tool behavior, status serving, and fail-closed local inference. It does not contact an external AI service.
+It checks permission authorization and replay handling, unsupported-tool behavior, loopback/CSP/API behavior, absence of provider credentials in local inference, Qwen3 ChatML/offline CLI arguments, and registry size/SHA-256/engine fail-closed behavior. Tests use local fixtures and loopback only; they do not call an external AI service or require the full GGUF weights to be installed.

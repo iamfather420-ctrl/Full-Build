@@ -32,6 +32,24 @@ async function verifyLocalEngineDoesNotInheritProviderKeys() {
   }
 }
 
+async function verifyQwen3UsesOfflineChatML() {
+  if (process.platform === 'win32') return;
+  const directory=await mkdtemp(path.join(os.tmpdir(),'daisy-qwen3-local-'));
+  const modelPath=path.join(directory,'qwen3.gguf');
+  const enginePath=path.join(directory,'llama-cli');
+  try {
+    await writeFile(modelPath,'test-only local model placeholder');
+    await writeFile(enginePath,"#!/bin/sh\nprompt=''\noffline=0\nsingle=0\nnoecho=0\nnoescape=0\nwhile [ \"$#\" -gt 0 ]; do\n  case \"$1\" in\n    --prompt) shift; prompt=$1 ;;\n    --offline) offline=1 ;;\n    --single-turn) single=1 ;;\n    --no-display-prompt) noecho=1 ;;\n    --no-escape) noescape=1 ;;\n  esac\n  shift\ndone\n[ \"$offline\" = 1 ] && [ \"$single\" = 1 ] && [ \"$noecho\" = 1 ] && [ \"$noescape\" = 1 ] || exit 21\ncase \"$prompt\" in *'<|im_start|>system'*'/no_think'*'<|im_start|>user'*'<|im_start|>assistant'*) ;; *) exit 22 ;; esac\nprintf 'llama.cpp banner\\n> %sQWEN3_LOCAL_RUNTIME_OK<|im_end|>\\n[ Prompt: 1 t/s ]\\nExiting...\\n' \"$prompt\"\n");
+    await chmod(enginePath,0o700);
+    const runtime=new LocalInferenceRuntime({modelPath,enginePath,modelId:'qwen3-1.7b-q4_k_m',modelVersion:'test-q4'});
+    const result=await runtime.generate({messages:[{role:'system',content:'You are Daisy.'},{role:'user',content:'Say hello.'}],timeoutMs:5_000});
+    assert.equal(result.status,'OK');
+    assert.equal(result.text,'QWEN3_LOCAL_RUNTIME_OK','Qwen3 must receive ChatML/offline CLI flags and suppress llama.cpp banners/prompt echoes.');
+  } finally {
+    await rm(directory,{recursive:true,force:true});
+  }
+}
+
 async function main() {
   const secret = 'test-only-permission-signing-secret-32-bytes';
   const kernel = new PermissionKernel(secret);
@@ -73,6 +91,7 @@ async function main() {
   assert.equal(memory.status,'EXECUTED');
   assert.equal(typeof (memory.result as {rss_bytes?:unknown}).rss_bytes,'number','Memory values must come from the actual Node process.');
   await verifyLocalEngineDoesNotInheritProviderKeys();
+  await verifyQwen3UsesOfflineChatML();
 
   const listAuthorization = signHumanAuthorization({
     authorizationId:'test-auth-fs-list',actor:'operator-test',actorType:'human',
@@ -93,7 +112,7 @@ async function main() {
   assert.equal(runtime.boot().activation,'BLOCKED','Missing source-bound verification must not activate the OS.');
   assert.equal(runtime.claimScope(),'BLOCKED','A blocked runtime must not claim local/production verification.');
 
-  process.env.DAISY_MODEL_PATH='';
+  process.env.DAISY_MODEL_PATH=path.join(os.tmpdir(),`daisy-no-weights-${process.pid}.gguf`);
   process.env.DAISY_INFERENCE_ENGINE='';
   const { createDaisyNativeServer } = await import('../server.mjs');
   const server = createDaisyNativeServer();
@@ -116,6 +135,14 @@ async function main() {
     assert.equal(health.headers.get('access-control-allow-origin'),null,'The local server must not expose permissive CORS.');
     assert.equal(healthJson.ok,true);
     assert.equal(healthJson.inference.ready,false,'Missing local model/engine must remain blocked.');
+    const registryResponse=await fetch(origin+'/api/models');
+    const registryJson=await registryResponse.json() as {ok:boolean;ready:boolean;models:Array<{id:string;weights:{status:string};engine:{status:string};expectedSha256:string}>};
+    assert.equal(registryResponse.status,200);
+    assert.equal(registryJson.ok,true);
+    assert.equal(registryJson.ready,false);
+    assert.equal(registryJson.models[0]?.weights.status,'not_installed');
+    assert.equal(registryJson.models[0]?.expectedSha256,'b139949c5bd74937ad8ed8c8cf3d9ffb1e99c866c823204dc42c0d91fa181897');
+    assert.equal(JSON.stringify(registryJson).includes('/home/ubuntu'),false,'The registry must not expose local filesystem paths.');
     const chat=await fetch(origin+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:'hello'}]})});
     const chatJson=await chat.json() as {ok:boolean;status?:string;code?:string;text?:string};
     assert.equal(chat.status,503);

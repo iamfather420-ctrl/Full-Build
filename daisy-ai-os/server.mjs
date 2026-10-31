@@ -7,6 +7,7 @@ import { ProcessLayer } from './src/native-os/process/ProcessLayer.ts';
 import { PermissionKernel } from './src/native-os/permissions/PermissionKernel.ts';
 import { SystemTools } from './src/native-os/system-tools/SystemTools.ts';
 import { LocalInferenceRuntime } from '../src/inference/LocalInferenceRuntime.ts';
+import { getModelRegistryStatus, readModelRegistry } from './src/model-registry/ModelRegistry.ts';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const HOST = '127.0.0.1';
@@ -26,6 +27,12 @@ if (!Number.isInteger(PORT) || PORT < 1024 || PORT > 65535) {
   throw new Error('PORT must be an integer from 1024 through 65535.');
 }
 
+const registryDocument = await readModelRegistry();
+const defaultModel = registryDocument.models.find((model) => model.id === registryDocument.defaultModelId);
+if (!defaultModel) throw new Error('The default local model is missing from the registry.');
+process.env.DAISY_MODEL_ID ||= defaultModel.id;
+process.env.DAISY_MODEL_VERSION ||= defaultModel.version;
+process.env.DAISY_MODEL_PATH ||= path.join(ROOT,'models',defaultModel.file.name);
 process.env.DAISY_ACTIVATION_EVIDENCE_PATH ??= path.join(ROOT,'..','artifacts','daisy-brain-activation-gate.json');
 const runtime = DaisyRuntime.getInstance('linux');
 const processes = new ProcessLayer();
@@ -96,14 +103,15 @@ function readJsonBody(req) {
   });
 }
 
-function publicInferenceInfo(info) {
+function publicInferenceInfo(info, modelRegistry) {
+  const selectedModel = modelRegistry.models.find((model) => model.selected);
   return {
     runtimeId: info.runtimeId,
-    modelId: info.modelId,
-    modelVersion: info.modelVersion,
-    ready: info.ready,
+    modelId: info.modelId ?? selectedModel?.id ?? null,
+    modelVersion: info.modelVersion ?? selectedModel?.version ?? null,
+    ready: info.ready && modelRegistry.ready,
     offlineCapable: info.offlineCapable,
-    notes: info.notes,
+    notes: modelRegistry.ready ? info.notes : modelRegistry.reason,
   };
 }
 
@@ -145,14 +153,22 @@ async function handle(req, res) {
     return;
   }
 
+  if (url.pathname === '/api/models' && req.method === 'GET') {
+    const modelRegistry = await getModelRegistryStatus();
+    sendJson(res,200,{ok:true,...modelRegistry});
+    return;
+  }
+
   if (url.pathname === '/api/health' && req.method === 'GET') {
     const local = await inference.probe();
+    const modelRegistry = await getModelRegistryStatus();
     sendJson(res,200,{
       ok:true,
       server:'ready',
       runtime:runtime.snapshot(),
       claimScope:runtime.claimScope(),
-      inference:publicInferenceInfo(local),
+      inference:publicInferenceInfo(local,modelRegistry),
+      modelRegistry,
     });
     return;
   }
@@ -165,6 +181,11 @@ async function handle(req, res) {
     }
     const body = await readJsonBody(req);
     const messages = validateMessages(body?.messages);
+    const modelRegistry = await getModelRegistryStatus();
+    if (!modelRegistry.ready) {
+      sendJson(res,503,{ok:false,status:'MODEL_UNAVAILABLE',code:'FIRST_PARTY_MODEL_UNAVAILABLE',error:modelRegistry.reason,runtimeId:'daisy-local-inference/v1',modelId:modelRegistry.selectedModelId});
+      return;
+    }
     const systemPrompt = typeof process.env.DAISY_SYSTEM_PROMPT === 'string' && process.env.DAISY_SYSTEM_PROMPT.trim()
       ? process.env.DAISY_SYSTEM_PROMPT.trim()
       : 'You are Daisy Haminja, a locally running assistant. Be clear about uncertainty and do not claim to perform actions that were not actually completed.';

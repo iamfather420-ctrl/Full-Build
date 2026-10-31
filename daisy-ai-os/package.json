@@ -1,14 +1,15 @@
 {
   "name": "daisy-ai-os-local-runtime",
   "private": true,
-  "version": "1.1.0",
+    "version": "1.2.1",
   "type": "module",
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "node --experimental-strip-types server.mjs",
-    "start": "node --experimental-strip-types server.mjs",
-    "test": "node --experimental-strip-types scripts/test_native_os_security.ts"
+    "dev": "node --env-file-if-exists=.env --experimental-strip-types server.mjs",
+    "start": "node --env-file-if-exists=.env --experimental-strip-types server.mjs",
+    "test": "node --experimental-strip-types scripts/test_native_os_security.ts && node --experimental-strip-types scripts/test_model_registry.ts",
+    "models:download": "node scripts/download_model.mjs"
   }
 }

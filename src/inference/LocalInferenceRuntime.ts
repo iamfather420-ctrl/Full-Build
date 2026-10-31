@@ -59,6 +59,47 @@ function validateRequest(request: InferenceRequest): string | null {
   return null;
 }
 
+function formatPrompt(messages: InferenceRequest['messages'], modelId: string | null): string {
+  if (!modelId?.startsWith('qwen3-')) {
+    return messages.map((message) => `${message.role.toUpperCase()}: ${message.content}`).join('\n\n');
+  }
+  const serialized = messages.map((message) => {
+    const content = message.role === 'system' ? `${message.content}\n/no_think` : message.content;
+    return `<|im_start|>${message.role}\n${content}<|im_end|>`;
+  });
+  return `${serialized.join('\n')}\n<|im_start|>assistant\n`;
+}
+
+function cleanCompletion(text: string, modelId: string | null, prompt: string): string {
+  if (!modelId?.startsWith('qwen3-')) return text.trim();
+  let output = text
+    .replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, '')
+    .replace(/\r\n/g, '\n');
+  const normalizedPrompt = prompt.replace(/\r\n/g, '\n');
+  const promptIndex = output.indexOf(normalizedPrompt);
+  if (promptIndex >= 0) {
+    output = output.slice(promptIndex + normalizedPrompt.length);
+  } else {
+    // Accept only a recognizable assistant completion when the CLI suppresses
+    // the prompt echo; never return llama.cpp's banner or interactive shell.
+    const assistantMarker = '<|im_start|>assistant\n';
+    const assistantIndex = output.lastIndexOf(assistantMarker);
+    if (assistantIndex < 0) return '';
+    output = output.slice(assistantIndex + assistantMarker.length);
+  }
+  const cliMarker = output.search(/\[\s*Prompt:/);
+  if (cliMarker >= 0) output = output.slice(0, cliMarker);
+  const exitMarker = output.indexOf('Exiting...');
+  if (exitMarker >= 0) output = output.slice(0, exitMarker);
+  output = output.replace(/\r?\n\s*>\s*$/, '');
+  let completion = output.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  const endToken = completion.search(/<\|im_end\|>|<\|fim_suffix\|>/);
+  if (endToken >= 0) completion = completion.slice(0, endToken);
+  completion = completion.trim();
+  if (/^(?:Loading model|available commands:|build\s*:|model\s*:|ftype\s*:)/mi.test(completion)) return '';
+  return completion;
+}
+
 /**
  * Local first-party inference runtime.
  *
@@ -171,12 +212,10 @@ export class LocalInferenceRuntime implements InferenceRuntime {
     }
 
     const timeoutMs = request.timeoutMs ?? DEFAULT_INFERENCE_TIMEOUT_MS;
-    const prompt = request.messages
-      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-      .join('\n\n');
+    const prompt = formatPrompt(request.messages, this.modelId);
 
     try {
-      const text = await this.runEngine(prompt, timeoutMs, request.signal);
+      const text = cleanCompletion(await this.runEngine(prompt, timeoutMs, request.signal), this.modelId, prompt);
       if (!text.trim()) {
         return {
           status: 'BLOCKED',
@@ -227,7 +266,11 @@ export class LocalInferenceRuntime implements InferenceRuntime {
         const value = process.env[key];
         if (value) childEnv[key] = value;
       }
-      const child = spawn(engine, ['--model', model, '--prompt', prompt], {
+      const isQwen3 = this.modelId?.startsWith('qwen3-') === true;
+      const engineArgs = isQwen3
+        ? ['--model',model,'--prompt',prompt,'--n-predict','384','--ctx-size','4096','--temp','0.7','--top-k','20','--top-p','0.8','--presence-penalty','1.5','--no-display-prompt','--no-escape','--single-turn','--simple-io','--log-disable','--offline']
+        : ['--model',model,'--prompt',prompt];
+      const child = spawn(engine, engineArgs, {
         stdio: ['ignore', 'pipe', 'pipe'],
         env: childEnv,
       });

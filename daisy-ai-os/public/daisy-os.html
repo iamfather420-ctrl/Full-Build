@@ -29,6 +29,19 @@
         <div class="wide"><dt>Runtime note</dt><dd id="runtime-note">Connecting to the local server…</dd></div>
       </dl>
     </section>
+    <section class="status-panel model-registry-panel" aria-labelledby="registry-title">
+      <div class="panel-heading"><div><p class="eyebrow">LOCAL MODEL REGISTRY</p><h2 id="registry-title">Registered model</h2></div><span id="registry-state" class="chip blocked">CHECKING</span></div>
+      <dl class="status-grid">
+        <div class="wide"><dt>Model and version</dt><dd id="registry-model">Loading registry…</dd></div>
+        <div><dt>Format / quantization</dt><dd id="registry-format">—</dd></div>
+        <div><dt>License</dt><dd id="registry-license">—</dd></div>
+        <div><dt>Expected weight size</dt><dd id="registry-size">—</dd></div>
+        <div><dt>Weight integrity</dt><dd id="registry-integrity">—</dd></div>
+        <div><dt>Local engine</dt><dd id="registry-engine">—</dd></div>
+        <div class="wide"><dt>Registered SHA-256</dt><dd id="registry-sha">—</dd></div>
+      </dl>
+      <div class="registry-links"><a id="registry-card" href="https://huggingface.co/unsloth/Qwen3-1.7B-GGUF" target="_blank" rel="noopener noreferrer">Model card</a><a id="registry-download" href="https://huggingface.co/unsloth/Qwen3-1.7B-GGUF" target="_blank" rel="noopener noreferrer">Static weight file</a></div>
+    </section>
     <section class="chat-panel" aria-labelledby="chat-title">
       <div class="panel-heading"><div><p class="eyebrow">LOCAL INFERENCE</p><h2 id="chat-title">Talk with Daisy</h2></div><span class="private-label">THIS TAB ONLY</span></div>
       <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions text">
