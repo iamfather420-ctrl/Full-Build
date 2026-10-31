@@ -1,7 +1,9 @@
 /**
  * AI-OS NATIVE BRANCH — Runtime
- * Boots Daisy core and binds CURRENT MAIN capabilities into the native process space.
+ * Boots Daisy core and binds verified activation state into the native process space.
+ * Never transitions to ACTIVE unless DaisyActivationGate.isActive() passes.
  */
+import { DaisyActivationGate } from '../../../../src/brain/DaisyActivationGate.ts';
 import type { PlatformTarget, RuntimeState, ClaimScope } from '../types.ts';
 
 export class DaisyRuntime {
@@ -28,12 +30,12 @@ export class DaisyRuntime {
   }
 
   boot(): RuntimeState {
-    this.state.activation = 'ACTIVE';
+    this.state.activation = DaisyActivationGate.isActive() ? 'ACTIVE' : 'BLOCKED';
     this.state.uptime_ms = Date.now() - this.startedAt;
     return this.snapshot();
   }
 
-  halt(reason = 'operator'): RuntimeState {
+  halt(_reason = 'operator'): RuntimeState {
     this.state.activation = 'BLOCKED';
     this.state.uptime_ms = Date.now() - this.startedAt;
     return { ...this.snapshot(), environment: this.state.environment };
@@ -45,6 +47,7 @@ export class DaisyRuntime {
   }
 
   claimScope(): ClaimScope {
+    if (this.state.activation !== 'ACTIVE') return 'BLOCKED';
     return this.state.environment === 'production' ? 'PRODUCTION_VERIFIED' : 'LOCAL_VERIFIED';
   }
 }

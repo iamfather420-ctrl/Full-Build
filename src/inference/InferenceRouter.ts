@@ -1,14 +1,15 @@
 /**
  * Selects the generative inference path.
- * Order: first-party local runtime → (optional) external provider only if explicitly allowed.
- * Never invents a successful reply when both are unavailable.
+ * Uses only the first-party local runtime. External AI-provider calls are prohibited.
+ * Never invents a successful reply when the local runtime is unavailable.
  */
-import {
+import type {
   InferenceRequest,
   InferenceResult,
   InferenceRuntimeInfo,
-} from './InferenceRuntime';
-import { getLocalInferenceRuntime, LocalInferenceRuntime } from './LocalInferenceRuntime';
+} from './InferenceRuntime.ts';
+import { getLocalInferenceRuntime } from './LocalInferenceRuntime.ts';
+import type { LocalInferenceRuntime } from './LocalInferenceRuntime.ts';
 
 export interface ChatInferenceOutcome {
   result: InferenceResult;
@@ -32,8 +33,7 @@ export class InferenceRouter {
       return { result, source: 'first_party_local', runtime: info };
     }
 
-    // Do not call external providers from this router. The HTTP layer may
-    // separately honor ALLOW_EXTERNAL_MODEL_PROVIDER after this returns.
+    // No remote AI provider is available as a fallback in this product.
     return {
       source: 'none',
       runtime: info,
@@ -45,7 +45,7 @@ export class InferenceRouter {
         durationMs: 0,
         code: 'FIRST_PARTY_MODEL_UNAVAILABLE',
         error:
-          'No first-party inference runtime is ready. Model weights and engine are not configured. External providers remain disabled unless ALLOW_EXTERNAL_MODEL_PROVIDER=true is set explicitly.',
+          'No first-party inference runtime is ready. Configure a local model file and local inference executable; external AI providers are never called.',
       },
     };
   }

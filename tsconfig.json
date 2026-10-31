@@ -11,6 +11,7 @@
     ],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowJs": true,
@@ -29,6 +30,9 @@
     "src/App.tsx",
     "src/components/**/*",
     "src/brain/**/*",
-    "src/api/**/*"
+    "src/api/**/*",
+    "src/inference/**/*",
+    "src/mmtai/**/*",
+    "daisy-ai-os/**/*.ts"
   ]
 }

@@ -3,14 +3,16 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import {
   DEFAULT_INFERENCE_TIMEOUT_MS,
+  MAX_HISTORY_MESSAGES,
+  MAX_MESSAGE_CHARS,
+  MAX_PROMPT_CHARS,
+} from './InferenceRuntime.ts';
+import type {
   InferenceRequest,
   InferenceResult,
   InferenceRuntime,
   InferenceRuntimeInfo,
-  MAX_HISTORY_MESSAGES,
-  MAX_MESSAGE_CHARS,
-  MAX_PROMPT_CHARS,
-} from './InferenceRuntime';
+} from './InferenceRuntime.ts';
 
 async function isNonEmptyReadableFile(filePath: string): Promise<boolean> {
   try {
@@ -219,13 +221,15 @@ export class LocalInferenceRuntime implements InferenceRuntime {
       const model = path.resolve(this.modelPath!);
       // Generic CLI contract: engine --model <path> --prompt <text>
       // Operators may wrap llama.cpp / similar behind a thin adapter script.
+      // Do not forward provider/API credentials or the rest of the parent environment.
+      const childEnv: NodeJS.ProcessEnv = { DAISY_INFERENCE_OFFLINE: '1' };
+      for (const key of ['PATH','HOME','TMPDIR','TMP','TEMP','LANG','LC_ALL','SystemRoot','WINDIR']) {
+        const value = process.env[key];
+        if (value) childEnv[key] = value;
+      }
       const child = spawn(engine, ['--model', model, '--prompt', prompt], {
         stdio: ['ignore', 'pipe', 'pipe'],
-        env: {
-          ...process.env,
-          // Discourage accidental network use from wrapper scripts.
-          DAISY_INFERENCE_OFFLINE: '1',
-        },
+        env: childEnv,
       });
 
       let stdout = '';

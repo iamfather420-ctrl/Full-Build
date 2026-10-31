@@ -1,15 +1,14 @@
 {
-  "name": "daisy-ai-os-freedom-sim",
+  "name": "daisy-ai-os-local-runtime",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "dev": "node --experimental-strip-types server.mjs",
     "start": "node --experimental-strip-types server.mjs",
-    "activate": "node --experimental-strip-types scripts/activate-os.ts",
-    "verify": "node --experimental-strip-types scripts/verify-complete.ts",
-    "build:native": "bash scripts/build-native.sh",
-    "build:image": "bash scripts/make-linux-image.sh",
-    "install:linux": "bash scripts/install-linux.sh"
+    "test": "node --experimental-strip-types scripts/test_native_os_security.ts"
   }
 }
