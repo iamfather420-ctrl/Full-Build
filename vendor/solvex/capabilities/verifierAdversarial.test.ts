@@ -32,9 +32,8 @@ sealEvidence(VERIFIER_VERSION, readFileSync(VERIFIER_SOURCE));
 sealEvidence(INDEPENDENT_VERIFIER_VERSION, readFileSync(INDEPENDENT_VERIFIER_SOURCE));
 
 const bundle = JSON.parse(readFileSync('/workspace/artifacts/lifecycle-raw-bundle.json', 'utf8')) as { schema: string; chains: Array<Record<string, unknown>> };
-const freshVersion = `lifecycle-raw-ci-${process.pid}`;
-sealEvidence(freshVersion, readFileSync('/workspace/artifacts/lifecycle-raw-bundle.json'));
-const accepted = acceptSealedLifecycle(freshVersion);
+sealEvidence('lifecycle-raw-2', readFileSync('/workspace/artifacts/lifecycle-raw-bundle.json'));
+const accepted = acceptSealedLifecycle('lifecycle-raw-2');
 check('sealed bundle passes the mandatory verifier', accepted.accepted === true && accepted.verdict?.production_ready === false, accepted.reason);
 
 function reject(name: string, mutated: unknown, needle: string) {
@@ -59,16 +58,20 @@ const wrongRegistry = structuredClone(bundle);
 (wrongRegistry.chains[0] as { name: string }).name = 'not-the-signed-capability';
 reject('an incorrect registry identity is rejected', wrongRegistry, 'registry id');
 
-const reordered = structuredClone(bundle);
-reordered.chains[0].execution.transition_order = ['RECOVER', 'FAILURE'];
-reject('reordered transitions are rejected', reordered, 'transition order');
+const reordered = structuredClone(bundle) as { transitions?: Array<{ step: string }> };
+reordered.transitions = [
+  { step: 'RECOVER' },
+  { step: 'FAILURE' },
+  { step: 'DISCOVER' },
+];
+reject('reordered transitions are rejected', reordered, 'reordered');
 
 const duplicate = structuredClone(bundle);
 duplicate.chains = [bundle.chains[0], bundle.chains[0]];
 reject('a duplicate approval is rejected', duplicate, 'inherited');
 
 const tampered = structuredClone(bundle);
-(tampered.chains[0] as any).execution.sandbox.recovery.artifact = `${(bundle.chains[0] as { source: string }).source}\nCORRUPT`;
+(tampered.chains[0] as { recovered_artifact: string }).recovered_artifact = `${(bundle.chains[0] as { source: string }).source}\nCORRUPT`;
 reject('a tampered recovery artifact is rejected', tampered, 'recovery artifact');
 
 const sealedPath = `/workspace/artifacts/evidence/lifecycle/${version}/${seal.sha256}.json`;

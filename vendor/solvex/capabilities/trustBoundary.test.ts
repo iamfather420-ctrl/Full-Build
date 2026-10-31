@@ -11,7 +11,7 @@ function check(name: string, pass: boolean, detail: string) {
 
 const oldEvidence = JSON.parse(readFileSync('/workspace/artifacts/independent-lifecycle.json', 'utf8'));
 const rejected = verifyLifecycleBundle(oldEvidence);
-check('stored hashes without signatures are rejected', rejected.ok === false && rejected.findings.some((item) => item.includes('raw lifecycle bundle')), rejected.findings.join(' '));
+check('stored hashes without signatures are rejected', rejected.ok === false && rejected.findings.some((item) => item.includes('not evidence')), rejected.findings.join(' '));
 
 const emitted = spawnSync('npx', ['tsx', 'vendor/solvex/capabilities/emitLifecycleBundle.ts'], { cwd: '/workspace', encoding: 'utf8' });
 check('raw bundle emitted in a separate process', emitted.status === 0, emitted.stderr || String(emitted.status));

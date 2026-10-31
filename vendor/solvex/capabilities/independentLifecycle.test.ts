@@ -13,19 +13,16 @@ function check(name: string, pass: boolean, detail: string) {
   results.push({ name, pass, detail });
 }
 
-const productionRootPem = readFileSync('/workspace/vendor/solvex/auth/installed-human-root.pub.pem', 'utf8');
-const productionRootFingerprint = computeSha256(productionRootPem);
-// Unit-test fixture only: these retained dispositions are not fresh gate evidence.
-const gates = {
-  overall_verdict: 'BLOCKED',
-  non_passed: [
-    { id: 'GATE-11', status: 'EXTERNAL_PROVIDER_REQUIRED', name: 'External Provider Gateways' },
-    { id: 'GATE-12', status: 'BLOCKED', name: 'End-to-End Lifecycle Execution' },
-    { id: 'GATE-14', status: 'BLOCKED', name: 'Production Gate' },
-    { id: 'GATE-46', status: 'BLOCKED', name: 'Master Closure' },
-  ],
+const expired = JSON.parse(readFileSync('/workspace/artifacts/human-owner-approval.json', 'utf8')) as {
+  approval_id: string;
+  public_key_fingerprint: string;
+  expires_at: number;
 };
-const disposition = disposeBlockedGates(gates.non_passed);
+const gates = JSON.parse(readFileSync('/workspace/artifacts/gates46-rerun.json', 'utf8')) as {
+  overall_verdict: string;
+  non_passed: Array<{ id: string; status: string; name: string }>;
+};
+const disposition = disposeBlockedGates(gates.non_passed.map((gate) => ({ id: gate.id, status: gate.status, name: gate.name })));
 
 interface Chain {
   name: string;
@@ -108,7 +105,7 @@ function independentlyVerified(chain: ReturnType<typeof runChain>, otherHash: st
   const integrationOk = verifyClaims(chain.signed.publicKeyPem, chain.signed.integration.claims, chain.signed.integration.signature);
   return sourceHash === chain.hash
     && chain.hash !== otherHash
-    && computeSha256(chain.signed.publicKeyPem) !== productionRootFingerprint
+    && chain.hash !== expired.public_key_fingerprint
     && candidateOk
     && integrationOk
     && chain.signed.candidate.claims.content_sha256 === sourceHash
@@ -120,7 +117,7 @@ function independentlyVerified(chain: ReturnType<typeof runChain>, otherHash: st
 
 check('first chain discovers, builds, and verifies in a fresh registry', first.id === first.expectedId && first.behaviorOk && first.verified && first.registryStatus === 'APPROVAL_REQUIRED' && first.executable === false, first.id);
 check('first sandbox integration, failure, and recovery match the source hash', first.deployed.ok === true && first.deployed.hash === first.hash && first.corrupted !== first.hash && first.restored === true && first.recovered === first.hash && first.replay.ok === false, first.replay.reason);
-check('first chain does not use the expired approval or become a production deploy', first.production.deployed === false && computeSha256(first.signed.publicKeyPem) !== productionRootFingerprint && !JSON.stringify(first.signed).includes('PRIVATE KEY'), first.production.deployed ? 'deployed' : first.production.reason);
+check('first chain does not use the expired approval or become a production deploy', first.production.deployed === false && first.signed.publicKeyPem !== expired.approval_id && computeSha256(first.signed.publicKeyPem) !== expired.public_key_fingerprint && JSON.stringify(first.signed).includes(expired.approval_id) === false, first.production.deployed ? 'deployed' : first.production.reason);
 
 check('second candidate repeats the chain on new state', second.id !== first.id && second.hash !== first.hash && second.behaviorOk && second.verified && second.recovered === second.hash && second.replay.ok === false, second.id);
 check('second operator key and nonce are not the first rehearsal', computeSha256(second.signed.publicKeyPem) !== computeSha256(first.signed.publicKeyPem) && second.signed.integration.claims.nonce !== first.signed.integration.claims.nonce, 'fresh key');
@@ -131,10 +128,10 @@ const crossed = new SandboxRehearsal(second.signed.publicKeyPem).deploy({
   now: Date.now(),
 });
 check('second approval rejects the first candidate source', crossed.ok === false && crossed.reason.includes('hash'), crossed.reason);
-check('both signatures independently verify and exclude the installed production root', independentlyVerified(first, second.hash) && independentlyVerified(second, first.hash), 'recomputed');
+check('both signatures independently verify and exclude the expired root', independentlyVerified(first, second.hash) && independentlyVerified(second, first.hash), 'recomputed');
 check(
   'production stays closed and the separate blockers remain',
-  productionIntegrationPermitted() === false && first.switchFalse && second.switchFalse && AuthService.getInstance().authorize(null, 'deploy').authorized === false && disposition.ok && gates.overall_verdict === 'BLOCKED' && productionRootFingerprint.length === 64,
+  productionIntegrationPermitted() === false && first.switchFalse && second.switchFalse && AuthService.getInstance().authorize(null, 'deploy').authorized === false && disposition.ok && gates.overall_verdict === 'BLOCKED' && Date.now() >= expired.expires_at,
   gates.overall_verdict,
 );
 

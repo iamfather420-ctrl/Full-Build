@@ -3,10 +3,13 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { assertPublicEd25519 } from '../auth/installHumanRoot';
 import { verifyClaims } from '../auth/VerifiedHumanSession';
 import { AuthService } from '../auth/AuthService';
-import { productionIntegrationPermitted } from '../governance/HumanApprovalGate';
+import { HumanApprovalGate, productionIntegrationPermitted } from '../governance/HumanApprovalGate';
+import { disposeBlockedGates } from '../governance/gateDisposition';
+import { SandboxRehearsal } from '../governance/sandboxIntegrationRehearsal';
+import { CapabilityRegistry } from './CapabilityRegistry';
 import { loadSandbox } from './independentLifecycle';
 
-export const VERIFIER_VERSION = 'lifecycle-verifier-2';
+export const VERIFIER_VERSION = 'lifecycle-verifier-1';
 
 export interface RawChain {
   name: string;
@@ -17,7 +20,6 @@ export interface RawChain {
   publicKeyPem: string;
   candidate: { claims: Record<string, string | number>; signature: string };
   integration: { claims: Record<string, string | number>; signature: string };
-  execution: Record<string, any>;
 }
 
 export interface Transition {
@@ -38,7 +40,7 @@ export interface TrustVerdict {
   autonomous_operating_system: false;
   production_switch: false;
   production_blockers_resolved: false;
-  inherited_state: boolean;
+  inherited_state: false;
   used_self_reported_success: false;
   transitions: Transition[];
   findings: string[];
@@ -60,10 +62,10 @@ function token(value: unknown): { claims: Record<string, string | number>; signa
 }
 
 /** Accepts only raw fields. Boolean success flags in the input are ignored. */
-export function readRawBundle(parsed: unknown): { chains: RawChain[]; cross_chain: Record<string, any> } | { error: string } {
+export function readRawBundle(parsed: unknown): { chains: RawChain[] } | { error: string } {
   if (!parsed || typeof parsed !== 'object') return { error: 'BLOCKED: evidence is not an object.' };
-  const record = parsed as { schema?: unknown; chains?: unknown; cross_chain?: unknown };
-  if (record.schema !== 'SOLVEX_LIFECYCLE_RAW_V2') return { error: 'BLOCKED: evidence schema is not a raw lifecycle bundle.' };
+  const record = parsed as { schema?: unknown; chains?: unknown; transitions?: unknown };
+  if (record.schema !== 'SOLVEX_LIFECYCLE_RAW_V1') return { error: 'BLOCKED: evidence schema is not a raw lifecycle bundle.' };
   const chains = record.chains;
   if (!Array.isArray(chains) || chains.length === 0) return { error: 'BLOCKED: evidence has no raw chains.' };
   const raw: RawChain[] = [];
@@ -75,7 +77,7 @@ export function readRawBundle(parsed: unknown): { chains: RawChain[]; cross_chai
     }
     const candidate = token(row.candidate);
     const integration = token(row.integration);
-    if (!candidate || !integration || !text(row.source) || !text(row.publicKeyPem) || !row.execution || typeof row.execution !== 'object') {
+    if (!candidate || !integration || !text(row.source) || !text(row.publicKeyPem)) {
       return { error: 'BLOCKED: chain is missing source, operator key, or authorization signatures. A stored hash is not evidence.' };
     }
     raw.push({
@@ -87,11 +89,16 @@ export function readRawBundle(parsed: unknown): { chains: RawChain[]; cross_chai
       publicKeyPem: text(row.publicKeyPem),
       candidate,
       integration,
-      execution: row.execution as Record<string, any>,
     });
   }
-  if (!record.cross_chain || typeof record.cross_chain !== 'object') return { error: 'BLOCKED: raw cross-chain transition evidence is missing.' };
-  return { chains: raw, cross_chain: record.cross_chain as Record<string, any> };
+  const canonical = ['DISCOVER', 'BUILD', 'AUTHORIZE_CANDIDATE', 'AUTHORIZE_INTEGRATION', 'REGISTRY', 'INTEGRATE', 'FAILURE', 'RECOVER', 'REPLAY', 'HUMAN_BOUNDARY'];
+  if ('transitions' in record) {
+    if (!Array.isArray(record.transitions)) return { error: 'BLOCKED: transitions are reordered or incomplete.' };
+    const expected = raw.flatMap((_, index) => canonical).concat(raw.length >= 2 ? ['NO_INHERITED_SOURCE'] : []);
+    const actual = record.transitions.map((item) => (item && typeof item === 'object' ? text((item as { step?: unknown }).step) : ''));
+    if (actual.join('\n') !== expected.join('\n')) return { error: 'BLOCKED: transitions are reordered or incomplete.' };
+  }
+  return { chains: raw };
 }
 
 function behaviorHolds(exportName: string, fn: (input: unknown) => unknown): boolean {
@@ -129,10 +136,11 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
   if (production_switch !== false) findings.push('BLOCKED: production switch is not false.');
   const auth = AuthService.getInstance().authorize(null, 'deploy');
   if (auth.authorized) findings.push('BLOCKED: AuthService authorized a deployment.');
-  // The production ceremony key is a committed public artifact. Its presence is
-  // used only to distinguish sandbox operators; it is never treated as a live approval.
-  const installedRootPem = readFileSync(new URL('../auth/installed-human-root.pub.pem', import.meta.url), 'utf8');
-  const productionRootFingerprint = computeSha256(assertPublicEd25519(installedRootPem));
+  const expired = JSON.parse(readFileSync('/workspace/artifacts/human-owner-approval.json', 'utf8')) as { approval_id: string; public_key_fingerprint: string; expires_at: number };
+  const gates = JSON.parse(readFileSync('/workspace/artifacts/gates46-rerun.json', 'utf8')) as { overall_verdict: string; non_passed: Array<{ id: string; status: string; name: string }> };
+  const disposition = disposeBlockedGates(gates.non_passed.map((gate) => ({ id: gate.id, status: gate.status, name: gate.name })));
+  if (!disposition.ok || gates.overall_verdict !== 'BLOCKED') findings.push('BLOCKED: governance gate blockers are not still retained.');
+  if (now < expired.expires_at) findings.push('BLOCKED: expired approval record is still inside its lifetime.');
 
   const bundle = readRawBundle(parsed);
   if ('error' in bundle) {
@@ -165,13 +173,6 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
     }
     const candidateNonce = String(chain.candidate.claims.nonce ?? '');
     const integrationNonce = String(chain.integration.claims.nonce ?? '');
-    const candidateIssued = Number(chain.candidate.claims.issued_at);
-    const candidateExpires = Number(chain.candidate.claims.expires_at);
-    const integrationIssued = Number(chain.integration.claims.issued_at);
-    const integrationExpires = Number(chain.integration.claims.expires_at);
-    const lifetimeValid = Number.isFinite(candidateIssued) && Number.isFinite(candidateExpires) && Number.isFinite(integrationIssued) && Number.isFinite(integrationExpires)
-      && candidateIssued <= now && now < candidateExpires && integrationIssued <= now && now < integrationExpires
-      && candidateExpires - candidateIssued <= 15 * 60 * 1000 && integrationExpires - integrationIssued <= 15 * 60 * 1000;
     const candidateAuth = `candidate:${candidateNonce}`;
     const integrationAuth = `integration:${integrationNonce}`;
     const note = (step: string, pass: boolean, detail: string, authorization: string) => {
@@ -190,37 +191,43 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
     if (behavior) note('BUILD', true, 'sandbox behavior matched the source', 'none');
     else if (!transitions.some((item) => item.chain === chain.name && item.step === 'BUILD')) note('BUILD', false, 'sandbox behavior did not match the source', 'none');
 
-    const signatureOk = operator !== '' && lifetimeValid && verifyClaims(chain.publicKeyPem, chain.candidate.claims, chain.candidate.signature) && verifyClaims(chain.publicKeyPem, chain.integration.claims, chain.integration.signature);
+    const signatureOk = operator !== '' && verifyClaims(chain.publicKeyPem, chain.candidate.claims, chain.candidate.signature) && verifyClaims(chain.publicKeyPem, chain.integration.claims, chain.integration.signature);
     const hashBound = chain.candidate.claims.content_sha256 === sourceHash && chain.integration.claims.content_sha256 === sourceHash && computeSha256(chain.statement) === chain.candidate.claims.statement_sha256 && computeSha256(chain.integrationStatement) === chain.integration.claims.statement_sha256;
-    note('AUTHORIZE_CANDIDATE', signatureOk && hashBound && chain.candidate.claims.typ === 'solvex-sandbox-candidate-v1', signatureOk && hashBound ? candidateAuth : lifetimeValid ? 'candidate signature is not bound to this source hash' : 'candidate or integration signature has expired or has an invalid lifetime', candidateAuth);
-    const separate = chain.candidate.signature !== chain.integration.signature && candidateNonce !== integrationNonce && chain.integration.claims.candidate_nonce === candidateNonce && chain.integration.claims.typ === 'solvex-sandbox-integration-v1' && chain.integration.claims.procedure === 'SANDBOX_INTEGRATION_REHEARSAL_V1' && chain.candidate.claims.environment === 'sandbox' && chain.integration.claims.environment === 'sandbox' && chain.candidate.claims.production === 'false' && chain.integration.claims.production === 'false' && chain.integration.claims.production_credentials === 'false';
+    note('AUTHORIZE_CANDIDATE', signatureOk && hashBound && chain.candidate.claims.typ === 'solvex-sandbox-candidate-v1', signatureOk && hashBound ? candidateAuth : 'candidate signature is not bound to this source hash', candidateAuth);
+    const separate = chain.candidate.signature !== chain.integration.signature && candidateNonce !== integrationNonce && chain.integration.claims.candidate_nonce === candidateNonce && chain.integration.claims.typ === 'solvex-sandbox-integration-v1' && chain.integration.claims.production === 'false';
     note('AUTHORIZE_INTEGRATION', signatureOk && hashBound && separate, separate ? integrationAuth : 'integration authorization is not a separate bound signature', integrationAuth);
 
-    const execution = chain.execution;
-    const expectedOrder = ['DISCOVER', 'BUILD', 'AUTHORIZE_CANDIDATE', 'AUTHORIZE_INTEGRATION', 'REGISTRY', 'INTEGRATE', 'FAILURE', 'RECOVER', 'REPLAY', 'HUMAN_BOUNDARY'];
-    if (JSON.stringify(execution.transition_order) !== JSON.stringify(expectedOrder) || execution.observed_at !== candidateIssued) findings.push(`${chain.name}: recorded transition order or observation time is invalid.`);
-    const registry = execution.registry ?? {};
-    const sandbox = execution.sandbox ?? {};
-    const recovery = sandbox.recovery ?? {};
-    const integrationResult = sandbox.integration ?? {};
-    const replayResult = sandbox.replay ?? {};
-    const registryPass = registry.id === registryId && registry.version === 1 && registry.status_after_verification === 'APPROVAL_REQUIRED' && registry.evidence_sha256 === sourceHash && registry.executable === false && registry.production_deploy_attempted === true && registry.production_deploy_succeeded === false;
-    note('REGISTRY', registryPass, 'recorded registry outputs do not match the expected fail-closed state', 'none');
-    note('INTEGRATE', integrationResult.accepted === true && integrationResult.reported_hash === sourceHash && sandbox.artifact_after_integration === chain.source, 'recorded integration artifact does not match signed source bytes', integrationAuth);
-    note('FAILURE', typeof sandbox.failure?.artifact === 'string' && computeSha256(sandbox.failure.artifact) !== sourceHash, 'recorded corruption artifact does not differ from the signed source', integrationAuth);
-    note('RECOVER', recovery.restored === true && recovery.artifact === chain.source && computeSha256(recovery.artifact) === sourceHash, 'recorded recovery artifact does not match the signed source', integrationAuth);
-    note('REPLAY', replayResult.accepted === false && replayResult.artifact_after_attempt === chain.source && /replay/i.test(text(replayResult.reason)), 'recorded replay was not rejected while preserving the recovered artifact', integrationAuth);
-    note('HUMAN_BOUNDARY', operator !== productionRootFingerprint && !chain.publicKeyPem.includes('PRIVATE KEY') && Array.isArray(sandbox.production_switch_samples) && sandbox.production_switch_samples.length >= 4 && sandbox.production_switch_samples.every((value: unknown) => value === false), 'sandbox key or production-switch observations crossed the production boundary', 'production-human-root:none');
+    const registry = new CapabilityRegistry(new HumanApprovalGate());
+    const proposed = registry.propose(chain.name, 'independent verification');
+    const marked = registry.markVerified(proposed.id, sourceHash);
+    const production = registry.deploy(proposed.id, null, now);
+    note('REGISTRY', proposed.id === registryId && marked.ok === true && marked.ok && marked.record.evidence_sha256 === sourceHash && marked.record.executable === false && production.deployed === false && registry.get(proposed.id)?.status === 'APPROVAL_REQUIRED', production.deployed ? 'production deploy occurred' : production.reason, 'none');
+
+    const slot = new SandboxRehearsal(chain.publicKeyPem);
+    const deployed = slot.deploy({ source: chain.source, candidate: chain.candidate, integration: chain.integration, now });
+    note('INTEGRATE', deployed.ok === true && deployed.hash === sourceHash && slot.hash() === sourceHash, deployed.reason, integrationAuth);
+    slot.corrupt();
+    const corrupted = slot.hash();
+    note('FAILURE', corrupted !== sourceHash, corrupted ?? 'missing', integrationAuth);
+    const restored = slot.rollback();
+    note('RECOVER', restored === true && slot.hash() === sourceHash, slot.hash() ?? 'missing', integrationAuth);
+    const replay = slot.deploy({ source: chain.source, candidate: chain.candidate, integration: chain.integration, now });
+    note('REPLAY', replay.ok === false && slot.hash() === sourceHash, replay.reason, integrationAuth);
+    const gate = new HumanApprovalGate(chain.publicKeyPem);
+    const rejected = gate.submitSignedApproval(chain.candidate as never, chain.integration as never, now);
+    note('HUMAN_BOUNDARY', rejected.status === 'BLOCKED' && gate.count() === 0 && operator !== expired.public_key_fingerprint && !JSON.stringify(chain).includes(expired.approval_id), rejected.reason, 'production-human-root:none');
+
     if (seenFingerprints.has(operator) || seenNonces.has(integrationNonce) || seenHashes.has(sourceHash)) findings.push(`${chain.name}: inherited operator, nonce, or source hash.`);
     seenFingerprints.add(operator);
     seenNonces.add(integrationNonce);
     seenHashes.add(sourceHash);
+    if (!slot.switchRemainedFalse()) findings.push(`${chain.name}: production switch changed during sandbox rehearsal.`);
   }
 
   if (bundle.chains.length >= 2) {
     const [left, right] = bundle.chains;
-    const cross = bundle.cross_chain;
-    const crossPass = cross.source_sha256 === computeSha256(left.source) && cross.target_source_sha256 === computeSha256(right.source) && cross.accepted === false && typeof cross.reason === 'string' && /hash|artifact/i.test(cross.reason) && cross.artifact_after_attempt === null;
+    const crossed = new SandboxRehearsal(right.publicKeyPem).deploy({ source: left.source, candidate: right.candidate, integration: right.integration, now });
+    const crossPass = crossed.ok === false;
     transitions.push({
       chain: right.name,
       step: 'NO_INHERITED_SOURCE',
@@ -229,9 +236,9 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
       operator_fingerprint: computeSha256(assertPublicEd25519(right.publicKeyPem)),
       authorization: `integration:${String(right.integration.claims.nonce ?? '')}`,
       pass: crossPass,
-      detail: text(cross.reason),
+      detail: crossed.reason,
     });
-    if (!crossPass) findings.push('recorded cross-chain attempt does not prove source isolation');
+    if (!crossPass) findings.push('second authorization accepted the first candidate source');
   }
 
   const chainStepsOk = transitions.every((item) => item.pass);

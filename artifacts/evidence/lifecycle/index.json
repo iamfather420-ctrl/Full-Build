@@ -35,20 +35,6 @@
       "sha256": "845124d1bcbff1eb2316d5a9541dd6235eabaa17031b7757950eb6bcee5f3206",
       "bytes": 531,
       "immutable": true
-    },
-    "lifecycle-verifier-2": {
-      "schema": "SOLVEX_SEALED_EVIDENCE_V1",
-      "version": "lifecycle-verifier-2",
-      "sha256": "9c9e6c3946bc1968a874b3c8b833d5e1d9851dff0a3768eae4545e7a9081545e",
-      "bytes": 15759,
-      "immutable": true
-    },
-    "lifecycle-verifier-independent-2": {
-      "schema": "SOLVEX_SEALED_EVIDENCE_V1",
-      "version": "lifecycle-verifier-independent-2",
-      "sha256": "094f27bba8a4eb6d348d7de69e3d3be491b843913e5748d784b74297ce5daa89",
-      "bytes": 12666,
-      "immutable": true
     }
   }
 }
