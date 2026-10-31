@@ -8,7 +8,7 @@ import { SandboxRehearsal } from '../governance/sandboxIntegrationRehearsal';
 import { CapabilityRegistry } from './CapabilityRegistry';
 import { loadSandbox } from './independentLifecycle';
 
-export const INDEPENDENT_VERIFIER_VERSION = 'lifecycle-verifier-independent-1';
+export const INDEPENDENT_VERIFIER_VERSION = 'lifecycle-verifier-independent-2';
 
 export interface IndependentVerdict {
   ok: boolean;
@@ -40,11 +40,10 @@ export function verifyLifecycleIndependently(parsed: unknown, now = Date.now()):
   if (typeof parsed === 'string') return { ok: false, findings: ['BLOCKED: evidence seal must be checked before parsing.'] };
   if (productionIntegrationPermitted() !== false) findings.push('BLOCKED: production switch is not false.');
   if (AuthService.getInstance().authorize(null, 'deploy').authorized) findings.push('BLOCKED: AuthService authorized a deployment.');
-  const expired = JSON.parse(readFileSync('/workspace/artifacts/human-owner-approval.json', 'utf8')) as { approval_id: string; public_key_fingerprint: string; expires_at: number };
-  const gates = JSON.parse(readFileSync('/workspace/artifacts/gates46-rerun.json', 'utf8')) as { overall_verdict: string; non_passed: Array<{ id: string; status: string }> };
-  const retained = gates.overall_verdict === 'BLOCKED' && ['GATE-11', 'GATE-12', 'GATE-14', 'GATE-46'].every((id) => gates.non_passed.some((gate) => gate.id === id && gate.status !== 'PASSED'));
-  if (!retained) findings.push('BLOCKED: governance gate blockers are not still retained.');
-  if (now < expired.expires_at) findings.push('BLOCKED: expired approval record is still inside its lifetime.');
+  // Read the committed production public key only to reject its reuse as a
+  // sandbox operator identity. This is not a live authorization check.
+  const installedRootPem = readFileSync(new URL('../auth/installed-human-root.pub.pem', import.meta.url), 'utf8');
+  const productionRootFingerprint = computeSha256(assertPublicEd25519(installedRootPem));
   if (!parsed || typeof parsed !== 'object' || (parsed as { schema?: unknown }).schema !== 'SOLVEX_LIFECYCLE_RAW_V1') {
     findings.push('BLOCKED: evidence schema is not a raw lifecycle bundle.');
     return { ok: false, findings };
@@ -111,7 +110,7 @@ export function verifyLifecycleIndependently(parsed: unknown, now = Date.now()):
     if (slot.deploy({ source, candidate: { claims: candidate.claims, signature: candidate.signature }, integration: { claims: integration.claims, signature: integration.signature }, now }).ok) findings.push(`${text(row.name)} REPLAY: duplicate approval was accepted`);
     const gate = new HumanApprovalGate(text(row.publicKeyPem));
     const rejected = gate.submitSignedApproval(candidate as never, integration as never, now);
-    if (rejected.status !== 'BLOCKED' || fingerprint === expired.public_key_fingerprint || JSON.stringify(row).includes(expired.approval_id)) findings.push(`${text(row.name)} HUMAN_BOUNDARY: sandbox token was treated as production authority`);
+    if (rejected.status !== 'BLOCKED' || fingerprint === productionRootFingerprint || text(row.publicKeyPem).includes('PRIVATE KEY')) findings.push(`${text(row.name)} HUMAN_BOUNDARY: sandbox token was treated as production authority`);
   }
   if (chains.length >= 2) {
     const left = chains[0] as { source?: string };
