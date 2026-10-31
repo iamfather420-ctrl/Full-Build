@@ -1,0 +1,10 @@
+{
+  "schema": "SOLVEX_LIFECYCLE_ACCEPTANCE_V1",
+  "evidence_version": "lifecycle-raw-2",
+  "evidence_sha256": "fbb9852c6be9a1ad6390e7a909a9cdc9068dc2bfc9c207642f036b2aa5a7139c",
+  "verifier_version": "lifecycle-verifier-1",
+  "verifier_source_sha256": "64241516a97f6b1bda7fb710002d72ed8bf7d9de6461c294c716269e8a6e628b",
+  "independent_verifier_version": "lifecycle-verifier-independent-1",
+  "independent_verifier_source_sha256": "16a22cb605afeafa5aa118ddd69998540c70e8f379fd10ba5d6b31e7ced5c86f",
+  "production_authority": false
+}

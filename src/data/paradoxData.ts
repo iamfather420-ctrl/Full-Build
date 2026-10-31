@@ -13,7 +13,7 @@ export interface DFRLParadoxItem {
   machine_checked_status: 'VERIFIED' | 'EQUIVALENT_FAMILY' | 'SMT_CERTIFIED';
   z3_smt_assertion: string;
   proof_bundle_ref: string;
-  expected_solver_result: 'sat' | 'sat';
+  expected_solver_result: 'unsat' | 'sat';
 }
 
 export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
@@ -27,7 +27,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Geometric infinite progression prevents overtaking.',
     formal_invariant: 'Sum_{i=0}^n (1/2)^i converges to 2 in Archimedean metric within finite delta_t.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const d Real) (declare-const d_next Real) (assert (> d 0.0)) (assert (= d_next (/ d 2.0))) (assert (not (and (< d_next d) (> d_next 0.0))))',
     proof_bundle_ref: 'PB-DFRL-001'
   },
@@ -41,7 +41,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Set of all sets not members of themselves: R in R <=> R not in R.',
     formal_invariant: 'Unrestricted comprehension schema is unsatisfiable under classical bivalence.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const R Bool) (assert (= R (not R)))',
     proof_bundle_ref: 'PB-DFRL-002'
   },
@@ -55,7 +55,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Barber shaves all and only townspeople who do not shave themselves.',
     formal_invariant: 'Universal quantifier domain contradiction: forall x, S(B,x) <=> not S(x,x).',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-sort Person) (declare-const Barber Person) (declare-fun Shaves (Person Person) Bool) (assert (forall ((p Person)) (= (Shaves Barber p) (not (Shaves p p)))))',
     proof_bundle_ref: 'PB-DFRL-003'
   },
@@ -69,7 +69,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Self-referential negation: Sentence L states "L is false".',
     formal_invariant: 'Truth predicate cannot be defined in object language without stratified hierarchy.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const Liar Bool) (assert (= Liar (not Liar)))',
     proof_bundle_ref: 'PB-DFRL-004'
   },
@@ -83,7 +83,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Sentence: "If this sentence is true, then False holds".',
     formal_invariant: 'Contraction rule (A => (A => B)) => (A => B) causes explosive inconsistency without substructural restriction.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const C Bool) (declare-const FalseConst Bool) (assert (not FalseConst)) (assert (= C (=> C FalseConst)))',
     proof_bundle_ref: 'PB-DFRL-005'
   },
@@ -97,7 +97,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Infinite recursion loops in unverified state spaces.',
     formal_invariant: 'Well-founded ranking metric V(s)=s > 0 decreases strictly at every step: V(s_{t+1}) < V(s_t).',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const s Int) (declare-const s_next Int) (assert (> s 0)) (assert (= s_next (- s 1))) (assert (not (and (< s_next s) (>= s_next 0))))',
     proof_bundle_ref: 'PB-DFRL-006'
   },
@@ -111,7 +111,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Traitor nodes broadcast inconsistent values to honest participants.',
     formal_invariant: 'Symmetric consensus without digital signatures requires N >= 3m + 1.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const v1 Int) (declare-const v2 Int) (assert (= v1 0)) (assert (= v2 1)) (assert (= v1 v2))',
     proof_bundle_ref: 'PB-DFRL-007'
   },
@@ -125,7 +125,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Placing N+1 items into N discrete slots.',
     formal_invariant: 'Injective mapping f: [N+1] -> [N] is mathematically unsatisfiable.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const p0 Int) (declare-const p1 Int) (declare-const p2 Int) (declare-const p3 Int) (assert (and (>= p0 0) (<= p0 2))) (assert (and (>= p1 0) (<= p1 2))) (assert (and (>= p2 0) (<= p2 2))) (assert (and (>= p3 0) (<= p3 2))) (assert (distinct p0 p1 p2 p3))',
     proof_bundle_ref: 'PB-DFRL-008'
   },
@@ -139,7 +139,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Set of all ordinals Omega has order type Omega+1 > Omega.',
     formal_invariant: 'Von Neumann ordinals form a proper class, strictly barring a universal ordinal set.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const Omega Int) (assert (> Omega Omega))',
     proof_bundle_ref: 'PB-DFRL-009'
   },
@@ -153,7 +153,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Power set |P(U)| strictly exceeds |U| even if U is the universal set.',
     formal_invariant: 'No surjective mapping exists from any set S to its power set P(S).',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const cardU Int) (declare-const cardPowU Int) (assert (> cardPowU cardU)) (assert (= cardPowU cardU))',
     proof_bundle_ref: 'PB-DFRL-010'
   },
@@ -167,7 +167,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Smallest positive integer not definable in under 100 characters.',
     formal_invariant: 'Kolmogorov complexity naming bound generates semantic diagonal paradox.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const Kn Int) (assert (< Kn 100)) (assert (>= Kn 100))',
     proof_bundle_ref: 'PB-DFRL-011'
   },
@@ -181,7 +181,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Is "heterological" (a word not describing itself) heterological?',
     formal_invariant: 'Semantic predicate application to itself produces isomorphic Russell negation.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const HetHet Bool) (assert (= HetHet (not HetHet)))',
     proof_bundle_ref: 'PB-DFRL-012'
   },
@@ -195,7 +195,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Infinite sequence S_i where each S_i asserts forall j > i, not S_j.',
     formal_invariant: 'Infinite well-founded chain of strictly monotonic negative assertions is inconsistent.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const S0 Bool) (declare-const S1 Bool) (declare-const S2 Bool) (assert (=> S0 (and (not S1) (not S2)))) (assert (=> S1 (not S2))) (assert (and S0 S1))',
     proof_bundle_ref: 'PB-DFRL-013'
   },
@@ -209,7 +209,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Runner must complete 1/2, then 1/4, then 1/8 before reaching goal.',
     formal_invariant: 'Continuous integration of constant velocity over finite compact interval [0, 1] is bounded.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const d Real) (declare-const d_prev Real) (assert (> d 0.0)) (assert (= d_prev (* d 2.0))) (assert (not (< d d_prev)))',
     proof_bundle_ref: 'PB-DFRL-014'
   },
@@ -223,7 +223,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'At each singleton time t, displacement delta_x = 0, hence motion is zero.',
     formal_invariant: 'Instantaneous velocity is the derivative limit dx/dt, non-zero even though measure of singleton {t} is 0.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const dx Real) (declare-const dt Real) (declare-const v Real) (assert (= dx 0.0)) (assert (> dt 0.0)) (assert (= v (/ dx dt))) (assert (distinct v 0.0))',
     proof_bundle_ref: 'PB-DFRL-015'
   },
@@ -237,7 +237,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Every plank replaced over time vs reconstructed original.',
     formal_invariant: 'Identity over time defined by continuous causal graph trajectory rather than static part set equality.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const traj_original Int) (declare-const traj_reconstructed Int) (assert (= traj_original 1)) (assert (= traj_reconstructed 2)) (assert (= traj_original traj_reconstructed))',
     proof_bundle_ref: 'PB-DFRL-016'
   },
@@ -251,7 +251,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'One grain is not a heap; adding 1 grain never transitions to a heap.',
     formal_invariant: 'Truth value transitions smoothly across continuous membership function mu in [0, 1].',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const mu Real) (assert (= mu 0.0)) (assert (= mu 1.0))',
     proof_bundle_ref: 'PB-DFRL-017'
   },
@@ -265,7 +265,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Infinite ack-of-ack required across lossy link.',
     formal_invariant: 'Common knowledge cannot be attained in finite rounds over lossy channel.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const channel_lossy Bool) (declare-const common_knowledge Bool) (assert (= channel_lossy true)) (assert (=> channel_lossy (not common_knowledge))) (assert (= common_knowledge true))',
     proof_bundle_ref: 'PB-DFRL-018'
   },
@@ -279,7 +279,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Single unannounced crash stops consensus from guaranteeing termination.',
     formal_invariant: 'Bivalent configurations always have non-terminating critical execution path in asynchronous network.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const async_net Bool) (declare-const crash_possible Bool) (declare-const guaranteed_terminating_consensus Bool) (assert (= async_net true)) (assert (= crash_possible true)) (assert (=> (and async_net crash_possible) (not guaranteed_terminating_consensus))) (assert (= guaranteed_terminating_consensus true))',
     proof_bundle_ref: 'PB-DFRL-019'
   },
@@ -293,7 +293,7 @@ export const REAL_88_PARADOX_REGISTRY: DFRLParadoxItem[] = [
     classical_antinomy: 'Decomposing 1 unit ball into 5 non-measurable pieces reassembles into 2 unit balls.',
     formal_invariant: 'SO(3) free group contains non-abelian free subgroup F_2; decomposition pieces lack Lebesgue measure.',
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: '(declare-const v1 Real) (declare-const v2 Real) (declare-const lebesgue_additive Bool) (assert (= v1 1.0)) (assert (= v2 2.0)) (assert (= lebesgue_additive true)) (assert (=> lebesgue_additive (= v1 v2)))',
     proof_bundle_ref: 'PB-DFRL-020'
   }
@@ -314,7 +314,7 @@ for (let i = 21; i <= 88; i++) {
     classical_antinomy: `Classical formulation ${codeNum}: Antinomic state boundary in finite model category.`,
     formal_invariant: `Formal invariant ${codeNum}: Machine-checked SMT inductive reduction guarantees convergence without contradiction.`,
     machine_checked_status: 'VERIFIED',
-    expected_solver_result: 'sat',
+    expected_solver_result: 'unsat',
     z3_smt_assertion: `(declare-const s_${codeNum} Int) (declare-const s_next_${codeNum} Int) (assert (> s_${codeNum} 0)) (assert (= s_next_${codeNum} (- s_${codeNum} 1))) (assert (not (and (< s_next_${codeNum} s_${codeNum}) (>= s_next_${codeNum} 0))))`,
     proof_bundle_ref: `PB-DFRL-${codeNum}`
   });
