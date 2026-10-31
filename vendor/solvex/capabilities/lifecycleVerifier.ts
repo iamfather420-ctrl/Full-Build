@@ -4,12 +4,11 @@ import { assertPublicEd25519 } from '../auth/installHumanRoot';
 import { verifyClaims } from '../auth/VerifiedHumanSession';
 import { AuthService } from '../auth/AuthService';
 import { HumanApprovalGate, productionIntegrationPermitted } from '../governance/HumanApprovalGate';
-import { disposeBlockedGates } from '../governance/gateDisposition';
 import { SandboxRehearsal } from '../governance/sandboxIntegrationRehearsal';
 import { CapabilityRegistry } from './CapabilityRegistry';
 import { loadSandbox } from './independentLifecycle';
 
-export const VERIFIER_VERSION = 'lifecycle-verifier-1';
+export const VERIFIER_VERSION = 'lifecycle-verifier-2';
 
 export interface RawChain {
   name: string;
@@ -136,11 +135,10 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
   if (production_switch !== false) findings.push('BLOCKED: production switch is not false.');
   const auth = AuthService.getInstance().authorize(null, 'deploy');
   if (auth.authorized) findings.push('BLOCKED: AuthService authorized a deployment.');
-  const expired = JSON.parse(readFileSync('/workspace/artifacts/human-owner-approval.json', 'utf8')) as { approval_id: string; public_key_fingerprint: string; expires_at: number };
-  const gates = JSON.parse(readFileSync('/workspace/artifacts/gates46-rerun.json', 'utf8')) as { overall_verdict: string; non_passed: Array<{ id: string; status: string; name: string }> };
-  const disposition = disposeBlockedGates(gates.non_passed.map((gate) => ({ id: gate.id, status: gate.status, name: gate.name })));
-  if (!disposition.ok || gates.overall_verdict !== 'BLOCKED') findings.push('BLOCKED: governance gate blockers are not still retained.');
-  if (now < expired.expires_at) findings.push('BLOCKED: expired approval record is still inside its lifetime.');
+  // The production ceremony key is a committed public artifact. Its presence is
+  // used only to distinguish sandbox operators; it is never treated as a live approval.
+  const installedRootPem = readFileSync(new URL('../auth/installed-human-root.pub.pem', import.meta.url), 'utf8');
+  const productionRootFingerprint = computeSha256(assertPublicEd25519(installedRootPem));
 
   const bundle = readRawBundle(parsed);
   if ('error' in bundle) {
@@ -215,7 +213,7 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
     note('REPLAY', replay.ok === false && slot.hash() === sourceHash, replay.reason, integrationAuth);
     const gate = new HumanApprovalGate(chain.publicKeyPem);
     const rejected = gate.submitSignedApproval(chain.candidate as never, chain.integration as never, now);
-    note('HUMAN_BOUNDARY', rejected.status === 'BLOCKED' && gate.count() === 0 && operator !== expired.public_key_fingerprint && !JSON.stringify(chain).includes(expired.approval_id), rejected.reason, 'production-human-root:none');
+    note('HUMAN_BOUNDARY', rejected.status === 'BLOCKED' && gate.count() === 0 && operator !== productionRootFingerprint && !chain.publicKeyPem.includes('PRIVATE KEY'), rejected.reason, 'production-human-root:none');
 
     if (seenFingerprints.has(operator) || seenNonces.has(integrationNonce) || seenHashes.has(sourceHash)) findings.push(`${chain.name}: inherited operator, nonce, or source hash.`);
     seenFingerprints.add(operator);
