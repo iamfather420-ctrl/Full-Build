@@ -28,7 +28,8 @@
     "verify:production-runtime": "tsx scripts/verify_production_runtime.ts",
     "verify:release-safety": "node scripts/verify_release_safety.mjs",
     "verify:payments-disabled": "node scripts/verify_payments_disabled.mjs",
-    "verify:daisy-safety": "node scripts/verify_daisy_foundational_safety.mjs"
+    "verify:daisy-safety": "node scripts/verify_daisy_foundational_safety.mjs",
+    "test:solvex-lifecycle": "tsx vendor/solvex/auth/ownerCeremony.test.ts && tsx vendor/solvex/auth/humanRoot.test.ts && tsx vendor/solvex/capabilities/controlPlane.test.ts && tsx vendor/solvex/capabilities/recursiveLifecycle.test.ts && tsx vendor/solvex/capabilities/independentLifecycle.test.ts && tsx vendor/solvex/governance/sandboxRehearsal.test.ts && tsx vendor/solvex/governance/governanceContinuation.test.ts && tsx vendor/solvex/capabilities/trustBoundary.test.ts && tsx vendor/solvex/capabilities/verifierTrustChain.test.ts && tsx vendor/solvex/capabilities/verifierAdversarial.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
