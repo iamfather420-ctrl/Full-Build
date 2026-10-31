@@ -177,6 +177,8 @@ export function verifyLifecycleIndependently(parsed: unknown, now = Date.now()):
       findings.push(`${name}: source did not execute within the independent sandbox boundary.`);
     }
 
+    const expectedOrder = ['DISCOVER', 'BUILD', 'AUTHORIZE_CANDIDATE', 'AUTHORIZE_INTEGRATION', 'REGISTRY', 'INTEGRATE', 'FAILURE', 'RECOVER', 'REPLAY', 'HUMAN_BOUNDARY'];
+    if (JSON.stringify(execution.transition_order) !== JSON.stringify(expectedOrder) || execution.observed_at !== issued) findings.push(`${name}: raw transition order or execution timestamp is invalid.`);
     const registry = execution.registry ?? {};
     const sandbox = execution.sandbox ?? {};
     const recovery = sandbox.recovery ?? {};
