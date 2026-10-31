@@ -481,6 +481,7 @@ export class DFRLFormalVerifier {
       classical_antinomy: 'Malformed syntax injection.',
       formal_invariant: 'Syntax error must fail closed and never prove UNSAT.',
       machine_checked_status: 'VERIFIED',
+      expected_solver_result: 'unsat',
       z3_smt_assertion: '(assert (this_is_an_undefined_operator 123 456))',
       proof_bundle_ref: 'PB-FAULT-001'
     };
