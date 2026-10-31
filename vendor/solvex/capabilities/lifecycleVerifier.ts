@@ -38,7 +38,7 @@ export interface TrustVerdict {
   autonomous_operating_system: false;
   production_switch: false;
   production_blockers_resolved: false;
-  inherited_state: false;
+  inherited_state: boolean;
   used_self_reported_success: false;
   transitions: Transition[];
   findings: string[];
