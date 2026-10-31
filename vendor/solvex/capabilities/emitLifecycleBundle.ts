@@ -72,7 +72,7 @@ const chains = specs.map((spec) => {
       executable: registry.get(proposed.id)?.executable ?? null,
       production_deploy_attempted: true,
       production_deploy_succeeded: 'deployed' in productionAttempt && productionAttempt.deployed,
-      production_deploy_reason: productionAttempt.reason,
+      production_deploy_reason: 'reason' in productionAttempt ? productionAttempt.reason : 'unexpected deployment result',
     },
     sandbox: {
       integration: { accepted: integration.ok, reported_hash: integration.hash },
