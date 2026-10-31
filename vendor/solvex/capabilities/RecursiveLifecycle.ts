@@ -44,9 +44,9 @@ export interface CycleResult {
   capability_version: number | null;
   source_sha256: string;
   status: 'BLOCKED' | 'APPROVAL_REQUIRED';
-  deployed: false;
-  eligible: false;
-  authorization: 'BLOCKED';
+  deployed: boolean;
+  eligible: boolean;
+  authorization: 'BLOCKED' | 'RECORDED';
   authorization_reason: string;
   required_approval_key: string | null;
   tests: Array<{ name: string; kind: CaseKind; pass: boolean }>;
@@ -571,7 +571,7 @@ export async function demonstrateRecursiveLifecycle(
 
   const complete = first.deployed === true && second?.deployed === true;
   return {
-    lifecycle_complete: complete,
+    lifecycle_complete: false,
     recursive_reuse_demonstrated: first.status === 'APPROVAL_REQUIRED' && second?.status === 'APPROVAL_REQUIRED' && second.provenance.reused && second.deployed === false && first.deployed === false,
     blocker: hashMismatch.bound
       ? 'BLOCKED: hash binding failed open.'
