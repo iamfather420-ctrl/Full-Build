@@ -18,11 +18,17 @@ const expired = JSON.parse(readFileSync('/workspace/artifacts/human-owner-approv
   public_key_fingerprint: string;
   expires_at: number;
 };
-const gates = JSON.parse(readFileSync('/workspace/artifacts/gates46-rerun.json', 'utf8')) as {
-  overall_verdict: string;
-  non_passed: Array<{ id: string; status: string; name: string }>;
+// Unit-test fixture only: these retained dispositions are not fresh gate evidence.
+const gates = {
+  overall_verdict: 'BLOCKED',
+  non_passed: [
+    { id: 'GATE-11', status: 'EXTERNAL_PROVIDER_REQUIRED', name: 'External Provider Gateways' },
+    { id: 'GATE-12', status: 'BLOCKED', name: 'End-to-End Lifecycle Execution' },
+    { id: 'GATE-14', status: 'BLOCKED', name: 'Production Gate' },
+    { id: 'GATE-46', status: 'BLOCKED', name: 'Master Closure' },
+  ],
 };
-const disposition = disposeBlockedGates(gates.non_passed.map((gate) => ({ id: gate.id, status: gate.status, name: gate.name })));
+const disposition = disposeBlockedGates(gates.non_passed);
 
 interface Chain {
   name: string;
