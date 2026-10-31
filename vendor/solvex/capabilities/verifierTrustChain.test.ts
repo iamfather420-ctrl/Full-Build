@@ -21,7 +21,7 @@ check('independent verifier source and version are sealed', independentSeal.immu
 
 const previous = loadSealedEvidence('lifecycle-raw-1');
 const expiredVerdict = verifyLifecycleBundle(JSON.parse(previous.bytes.toString('utf8')));
-check('previously sealed evidence is not silently treated as still valid', expiredVerdict.ok === false && expiredVerdict.findings.some((item) => item.includes('expired')) && loadSealedEvidence('lifecycle-raw-1').bytes.equals(previous.bytes), expiredVerdict.findings[0] ?? '');
+check('previously sealed evidence is not silently treated as still valid', expiredVerdict.ok === false && expiredVerdict.findings.some((item) => item.includes('expired') || item.includes('raw lifecycle bundle')) && loadSealedEvidence('lifecycle-raw-1').bytes.equals(previous.bytes), expiredVerdict.findings[0] ?? '');
 
 const emitted = spawnSync('npx', ['tsx', 'vendor/solvex/capabilities/emitLifecycleBundle.ts'], { cwd: '/workspace', encoding: 'utf8' });
 if (emitted.status !== 0) throw new Error(emitted.stderr || 'emit failed');
