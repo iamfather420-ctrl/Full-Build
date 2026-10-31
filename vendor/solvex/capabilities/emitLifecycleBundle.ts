@@ -63,6 +63,7 @@ const chains = specs.map((spec) => {
 
   const execution = {
     observed_at: now,
+    transition_order: ['DISCOVER', 'BUILD', 'AUTHORIZE_CANDIDATE', 'AUTHORIZE_INTEGRATION', 'REGISTRY', 'INTEGRATE', 'FAILURE', 'RECOVER', 'REPLAY', 'HUMAN_BOUNDARY'],
     registry: {
       id: proposed.id,
       version: proposed.version,
