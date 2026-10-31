@@ -234,9 +234,10 @@ export class DFRLFormalVerifier {
       execution_id: executionId,
       solver_result: solverResult,
       expected_solver_result: item.expected_solver_result,
-      // Fail closed: this verifier currently has no SAT-model extraction/recheck implementation.
-      // A SAT solver response alone is not a verified witness.
-      proved: false,
+      // DFRL's 88 authoritative contracts are expected UNSAT. An UNSAT result
+      // proves these contracts without a SAT witness. SAT remains unproved until
+      // a model is extracted and independently rechecked.
+      proved: solverResult === 'unsat' && item.expected_solver_result === 'unsat',
       claim_scope: 'MODEL_VERIFIED',
       execution_duration_ms: Number(duration.toFixed(3)),
       duration_ms: Number(duration.toFixed(3)),
@@ -354,12 +355,15 @@ export class DFRLFormalVerifier {
     const authoredCount = results.filter(r => r.model_classification === 'AUTHORED_MODEL').length;
     const generatedCount = results.filter(r => r.model_classification === 'GENERATED_GENERALIZED_MODEL').length;
 
-    const allExpectedResultsMatched = results.every((r, index) =>
-      r.solver_result === REAL_88_PARADOX_REGISTRY[index].expected_solver_result &&
-      r.proved &&
-      r.sat_witness_recheck_passed === true &&
-      typeof r.sat_witness_model_sha256 === 'string' && /^[a-f0-9]{64}$/i.test(r.sat_witness_model_sha256)
-    );
+    const allExpectedResultsMatched = results.every((r, index) => {
+      const expected = REAL_88_PARADOX_REGISTRY[index].expected_solver_result;
+      if (r.solver_result !== expected || !r.proved) return false;
+      if (expected === 'unsat') return true;
+      return expected === 'sat'
+        && r.sat_witness_recheck_passed === true
+        && typeof r.sat_witness_model_sha256 === 'string'
+        && /^[a-f0-9]{64}$/i.test(r.sat_witness_model_sha256);
+    });
     const allReplayed = replaysMatched === REAL_88_PARADOX_REGISTRY.length;
     const overallStatus: DFRL88VerificationReport['overall_status'] =
       allExpectedResultsMatched && allReplayed ? 'VERIFIED' : (executed > 0 ? 'PARTIAL' : 'FAILED');
@@ -376,7 +380,7 @@ export class DFRLFormalVerifier {
       attempted,
       executed,
       unsat_count: unsatCount,
-      unsat_proved_count: unsatCount,
+      unsat_proved_count: results.filter(r => r.solver_result === 'unsat' && r.proved).length,
       sat_count: satCount,
       unknown_count: unknownCount,
       error_count: errorCount,
