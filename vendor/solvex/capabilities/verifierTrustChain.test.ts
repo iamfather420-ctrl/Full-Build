@@ -71,7 +71,7 @@ const wrongRegistry = structuredClone(bundle);
 wrongRegistry.chains[0].name = 'not-the-signed-capability';
 bothReject('both reject an incorrect registry identity', wrongRegistry);
 const reordered = structuredClone(bundle);
-reordered.transitions = [{ step: 'RECOVER' }, { step: 'FAILURE' }];
+reordered.chains[0].execution.transition_order = ['RECOVER', 'FAILURE'];
 bothReject('both reject reordered transitions', reordered);
 const duplicate = structuredClone(bundle);
 duplicate.chains = [bundle.chains[0], bundle.chains[0]];
