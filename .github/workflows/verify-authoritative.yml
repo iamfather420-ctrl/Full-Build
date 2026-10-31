@@ -97,7 +97,7 @@ jobs:
             node -e '
               const r = require("./artifacts/dh-bootstrap-32-verification.json");
               console.log("- executed:", r.executed);
-              console.log("- replays:", r.deterministic_replays_matched);
+              console.log("- replays:", r.replay_matches);
               console.log("- unknown:", r.unknown_count);
               console.log("- errors:", r.error_count);
             ' >> $GITHUB_STEP_SUMMARY || true
@@ -163,7 +163,7 @@ jobs:
             if (!ok) {
               console.error("120-case gate FAILED");
               console.error("DFRL:", {executed: dfrl.executed, replays: dfrl.deterministic_replays_matched, unknown: dfrl.unknown_count, errors: dfrl.error_count});
-              console.error("DH:", {executed: dh.executed, replays: dh.deterministic_replays_matched, unknown: dh.unknown_count, errors: dh.error_count});
+              console.error("DH:", {executed: dh.executed, replays: dh.replay_matches, unknown: dh.unknown_count, errors: dh.error_count});
               process.exit(1);
             }
             console.log("120-case gate PASSED");
