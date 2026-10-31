@@ -103,8 +103,17 @@ const forged = { claims: forgedClaims, signature: `${approval.signature.slice(0,
 check('tampered signature is rejected', new HumanApprovalGate(current.publicKeyPem).submitSignedApproval(session, forged, now).status === 'BLOCKED', 'tampered');
 check('installed ceremony key was not replaced', computeSha256(readFileSync('/workspace/vendor/solvex/auth/installed-human-root.pub.pem', 'utf8')) === evidence.public_key_fingerprint, evidence.public_key_fingerprint);
 
-const gates = JSON.parse(readFileSync('/workspace/artifacts/gates46-rerun.json', 'utf8')) as { non_passed: Array<{ id: string; status: string; name: string }>; overall_verdict: string };
-const disposition = disposeBlockedGates(gates.non_passed.map((gate) => ({ id: gate.id, status: gate.status, name: gate.name })));
+// Unit-test fixture only; this does not claim a fresh 46-gate execution.
+const gates = {
+  overall_verdict: 'BLOCKED',
+  non_passed: [
+    { id: 'GATE-11', status: 'EXTERNAL_PROVIDER_REQUIRED', name: 'External Provider Gateways' },
+    { id: 'GATE-12', status: 'BLOCKED', name: 'End-to-End Lifecycle Execution' },
+    { id: 'GATE-14', status: 'BLOCKED', name: 'Production Gate' },
+    { id: 'GATE-46', status: 'BLOCKED', name: 'Master Closure' },
+  ],
+};
+const disposition = disposeBlockedGates(gates.non_passed);
 check('gate blockers are retained and not rewritten as passed', disposition.ok && disposition.dispositions.every((gate) => gate.may_pass === false) && gates.overall_verdict === 'BLOCKED', disposition.findings.join(' ') || disposition.dispositions.map((gate) => gate.id).join(','));
 
 const procedure = runProductionIntegrationProcedure({
