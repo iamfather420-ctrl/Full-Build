@@ -44,18 +44,22 @@ export function createHumanRoot(): { publicKeyPem: string; privateKeyPem: string
   };
 }
 
-export function canonicalBytes(value: Record<string, string | number>): Buffer {
+export function canonicalBytes(value: object): Buffer {
+  const entries = Object.entries(value).sort(([left], [right]) => left.localeCompare(right));
   const ordered: Record<string, string | number> = {};
-  for (const key of Object.keys(value).sort()) ordered[key] = value[key];
+  for (const [key, item] of entries) {
+    if (typeof item !== 'string' && typeof item !== 'number') throw new Error('BLOCKED: claim value type is invalid.');
+    ordered[key] = item;
+  }
   return Buffer.from(JSON.stringify(ordered), 'utf8');
 }
 
-function signClaims(privateKeyPem: string, claims: Record<string, string | number>): string {
+function signClaims(privateKeyPem: string, claims: object): string {
   const signature = sign(null, canonicalBytes(claims), createPrivateKey(privateKeyPem));
   return signature.toString('base64');
 }
 
-export function verifyClaims(publicKeyPem: string, claims: Record<string, string | number>, signature: string): boolean {
+export function verifyClaims(publicKeyPem: string, claims: object, signature: string): boolean {
   try {
     return verify(null, canonicalBytes(claims), createPublicKey(publicKeyPem), Buffer.from(signature, 'base64'));
   } catch {
