@@ -165,6 +165,13 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
     }
     const candidateNonce = String(chain.candidate.claims.nonce ?? '');
     const integrationNonce = String(chain.integration.claims.nonce ?? '');
+    const candidateIssued = Number(chain.candidate.claims.issued_at);
+    const candidateExpires = Number(chain.candidate.claims.expires_at);
+    const integrationIssued = Number(chain.integration.claims.issued_at);
+    const integrationExpires = Number(chain.integration.claims.expires_at);
+    const lifetimeValid = Number.isFinite(candidateIssued) && Number.isFinite(candidateExpires) && Number.isFinite(integrationIssued) && Number.isFinite(integrationExpires)
+      && candidateIssued <= now && now < candidateExpires && integrationIssued <= now && now < integrationExpires
+      && candidateExpires - candidateIssued <= 15 * 60 * 1000 && integrationExpires - integrationIssued <= 15 * 60 * 1000;
     const candidateAuth = `candidate:${candidateNonce}`;
     const integrationAuth = `integration:${integrationNonce}`;
     const note = (step: string, pass: boolean, detail: string, authorization: string) => {
@@ -183,9 +190,9 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
     if (behavior) note('BUILD', true, 'sandbox behavior matched the source', 'none');
     else if (!transitions.some((item) => item.chain === chain.name && item.step === 'BUILD')) note('BUILD', false, 'sandbox behavior did not match the source', 'none');
 
-    const signatureOk = operator !== '' && verifyClaims(chain.publicKeyPem, chain.candidate.claims, chain.candidate.signature) && verifyClaims(chain.publicKeyPem, chain.integration.claims, chain.integration.signature);
+    const signatureOk = operator !== '' && lifetimeValid && verifyClaims(chain.publicKeyPem, chain.candidate.claims, chain.candidate.signature) && verifyClaims(chain.publicKeyPem, chain.integration.claims, chain.integration.signature);
     const hashBound = chain.candidate.claims.content_sha256 === sourceHash && chain.integration.claims.content_sha256 === sourceHash && computeSha256(chain.statement) === chain.candidate.claims.statement_sha256 && computeSha256(chain.integrationStatement) === chain.integration.claims.statement_sha256;
-    note('AUTHORIZE_CANDIDATE', signatureOk && hashBound && chain.candidate.claims.typ === 'solvex-sandbox-candidate-v1', signatureOk && hashBound ? candidateAuth : 'candidate signature is not bound to this source hash', candidateAuth);
+    note('AUTHORIZE_CANDIDATE', signatureOk && hashBound && chain.candidate.claims.typ === 'solvex-sandbox-candidate-v1', signatureOk && hashBound ? candidateAuth : lifetimeValid ? 'candidate signature is not bound to this source hash' : 'candidate or integration signature has expired or has an invalid lifetime', candidateAuth);
     const separate = chain.candidate.signature !== chain.integration.signature && candidateNonce !== integrationNonce && chain.integration.claims.candidate_nonce === candidateNonce && chain.integration.claims.typ === 'solvex-sandbox-integration-v1' && chain.integration.claims.production === 'false';
     note('AUTHORIZE_INTEGRATION', signatureOk && hashBound && separate, separate ? integrationAuth : 'integration authorization is not a separate bound signature', integrationAuth);
 
