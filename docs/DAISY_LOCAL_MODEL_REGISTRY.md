@@ -6,7 +6,7 @@ The registry pins that artifact to source revision `bd59ef4c1c7af8b7ade0d473f3ab
 
 Qwen's local-running guide documents Qwen3 support in llama.cpp from version `b5092` and shows the GGUF download-and-run workflow [3]. llama.cpp documents the `llama-cli` executable and local GGUF inference [4]. Daisy formats chat input as Qwen3 ChatML, invokes only an explicitly configured local executable, uses bounded generation, and passes the CLI's offline flag. It does not call a hosted model or an external inference endpoint. A static model-file download is the only remote step in obtaining weights.
 
-The registry endpoint exposes model identity, license, source revision, expected file size/hash, file verification state and executable status. It deliberately does not disclose local paths. Chat stays blocked if the model file is missing, has the wrong size/hash, or the local executable is absent or non-executable. The model file itself is ignored by Git and is distributed separately from the source archive.
+The registry endpoint exposes model identity, license, source revision, expected file size/hash, file verification state and executable status. It deliberately does not disclose local paths. Chat stays blocked if the model file is missing, has the wrong size/hash, or the local executable is absent or non-executable. The official source archive is created from commit-tracked files by `npm run package:source` (or `node scripts/package_daisy_source.mjs`); it explicitly filters `.gguf` weights and partials, excludes private `.env` files, and preserves `.env.example` plus the registry. It writes a SHA-256 sidecar. The model file is distributed separately from that archive.
 
 ## Local setup
 

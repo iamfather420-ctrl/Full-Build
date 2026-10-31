@@ -11,7 +11,9 @@ npm run models:download
 cp .env.example .env
 ```
 
-The installer streams the pinned 1.1 GB GGUF artifact to `models/Qwen3-1.7B-Q4_K_M.gguf`. It verifies the downloaded byte count and SHA-256 against `models/registry.json` before atomically moving it into place. Weights and partial downloads are ignored by Git and are not included in the source archive. The installer never downloads or executes an inference engine.
+The installer streams the pinned 1.1 GB GGUF artifact to `models/Qwen3-1.7B-Q4_K_M.gguf`. It verifies the downloaded byte count and SHA-256 against `models/registry.json` before atomically moving it into place. Weights and partial downloads are ignored by Git and excluded from the official source archive. The installer never downloads or executes an inference engine.
+
+From the repository root, run `npm run package:source` to create `dist/Full-Build-source-<commit>.zip` and its `.sha256` sidecar. The packager refuses an uncommitted worktree, archives the selected commit's tracked files only, filters all `.gguf` weights and partials plus private `.env` files, and preserves `.env.example` and the model registry.
 
 Build `llama.cpp` locally using its upstream CMake project:
 
