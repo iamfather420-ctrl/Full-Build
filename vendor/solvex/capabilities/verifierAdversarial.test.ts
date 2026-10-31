@@ -32,8 +32,9 @@ sealEvidence(VERIFIER_VERSION, readFileSync(VERIFIER_SOURCE));
 sealEvidence(INDEPENDENT_VERIFIER_VERSION, readFileSync(INDEPENDENT_VERIFIER_SOURCE));
 
 const bundle = JSON.parse(readFileSync('/workspace/artifacts/lifecycle-raw-bundle.json', 'utf8')) as { schema: string; chains: Array<Record<string, unknown>> };
-sealEvidence('lifecycle-raw-2', readFileSync('/workspace/artifacts/lifecycle-raw-bundle.json'));
-const accepted = acceptSealedLifecycle('lifecycle-raw-2');
+const freshVersion = `lifecycle-raw-ci-${process.pid}`;
+sealEvidence(freshVersion, readFileSync('/workspace/artifacts/lifecycle-raw-bundle.json'));
+const accepted = acceptSealedLifecycle(freshVersion);
 check('sealed bundle passes the mandatory verifier', accepted.accepted === true && accepted.verdict?.production_ready === false, accepted.reason);
 
 function reject(name: string, mutated: unknown, needle: string) {
