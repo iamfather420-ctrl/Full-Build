@@ -3,8 +3,21 @@
   "compilerOptions": {
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["node", "vite/client", "react", "react-dom"]
+    "types": [
+      "node",
+      "vite/client",
+      "react",
+      "react-dom"
+    ]
   },
-  "include": ["./**/*.ts", "./**/*.tsx"],
-  "exclude": ["./shims/**"]
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx"
+  ],
+  "exclude": [
+    "./shims/**",
+    "./**/*.test.ts",
+    "./**/*.test.tsx",
+    "./tests/**"
+  ]
 }
