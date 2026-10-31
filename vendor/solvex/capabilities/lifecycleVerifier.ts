@@ -197,6 +197,8 @@ export function verifyLifecycleBundle(parsed: unknown, now = Date.now()): TrustV
     note('AUTHORIZE_INTEGRATION', signatureOk && hashBound && separate, separate ? integrationAuth : 'integration authorization is not a separate bound signature', integrationAuth);
 
     const execution = chain.execution;
+    const expectedOrder = ['DISCOVER', 'BUILD', 'AUTHORIZE_CANDIDATE', 'AUTHORIZE_INTEGRATION', 'REGISTRY', 'INTEGRATE', 'FAILURE', 'RECOVER', 'REPLAY', 'HUMAN_BOUNDARY'];
+    if (JSON.stringify(execution.transition_order) !== JSON.stringify(expectedOrder) || execution.observed_at !== candidateIssued) findings.push(`${chain.name}: recorded transition order or observation time is invalid.`);
     const registry = execution.registry ?? {};
     const sandbox = execution.sandbox ?? {};
     const recovery = sandbox.recovery ?? {};
