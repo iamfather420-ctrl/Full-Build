@@ -79,6 +79,11 @@ export class SandboxRehearsal {
     return this.current === null ? null : computeSha256(this.current);
   }
 
+  /** Returns the exact artifact bytes held by this sandbox slot for evidence capture. */
+  public artifact(): string | null {
+    return this.current;
+  }
+
   public corrupt(): void {
     this.sample();
     if (this.current !== null) this.current = `${this.current}\nCORRUPT`;
