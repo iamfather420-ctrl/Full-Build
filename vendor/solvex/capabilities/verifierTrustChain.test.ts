@@ -26,6 +26,7 @@ check('previously sealed evidence is not silently treated as still valid', expir
 const emitted = spawnSync('npx', ['tsx', 'vendor/solvex/capabilities/emitLifecycleBundle.ts'], { cwd: '/workspace', encoding: 'utf8' });
 if (emitted.status !== 0) throw new Error(emitted.stderr || 'emit failed');
 const evidenceBytes = readFileSync('/workspace/artifacts/lifecycle-raw-bundle.json');
+const evidenceVersion = `lifecycle-raw-ci-${process.pid}`;
 const evidenceSeal = sealEvidence(evidenceVersion, evidenceBytes);
 const bundle = JSON.parse(evidenceBytes.toString('utf8'));
 const primary = verifyLifecycleBundle(bundle);
@@ -38,7 +39,8 @@ if (!accepted.accepted) {
   console.log(JSON.stringify(accepted, null, 2));
   process.exit(1);
 }
-const acceptanceSeal = loadSealedEvidence('acceptance-lifecycle-raw-2');
+const acceptanceVersion = `acceptance-${evidenceVersion}`;
+const acceptanceSeal = loadSealedEvidence(acceptanceVersion);
 check(
   'acceptance cites the exact verifier version and source hash',
   accepted.evidence_parsed === true && accepted.verifier_version === VERIFIER_VERSION && accepted.verifier_source_sha256 === verifierSeal.sha256 && accepted.independent_verifier_version === INDEPENDENT_VERIFIER_VERSION && accepted.production_authority === false,
@@ -46,8 +48,8 @@ check(
 );
 
 const before = acceptanceSeal.bytes.toString('utf8');
-const upgrade = acceptSealedLifecycle(evidenceVersion, { claimedVerifierVersion: 'lifecycle-verifier-2' });
-const after = loadSealedEvidence('acceptance-lifecycle-raw-2').bytes.toString('utf8');
+const upgrade = acceptSealedLifecycle(evidenceVersion, { claimedVerifierVersion: 'lifecycle-verifier-3' });
+const after = loadSealedEvidence(acceptanceVersion).bytes.toString('utf8');
 check('a verifier upgrade cannot reinterpret the accepted evidence', upgrade.accepted === false && upgrade.evidence_parsed === false && upgrade.reason.includes('cannot reinterpret') && before === after, upgrade.reason);
 check('verdict disagreement blocks acceptance', verdictsPermitAcceptance(true, false) === 'BLOCKED: verifier implementations disagree.', 'disagree');
 
