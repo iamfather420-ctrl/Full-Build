@@ -59,13 +59,9 @@ const wrongRegistry = structuredClone(bundle);
 (wrongRegistry.chains[0] as { name: string }).name = 'not-the-signed-capability';
 reject('an incorrect registry identity is rejected', wrongRegistry, 'registry id');
 
-const reordered = structuredClone(bundle) as { transitions?: Array<{ step: string }> };
-reordered.transitions = [
-  { step: 'RECOVER' },
-  { step: 'FAILURE' },
-  { step: 'DISCOVER' },
-];
-reject('reordered transitions are rejected', reordered, 'reordered');
+const reordered = structuredClone(bundle);
+reordered.chains[0].execution.transition_order = ['RECOVER', 'FAILURE'];
+reject('reordered transitions are rejected', reordered, 'transition order');
 
 const duplicate = structuredClone(bundle);
 duplicate.chains = [bundle.chains[0], bundle.chains[0]];
