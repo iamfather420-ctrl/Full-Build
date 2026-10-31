@@ -174,6 +174,26 @@ async function main() {
     }];
   });
   console.log('[DFRL-CASE-FAILURES]', JSON.stringify(dfrlFailures));
+  const dhFailures = dhReport.results.flatMap((r) => {
+    const satNeedsWitness = r.expected_result === 'sat';
+    const validHash = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+    const satWitnessOk = !satNeedsWitness || (r.actual_result === 'sat' && r.replay_result === 'sat'
+      && r.sat_witness_recheck_passed === true && validHash(r.sat_witness_model_sha256)
+      && r.replay_witness_recheck_passed === true && validHash(r.replay_witness_model_sha256));
+    return r.verified && satWitnessOk ? [] : [{
+      case_id: r.case_id,
+      expected: r.expected_result,
+      actual: r.actual_result,
+      replay: r.replay_result,
+      verified: r.verified,
+      sat_witness_recheck_passed: r.sat_witness_recheck_passed,
+      sat_witness_model_sha256: r.sat_witness_model_sha256,
+      replay_witness_recheck_passed: r.replay_witness_recheck_passed,
+      replay_witness_model_sha256: r.replay_witness_model_sha256,
+      error: r.error,
+    }];
+  });
+  console.log('[DH-CASE-FAILURES]', JSON.stringify(dhFailures));
 
   // 46-gate suite is required for ACTIVE; if unavailable, stay BLOCKED.
   let gatesPassed = 0;
