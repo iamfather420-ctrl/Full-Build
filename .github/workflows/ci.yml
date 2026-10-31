@@ -35,6 +35,8 @@ jobs:
         run: |
           if [ ! -e /workspace ]; then sudo ln -s "$GITHUB_WORKSPACE" /workspace; fi
           test "$(readlink -f /workspace)" = "$GITHUB_WORKSPACE"
+      - name: Typecheck all SOLVEX source and UI modules
+        run: bun run typecheck:solvex
       - name: SOLVEX lifecycle, human-root, and verifier trust-chain tests
         run: bun run test:solvex-lifecycle
       - name: Build
