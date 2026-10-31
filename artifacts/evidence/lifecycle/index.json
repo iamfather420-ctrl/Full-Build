@@ -1,0 +1,40 @@
+{
+  "schema": "SOLVEX_SEAL_INDEX_V1",
+  "versions": {
+    "lifecycle-raw-1": {
+      "schema": "SOLVEX_SEALED_EVIDENCE_V1",
+      "version": "lifecycle-raw-1",
+      "sha256": "a61c3785667a26518a4a723e70e1fd0f6ceadcac5ba5bac8cc257ea1cdd7dbd5",
+      "bytes": 5302,
+      "immutable": true
+    },
+    "lifecycle-verifier-1": {
+      "schema": "SOLVEX_SEALED_EVIDENCE_V1",
+      "version": "lifecycle-verifier-1",
+      "sha256": "64241516a97f6b1bda7fb710002d72ed8bf7d9de6461c294c716269e8a6e628b",
+      "bytes": 14987,
+      "immutable": true
+    },
+    "lifecycle-verifier-independent-1": {
+      "schema": "SOLVEX_SEALED_EVIDENCE_V1",
+      "version": "lifecycle-verifier-independent-1",
+      "sha256": "16a22cb605afeafa5aa118ddd69998540c70e8f379fd10ba5d6b31e7ced5c86f",
+      "bytes": 9615,
+      "immutable": true
+    },
+    "lifecycle-raw-2": {
+      "schema": "SOLVEX_SEALED_EVIDENCE_V1",
+      "version": "lifecycle-raw-2",
+      "sha256": "fbb9852c6be9a1ad6390e7a909a9cdc9068dc2bfc9c207642f036b2aa5a7139c",
+      "bytes": 5302,
+      "immutable": true
+    },
+    "acceptance-lifecycle-raw-2": {
+      "schema": "SOLVEX_SEALED_EVIDENCE_V1",
+      "version": "acceptance-lifecycle-raw-2",
+      "sha256": "845124d1bcbff1eb2316d5a9541dd6235eabaa17031b7757950eb6bcee5f3206",
+      "bytes": 531,
+      "immutable": true
+    }
+  }
+}

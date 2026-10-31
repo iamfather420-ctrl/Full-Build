@@ -1,0 +1,91 @@
+{
+  "schema": "SOLVEX_LIFECYCLE_RAW_V1",
+  "chains": [
+    {
+      "name": "bound-distance",
+      "source": "function boundDistance(input) {\n  if (input === null || typeof input !== 'object' || Array.isArray(input)) {\n    return { status: 'INVALID', authority: 'none', value: null };\n  }\n  var dist = input.distance;\n  var eps = input.epsilon;\n  if (typeof dist !== 'number' || typeof eps !== 'number' || !(eps > 0) || dist < 0) {\n    return { status: 'INVALID', authority: 'none', value: null };\n  }\n  var steps = 0;\n  var value = dist;\n  while (value >= eps && steps < 64) {\n    value = value / 2;\n    steps += 1;\n  }\n  return { status: 'BOUNDED', authority: 'none', value: value, steps: steps };\n}\n",
+      "exportName": "boundDistance",
+      "statement": "I sign bound-distance version 1 at this exact hash for a sandbox rehearsal only.",
+      "integrationStatement": "I separately authorize the sandbox rehearsal for bound-distance and not production.",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEALdW5mVkC0mZTHxTLvyM2wFIM8b1BIR/nYzE6ExDERVI=\n-----END PUBLIC KEY-----\n",
+      "candidate": {
+        "claims": {
+          "typ": "solvex-sandbox-candidate-v1",
+          "capability_id": "cap_7988c93fc1a9",
+          "version": 1,
+          "content_sha256": "bdf46224ef697adead7f5b7a117624f518a921d43072712c2785280665c414cf",
+          "operator_id": "sandbox-operator",
+          "nonce": "6e5b87ff6913b4420327dc2561e33061",
+          "issued_at": 1793425946415,
+          "expires_at": 1793426546415,
+          "environment": "sandbox",
+          "production": "false",
+          "statement_sha256": "ef35530b510153e616cd2842074a2dbc2850fb93af80149bf2e0a7d920665af9"
+        },
+        "signature": "+VO/82mk9gOOWs0P7F8GyLGhttbUPWLPrQJtqk7MY8QSSnkYsFcDkN/1+Pe6uQPITJYCwbLw6WP29mqJu8c0CA=="
+      },
+      "integration": {
+        "claims": {
+          "typ": "solvex-sandbox-integration-v1",
+          "procedure": "SANDBOX_INTEGRATION_REHEARSAL_V1",
+          "capability_id": "cap_7988c93fc1a9",
+          "version": 1,
+          "content_sha256": "bdf46224ef697adead7f5b7a117624f518a921d43072712c2785280665c414cf",
+          "operator_id": "sandbox-operator",
+          "candidate_nonce": "6e5b87ff6913b4420327dc2561e33061",
+          "nonce": "7a231f7ac1635db6a649e10246806bc4",
+          "issued_at": 1793425946415,
+          "expires_at": 1793426546415,
+          "environment": "sandbox",
+          "production": "false",
+          "production_credentials": "false",
+          "statement_sha256": "ace125628f1c1782a509779cccac3b3e8c8f1804714cab538a9b9cc4a7d80bdc"
+        },
+        "signature": "inqHXHXw918mQdDmX952/d/ajp8Z/Yhn4z7hLpul9AQhA4eIwJjtDeJ9A0Kp2R/IvjkmQk3gUpDpoAYp3xiVBQ=="
+      }
+    },
+    {
+      "name": "reject-unsigned",
+      "source": "function rejectUnsigned(input) {\n  if (input === null || typeof input !== 'object' || Array.isArray(input)) {\n    return { status: 'INVALID', authority: 'none', accepted: false };\n  }\n  if (typeof input.signature !== 'string' || input.signature.length === 0) {\n    return { status: 'UNSIGNED', authority: 'none', accepted: false };\n  }\n  return { status: 'SIGNED_STILL_NOT_AUTHORITY', authority: 'none', accepted: false };\n}\n",
+      "exportName": "rejectUnsigned",
+      "statement": "I sign reject-unsigned version 1 at this exact hash for a sandbox rehearsal only.",
+      "integrationStatement": "I separately authorize the sandbox rehearsal for reject-unsigned and not production.",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA+GsrYhz3aGxAyJWCLx/os3gBwGvlLDaPmw6KjRr0eZc=\n-----END PUBLIC KEY-----\n",
+      "candidate": {
+        "claims": {
+          "typ": "solvex-sandbox-candidate-v1",
+          "capability_id": "cap_c15f52d206e9",
+          "version": 1,
+          "content_sha256": "c875e34584eed885c7e93e57de13e19699de12174a7da74a55b328c1c51dc63a",
+          "operator_id": "sandbox-operator",
+          "nonce": "64653e1ebcbd0537564393ca92fe5896",
+          "issued_at": 1793425946458,
+          "expires_at": 1793426546458,
+          "environment": "sandbox",
+          "production": "false",
+          "statement_sha256": "345c26a857625674715151601c7d6494a4afbc9f081cea4650076ba6c4718d39"
+        },
+        "signature": "SEn6mC7BrA+ba4LeshaDY6kq7/stZA5COUIbwcK381TzH8Ydfq2pioXOnN1Tz4Zn843wDxlU9DOXtbxmPqvtBQ=="
+      },
+      "integration": {
+        "claims": {
+          "typ": "solvex-sandbox-integration-v1",
+          "procedure": "SANDBOX_INTEGRATION_REHEARSAL_V1",
+          "capability_id": "cap_c15f52d206e9",
+          "version": 1,
+          "content_sha256": "c875e34584eed885c7e93e57de13e19699de12174a7da74a55b328c1c51dc63a",
+          "operator_id": "sandbox-operator",
+          "candidate_nonce": "64653e1ebcbd0537564393ca92fe5896",
+          "nonce": "15cd49735673178ebf2688d1c568691c",
+          "issued_at": 1793425946458,
+          "expires_at": 1793426546458,
+          "environment": "sandbox",
+          "production": "false",
+          "production_credentials": "false",
+          "statement_sha256": "5008bcabff6aceb2ed0516c68a5b9a49d73dce9459e66de692d7d7ce2f0502fc"
+        },
+        "signature": "RODqV93bBJMHkemavRlWUHdQ3Iy23LYBWamMyqvtEifYanIIANNNqnqBXuxfqHph1a0x6fE9Tci5OShp6GJbAw=="
+      }
+    }
+  ]
+}
