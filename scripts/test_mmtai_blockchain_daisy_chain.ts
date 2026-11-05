@@ -114,6 +114,17 @@ async function main() {
     'CAP_BITCOIN_BLOCK_READ_VERIFY', 'ROLE_BLOCKCHAIN_VERIFIER', scopedToken, scopedOperation, 'TENANT_SCOPE_TEST'
   );
   assert.equal(scopedReplay.permitted, false);
+  const downgradeToken = mmtai.issueScopedAuthorizationToken(
+    'ROLE_BLOCKCHAIN_VERIFIER', 'CAP_BITCOIN_BLOCK_READ_VERIFY', 'TENANT_DOWNGRADE_TEST', scopedOperation
+  );
+  const legacyDowngrade = mmtai.authorizeExecution(
+    'CAP_BITCOIN_BLOCK_READ_VERIFY', 'ROLE_BLOCKCHAIN_VERIFIER', downgradeToken, scopedOperation, 'TENANT_DOWNGRADE_TEST'
+  );
+  assert.equal(legacyDowngrade.permitted, false);
+  const afterDowngrade = mmtai.authorizeScopedExecution(
+    'CAP_BITCOIN_BLOCK_READ_VERIFY', 'ROLE_BLOCKCHAIN_VERIFIER', downgradeToken, scopedOperation, 'TENANT_DOWNGRADE_TEST'
+  );
+  assert.equal(afterDowngrade.permitted, false);
   assert.throws(
     () => mmtai.issueScopedAuthorizationToken('ROLE_VERIFIER', 'CAP_BITCOIN_BLOCK_READ_VERIFY', 'TENANT_SCOPE_TEST', scopedOperation),
     /ROLE_BLOCKCHAIN_VERIFIER/
