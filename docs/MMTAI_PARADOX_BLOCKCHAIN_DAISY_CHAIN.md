@@ -29,7 +29,7 @@ Independent retrieval and per-block checks can be parallelized; canonical parent
 
 Every chunk requires an injected MMTAIChunkAuthorizer. Missing, denied, or failed authorization blocks the chunk before any Bitcoin RPC request is made. The test suite uses an explicit test authorizer only.
 
-A production adapter is intentionally not wired to the current MMTAIProtocol yet: its current token record binds role, capability, and tenant, but the authorizeExecution operation argument is not bound into the token record. Reusing it for chunk-specific authority without correcting and independently testing that behavior would weaken the capability/authority separation. No production authorization is inferred by this subsystem.
+MMTAIProtocol now supports short-lived, single-use scoped tokens bound to role, capability, tenant, and the exact operation string. The blockchain adapter first calls an injected MMTAIChunkApprovalProvider, then consumes the scoped token for that exact chunk. Missing, denied, or failed approval blocks the chunk. The repository currently provides the adapter contract and test fixtures, but does not yet provide a production human-root approval provider. A test approval provider is not a production authorization source.
 
 ## Connection configuration
 
@@ -53,7 +53,7 @@ A Merkle-root mismatch, invalid proof-of-work, header-hash mismatch, transaction
 
 ## Next milestones
 
-1. Harden and independently test operation-bound MMTAI authorization; implement the production chunk authorizer.
+1. Implement and independently validate a production human-root MMTAIChunkApprovalProvider; do not replace it with model-generated or hard-coded approval.
 2. Add a read-only API surface behind existing authorization and rate-limit boundaries.
 3. Add resumable checkpoints and durable evidence receipts without storing RPC credentials.
 4. Benchmark chunk sizes and concurrency against a sequential baseline.
