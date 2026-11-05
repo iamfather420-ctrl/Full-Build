@@ -34,7 +34,7 @@ function compactTarget(bits: number): bigint {
 
 function calculateMerkleRoot(txids: string[]): string {
   if (txids.length === 0) throw new Error('Block has no transactions.');
-  let level = txids.map(txid => {
+  let level: Buffer[] = txids.map(txid => {
     if (!/^[a-f0-9]{64}$/i.test(txid)) throw new Error('Malformed transaction ID.');
     return Buffer.from(txid, 'hex').reverse();
   });
