@@ -45,13 +45,16 @@ class FixtureRpc implements BitcoinCoreRpc {
   }
 }
 
+const allowChunk = { authorizeChunk: async () => ({ authorized: true }) };
+
 async function main() {
   const tx0 = sha256(Buffer.from('fixture-transaction-0')).toString('hex');
   const tx1 = sha256(Buffer.from('fixture-transaction-1')).toString('hex');
   const genesis = makeBlock(0, '0'.repeat(64), tx0);
   const next = makeBlock(1, genesis.hash, tx1);
   const fixtures = new Map([[0, genesis], [1, next]]);
-  const pipeline = new MMTAIBlockchainDaisyChain(new FixtureRpc(fixtures));
+  const rpc = new FixtureRpc(fixtures);
+  const pipeline = new MMTAIBlockchainDaisyChain(rpc, allowChunk);
   const report = await pipeline.processRange(0, 1, { chunkSize: 1, concurrency: 2 });
 
   assert.equal(report.status, 'VERIFIED');
@@ -60,22 +63,37 @@ async function main() {
   assert.equal(report.raw_data_mutated, false);
   assert.deepEqual(report.blocks.map(block => block.height), [0, 1]);
   assert.equal(report.chunks.length, 2);
+  assert.ok(report.chunks.every(chunk => chunk.authorization_status === 'AUTHORIZED'));
   assert.ok(report.blocks.every(block => block.header_hash_valid && block.proof_of_work_valid && block.merkle_root_valid));
 
   const corruptedRpc: BitcoinCoreRpc = {
-    getBlockHash: height => new FixtureRpc(fixtures).getBlockHash(height),
-    getRawBlock: hash => new FixtureRpc(fixtures).getRawBlock(hash),
+    getBlockHash: height => rpc.getBlockHash(height),
+    getRawBlock: hash => rpc.getRawBlock(hash),
     async getVerboseBlock(hash) {
-      const block = await new FixtureRpc(fixtures).getVerboseBlock(hash);
-      return block.height === 1
-        ? { ...block, tx: [{ txid: 'f'.repeat(64) }] }
-        : block;
+      const block = await rpc.getVerboseBlock(hash);
+      return block.height === 1 ? { ...block, tx: [{ txid: 'f'.repeat(64) }] } : block;
     }
   };
-  const corrupted = await new MMTAIBlockchainDaisyChain(corruptedRpc).processRange(0, 1, { chunkSize: 2, concurrency: 1 });
+  const corrupted = await new MMTAIBlockchainDaisyChain(corruptedRpc, allowChunk).processRange(0, 1, { chunkSize: 2, concurrency: 1 });
   assert.equal(corrupted.status, 'BLOCKED');
   assert.equal(corrupted.failed_blocks, 1);
   assert.equal(corrupted.blocks[1].merkle_root_valid, false);
+
+  const deniedRpc: BitcoinCoreRpc = {
+    async getBlockHash() { throw new Error('RPC must not run when MMTAI denies a chunk.'); },
+    async getRawBlock() { throw new Error('RPC must not run when MMTAI denies a chunk.'); },
+    async getVerboseBlock() { throw new Error('RPC must not run when MMTAI denies a chunk.'); }
+  };
+  const denied = await new MMTAIBlockchainDaisyChain(deniedRpc, {
+    authorizeChunk: async () => ({ authorized: false, reason: 'Test authorization denied.' })
+  }).processRange(0, 1, { chunkSize: 2, concurrency: 1 });
+  assert.equal(denied.status, 'BLOCKED');
+  assert.equal(denied.processed_blocks, 0);
+  assert.equal(denied.chunks[0].authorization_status, 'BLOCKED');
+
+  const noGate = await new MMTAIBlockchainDaisyChain(rpc).processRange(0, 1);
+  assert.equal(noGate.status, 'BLOCKED');
+  assert.equal(noGate.processed_blocks, 0);
 
   await assert.rejects(() => pipeline.processRange(-1, 1), /Invalid inclusive block-height range/);
   await assert.rejects(
@@ -87,7 +105,7 @@ async function main() {
     /credentials are required/
   );
 
-  process.stdout.write('MMTAI blockchain daisy-chain tests passed: valid parallel range, fail-closed Merkle mismatch, range validation, and RPC transport policy.\n');
+  process.stdout.write('MMTAI blockchain daisy-chain tests passed: parallel verification, Merkle failure, MMTAI authorization denial, fail-closed defaults, range validation, and RPC transport policy.\n');
 }
 
 main().catch(error => {
