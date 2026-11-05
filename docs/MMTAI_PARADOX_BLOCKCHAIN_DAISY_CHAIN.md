@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A read-only, bounded, parallel Bitcoin blockchain inspection and verification subsystem for SOLVEX + Daisy Haminja. MMTAI schedules independent height-range chunks across workers, while the pipeline reassembles results in canonical block-height order and checks parent linkage before reporting success.
+A read-only, bounded, parallel Bitcoin blockchain inspection and verification subsystem for SOLVEX + Daisy Haminja. The MMTAI chunk-authorization contract gates work; authorized workers process independent height-range chunks, then results are reassembled in canonical block-height order and parent linkage is checked before success is reported.
 
 ## First implementation boundary
 
@@ -23,7 +23,13 @@ The pipeline is read-only. It does not mine, submit transactions, modify a node,
 - Results are sorted by block height before chain-link checks and final reporting.
 - A failed block or broken parent link makes the report BLOCKED; no partial result is promoted to verified.
 
-This is deliberate: independent retrieval and per-block checks can be parallelized, while canonical parent linkage is checked in order after reassembly.
+Independent retrieval and per-block checks can be parallelize; canonical parent linkage is checked in order after reassembly.
+
+## MMTAI authorization boundary
+
+Every chunk requires an injected MMTAIChunkAuthorizer. Missing, denied, or failed authorization blocks the chunk before any Bitcoin RPC request is made. The test suite uses an explicit test authorizer only.
+
+A production adapter is intentionally not wired to the current MMTAIProtocol yet: its current token record binds role, capability, and tenant, but the authorizeExecution operation argument is not bound into the token record. Reusing it for chunk-specific authority without correcting and independently testing that behavior would weaken the capability/authority separation. No production authorization is inferred by this subsystem.
 
 ## Connection configuration
 
@@ -47,7 +53,7 @@ A Merkle-root mismatch, invalid proof-of-work, header-hash mismatch, transaction
 
 ## Next milestones
 
-1. Add deterministic unit tests with synthetic block headers and Merkle trees.
+1. Harden and independently test operation-bound MMTAI authorization; implement the production chunk authorizer.
 2. Add a read-only API surface behind existing authorization and rate-limit boundaries.
 3. Add resumable checkpoints and durable evidence receipts without storing RPC credentials.
 4. Benchmark chunk sizes and concurrency against a sequential baseline.
@@ -56,4 +62,4 @@ A Merkle-root mismatch, invalid proof-of-work, header-hash mismatch, transaction
 
 ## Evidence semantics
 
-VERIFIED means only that every check listed in the verification scope passed for the requested range using the configured Bitcoin Core RPC source. It does not mean that the whole Bitcoin network was independently audited, that private keys or spendable coins were discovered, or that mining speed was increased.
+VERIFIED means only that every check listed in the verification scope passed for the requested range using the configured Bitcoin Core RPC source and an explicit authorizer. It does not mean that the whole Bitcoin network was independently audited, that private keys or spendable coins were discovered, or that mining speed was increased.
