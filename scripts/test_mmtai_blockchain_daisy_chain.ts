@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { BitcoinCoreRpcClient } from '../src/blockchain/BitcoinCoreRpcClient';
 import { MMTAIBlockchainDaisyChain } from '../src/blockchain/MMTAIBlockchainDaisyChain';
+import { MMTAIProtocolChunkAuthorizer } from '../src/blockchain/MMTAIProtocolChunkAuthorizer';
+import { MMTAIProtocol } from '../src/mmtai/MMTAIProtocol';
 import type { BitcoinCoreRpc, BitcoinVerboseBlock } from '../src/blockchain/types';
 
 function sha256(data: Buffer): Buffer { return createHash('sha256').update(data).digest(); }
@@ -66,6 +68,51 @@ async function main() {
   assert.ok(report.chunks.every(chunk => chunk.authorization_status === 'AUTHORIZED'));
   assert.ok(report.blocks.every(block => block.header_hash_valid && block.proof_of_work_valid && block.merkle_root_valid));
 
+  const approvalRequests: string[] = [];
+  const protocolAuthorizer = new MMTAIProtocolChunkAuthorizer({
+    tenantId: 'TENANT_BLOCKCHAIN_TEST',
+    approvalProvider: {
+      async requestApproval(request) {
+        approvalRequests.push(request.chunkId);
+        return { approved: true, reason: 'Explicit test fixture approval.' };
+      }
+    }
+  });
+  const scopedReport = await new MMTAIBlockchainDaisyChain(rpc, protocolAuthorizer)
+    .processRange(0, 1, { chunkSize: 1, concurrency: 2 });
+  assert.equal(scopedReport.status, 'VERIFIED');
+  assert.deepEqual(approvalRequests.sort(), ['BTC-0000000000-0000000000', 'BTC-0000000001-0000000001']);
+
+  const deniedApproval = new MMTAIProtocolChunkAuthorizer({
+    tenantId: 'TENANT_BLOCKCHAIN_DENIED',
+    approvalProvider: { async requestApproval() { return { approved: false, reason: 'Human approval absent.' }; } }
+  });
+  const deniedByProtocol = await new MMTAIBlockchainDaisyChain(deniedRpc, deniedApproval)
+    .processRange(0, 1, { chunkSize: 2, concurrency: 1 });
+  assert.equal(deniedByProtocol.status, 'BLOCKED');
+  assert.equal(deniedByProtocol.processed_blocks, 0);
+  assert.match(deniedByProtocol.blocks[0].errors[0], /Human approval absent/);
+
+  const mmtai = MMTAIProtocol.getInstance();
+  const scopedOperation = JSON.stringify({ action: 'BITCOIN_BLOCK_READ_VERIFY', chunkId: 'BTC-TEST', startHeight: 7, endHeight: 9 });
+  const scopedToken = mmtai.issueScopedAuthorizationToken(
+    'ROLE_BLOCKCHAIN_VERIFIER', 'CAP_BITCOIN_BLOCK_READ_VERIFY', 'TENANT_SCOPE_TEST', scopedOperation
+  );
+  const wrongOperation = mmtai.authorizeScopedExecution(
+    'CAP_BITCOIN_BLOCK_READ_VERIFY', 'ROLE_BLOCKCHAIN_VERIFIER', scopedToken,
+    JSON.stringify({ action: 'BITCOIN_BLOCK_READ_VERIFY', chunkId: 'BTC-OTHER', startHeight: 7, endHeight: 9 }),
+    'TENANT_SCOPE_TEST'
+  );
+  assert.equal(wrongOperation.permitted, false);
+  const scopedReplay = mmtai.authorizeScopedExecution(
+    'CAP_BITCOIN_BLOCK_READ_VERIFY', 'ROLE_BLOCKCHAIN_VERIFIER', scopedToken, scopedOperation, 'TENANT_SCOPE_TEST'
+  );
+  assert.equal(scopedReplay.permitted, false);
+  assert.throws(
+    () => mmtai.issueScopedAuthorizationToken('ROLE_VERIFIER', 'CAP_BITCOIN_BLOCK_READ_VERIFY', 'TENANT_SCOPE_TEST', scopedOperation),
+    /ROLE_BLOCKCHAIN_VERIFIER/
+  );
+
   const corruptedRpc: BitcoinCoreRpc = {
     getBlockHash: height => rpc.getBlockHash(height),
     getRawBlock: hash => rpc.getRawBlock(hash),
@@ -105,7 +152,7 @@ async function main() {
     /credentials are required/
   );
 
-  process.stdout.write('MMTAI blockchain daisy-chain tests passed: parallel verification, Merkle failure, MMTAI authorization denial, fail-closed defaults, range validation, and RPC transport policy.\n');
+  process.stdout.write('MMTAI blockchain daisy-chain tests passed: parallel verification, Merkle failure, MMTAI operation-bound authorization, approval denial, replay rejection, fail-closed defaults, range validation, and RPC transport policy.\n');
 }
 
 main().catch(error => {
