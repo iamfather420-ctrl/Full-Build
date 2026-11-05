@@ -83,6 +83,12 @@ async function main() {
   assert.equal(scopedReport.status, 'VERIFIED');
   assert.deepEqual(approvalRequests.sort(), ['BTC-0000000000-0000000000', 'BTC-0000000001-0000000001']);
 
+  const deniedRpc: BitcoinCoreRpc = {
+    async getBlockHash() { throw new Error('RPC must not run when MMTAI denies a chunk.'); },
+    async getRawBlock() { throw new Error('RPC must not run when MMTAI denies a chunk.'); },
+    async getVerboseBlock() { throw new Error('RPC must not run when MMTAI denies a chunk.'); }
+  };
+
   const deniedApproval = new MMTAIProtocolChunkAuthorizer({
     tenantId: 'TENANT_BLOCKCHAIN_DENIED',
     approvalProvider: { async requestApproval() { return { approved: false, reason: 'Human approval absent.' }; } }
@@ -126,11 +132,6 @@ async function main() {
   assert.equal(corrupted.failed_blocks, 1);
   assert.equal(corrupted.blocks[1].merkle_root_valid, false);
 
-  const deniedRpc: BitcoinCoreRpc = {
-    async getBlockHash() { throw new Error('RPC must not run when MMTAI denies a chunk.'); },
-    async getRawBlock() { throw new Error('RPC must not run when MMTAI denies a chunk.'); },
-    async getVerboseBlock() { throw new Error('RPC must not run when MMTAI denies a chunk.'); }
-  };
   const denied = await new MMTAIBlockchainDaisyChain(deniedRpc, {
     authorizeChunk: async () => ({ authorized: false, reason: 'Test authorization denied.' })
   }).processRange(0, 1, { chunkSize: 2, concurrency: 1 });
