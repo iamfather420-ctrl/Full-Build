@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { BitcoinCoreRpcClient } from '../src/blockchain/BitcoinCoreRpcClient';
 import { MMTAIBlockchainDaisyChain } from '../src/blockchain/MMTAIBlockchainDaisyChain';
 import { MMTAIProtocolChunkAuthorizer } from '../src/blockchain/MMTAIProtocolChunkAuthorizer';
+import { SignedHumanRootApprovalProvider } from '../src/blockchain/SignedHumanRootApprovalProvider';
 import { MMTAIProtocol } from '../src/mmtai/MMTAIProtocol';
 import type { BitcoinCoreRpc, BitcoinVerboseBlock } from '../src/blockchain/types';
 
@@ -69,6 +70,40 @@ async function main() {
   assert.ok(report.blocks.every(block => block.header_hash_valid && block.proof_of_work_valid && block.merkle_root_valid));
 
   const approvalRequests: string[] = [];
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  const usedNonces = new Set<string>();
+  const signedRequest = {
+    tenantId: 'TENANT_SIGNED_TEST', capability: 'BITCOIN_BLOCK_READ_VERIFY' as const,
+    chunkId: 'BTC-SIGNED-0000', startHeight: 0, endHeight: 1,
+    approverId: 'human-root-test', issuedAt: Date.now(), expiresAt: Date.now() + 60_000,
+    nonce: 'nonce_for_signed_test_0001'
+  };
+  const signedPayload = Buffer.from(JSON.stringify(signedRequest));
+  const signedApproval = { ...signedRequest, signature: sign(null, signedPayload, privateKey).toString('base64') };
+  const signedProvider = new SignedHumanRootApprovalProvider({
+    tenantId: 'TENANT_SIGNED_TEST', publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+    source: { async requestSignedApproval() { return signedApproval; } },
+    nonceStore: { async consumeIfAbsent(nonce) { if (usedNonces.has(nonce)) return false; usedNonces.add(nonce); return true; } }
+  });
+  const signedDecision = await signedProvider.requestApproval({
+    chunkId: 'BTC-SIGNED-0000', startHeight: 0, endHeight: 1, capability: 'BITCOIN_BLOCK_READ_VERIFY'
+  });
+  assert.equal(signedDecision.approved, true);
+  const replayDecision = await signedProvider.requestApproval({
+    chunkId: 'BTC-SIGNED-0000', startHeight: 0, endHeight: 1, capability: 'BITCOIN_BLOCK_READ_VERIFY'
+  });
+  assert.equal(replayDecision.approved, false);
+  assert.match(replayDecision.reason || '', /replay/i);
+  const wrongScopeProvider = new SignedHumanRootApprovalProvider({
+    tenantId: 'TENANT_SIGNED_TEST', publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+    source: { async requestSignedApproval() { return signedApproval; } },
+    nonceStore: { async consumeIfAbsent() { return true; } }
+  });
+  const wrongScope = await wrongScopeProvider.requestApproval({
+    chunkId: 'BTC-OTHER', startHeight: 0, endHeight: 1, capability: 'BITCOIN_BLOCK_READ_VERIFY'
+  });
+  assert.equal(wrongScope.approved, false);
+  assert.match(wrongScope.reason || '', /scope/i);
   const protocolAuthorizer = new MMTAIProtocolChunkAuthorizer({
     tenantId: 'TENANT_BLOCKCHAIN_TEST',
     approvalProvider: {
