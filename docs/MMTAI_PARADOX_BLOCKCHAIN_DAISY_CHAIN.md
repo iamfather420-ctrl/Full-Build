@@ -63,3 +63,5 @@ A Merkle-root mismatch, invalid proof-of-work, header-hash mismatch, transaction
 ## Evidence semantics
 
 VERIFIED means only that every check listed in the verification scope passed for the requested range using the configured Bitcoin Core RPC source and an explicit authorizer. It does not mean that the whole Bitcoin network was independently audited, that private keys or spendable coins were discovered, or that mining speed was increased.
+
+Scoped tokens are burned on first authorization attempts, including operation/context mismatches and attempts to route a scoped token through the legacy unscoped authorization method. The deterministic test suite covers these downgrade and replay cases.
