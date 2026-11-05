@@ -29,7 +29,7 @@ Independent retrieval and per-block checks can be parallelized; canonical parent
 
 Every chunk requires an injected MMTAIChunkAuthorizer. Missing, denied, or failed authorization blocks the chunk before any Bitcoin RPC request is made. The test suite uses an explicit test authorizer only.
 
-MMTAIProtocol now supports short-lived, single-use scoped tokens bound to role, capability, tenant, and the exact operation string. The blockchain adapter first calls an injected MMTAIChunkApprovalProvider, then consumes the scoped token for that exact chunk. Missing, denied, or failed approval blocks the chunk. The repository currently provides the adapter contract and test fixtures, but does not yet provide a production human-root approval provider. A test approval provider is not a production authorization source.
+MMTAIProtocol now supports short-lived, single-use scoped tokens bound to role, capability, tenant, and the exact operation string. The blockchain adapter first calls an injected MMTAIChunkApprovalProvider, then consumes the scoped token for that exact chunk. Missing, denied, or failed approval blocks the chunk. The repository now includes an Ed25519 signed-approval verifier. It binds each signature to tenant, capability, chunk ID, and exact height range; enforces a short validity window; and requires an injected atomic nonce store to reject replay. The signing authority and durable nonce-store implementation remain deployment integrations: no signing key, approval UI/service, or production persistence implementation is bundled. The verifier is not proof of human identity by itself; the public key must be provisioned through an independently governed human-root trust process. Test keys and in-memory nonce stores are test-only.
 
 ## Connection configuration
 
@@ -53,7 +53,7 @@ A Merkle-root mismatch, invalid proof-of-work, header-hash mismatch, transaction
 
 ## Next milestones
 
-1. Implement and independently validate a production human-root MMTAIChunkApprovalProvider; do not replace it with model-generated or hard-coded approval.
+1. Integrate a real human approval UI/service that signs scoped requests with an independently governed Ed25519 key, and provide a durable atomic nonce store; verify key rotation, revocation, and recovery procedures.
 2. Add a read-only API surface behind existing authorization and rate-limit boundaries.
 3. Add resumable checkpoints and durable evidence receipts without storing RPC credentials.
 4. Benchmark chunk sizes and concurrency against a sequential baseline.
