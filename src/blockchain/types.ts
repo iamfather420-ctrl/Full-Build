@@ -11,6 +11,19 @@ export interface BitcoinCoreRpc {
   getRawBlock(hash: string): Promise<string>;
   getVerboseBlock(hash: string): Promise<BitcoinVerboseBlock>;
 }
+export interface MMTAIChunkAuthorizationRequest {
+  chunkId: string;
+  startHeight: number;
+  endHeight: number;
+  capability: 'BITCOIN_BLOCK_READ_VERIFY';
+}
+export interface MMTAIChunkAuthorizationResult {
+  authorized: boolean;
+  reason?: string;
+}
+export interface MMTAIChunkAuthorizer {
+  authorizeChunk(request: MMTAIChunkAuthorizationRequest): Promise<MMTAIChunkAuthorizationResult>;
+}
 export interface BitcoinBlockVerification {
   height: number;
   block_hash: string;
@@ -30,6 +43,7 @@ export interface BitcoinChunkResult {
   start_height: number;
   end_height: number;
   processed_blocks: number;
+  authorization_status: 'AUTHORIZED' | 'BLOCKED';
   status: 'VERIFIED' | 'BLOCKED';
 }
 export interface BitcoinDaisyChainReport {
