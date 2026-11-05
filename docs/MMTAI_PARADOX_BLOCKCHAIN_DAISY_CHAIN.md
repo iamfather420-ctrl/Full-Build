@@ -23,7 +23,7 @@ The pipeline is read-only. It does not mine, submit transactions, modify a node,
 - Results are sorted by block height before chain-link checks and final reporting.
 - A failed block or broken parent link makes the report BLOCKED; no partial result is promoted to verified.
 
-Independent retrieval and per-block checks can be parallelize; canonical parent linkage is checked in order after reassembly.
+Independent retrieval and per-block checks can be parallelized; canonical parent linkage is checked in order after reassembly.
 
 ## MMTAI authorization boundary
 
