@@ -13,6 +13,7 @@
     "test:formal-hash": "tsx scripts/test_formal_evidence_hash.ts",
     "test:local-inference": "tsx scripts/test_local_inference_runtime.ts",
     "test:mmtai-blockchain": "tsx scripts/test_mmtai_blockchain_daisy_chain.ts",
+    "test:turnstile": "tsx scripts/test_cloudflare_turnstile.ts",
     "preflight": "tsx scripts/preflight.ts",
     "verify:enterprise": "tsx scripts/verify_enterprise.ts",
     "verify:dfrl": "tsx scripts/verify_dfrl.ts",
