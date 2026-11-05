@@ -68,6 +68,8 @@ export class MMTAIProtocol {
     const record = this.activeTokens.get(token);
     if (!record) return { permitted: false, error: 'Invalid or expired authorization token' };
     if (record.operation !== undefined) {
+      this.activeTokens.delete(token);
+      this.consumedTokens.add(token);
       return { permitted: false, error: 'Scoped token requires authorizeScopedExecution; legacy authorization is prohibited.' };
     }
     if (record.role !== role || record.capability !== capability || record.tenantId !== tenantId) {
