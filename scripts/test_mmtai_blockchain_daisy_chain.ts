@@ -4,6 +4,7 @@ import { BitcoinCoreRpcClient } from '../src/blockchain/BitcoinCoreRpcClient';
 import { MMTAIBlockchainDaisyChain } from '../src/blockchain/MMTAIBlockchainDaisyChain';
 import { MMTAIProtocolChunkAuthorizer } from '../src/blockchain/MMTAIProtocolChunkAuthorizer';
 import { SignedHumanRootApprovalProvider } from '../src/blockchain/SignedHumanRootApprovalProvider';
+import { NeonBlockchainEvidenceStore } from '../src/blockchain/NeonBlockchainEvidenceStore';
 import { MMTAIProtocol } from '../src/mmtai/MMTAIProtocol';
 import type { BitcoinCoreRpc, BitcoinVerboseBlock } from '../src/blockchain/types';
 
@@ -198,6 +199,28 @@ async function main() {
     () => new BitcoinCoreRpcClient({ url: 'https://node.example.com', username: '', password: '' }),
     /credentials are required/
   );
+
+  const sqlCalls: string[] = [];
+  const fakeClient = {
+    async query(sql: string) {
+      sqlCalls.push(sql);
+      if (sql.includes('INSERT INTO mmtai_blockchain.verification_runs')) return { rows: [{ run_id: '00000000-0000-4000-8000-000000000001' }] };
+      return { rows: [] };
+    },
+    release() {}
+  };
+  const fakePool = {
+    async query(sql: string) { sqlCalls.push(sql); return { rows: [{ nonce_hash: 'test' }] }; },
+    async connect() { return fakeClient; }
+  } as any;
+  const evidenceStore = new NeonBlockchainEvidenceStore(fakePool);
+  assert.equal(await evidenceStore.consumeIfAbsent('durable-nonce-test', Date.now() + 60_000), true);
+  const persisted = await evidenceStore.persistVerificationReport('TENANT_EVIDENCE_TEST', report);
+  assert.equal(persisted.runId, '00000000-0000-4000-8000-000000000001');
+  assert.match(persisted.reportHash, /^[a-f0-9]{64}$/);
+  assert.ok(sqlCalls.some(sql => sql.includes('ON CONFLICT (nonce_hash) DO NOTHING')));
+  assert.ok(sqlCalls.includes('COMMIT'));
+  assert.equal(sqlCalls.includes('ROLLBACK'), false);
 
   process.stdout.write('MMTAI blockchain daisy-chain tests passed: parallel verification, Merkle failure, MMTAI operation-bound authorization, approval denial, replay rejection, fail-closed defaults, range validation, and RPC transport policy.\n');
 }
