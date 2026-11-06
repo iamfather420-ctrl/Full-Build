@@ -123,7 +123,7 @@ test('replay is blocked before a second executor dispatch', async () => {
   const executor = new DaisyBoundedExecutor({
     WRITE_TEST_MARKER: async () => { executions += 1; }
   }, () => now);
-  const runtime = new DaisyConsensusRuntime(config, nonceStore, executor, runner, () => now);
+  const runtime = new DaisyConsensusRuntime(config, nonceStore, executor, runner, () => now, rootPublicKey);
   assert.equal((await runtime.evaluateAndExecute(proposal, evidence)).status, 'APPROVED_AND_EXECUTED');
   round = 0;
   const replay = await runtime.evaluateAndExecute(proposal, evidence);
