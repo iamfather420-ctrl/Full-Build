@@ -32,8 +32,17 @@ export interface NonceStore {
   consumeOnce(nonce: string, proposalSha256: string, consumedAt: number): Promise<boolean>;
 }
 
+export interface ExecutorRecheck {
+  policy: ConsensusPolicy;
+  evaluators: readonly EvaluatorIdentity[];
+  votes: readonly SignedEvaluatorVote[];
+  expectedInputBundleSha256: string;
+  expectedProposalSha256: string;
+  expectedPolicySha256: string;
+}
+
 export interface ActionExecutor {
-  execute(proposal: ConsensusProposal, idempotencyKey: string): Promise<void>;
+  execute(proposal: ConsensusProposal, idempotencyKey: string, recheck: ExecutorRecheck): Promise<void>;
 }
 
 export interface RuntimeResult {
@@ -162,8 +171,19 @@ export class DaisyConsensusRuntime {
     private readonly nonceStore: NonceStore,
     private readonly executor: ActionExecutor,
     private readonly evaluatorRunner: Pick<DockerIsolatedEvaluatorRunner, 'run'>,
-    private readonly now: () => number = Date.now
-  ) {}
+    private readonly now: () => number = Date.now,
+    policyRootPublicKey: string | undefined = process.env.DAISY_POLICY_ROOT_PUBLIC_KEY
+  ) {
+    if (!policyRootPublicKey) fail('POLICY_ROOT_PUBLIC_KEY_UNAVAILABLE');
+    const { signature_base64, ...unsignedConfig } = config;
+    let valid = false;
+    try {
+      const signature = Buffer.from(signature_base64, 'base64');
+      valid = signature.length === 64 && signature.toString('base64') === signature_base64 &&
+        verifySignature(null, Buffer.from(canonicalJson(unsignedConfig)), createPublicKey(policyRootPublicKey), signature);
+    } catch { valid = false; }
+    if (!valid) fail('RUNTIME_CONFIG_SIGNATURE_INVALID');
+  }
 
   public async evaluateAndExecute(proposal: ConsensusProposal, evidenceBundle: unknown): Promise<RuntimeResult> {
     try {
@@ -218,7 +238,11 @@ export class DaisyConsensusRuntime {
           !this.config.policy.allowed_targets.includes(proposal.target)) {
         fail('EXECUTOR_SIDE_RECHECK_FAILED');
       }
-      await this.executor.execute(proposal, proposalSha, {\n        policy: this.config.policy, evaluators: this.config.evaluators, votes,\n        expectedInputBundleSha256: inputBundleSha, expectedProposalSha256: consensus.proposal_sha256,\n        expectedPolicySha256: consensus.policy_sha256\n      });
+      await this.executor.execute(proposal, proposalSha, {
+        policy: this.config.policy, evaluators: this.config.evaluators, votes,
+        expectedInputBundleSha256: inputBundleSha, expectedProposalSha256: consensus.proposal_sha256,
+        expectedPolicySha256: consensus.policy_sha256
+      });
       return { status: 'APPROVED_AND_EXECUTED', consensus };
     } catch (error) {
       return {
