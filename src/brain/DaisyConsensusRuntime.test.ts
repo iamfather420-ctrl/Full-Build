@@ -5,7 +5,7 @@ import {
   ConsensusPolicy,
   ConsensusProposal,
   SignedEvaluatorVote,
-  policyDigest,
+  canonicalJson,\n  policyDigest,
   proposalDigest,
   sha256Canonical,
   voteSigningPayload
@@ -48,7 +48,7 @@ const evaluators = keys.map(item => ({
   image: 'registry.example/daisy-evaluator@sha256:' + 'a'.repeat(64),
   signing_key_file: '/not-mounted-in-unit-test'
 }));
-const config: SignedDaisyRuntimeConfig = { policy, evaluators, signature_base64: 'unit-test-only' };
+const rootKeys = generateKeyPairSync('ed25519');\nconst unsignedConfig = { policy, evaluators };\nconst config: SignedDaisyRuntimeConfig = {\n  ...unsignedConfig,\n  signature_base64: sign(null, Buffer.from(canonicalJson(unsignedConfig)), rootKeys.privateKey).toString('base64')\n};\nconst rootPublicKey = rootKeys.publicKey.export({ type: 'spki', format: 'pem' }).toString();
 
 function makeVote(index: number, sealedInput: string): SignedEvaluatorVote {
   const bundleSha = sha256Canonical({
@@ -97,7 +97,7 @@ test('isolated orchestration seals identical input and never shares peer votes',
   const executor = new DaisyBoundedExecutor({
     WRITE_TEST_MARKER: async () => { executed += 1; }
   }, () => now);
-  const runtime = new DaisyConsensusRuntime(config, nonceStore, executor, runner, () => now);
+  const runtime = new DaisyConsensusRuntime(config, nonceStore, executor, runner, () => now, rootPublicKey);
   const result = await runtime.evaluateAndExecute(proposal, evidence);
   assert.equal(result.status, 'APPROVED_AND_EXECUTED');
   assert.equal(executed, 1);
