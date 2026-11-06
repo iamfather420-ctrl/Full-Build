@@ -54,7 +54,7 @@ const evaluators = keys.map((item, index) => {
   return {
     evaluator_id: item.evaluator_id,
     public_key_pem: item.publicKey.export({ type: 'spki', format: 'pem' }).toString(),
-    image: 'registry.example/daisy-evaluator@sha256:' + 'a'.repeat(64),
+    image: 'registry.example/daisy-evaluator-' + index + '@sha256:' + String(index + 1).repeat(64),
     signing_key_file: signingKeyFile
   };
 });
