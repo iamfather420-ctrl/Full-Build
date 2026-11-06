@@ -183,6 +183,30 @@ export class DaisyConsensusRuntime {
         verifySignature(null, Buffer.from(canonicalJson(unsignedConfig)), createPublicKey(policyRootPublicKey), signature);
     } catch { valid = false; }
     if (!valid) fail('RUNTIME_CONFIG_SIGNATURE_INVALID');
+    const evaluatorIds = config.evaluators.map(item => item.evaluator_id);
+    if (evaluatorIds.length !== 3 || new Set(evaluatorIds).size !== 3 ||
+        config.policy.evaluator_ids.length !== 3 ||
+        config.policy.evaluator_ids.some(id => !evaluatorIds.includes(id))) {
+      fail('RUNTIME_EVALUATOR_ROSTER_INVALID');
+    }
+    const publicKeyFingerprints = new Set<string>();
+    for (const evaluator of config.evaluators) {
+      if (!isPinnedImage(evaluator.image)) fail('EVALUATOR_IMAGE_NOT_IMMUTABLY_PINNED');
+      try {
+        const key = createPublicKey(evaluator.public_key_pem);
+        const fingerprint = createHash('sha256').update(key.export({ type: 'spki', format: 'der' })).digest('hex');
+        if (publicKeyFingerprints.has(fingerprint)) fail('EVALUATOR_PUBLIC_KEYS_MUST_BE_DISTINCT');
+        publicKeyFingerprints.add(fingerprint);
+        const keyPath = realpathSync(evaluator.signing_key_file);
+        const keyStat = statSync(keyPath);
+        if (!keyStat.isFile() || keyStat.uid === 0 || (keyStat.mode & 0o077) !== 0 || keyPath.includes(',')) {
+          fail('EVALUATOR_SIGNING_KEY_PERMISSIONS_INVALID');
+        }
+        evaluator.signing_key_file = keyPath;
+      } catch {
+        fail('EVALUATOR_TRUST_MATERIAL_INVALID');
+      }
+    }
   }
 
   public async evaluateAndExecute(proposal: ConsensusProposal, evidenceBundle: unknown): Promise<RuntimeResult> {
