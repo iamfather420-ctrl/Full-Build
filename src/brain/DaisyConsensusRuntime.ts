@@ -99,7 +99,6 @@ export function loadTrustedRuntimeConfig(env: NodeJS.ProcessEnv = process.env): 
       if (!/^[a-f0-9]{64}$/.test(fingerprint)) fail('EVALUATOR_PUBLIC_KEY_INVALID');
       const keyPath = realpathSync(evaluator.signing_key_file);
       if (!statSync(keyPath).isFile()) fail('EVALUATOR_SIGNING_KEY_NOT_A_FILE');
-      evaluator.signing_key_file = keyPath;
     } catch {
       fail('EVALUATOR_KEY_MATERIAL_UNAVAILABLE');
     }
@@ -199,7 +198,7 @@ export class DaisyConsensusRuntime {
         publicKeyFingerprints.add(fingerprint);
         const keyPath = realpathSync(evaluator.signing_key_file);
         const keyStat = statSync(keyPath);
-        if (!keyStat.isFile() || keyStat.uid === 0 || (keyStat.mode & 0o077) !== 0 || keyPath.includes(',')) {
+        if (!keyStat.isFile() || keyStat.uid === 0 || (keyStat.mode & 0o077) !== 0 || keyPath.includes(',') || keyPath !== evaluator.signing_key_file) {
           fail('EVALUATOR_SIGNING_KEY_PERMISSIONS_INVALID');
         }
         evaluator.signing_key_file = keyPath;
