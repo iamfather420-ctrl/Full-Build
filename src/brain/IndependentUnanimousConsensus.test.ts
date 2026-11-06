@@ -115,7 +115,7 @@ test('policy scope and rollback requirements are enforced', () => {
   assert.equal(verifyUnanimousConsensus({
     proposal: disallowed, policy, evaluators, votes: signedVotes(), expectedInputBundleSha256, now
   }).status, 'BLOCKED');
-  const noRollback = { ...proposal, rollback_plan_sha256: undefined };
+  const { rollback_plan_sha256: _rollbackPlan, ...noRollback } = proposal;
   assert.equal(verifyUnanimousConsensus({
     proposal: noRollback, policy, evaluators, votes: signedVotes(), expectedInputBundleSha256, now
   }).status, 'BLOCKED');
