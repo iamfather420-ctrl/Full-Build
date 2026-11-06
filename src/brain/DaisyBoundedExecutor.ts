@@ -17,10 +17,13 @@ export type BoundedActionHandler = (
  * shell, URL, dynamic import, or model-controlled command dispatch.
  */
 export class DaisyBoundedExecutor implements ActionExecutor {
+  private readonly handlers: Readonly<Record<string, BoundedActionHandler>>;
   constructor(
-    private readonly handlers: Readonly<Record<string, BoundedActionHandler>>,
+    handlers: Readonly<Record<string, BoundedActionHandler>>,
     private readonly clock: () => number = Date.now
-  ) {}
+  ) {
+    this.handlers = Object.freeze(Object.assign(Object.create(null), handlers));
+  }
 
   public async execute(
     proposal: ConsensusProposal,
