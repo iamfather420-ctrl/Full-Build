@@ -5,7 +5,8 @@ import {
   ConsensusPolicy,
   ConsensusProposal,
   SignedEvaluatorVote,
-  canonicalJson,\n  policyDigest,
+  canonicalJson,
+  policyDigest,
   proposalDigest,
   sha256Canonical,
   voteSigningPayload
@@ -48,7 +49,13 @@ const evaluators = keys.map(item => ({
   image: 'registry.example/daisy-evaluator@sha256:' + 'a'.repeat(64),
   signing_key_file: '/not-mounted-in-unit-test'
 }));
-const rootKeys = generateKeyPairSync('ed25519');\nconst unsignedConfig = { policy, evaluators };\nconst config: SignedDaisyRuntimeConfig = {\n  ...unsignedConfig,\n  signature_base64: sign(null, Buffer.from(canonicalJson(unsignedConfig)), rootKeys.privateKey).toString('base64')\n};\nconst rootPublicKey = rootKeys.publicKey.export({ type: 'spki', format: 'pem' }).toString();
+const rootKeys = generateKeyPairSync('ed25519');
+const unsignedConfig = { policy, evaluators };
+const config: SignedDaisyRuntimeConfig = {
+  ...unsignedConfig,
+  signature_base64: sign(null, Buffer.from(canonicalJson(unsignedConfig)), rootKeys.privateKey).toString('base64')
+};
+const rootPublicKey = rootKeys.publicKey.export({ type: 'spki', format: 'pem' }).toString();
 
 function makeVote(index: number, sealedInput: string): SignedEvaluatorVote {
   const bundleSha = sha256Canonical({
@@ -145,7 +152,8 @@ test('evidence mutation blocks before evaluator invocation', async () => {
     { consumeOnce: async () => true },
     new DaisyBoundedExecutor({ WRITE_TEST_MARKER: async () => {} }),
     runner,
-    () => now
+    () => now,
+    rootPublicKey
   );
   const result = await runtime.evaluateAndExecute(proposal, { test_evidence: 'tampered' });
   assert.equal(result.status, 'BLOCKED');
