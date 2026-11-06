@@ -218,7 +218,7 @@ export class DaisyConsensusRuntime {
           !this.config.policy.allowed_targets.includes(proposal.target)) {
         fail('EXECUTOR_SIDE_RECHECK_FAILED');
       }
-      await this.executor.execute(proposal, proposalSha);
+      await this.executor.execute(proposal, proposalSha, {\n        policy: this.config.policy, evaluators: this.config.evaluators, votes,\n        expectedInputBundleSha256: inputBundleSha, expectedProposalSha256: consensus.proposal_sha256,\n        expectedPolicySha256: consensus.policy_sha256\n      });
       return { status: 'APPROVED_AND_EXECUTED', consensus };
     } catch (error) {
       return {
