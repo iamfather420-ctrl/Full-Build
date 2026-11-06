@@ -51,6 +51,14 @@ export interface RuntimeResult {
   reason?: string;
 }
 
+function deepFreeze<T>(value: T): T {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
 function fail(reason: string): never {
   throw new Error('DAISY_RUNTIME_BLOCKED:' + reason);
 }
@@ -208,6 +216,7 @@ export class DaisyConsensusRuntime {
         fail('EVALUATOR_TRUST_MATERIAL_INVALID');
       }
     }
+    deepFreeze(config);
   }
 
   public async evaluateAndExecute(proposal: ConsensusProposal, evidenceBundle: unknown): Promise<RuntimeResult> {
