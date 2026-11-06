@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import test from 'node:test';
+import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   ConsensusPolicy,
   ConsensusProposal,
@@ -43,12 +46,18 @@ const proposal: ConsensusProposal = {
   evidence_sha256: sha256Canonical(evidence),
   rollback_plan_sha256: sha256Canonical({ rollback: 'no-op' })
 };
-const evaluators = keys.map(item => ({
-  evaluator_id: item.evaluator_id,
-  public_key_pem: item.publicKey.export({ type: 'spki', format: 'pem' }).toString(),
-  image: 'registry.example/daisy-evaluator@sha256:' + 'a'.repeat(64),
-  signing_key_file: '/not-mounted-in-unit-test'
-}));
+const testKeyDirectory = mkdtempSync(join(tmpdir(), 'daisy-evaluator-keys-'));
+const evaluators = keys.map((item, index) => {
+  const signingKeyFile = join(testKeyDirectory, `evaluator-${index}.pem`);
+  writeFileSync(signingKeyFile, item.privateKey.export({ type: 'pkcs8', format: 'pem' }));
+  chmodSync(signingKeyFile, 0o400);
+  return {
+    evaluator_id: item.evaluator_id,
+    public_key_pem: item.publicKey.export({ type: 'spki', format: 'pem' }).toString(),
+    image: 'registry.example/daisy-evaluator@sha256:' + 'a'.repeat(64),
+    signing_key_file: signingKeyFile
+  };
+});
 const rootKeys = generateKeyPairSync('ed25519');
 const unsignedConfig = { policy, evaluators };
 const config: SignedDaisyRuntimeConfig = {
