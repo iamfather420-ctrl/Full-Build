@@ -93,8 +93,8 @@ export function policyDigest(policy: ConsensusPolicy): string {
 /** The signature covers every vote field except signature_base64. */
 export function voteSigningPayload(vote: Omit<SignedEvaluatorVote, 'signature_base64'>): Buffer {
   return Buffer.from(canonicalJson({
-    protocol: 'SOLVEX_DAISY_INDEPENDENT_UNANIMOUS_CONSENSUS_V1',
-    ...vote
+    ...vote,
+    protocol: 'SOLVEX_DAISY_INDEPENDENT_UNANIMOUS_CONSENSUS_V1'
   }), 'utf8');
 }
 
@@ -137,6 +137,16 @@ export function verifyUnanimousConsensus(args: {
   const rosterIds = new Set(evaluators.map(item => item.evaluator_id));
   if (policy.evaluator_ids.some(id => !rosterIds.has(id))) blockers.push('POLICY_EVALUATOR_NOT_IN_TRUSTED_ROSTER');
   if (evaluators.some(item => !item.evaluator_id?.trim() || !item.public_key_pem?.includes('PUBLIC KEY'))) blockers.push('INVALID_TRUSTED_EVALUATOR_IDENTITY');
+  const keyFingerprints = evaluators.map(item => {
+    try {
+      return createHash('sha256').update(createPublicKey(item.public_key_pem).export({ type: 'spki', format: 'der' })).digest('hex');
+    } catch {
+      return null;
+    }
+  });
+  if (keyFingerprints.some(value => value === null) || new Set(keyFingerprints).size !== 3) {
+    blockers.push('THREE_DISTINCT_VALID_EVALUATOR_KEYS_REQUIRED');
+  }
 
   const policyStart = validIsoTime(policy.valid_from);
   const policyEnd = validIsoTime(policy.expires_at);
