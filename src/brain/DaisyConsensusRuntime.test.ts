@@ -19,6 +19,7 @@ import {
   SignedDaisyRuntimeConfig
 } from './DaisyConsensusRuntime';
 import { DaisyBoundedExecutor } from './DaisyBoundedExecutor';
+import { SqliteDaisyNonceStore } from './SqliteDaisyNonceStore';
 
 const evaluatorIds = ['evaluator-a', 'evaluator-b', 'evaluator-c'] as const;
 const keys = evaluatorIds.map(evaluator_id => ({ evaluator_id, ...generateKeyPairSync('ed25519') }));
@@ -185,5 +186,29 @@ test('executor rejects an action not explicitly registered by trusted compositio
       expectedPolicySha256: policyDigest(policy)
     }),
     /NO_TRUSTED_HANDLER_FOR_ACTION/
+  );
+});
+
+
+test('tampered root-signed policy configuration is rejected at construction', () => {
+  const badConfig = { ...config, signature_base64: Buffer.alloc(64, 7).toString('base64') };
+  assert.throws(
+    () => new DaisyConsensusRuntime(
+      badConfig,
+      { consumeOnce: async () => true },
+      new DaisyBoundedExecutor({}),
+      { run: async () => { throw new Error('must not run'); } },
+      () => now,
+      rootPublicKey
+    ),
+    /RUNTIME_CONFIG_SIGNATURE_INVALID/
+  );
+});
+
+test('durable nonce store refuses the in-memory SQLite fallback', () => {
+  const memoryOnlyStore = { isDiskBacked: () => false };
+  assert.throws(
+    () => new SqliteDaisyNonceStore(memoryOnlyStore as never),
+    /DISK_BACKED_SQLITE_REQUIRED/
   );
 });
