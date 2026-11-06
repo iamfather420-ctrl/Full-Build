@@ -201,7 +201,6 @@ export class DaisyConsensusRuntime {
         if (!keyStat.isFile() || keyStat.uid === 0 || (keyStat.mode & 0o077) !== 0 || keyPath.includes(',') || keyPath !== evaluator.signing_key_file) {
           fail('EVALUATOR_SIGNING_KEY_PERMISSIONS_INVALID');
         }
-        evaluator.signing_key_file = keyPath;
       } catch {
         fail('EVALUATOR_TRUST_MATERIAL_INVALID');
       }
