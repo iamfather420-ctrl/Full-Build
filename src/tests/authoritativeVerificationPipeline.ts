@@ -143,9 +143,27 @@ export class AuthoritativeVerificationPipeline {
       try {
         const gitStatus = platform.execSync('git status --porcelain --untracked-files=no', { encoding: 'utf8' });
         const statusLines = gitStatus.split(/\r?\n/).filter(Boolean);
+        // Verification runs earlier in CI intentionally regenerate these tracked
+        // root-level evidence reports. They are outputs, not source modifications,
+        // so exclude only this exact allowlist from the source-integrity check.
+        const generatedEvidenceFiles = new Set([
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.json',
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.md',
+          'enterprise-verification-report.json',
+          'enterprise-verification-report.md',
+          'solvex-manifest.json',
+          'preflight-report.json',
+          'preflight-report.md',
+          'execution-gates.json',
+          'execution-gates.md',
+          'production-gate-evaluation.json',
+          'production-gate-evaluation.md'
+        ]);
         const sourceChanges = statusLines.filter(line => {
           const changedPath = line.slice(3).replace(/^.* -> /, '');
-          return !changedPath.startsWith('artifacts/') && !changedPath.startsWith('public/');
+          return !changedPath.startsWith('artifacts/') &&
+            !changedPath.startsWith('public/') &&
+            !generatedEvidenceFiles.has(changedPath);
         });
         modCount = sourceChanges.length;
         workingTreeClean = sourceChanges.length === 0;
