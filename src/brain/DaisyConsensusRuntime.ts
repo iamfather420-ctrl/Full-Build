@@ -118,7 +118,7 @@ export class DockerIsolatedEvaluatorRunner {
   public run(evaluator: DaisyEvaluatorRuntime, sealedInput: string): Promise<SignedEvaluatorVote> {
     if (!isPinnedImage(evaluator.image)) return Promise.reject(new Error('UNPINNED_EVALUATOR_IMAGE'));
     const args = [
-      'run', '--rm', '-i',
+      'run', '--rm', '-i', '--pull=never',
       '--network=none', '--read-only', '--cap-drop=ALL',
       '--security-opt=no-new-privileges', '--pids-limit=64',
       '--memory=512m', '--cpus=1', `--user=${statSync(evaluator.signing_key_file).uid}:${statSync(evaluator.signing_key_file).gid}`,
@@ -189,8 +189,11 @@ export class DaisyConsensusRuntime {
       fail('RUNTIME_EVALUATOR_ROSTER_INVALID');
     }
     const publicKeyFingerprints = new Set<string>();
+    const evaluatorImages = new Set<string>();
     for (const evaluator of config.evaluators) {
       if (!isPinnedImage(evaluator.image)) fail('EVALUATOR_IMAGE_NOT_IMMUTABLY_PINNED');
+      if (evaluatorImages.has(evaluator.image)) fail('EVALUATOR_IMAGES_MUST_BE_DISTINCT');
+      evaluatorImages.add(evaluator.image);
       try {
         const key = createPublicKey(evaluator.public_key_pem);
         const fingerprint = createHash('sha256').update(key.export({ type: 'spki', format: 'der' })).digest('hex');
