@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import test from 'node:test';
-import { chmodSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -16,6 +16,7 @@ import {
 } from './IndependentUnanimousConsensus';
 import {
   DaisyConsensusRuntime,
+  DockerIsolatedEvaluatorRunner,
   SignedDaisyRuntimeConfig
 } from './DaisyConsensusRuntime';
 import { DaisyBoundedExecutor } from './DaisyBoundedExecutor';
@@ -211,4 +212,34 @@ test('durable nonce store refuses the in-memory SQLite fallback', () => {
     () => new SqliteDaisyNonceStore(memoryOnlyStore as never),
     /DISK_BACKED_SQLITE_REQUIRED/
   );
+});
+
+
+test('Docker runner applies required isolation flags and delivers only sealed stdin', async () => {
+  const marker = join(testKeyDirectory, 'docker-invocation.json');
+  const fakeDocker = join(testKeyDirectory, 'docker-test-double');
+  const expectedVote = makeVote(0, 'sealed-input ' + proposal.proposal_id);
+  const script = [
+    '#!/usr/bin/env node',
+    "const fs = require('node:fs');",
+    'const args = process.argv.slice(2);',
+    "const input = fs.readFileSync(0, 'utf8');",
+    `fs.writeFileSync(${JSON.stringify(marker)}, JSON.stringify({ args, input }));`,
+    `process.stdout.write(${JSON.stringify(JSON.stringify(expectedVote))});`
+  ].join('\n');
+  writeFileSync(fakeDocker, script);
+  chmodSync(fakeDocker, 0o755);
+  const runner = new DockerIsolatedEvaluatorRunner(fakeDocker);
+  const vote = await runner.run(evaluators[0], 'sealed-input ' + proposal.proposal_id);
+  assert.equal(vote.evaluator_id, evaluators[0].evaluator_id);
+  const invocation = JSON.parse(readFileSync(marker, 'utf8'));
+  for (const requiredFlag of [
+    'run', '--rm', '-i', '--pull=never', '--network=none', '--read-only',
+    '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=64',
+    '--memory=512m', '--cpus=1', '--tmpfs=/tmp:rw,noexec,nosuid,size=16m'
+  ]) {
+    assert.ok(invocation.args.includes(requiredFlag), 'missing Docker isolation flag: ' + requiredFlag);
+  }
+  assert.equal(invocation.input, 'sealed-input ' + proposal.proposal_id);
+  assert.ok(invocation.args.includes(evaluators[0].image));
 });
