@@ -113,7 +113,7 @@ export class DockerIsolatedEvaluatorRunner {
       'run', '--rm', '-i',
       '--network=none', '--read-only', '--cap-drop=ALL',
       '--security-opt=no-new-privileges', '--pids-limit=64',
-      '--memory=512m', '--cpus=1', '--user=65532:65532',
+      '--memory=512m', '--cpus=1', `--user=${statSync(evaluator.signing_key_file).uid}:${statSync(evaluator.signing_key_file).gid}`,
       '--tmpfs=/tmp:rw,noexec,nosuid,size=16m',
       '--mount', `type=bind,src=${evaluator.signing_key_file},dst=/run/secrets/evaluator_ed25519.pem,readonly`,
       evaluator.image, 'node', '/app/evaluate.js'
