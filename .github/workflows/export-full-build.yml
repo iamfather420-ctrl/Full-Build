@@ -1,0 +1,23 @@
+name: Export Full-Build Source
+
+on:
+  push:
+    branches:
+      - merge/full-build-export-20261004
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create source archive
+        run: |
+          git archive --format=zip --output=full-build-source.zip HEAD
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-build-source
+          path: full-build-source.zip
+          retention-days: 1
