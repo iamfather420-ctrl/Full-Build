@@ -442,19 +442,19 @@ export async function runEnterpriseVerification() {
   });
 
   // 26. Local token minting is disabled until the approved OIDC verifier is configured.
-  runTest('Fail-Closed: Local Authentication Cannot Mint Sessions', 'SECURITY', () => {
+  runTest('Fail-Closed: Local Authentication Cannot Mint Sessions', 'SECURITY', async () => {
     const auth = AuthService.getInstance();
     let blocked = false;
     try { auth.createSignedToken('c1', 'TENANT_C', 'customer@example.invalid', 'CUSTOMER'); }
     catch { blocked = true; }
     if (!blocked) throw new Error('Local authentication unexpectedly minted a session token');
-    if (auth.verifyToken('not-a-real-token').valid) throw new Error('Unverified token was accepted');
+    if ((await auth.verifyToken('not-a-real-token')).valid) throw new Error('Unverified token was accepted');
   });
 
   // 27. Tenant-scoped operations require a verified identity.
-  runTest('Fail-Closed: Unverified Identity Cannot Access Tenant Data', 'SECURITY', () => {
+  runTest('Fail-Closed: Unverified Identity Cannot Access Tenant Data', 'SECURITY', async () => {
     const auth = AuthService.getInstance();
-    const check = auth.authorize(null, 'VIEW_EVIDENCE', 'TENANT_BETA');
+    const check = await auth.authorize(null, 'VIEW_EVIDENCE', 'TENANT_BETA');
     if (check.authorized) throw new Error('Unverified identity was authorized for tenant data');
   });
 
@@ -473,9 +473,9 @@ export async function runEnterpriseVerification() {
   });
 
   // 29. Order transitions fail closed when no real order and verified identity exist.
-  runTest('Order Lifecycle Blocks Unverified or Missing Orders', 'MARKETPLACE', () => {
+  runTest('Order Lifecycle Blocks Unverified or Missing Orders', 'MARKETPLACE', async () => {
     const lifecycle = OrderLifecycleManager.getInstance();
-    const result = lifecycle.transitionOrder('NO_PERSISTED_ORDER', 'ORDER_CREATED');
+    const result = await lifecycle.transitionOrder('NO_PERSISTED_ORDER', 'ORDER_CREATED');
     if (result.success) throw new Error('Order transition succeeded without a persisted order and verified identity');
   });
 
