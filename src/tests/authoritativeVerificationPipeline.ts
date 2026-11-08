@@ -560,7 +560,7 @@ export class AuthoritativeVerificationPipeline {
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     for (const targetState of plannedTransitions) {
-      const result = orderMgr.transitionOrder(testOrderId, targetState);
+      const result = await orderMgr.transitionOrder(testOrderId, targetState);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
       if (!result.success) break;
