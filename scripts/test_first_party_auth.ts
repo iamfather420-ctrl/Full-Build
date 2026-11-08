@@ -1,0 +1,147 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import {
+  FirstPartyAuthService,
+  type AuthIdentity,
+  type CredentialRecord,
+  type FirstPartyAuthRepository,
+  type InvitationRegistration,
+  type LoginRateLimiter,
+  type MembershipRecord,
+  type SessionRecord,
+} from '../src/auth/FirstPartyAuthService';
+import { createTenantContextToken, verifyTenantContextToken } from '../src/auth/TenantContextToken';
+
+const hash = (value: string) => createHash('sha256').update(value).digest('hex');
+
+class MemoryRepository implements FirstPartyAuthRepository {
+  credentials = new Map<string, CredentialRecord>();
+  memberships = new Map<string, MembershipRecord>();
+  sessions = new Map<string, SessionRecord>();
+  invitations = new Map<string, { tenantId: string; expiresAt: number; consumed: boolean }>();
+  audit: Array<{ event: string; userId?: string; tenantId?: string; occurredAt: number; reason?: string }> = [];
+  nextId = 0;
+  private accountKey(tenantId: string, email: string) { return `${tenantId}:${email}`; }
+
+  async registerFromInvitation(tokenHash: string, input: InvitationRegistration): Promise<AuthIdentity | null> {
+    const invite = this.invitations.get(tokenHash);
+    if (!invite || invite.consumed || invite.expiresAt <= input.now || this.credentials.has(this.accountKey(invite.tenantId, input.email))) return null;
+    invite.consumed = true;
+    const userId = `user-${++this.nextId}`;
+    const record: CredentialRecord = { userId, email: input.email, passwordSalt: input.passwordSalt, passwordHash: input.passwordHash, disabled: false };
+    this.credentials.set(this.accountKey(invite.tenantId, input.email), record);
+    this.memberships.set(`${userId}:${invite.tenantId}`, { tenantId: invite.tenantId, role: 'CUSTOMER', active: true });
+    return { userId, email: input.email, tenantId: invite.tenantId, role: 'CUSTOMER' };
+  }
+
+  async findCredentialByEmailAndTenant(email: string, tenantId: string) { return this.credentials.get(this.accountKey(tenantId, email)) ?? null; }
+  async findCredentialByUserIdAndTenant(userId: string, tenantId: string) { return [...this.credentials.entries()].find(([key, c]) => key.startsWith(`${tenantId}:`) && c.userId === userId)?.[1] ?? null; }
+  async findMembership(userId: string, tenantId: string) { return this.memberships.get(`${userId}:${tenantId}`) ?? null; }
+  async createSession(session: SessionRecord) { this.sessions.set(session.tokenHash, { ...session }); }
+  async findSession(tokenHash: string) { return this.sessions.get(tokenHash) ?? null; }
+  async revokeSession(tokenHash: string, revokedAt: number) {
+    const session = this.sessions.get(tokenHash);
+    if (!session || session.revokedAt !== null) return false;
+    session.revokedAt = revokedAt;
+    return true;
+  }
+  async appendAuthAudit(event: { event: 'REGISTERED' | 'LOGIN_SUCCEEDED' | 'LOGIN_REJECTED' | 'REGISTRATION_REJECTED' | 'SESSION_REVOKED'; userId?: string; tenantId?: string; occurredAt: number; reason?: string }) {
+    this.audit.push(event);
+  }
+}
+
+class MemoryLimiter implements LoginRateLimiter {
+  failures = new Map<string, number>();
+  async allow(key: string) {
+    const attempts = this.failures.get(key) ?? 0;
+    if (attempts >= 5) return false;
+    this.failures.set(key, attempts + 1);
+    return true;
+  }
+  async recordFailure(_key: string) { /* attempt was already reserved atomically by allow() */ }
+  async clear(key: string) { this.failures.delete(key); }
+}
+
+let now = 1_800_000_000_000;
+const repository = new MemoryRepository();
+const rateLimiter = new MemoryLimiter();
+const auth = new FirstPartyAuthService({ repository, rateLimiter, now: () => now, sessionTtlMs: 60 * 60 * 1000 });
+const invite = 'one-time-invitation-token-value-0123456789';
+repository.invitations.set(hash(invite), { tenantId: 'tenant-a', expiresAt: now + 60_000, consumed: false });
+
+const weak = await auth.register('person@example.test', 'short', invite);
+assert.equal(weak.ok, false, 'weak passwords must be rejected');
+assert.equal(repository.credentials.size, 0, 'weak-password registration must not create an account');
+
+const registered = await auth.register(' Person@Example.Test ', 'correct-horse-battery-staple', invite);
+assert.equal(registered.ok, true);
+assert.equal(registered.identity?.tenantId, 'tenant-a', 'tenant must come from the server-side invitation');
+assert.equal(registered.identity?.role, 'CUSTOMER', 'registration must not accept a client-selected role');
+assert.ok(registered.sessionToken);
+assert.equal(repository.sessions.size, 1);
+assert.equal([...repository.sessions.values()][0].tokenHash, hash(registered.sessionToken!), 'only a hash of the opaque session token may be persisted');
+
+const reusedInvite = await auth.register('other@example.test', 'correct-horse-battery-staple', invite);
+assert.equal(reusedInvite.ok, false, 'single-use invitation cannot be replayed');
+
+for (let i = 0; i < 5; i++) {
+  assert.equal((await auth.register('attacker@example.test', 'correct-horse-battery-staple', 'unknown-invitation-token-0123456789')).ok, false);
+}
+assert.equal((await auth.register('attacker@example.test', 'correct-horse-battery-staple', 'unknown-invitation-token-0123456789')).error, 'REGISTRATION_TEMPORARILY_UNAVAILABLE', 'registration must be throttled before expensive password hashing');
+
+const login = await auth.login('PERSON@example.test', 'correct-horse-battery-staple', 'tenant-a');
+assert.equal(login.ok, true);
+assert.equal(login.identity?.role, 'CUSTOMER');
+
+const crossTenant = await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-b');
+assert.equal(crossTenant.ok, false, 'a user must not create a session for a tenant without active membership');
+
+const badPassword = await auth.login('person@example.test', 'not-the-password', 'tenant-a');
+assert.equal(badPassword.ok, false, 'invalid credentials must be rejected');
+assert.equal(badPassword.error, 'INVALID_CREDENTIALS', 'login failures must not reveal whether an account exists');
+
+const verified = await auth.verifySession(login.sessionToken!);
+assert.equal(verified.valid, true);
+assert.equal(verified.identity?.tenantId, 'tenant-a');
+
+const tokenHash = hash(login.sessionToken!);
+assert.ok(repository.sessions.has(tokenHash), 'session lookup must use the hashed token');
+assert.equal(await auth.logout(login.sessionToken!), true);
+assert.equal((await auth.verifySession(login.sessionToken!)).valid, false, 'revoked sessions must be rejected');
+
+const membershipSession = await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-a');
+assert.equal(membershipSession.ok, true);
+repository.memberships.set(`user-1:tenant-a`, { tenantId: 'tenant-a', role: 'CUSTOMER', active: false });
+assert.equal((await auth.verifySession(membershipSession.sessionToken!)).valid, false, 'membership revocation must invalidate existing sessions');
+repository.memberships.set(`user-1:tenant-a`, { tenantId: 'tenant-a', role: 'CUSTOMER', active: true });
+
+for (let i = 0; i < 5; i++) {
+  assert.equal((await auth.login('unknown@example.test', 'not-a-valid-password', 'tenant-a')).error, 'INVALID_CREDENTIALS');
+}
+assert.equal((await auth.login('unknown@example.test', 'not-a-valid-password', 'tenant-a')).error, 'LOGIN_TEMPORARILY_UNAVAILABLE', 'rate limiter must block repeated attempts');
+
+const expiring = await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-a');
+assert.equal(expiring.ok, true);
+now += 60 * 60 * 1000;
+assert.equal((await auth.verifySession(expiring.sessionToken!)).valid, false, 'expired sessions must be rejected');
+
+const disabledCredential = repository.credentials.get('tenant-a:person@example.test')!;
+disabledCredential.disabled = true;
+assert.equal((await auth.login('person@example.test', 'correct-horse-battery-staple', 'tenant-a')).ok, false, 'disabled accounts must be rejected');
+
+const contextSecret = 'test-only-secret-with-at-least-32-characters';
+const contextIdentity = { userId: 'user-1', email: 'person@example.test', tenantId: 'tenant-a', role: 'CUSTOMER' as const };
+const contextToken = createTenantContextToken(contextIdentity, contextSecret, now, 60_000);
+const contextCheck = verifyTenantContextToken(contextToken, contextSecret, now);
+assert.equal(contextCheck.valid, true, 'internal DB context token must validate');
+assert.equal(contextCheck.claims?.tenant_id, 'tenant-a');
+assert.equal(contextCheck.claims?.expires_at! - contextCheck.claims?.issued_at!, 60_000);
+assert.equal(verifyTenantContextToken(contextToken, 'wrong-secret-that-is-also-long-enough', now).valid, false, 'wrong secret must fail');
+assert.equal(verifyTenantContextToken(`${contextToken.slice(0, -1)}0`, contextSecret, now).valid, false, 'tampering must fail');
+assert.equal(verifyTenantContextToken(contextToken, contextSecret, now + 60_000).valid, false, 'expired DB context token must fail');
+assert.throws(() => createTenantContextToken(contextIdentity, 'short', now), /at least 32 characters/);
+assert.throws(() => createTenantContextToken(contextIdentity, contextSecret, now, 16 * 60 * 1000), /15 minutes/);
+
+console.log('PASS: first-party auth boundary tests (invitation, scrypt password hash, opaque hashed sessions, tenant membership, non-enumerating failures, revocation, expiry, disabled accounts, rate limiting).');
+console.log('PASS: database HMAC context token matches the SQL verifier contract (standard Base64 payload, SHA-256 HMAC, role/tenant claims, 15-minute maximum, expiry and tamper rejection).');
+console.log('LIMITATION: these tests use an in-memory repository and limiter; they do not prove durable storage or production readiness.');
