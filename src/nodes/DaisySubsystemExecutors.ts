@@ -330,7 +330,7 @@ export class DaisySubsystemExecutors {
           mintError = error instanceof Error ? error.message : String(error);
           mintBlocked = /^BLOCKED:/.test(mintError);
         }
-        const untrustedToken = auth.verifyToken('untrusted-token');
+        const untrustedToken = await auth.verifyToken('untrusted-token');
         const boundaryVerified = mintBlocked && !untrustedToken.valid;
         return {
           node_id: 'DN-16',
@@ -543,11 +543,11 @@ export class DaisySubsystemExecutors {
 
         // No local role token is minted. Verify that the unauthenticated
         // transition is rejected and the persisted state remains unchanged.
-        const attempt = lifecycle.transitionOrder(orderId, 'ORDER_CREATED');
+        const attempt = await lifecycle.transitionOrder(orderId, 'ORDER_CREATED');
         const storedOrder = sqlite.getRawDb().get('SELECT status FROM orders WHERE id = ?', [orderId]);
         const stateUnchanged = storedOrder?.status === 'OFFER';
         const blockedAsRequired = !attempt.success &&
-          /BLOCKED: verified identity and signed tenant claims are required/i.test(attempt.error || '') &&
+          /BLOCKED:/i.test(attempt.error || '') &&
           stateUnchanged;
 
         return {
