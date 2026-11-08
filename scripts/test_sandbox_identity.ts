@@ -9,19 +9,26 @@ import { SolutionPipeline } from '../src/solutions/SolutionPipeline';
 import { SqliteStore } from '../src/database/SqliteStore';
 import { OrderLifecycleManager } from '../src/marketplace/OrderLifecycle';
 import { DurableStore } from '../src/database/DurableStore';
+import { PayPalSandboxClient } from '../src/payments/PayPalSandboxClient';
 
 const original = {
   env: process.env.SOLVEX_ENV,
   enabled: process.env.FULL_BUILD_TEST_AUTH,
   secret: process.env.FULL_BUILD_TEST_AUTH_SECRET,
-  nodeEnv: process.env.NODE_ENV
+  nodeEnv: process.env.NODE_ENV,
+  paypalEnvironment: process.env.PAYPAL_ENVIRONMENT,
+  paypalClientId: process.env.PAYPAL_SANDBOX_CLIENT_ID,
+  paypalClientSecret: process.env.PAYPAL_SANDBOX_CLIENT_SECRET
 };
 const restore = () => {
   for (const [key, value] of Object.entries({
     SOLVEX_ENV: original.env,
     FULL_BUILD_TEST_AUTH: original.enabled,
     FULL_BUILD_TEST_AUTH_SECRET: original.secret,
-    NODE_ENV: original.nodeEnv
+    NODE_ENV: original.nodeEnv,
+    PAYPAL_ENVIRONMENT: original.paypalEnvironment,
+    PAYPAL_SANDBOX_CLIENT_ID: original.paypalClientId,
+    PAYPAL_SANDBOX_CLIENT_SECRET: original.paypalClientSecret
   })) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
@@ -101,6 +108,36 @@ try {
   assert.match(pipeline.rejection_reason || '', /not implemented/i);
   const paymentStatus = await PayPalAdapter.getInstance().captureOrderPayment('sandbox-order', 100, 'sandbox-idem-key');
   assert.equal(paymentStatus.status, 'EXTERNAL_PROVIDER_REQUIRED', 'payments remain fail-closed without provider implementation');
+
+  let paypalFetchCalls = 0;
+  process.env.PAYPAL_ENVIRONMENT = 'live';
+  process.env.PAYPAL_SANDBOX_CLIENT_ID = 'sandbox-client-id';
+  process.env.PAYPAL_SANDBOX_CLIENT_SECRET = 'sandbox-client-secret';
+  const paypalSandbox = new PayPalSandboxClient(async () => {
+    paypalFetchCalls++;
+    return new Response(JSON.stringify({ access_token: 'sandbox-token', token_type: 'Bearer' }), {
+      status: 200, headers: { 'Content-Type': 'application/json' }
+    });
+  });
+  const blockedLiveMode = await paypalSandbox.verifyCredentials();
+  assert.equal(blockedLiveMode.authenticated, false, 'sandbox verifier refuses live environment mode');
+  assert.equal(paypalFetchCalls, 0, 'live mode rejection makes no outbound request');
+
+  process.env.PAYPAL_ENVIRONMENT = 'sandbox';
+  const paypalSuccess = new PayPalSandboxClient(async (url, init) => {
+    paypalFetchCalls++;
+    assert.equal(String(url), 'https://api-m.sandbox.paypal.com/v1/oauth2/token');
+    assert.equal(init?.method, 'POST');
+    assert.equal(init?.body, 'grant_type=client_credentials');
+    assert.match(String((init?.headers as Record<string, string>).Authorization), /^Basic /);
+    return new Response(JSON.stringify({ access_token: 'sandbox-token', token_type: 'Bearer' }), {
+      status: 200, headers: { 'Content-Type': 'application/json' }
+    });
+  });
+  const paypalVerified = await paypalSuccess.verifyCredentials();
+  assert.equal(paypalVerified.authenticated, true, 'sandbox OAuth credential check accepts a valid response');
+  assert.equal(paypalVerified.environment, 'sandbox');
+  assert.equal(paypalFetchCalls, 1, 'only the sandbox OAuth endpoint is called');
   const health = await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'GET');
   assert.equal(health.status, 503, 'local readiness is blocked until required production gates exist');
   assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'POST')).status, 405);
@@ -142,7 +179,7 @@ try {
   process.env.FULL_BUILD_TEST_AUTH = 'false';
   assert.equal(SandboxTestIdentity.verify(token).valid, false, 'feature flag off rejects sandbox token');
 
-  console.log('PASS: sandbox auth, session guard, role and tenant boundaries, 54-node registry, order lifecycle transitions, audit chain, API routing, fail-closed pipeline/payments.');
+  console.log('PASS: sandbox auth, session guard, role and tenant boundaries, 54-node registry, order lifecycle transitions, audit chain, API routing, PayPal sandbox-only OAuth verifier, fail-closed live payments.');
   console.log('PERSISTENCE STATUS: ' + (SqliteStore.getInstance().isDiskBacked() ? 'disk-backed SQLite available' : 'NOT VERIFIED: in-memory SQLite fallback active'));
 } finally {
   restore();
