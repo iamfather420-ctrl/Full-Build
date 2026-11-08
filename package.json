@@ -14,7 +14,7 @@
     "test:formal-hash": "tsx scripts/test_formal_evidence_hash.ts",
     "test:local-inference": "tsx scripts/test_local_inference_runtime.ts",
     "preflight": "tsx scripts/preflight.ts",
-    "verify:enterprise": "tsx scripts/verify_enterprise.ts && bun run test:sandbox-identity",
+    "verify:enterprise": "tsx scripts/verify_enterprise.ts && tsx scripts/test_sandbox_identity.ts",
     "verify:dfrl": "tsx scripts/verify_dfrl.ts",
     "verify:dh-formal": "tsx scripts/verify_dh_formal.ts",
     "verify:120": "tsx scripts/verify_120_aggregation.ts",
