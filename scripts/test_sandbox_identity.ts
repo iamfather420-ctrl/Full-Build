@@ -34,7 +34,9 @@ try {
   });
   assert.equal(SandboxTestIdentity.verify(token).valid, true, 'valid sandbox token is accepted');
 
-  const tampered = token.slice(0, -1) + (token.endsWith('a') ? 'b' : 'a');
+  const [payloadPart, signaturePart] = token.split('.');
+  const tamperedSignature = (signaturePart.startsWith('a') ? 'b' : 'a') + signaturePart.slice(1);
+  const tampered = payloadPart + '.' + tamperedSignature;
   assert.equal(SandboxTestIdentity.verify(tampered).valid, false, 'tampered token is rejected');
 
   const sameTenant = SandboxTestIdentity.authorize(token, 'CREATE_ORDER', 'sandbox-tenant-a');
