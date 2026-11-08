@@ -75,7 +75,7 @@ export class AuthService {
   public requireVerifiedSession(session: UserContext | null | undefined, action: string, targetTenantId?: string): { authenticated: boolean; authorized: boolean; status: 'BLOCKED' | 'AUTHENTICATED'; reason: string } {
     const decision = this.authorize(session, action, targetTenantId);
     return {
-      authenticated: Boolean(session && this.verifiedSandboxUsers.has(session)),
+      authenticated: Boolean(process.env.SOLVEX_ENV === 'sandbox' && process.env.FULL_BUILD_TEST_AUTH === 'true' && process.env.NODE_ENV !== 'production' && session && this.verifiedSandboxUsers.has(session)),
       authorized: decision.authorized,
       status: decision.authorized ? 'AUTHENTICATED' : 'BLOCKED',
       reason: decision.reason
