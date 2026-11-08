@@ -35,6 +35,8 @@ jobs:
         run: bun run build
       - name: TypeScript
         run: bun run lint
+      - name: Sandbox identity security tests
+        run: bun run test:sandbox-identity
       - name: Enterprise invariants
         run: bun run verify:enterprise
       - name: Formal verification corpus
@@ -50,3 +52,4 @@ jobs:
           name: system-46-gates
           path: artifacts/system-46-gates.json
           if-no-files-found: ignore
+}
