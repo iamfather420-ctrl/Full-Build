@@ -51,7 +51,7 @@ export class AuthService {
 
   public authorize(user: UserContext | null | undefined, action: string, targetTenantId?: string): { authorized: boolean; reason: string } {
     if (process.env.SOLVEX_ENV !== 'sandbox' || process.env.FULL_BUILD_TEST_AUTH !== 'true' || process.env.NODE_ENV === 'production') {
-      return { authorized: false, reason: 'BLOCKED: sandbox identity authorization is disabled outside explicit non-production sandbox mode.' };
+      return { authorized: false, reason: 'BLOCKED: verified identity and signed tenant claims are required; sandbox identity authorization is disabled outside explicit non-production sandbox mode.' };
     }
     if (!user || !this.verifiedSandboxUsers.has(user)) {
       return { authorized: false, reason: 'BLOCKED: verified signed sandbox identity or approved OIDC session required.' };
