@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
+    "test:sandbox-identity": "tsx scripts/test_sandbox_identity.ts",
     "test:formal-hash": "tsx scripts/test_formal_evidence_hash.ts",
     "test:local-inference": "tsx scripts/test_local_inference_runtime.ts",
     "preflight": "tsx scripts/preflight.ts",
