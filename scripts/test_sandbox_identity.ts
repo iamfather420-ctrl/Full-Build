@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
 import { SandboxTestIdentity } from '../src/auth/SandboxTestIdentity';
+import { AuthService } from '../src/auth/AuthService';
+import { SessionGuard } from '../src/auth/SessionGuard';
+import { NodeRegistry } from '../src/nodes/NodeRegistry';
+import { SovereignApiRouter } from '../src/api/ApiRouter';
+import { PayPalAdapter } from '../src/payments/PayPalAdapter';
+import { SolutionPipeline } from '../src/solutions/SolutionPipeline';
+import { SqliteStore } from '../src/database/SqliteStore';
 
 const original = {
   env: process.env.SOLVEX_ENV,
@@ -34,6 +41,33 @@ try {
   });
   assert.equal(SandboxTestIdentity.verify(token).valid, true, 'valid sandbox token is accepted');
 
+  const auth = AuthService.getInstance();
+  const issued = auth.createSignedToken('sandbox-user-1', 'sandbox-tenant-a', 'test@example.invalid', 'CUSTOMER');
+  const verified = auth.verifyToken(issued);
+  assert.equal(verified.valid, true, 'AuthService verifies the sandbox token');
+  assert.ok(verified.user, 'AuthService returns a verified user context');
+  assert.equal(auth.authorize(verified.user, 'CREATE_ORDER', 'sandbox-tenant-a').authorized, true);
+  assert.equal(auth.authorize(verified.user, 'MANAGE_TENANTS', 'sandbox-tenant-a').authorized, false);
+  assert.equal(SessionGuard.requireVerifiedSession(verified.user, 'CREATE_ORDER', 'sandbox-tenant-a').authorized, true);
+  assert.equal(SessionGuard.requireVerifiedSession(verified.user, 'CREATE_ORDER', 'sandbox-tenant-b').authorized, false);
+  assert.equal(auth.authorize({ ...verified.user }, 'CREATE_ORDER', 'sandbox-tenant-a').authorized, false,
+    'unverified object copies cannot impersonate a verified identity');
+
+  assert.equal(NodeRegistry.getInstance().getAllNodes().length, 54, '54 nodes are registered');
+  assert.equal(NodeRegistry.getInstance().getNode('DN-54')?.status, 'ACTIVE');
+  const pipeline = SolutionPipeline.getInstance().runPipeline('SANDBOX-TEST', 'test');
+  assert.equal(pipeline.overall_success, false, 'unimplemented pipeline must not report success');
+  assert.match(pipeline.rejection_reason || '', /not implemented/i);
+  const paymentStatus = await PayPalAdapter.getInstance().captureOrderPayment('sandbox-order', 100, 'sandbox-idem-key');
+  assert.equal(paymentStatus.status, 'EXTERNAL_PROVIDER_REQUIRED', 'payments remain fail-closed without provider implementation');
+  const health = await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'GET');
+  assert.equal(health.status, 503, 'local readiness is blocked until required production gates exist');
+  assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'POST')).status, 405);
+  assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/not-found', 'GET')).status, 404);
+  const sqlite = SqliteStore.getInstance();
+  assert.equal(sqlite.isDiskBacked(), false,
+    'this CI runtime has no native SQLite disk backend; report persistence as not verified');
+
   const [payloadPart, signaturePart] = token.split('.');
   const tamperedSignature = (signaturePart.startsWith('a') ? 'b' : 'a') + signaturePart.slice(1);
   const tampered = payloadPart + '.' + tamperedSignature;
@@ -64,7 +98,8 @@ try {
   process.env.FULL_BUILD_TEST_AUTH = 'false';
   assert.equal(SandboxTestIdentity.verify(token).valid, false, 'feature flag off rejects sandbox token');
 
-  console.log('PASS: sandbox test identity checks (valid token, tampering, tenant isolation, role authorization, production rejection, explicit opt-in).');
+  console.log('PASS: sandbox auth, session guard, role and tenant boundaries, 54-node registry, fail-closed pipeline/payments, API routing.');
+  console.log('PERSISTENCE STATUS: ' + (SqliteStore.getInstance().isDiskBacked() ? 'disk-backed SQLite available' : 'NOT VERIFIED: in-memory SQLite fallback active'));
 } finally {
   restore();
 }
