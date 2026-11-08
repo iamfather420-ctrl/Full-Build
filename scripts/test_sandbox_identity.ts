@@ -10,6 +10,7 @@ import { SqliteStore } from '../src/database/SqliteStore';
 import { OrderLifecycleManager } from '../src/marketplace/OrderLifecycle';
 import { DurableStore } from '../src/database/DurableStore';
 import { PayPalSandboxClient } from '../src/payments/PayPalSandboxClient';
+import { NeonSandboxReadOnlyAudit } from '../src/database/NeonSandboxReadOnlyAudit';
 
 const original = {
   env: process.env.SOLVEX_ENV,
@@ -18,7 +19,9 @@ const original = {
   nodeEnv: process.env.NODE_ENV,
   paypalEnvironment: process.env.PAYPAL_ENVIRONMENT,
   paypalClientId: process.env.PAYPAL_SANDBOX_CLIENT_ID,
-  paypalClientSecret: process.env.PAYPAL_SANDBOX_CLIENT_SECRET
+  paypalClientSecret: process.env.PAYPAL_SANDBOX_CLIENT_SECRET,
+  neonSandboxUrl: process.env.NEON_SANDBOX_DATABASE_URL,
+  databaseUrl: process.env.DATABASE_URL
 };
 const restore = () => {
   for (const [key, value] of Object.entries({
@@ -28,7 +31,9 @@ const restore = () => {
     NODE_ENV: original.nodeEnv,
     PAYPAL_ENVIRONMENT: original.paypalEnvironment,
     PAYPAL_SANDBOX_CLIENT_ID: original.paypalClientId,
-    PAYPAL_SANDBOX_CLIENT_SECRET: original.paypalClientSecret
+    PAYPAL_SANDBOX_CLIENT_SECRET: original.paypalClientSecret,
+    NEON_SANDBOX_DATABASE_URL: original.neonSandboxUrl,
+    DATABASE_URL: original.databaseUrl
   })) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
@@ -138,6 +143,50 @@ try {
   assert.equal(paypalVerified.authenticated, true, 'sandbox OAuth credential check accepts a valid response');
   assert.equal(paypalVerified.environment, 'sandbox');
   assert.equal(paypalFetchCalls, 1, 'only the sandbox OAuth endpoint is called');
+
+  process.env.NEON_SANDBOX_DATABASE_URL = '';
+  process.env.DATABASE_URL = 'postgresql://must-not-fallback.invalid/database';
+  assert.equal(await NeonSandboxReadOnlyAudit.fromSandboxEnvironment(), null,
+    'Neon sandbox audit never falls back to a generic DATABASE_URL');
+
+  const requiredTables = [
+    'users', 'tenants', 'roles', 'permissions', 'tenant_memberships',
+    'problems', 'paradoxes', 'invariants', 'solutions', 'offers',
+    'proof_bundles', 'proof_evidence', 'tests', 'verification_runs',
+    'orders', 'payments', 'deployments', 'checkpoints', 'rollback_records',
+    'telemetry', 'audit_records', 'chain_records', 'licenses',
+    'adapter_status', 'node_registry', 'execution_runs', 'failures'
+  ];
+  const neonStatements: string[] = [];
+  const neonAudit = new NeonSandboxReadOnlyAudit(async (sql) => {
+    neonStatements.push(sql);
+    if (sql.includes('SELECT 1 AS connected')) return [{ connected: 1 }];
+    if (sql.includes('information_schema.tables')) return requiredTables.map(table_name => ({ table_name }));
+    if (sql.includes('pg_class')) return requiredTables.map(table_name => ({
+      table_name, rls_enabled: true, rls_forced: true, policy_count: 1, role_bypass_rls: false
+    }));
+    throw new Error('Unexpected SQL statement in read-only audit');
+  });
+  const neonResult = await neonAudit.audit();
+  assert.equal(neonResult.connected, true);
+  assert.equal(neonResult.present_tables, 27);
+  assert.equal(neonResult.tenant_isolation_verified, true);
+  assert.equal(neonResult.read_only, true);
+  assert.ok(neonStatements.every(sql => /^\\s*SELECT\\b/i.test(sql)),
+    'Neon audit issues SELECT statements only');
+
+  const unsafeNeonAudit = new NeonSandboxReadOnlyAudit(async (sql) => {
+    if (sql.includes('SELECT 1 AS connected')) return [{ connected: 1 }];
+    if (sql.includes('information_schema.tables')) return requiredTables.map(table_name => ({ table_name }));
+    if (sql.includes('pg_class')) return requiredTables.map((table_name, index) => ({
+      table_name, rls_enabled: index !== 0, rls_forced: index !== 0,
+      policy_count: index === 0 ? 0 : 1, role_bypass_rls: false
+    }));
+    return [];
+  });
+  const unsafeNeonResult = await unsafeNeonAudit.audit();
+  assert.equal(unsafeNeonResult.tenant_isolation_verified, false,
+    'Neon audit does not pass when even one table lacks forced RLS and a policy');
   const health = await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'GET');
   assert.equal(health.status, 503, 'local readiness is blocked until required production gates exist');
   assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'POST')).status, 405);
@@ -179,7 +228,7 @@ try {
   process.env.FULL_BUILD_TEST_AUTH = 'false';
   assert.equal(SandboxTestIdentity.verify(token).valid, false, 'feature flag off rejects sandbox token');
 
-  console.log('PASS: sandbox auth, session guard, role and tenant boundaries, 54-node registry, order lifecycle transitions, audit chain, API routing, PayPal sandbox-only OAuth verifier, fail-closed live payments.');
+  console.log('PASS: sandbox auth, session guard, role and tenant boundaries, 54-node registry, order lifecycle transitions, audit chain, API routing, PayPal sandbox-only OAuth verifier, read-only Neon schema/RLS audit, fail-closed live payments.');
   console.log('PERSISTENCE STATUS: ' + (SqliteStore.getInstance().isDiskBacked() ? 'disk-backed SQLite available' : 'NOT VERIFIED: in-memory SQLite fallback active'));
 } finally {
   restore();
