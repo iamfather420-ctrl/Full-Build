@@ -88,6 +88,8 @@ try {
   assert.equal(SandboxTestIdentity.verify(token).valid, false, 'sandbox identity is disabled in production');
   assert.equal(auth.authorize(verified.user, 'CREATE_ORDER', 'sandbox-tenant-a').authorized, false,
     'previously verified sandbox users are rejected immediately in production');
+  assert.equal(SessionGuard.requireVerifiedSession(verified.user, 'CREATE_ORDER', 'sandbox-tenant-a').authenticated, false,
+    'previously verified sandbox sessions are no longer authenticated in production');
   assert.throws(() => SandboxTestIdentity.issue({
     userId: 'x', tenantId: 'y', email: 'x@example.invalid', role: 'OWNER'
   }), /disabled outside explicit non-production sandbox mode/);
