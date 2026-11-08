@@ -86,6 +86,8 @@ try {
 
   process.env.NODE_ENV = 'production';
   assert.equal(SandboxTestIdentity.verify(token).valid, false, 'sandbox identity is disabled in production');
+  assert.equal(auth.authorize(verified.user, 'CREATE_ORDER', 'sandbox-tenant-a').authorized, false,
+    'previously verified sandbox users are rejected immediately in production');
   assert.throws(() => SandboxTestIdentity.issue({
     userId: 'x', tenantId: 'y', email: 'x@example.invalid', role: 'OWNER'
   }), /disabled outside explicit non-production sandbox mode/);
