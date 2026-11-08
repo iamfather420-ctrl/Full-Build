@@ -7,6 +7,8 @@ import { SovereignApiRouter } from '../src/api/ApiRouter';
 import { PayPalAdapter } from '../src/payments/PayPalAdapter';
 import { SolutionPipeline } from '../src/solutions/SolutionPipeline';
 import { SqliteStore } from '../src/database/SqliteStore';
+import { OrderLifecycleManager } from '../src/marketplace/OrderLifecycle';
+import { DurableStore } from '../src/database/DurableStore';
 
 const original = {
   env: process.env.SOLVEX_ENV,
@@ -53,6 +55,45 @@ try {
   assert.equal(auth.authorize({ ...verified.user }, 'CREATE_ORDER', 'sandbox-tenant-a').authorized, false,
     'unverified object copies cannot impersonate a verified identity');
 
+  const lifecycleOwnerToken = auth.createSignedToken(
+    'sandbox-owner-1', 'sandbox-tenant-a', 'owner@example.invalid', 'OWNER'
+  );
+  const lifecycleOwner = auth.verifyToken(lifecycleOwnerToken);
+  assert.equal(lifecycleOwner.valid, true);
+  assert.ok(lifecycleOwner.user);
+  sqlite.insertTenantRecord('orders', 'sandbox-tenant-a', {
+    id: 'sandbox-order-lifecycle-1',
+    status: 'OFFER',
+    amount_cents: 100,
+    currency: 'USD'
+  });
+  const lifecycle = OrderLifecycleManager.getInstance();
+  const created = lifecycle.transitionOrder(
+    'sandbox-order-lifecycle-1', 'ORDER_CREATED', lifecycleOwner.user, { test: 'sandbox-offer-accepted' }
+  );
+  assert.equal(created.success, true, 'authorized owner can transition OFFER to ORDER_CREATED');
+  const persistedCreated = sqlite.findTenantRecordById<any>('orders', 'sandbox-tenant-a', 'sandbox-order-lifecycle-1');
+  assert.equal(persistedCreated?.status, 'ORDER_CREATED', 'order state persists in selected local store');
+
+  const illegalJump = lifecycle.transitionOrder(
+    'sandbox-order-lifecycle-1', 'DEPLOYED', lifecycleOwner.user, { test: 'illegal-transition' }
+  );
+  assert.equal(illegalJump.success, false, 'illegal lifecycle jumps are rejected');
+  const crossTenantOrder = sqlite.findTenantRecordById<any>('orders', 'sandbox-tenant-a', 'sandbox-order-lifecycle-1');
+  assert.equal(crossTenantOrder?.status, 'ORDER_CREATED', 'illegal transition does not mutate order state');
+
+  const crossTenantOrderId = 'sandbox-order-other-tenant';
+  sqlite.insertTenantRecord('orders', 'sandbox-tenant-b', { id: crossTenantOrderId, status: 'OFFER' });
+  const crossTenantTransition = lifecycle.transitionOrder(
+    crossTenantOrderId, 'ORDER_CREATED', lifecycleOwner.user, { test: 'cross-tenant' }
+  );
+  assert.equal(crossTenantTransition.success, false, 'owner cannot transition another tenant order');
+  assert.match(crossTenantTransition.error || '', /tenant mismatch|tenant/i);
+
+  const chain = DurableStore.getInstance().verifyChain();
+  assert.equal(chain.valid, true, 'order lifecycle audit chain remains internally consistent');
+  assert.ok(chain.total_records >= 1, 'successful order transition appends an audit record');
+
   assert.equal(NodeRegistry.getInstance().getAllNodes().length, 54, '54 nodes are registered');
   assert.equal(NodeRegistry.getInstance().getNode('DN-54')?.status, 'ACTIVE');
   const pipeline = SolutionPipeline.getInstance().runPipeline('SANDBOX-TEST', 'test');
@@ -65,8 +106,7 @@ try {
   assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'POST')).status, 405);
   assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/not-found', 'GET')).status, 404);
   const sqlite = SqliteStore.getInstance();
-  assert.equal(sqlite.isDiskBacked(), false,
-    'this CI runtime has no native SQLite disk backend; report persistence as not verified');
+  console.log('LOCAL SQLITE BACKEND: ' + (sqlite.isDiskBacked() ? 'disk-backed' : 'in-memory; durable persistence not verified'));
 
   const [payloadPart, signaturePart] = token.split('.');
   const tamperedSignature = (signaturePart.startsWith('a') ? 'b' : 'a') + signaturePart.slice(1);
@@ -102,7 +142,7 @@ try {
   process.env.FULL_BUILD_TEST_AUTH = 'false';
   assert.equal(SandboxTestIdentity.verify(token).valid, false, 'feature flag off rejects sandbox token');
 
-  console.log('PASS: sandbox auth, session guard, role and tenant boundaries, 54-node registry, fail-closed pipeline/payments, API routing.');
+  console.log('PASS: sandbox auth, session guard, role and tenant boundaries, 54-node registry, order lifecycle transitions, audit chain, API routing, fail-closed pipeline/payments.');
   console.log('PERSISTENCE STATUS: ' + (SqliteStore.getInstance().isDiskBacked() ? 'disk-backed SQLite available' : 'NOT VERIFIED: in-memory SQLite fallback active'));
 } finally {
   restore();
