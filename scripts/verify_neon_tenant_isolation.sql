@@ -67,7 +67,7 @@ BEGIN
     END IF;
 
     policy_expr := COALESCE(r.expr, '');
-    IF policy_expr !~* 'tenant_id' OR (policy_expr !~ 'current_setting' AND policy_expr !~ 'auth\\.jwt') THEN
+    IF policy_expr !~* 'tenant_id' OR (policy_expr !~ 'current_setting' AND policy_expr !~ 'auth\.jwt') THEN
       RAISE EXCEPTION 'public.% policy does not expose a recognized tenant_id/current_setting boundary', table_name;
     END IF;
 
@@ -76,7 +76,7 @@ BEGIN
       CROSS JOIN LATERAL regexp_matches(COALESCE(p.qual,'') || ' ' || COALESCE(p.with_check,p.qual,''), $re$current_setting\('([^']+)'$re$, 'g') AS m
      WHERE p.schemaname='public' AND p.tablename=verify_neon_tenant_isolation.table_name;
 
-    IF policy_expr ~ 'auth\\.jwt' THEN
+    IF policy_expr ~ 'auth\.jwt' THEN
       tenant_gucs := array_append(COALESCE(tenant_gucs, ARRAY[]::text[]), 'request.jwt.claims');
     END IF;
     IF tenant_gucs IS NULL OR cardinality(tenant_gucs)=0 THEN
