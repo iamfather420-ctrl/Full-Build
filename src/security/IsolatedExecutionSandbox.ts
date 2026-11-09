@@ -43,9 +43,17 @@ export class IsolatedExecutionSandbox {
     try {
       await new Promise<void>((resolve, reject) => {
         const child = spawn('docker', args, { stdio: ['pipe', 'pipe', 'pipe'], env: { PATH: process.env.PATH ?? '/usr/bin:/bin' } });
-        const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, timeoutMs);
+        let killRequested = false;
+        const terminateContainer = () => {
+          if (killRequested) return;
+          killRequested = true;
+          const killer = spawn('docker', ['kill', '--signal=KILL', name], { stdio: 'ignore' });
+          killer.on('error', () => child.kill('SIGKILL'));
+          killer.on('close', () => child.kill('SIGKILL'));
+        };
+        const timer = setTimeout(() => { timedOut = true; terminateContainer(); }, timeoutMs);
         const append = (chunk: Buffer) => {
-          if (Buffer.byteLength(output) + chunk.length > maxOutputBytes) { overflow = true; child.kill('SIGKILL'); return; }
+          if (Buffer.byteLength(output) + chunk.length > maxOutputBytes) { overflow = true; terminateContainer(); return; }
           output += chunk.toString('utf8');
         };
         child.stdout.on('data', append);
