@@ -56,6 +56,7 @@ try {
   assert.equal(SandboxTestIdentity.verify(token).valid, true, 'valid sandbox token is accepted');
 
   const auth = AuthService.getInstance();
+  const sqlite = SqliteStore.getInstance();
   const issued = auth.createSignedToken('sandbox-user-1', 'sandbox-tenant-a', 'test@example.invalid', 'CUSTOMER');
   const verified = auth.verifyToken(issued);
   assert.equal(verified.valid, true, 'AuthService verifies the sandbox token');
@@ -191,7 +192,6 @@ try {
   assert.equal(health.status, 503, 'local readiness is blocked until required production gates exist');
   assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/system/health', 'POST')).status, 405);
   assert.equal((await SovereignApiRouter.getInstance().handleRequest('/api/not-found', 'GET')).status, 404);
-  const sqlite = SqliteStore.getInstance();
   console.log('LOCAL SQLITE BACKEND: ' + (sqlite.isDiskBacked() ? 'disk-backed' : 'in-memory; durable persistence not verified'));
 
   const [payloadPart, signaturePart] = token.split('.');
