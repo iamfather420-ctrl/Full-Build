@@ -25,7 +25,13 @@ const [memoryCurrent, memoryPeak, memoryLimit, memoryEvents] = await Promise.all
   readMetric('/sys/fs/cgroup/memory.current'), readMetric('/sys/fs/cgroup/memory.peak'),
   readMetric('/sys/fs/cgroup/memory.max'), readFile('/sys/fs/cgroup/memory.events', 'utf8').catch(() => '')
 ]);
-const oomLine = memoryEvents.split('\n').find(line => line.startsWith('oom '));
+const eventCounts = new Map(memoryEvents.split('\n').filter(Boolean).map(line => {
+  const [name, count] = line.trim().split(/\s+/);
+  return [name, Number(count)];
+}));
+const oom = eventCounts.get('oom');
+const oomKill = eventCounts.get('oom_kill');
+const oomEvents = oom === undefined || oomKill === undefined ? null : oom + oomKill;
 const receipt = {
   accepted,
   input_sha256: inputSha,
@@ -35,6 +41,6 @@ const receipt = {
   cgroup_memory_current_bytes: memoryCurrent,
   cgroup_memory_peak_bytes: memoryPeak,
   cgroup_memory_limit_bytes: memoryLimit,
-  cgroup_oom_events: oomLine ? Number(oomLine.split(/\s+/)[1]) : null
+  cgroup_oom_events: oomEvents
 };
 process.stdout.write(JSON.stringify(receipt));
