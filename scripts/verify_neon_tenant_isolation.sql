@@ -48,7 +48,7 @@ BEGIN
 
     SELECT EXISTS (
       SELECT 1 FROM information_schema.columns
-       WHERE table_schema='public' AND information_schema.columns.table_name=table_name AND column_name='tenant_id'
+       WHERE table_schema='public' AND information_schema.columns.table_name=verify_neon_tenant_isolation.table_name AND column_name='tenant_id'
     ) INTO role_super;
     IF NOT role_super THEN RAISE EXCEPTION 'public.% has no tenant_id column', table_name; END IF;
 
@@ -95,6 +95,39 @@ BEGIN
     IF visible_own < 1 OR visible_other <> 0 THEN
       RAISE EXCEPTION 'Tenant B isolation failed for public.% (own visible %, other visible %)', table_name, visible_own, visible_other;
     END IF;
+
+    -- Attempt to reassign one tenant-A fixture row to tenant B. The subtransaction
+    -- guarantees rollback; a row-level policy or privilege boundary must reject it.
+    PERFORM set_config(guc_name, tenant_a, true) FROM unnest(tenant_gucs) AS keys(guc_name);
+    DECLARE
+      changed_rows integer := 0;
+      write_denied boolean := false;
+    BEGIN
+      BEGIN
+        EXECUTE format(
+          'UPDATE public.%I SET tenant_id = $1 WHERE ctid = (SELECT ctid FROM public.%I WHERE tenant_id::text = $2 LIMIT 1)',
+          table_name, table_name
+        ) USING tenant_b, tenant_a;
+        GET DIAGNOSTICS changed_rows = ROW_COUNT;
+        IF changed_rows = 0 THEN
+          write_denied := true;
+        ELSE
+          RAISE EXCEPTION 'SOLVEX_WRITE_WAS_ALLOWED';
+        END IF;
+      EXCEPTION
+        WHEN insufficient_privilege OR check_violation THEN
+          write_denied := true;
+        WHEN OTHERS THEN
+          IF SQLERRM = 'SOLVEX_WRITE_WAS_ALLOWED' THEN
+            write_denied := false;
+          ELSE
+            RAISE;
+          END IF;
+      END;
+      IF NOT write_denied THEN
+        RAISE EXCEPTION 'Cross-tenant UPDATE was permitted on public.%', table_name;
+      END IF;
+    END;
 
     tested := tested + 1;
     RAISE NOTICE 'PASS public.%: forced RLS; tenant A and B can read own fixture rows and cannot read each other', table_name;
