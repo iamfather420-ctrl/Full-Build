@@ -1,0 +1,56 @@
+name: Neon Read-Only Schema Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_disposable_branch:
+        description: "Type the exact Neon disposable branch name being audited"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  schema-audit:
+    name: Read-only Neon catalog inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify disposable branch confirmation
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirm_disposable_branch }}
+        run: |
+          set -euo pipefail
+          if [[ "$CONFIRMATION" != "SOLVEX_ISOLATION_TEST" ]]; then
+            echo "Refusing to connect: confirmation must exactly match SOLVEX_ISOLATION_TEST."
+            exit 2
+          fi
+
+      - name: Check out the selected audit branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Run catalog-only inventory
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.SOLVEX_NEON_SCHEMA_AUDIT_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${DATABASE_URL:-}" ]]; then
+            echo "BLOCKED: add SOLVEX_NEON_SCHEMA_AUDIT_DATABASE_URL as a GitHub Actions secret containing the disposable branch's connection URI."
+            exit 2
+          fi
+          # Do not echo or print the connection string. The SQL script only
+          # reads PostgreSQL catalog metadata and does not inspect app rows.
+          psql "$DATABASE_URL" \
+            --no-psqlrc \
+            --set ON_ERROR_STOP=1 \
+            --file scripts/inspect_neon_schema_readonly.sql
