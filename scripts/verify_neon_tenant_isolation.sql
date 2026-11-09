@@ -21,6 +21,7 @@ DECLARE
   role_bypass boolean;
   role_super boolean;
   tenant_column_exists boolean;
+  tenant_column_type text;
   changed_rows integer := 0;
   write_denied boolean := false;
 BEGIN
@@ -55,6 +56,15 @@ BEGIN
        WHERE table_schema='public' AND information_schema.columns.table_name=verify_neon_tenant_isolation.table_name AND column_name='tenant_id'
     ) INTO tenant_column_exists;
     IF NOT tenant_column_exists THEN RAISE EXCEPTION 'public.% has no tenant_id column', table_name; END IF;
+    SELECT format_type(a.atttypid, a.atttypmod) INTO tenant_column_type
+      FROM pg_attribute a
+      JOIN pg_class c ON c.oid = a.attrelid
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+     WHERE n.nspname = 'public' AND c.relname = verify_neon_tenant_isolation.table_name
+       AND a.attname = 'tenant_id' AND a.attnum > 0 AND NOT a.attisdropped;
+    IF tenant_column_type IS NULL THEN
+      RAISE EXCEPTION 'Could not determine tenant_id type for public.%', table_name;
+    END IF;
 
     policy_expr := COALESCE(r.expr, '');
     IF policy_expr !~* 'tenant_id' OR (policy_expr !~ 'current_setting' AND policy_expr !~ 'auth\\.jwt') THEN
@@ -116,8 +126,8 @@ BEGIN
     write_denied := false;
     BEGIN
         EXECUTE format(
-          'UPDATE public.%I SET tenant_id = $1 WHERE ctid = (SELECT ctid FROM public.%I WHERE tenant_id::text = $2 LIMIT 1)',
-          table_name, table_name
+          'UPDATE public.%I SET tenant_id = $1::%s WHERE ctid = (SELECT ctid FROM public.%I WHERE tenant_id::text = $2 LIMIT 1)',
+          table_name, tenant_column_type, table_name
         ) USING tenant_b, tenant_a;
         GET DIAGNOSTICS changed_rows = ROW_COUNT;
         IF changed_rows = 0 THEN
