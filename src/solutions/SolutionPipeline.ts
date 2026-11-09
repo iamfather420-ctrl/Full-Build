@@ -252,7 +252,7 @@ export class SolutionPipeline {
         let crossTenantDenied = false;
         try { crypto.decrypt('TENANT_OTHER', record); } catch { crossTenantDenied = true; }
         return sameTenant === sourceHash && crossTenantDenied
-          ? pass({ tenant_isolation_verified: true, cipher: 'AES-256-GCM', key_derivation: 'HKDF-SHA256', cross_tenant_read_denied: true })
+          ? block('Tenant encryption and cross-tenant ciphertext rejection passed, but database repository/RLS isolation is not yet independently verified.', { tenant_record_encryption: true, cipher: 'AES-256-GCM', key_derivation: 'HKDF-SHA256', cross_tenant_ciphertext_rejected: true, database_rls_verified: false, tenant_isolation_verified: false })
           : fail('Tenant cryptographic isolation self-test failed.');
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), { tenant_isolation_verified: false });
