@@ -85,7 +85,7 @@ export class SolutionPipeline {
         proof_bundle_id: sol.proof_bundle_id,
         performance_boost_percent: sol.performance_boost_percent,
         reversibility_guaranteed: 1,
-        status: 'VERIFIED'
+        status: 'PARTIAL'
       });
     } catch {}
     store.persist();
