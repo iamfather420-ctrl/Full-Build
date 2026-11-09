@@ -76,7 +76,7 @@ export class SolutionPipeline {
     const fail = (reason: string, evidence: Record<string, unknown> = {}): StageOutcome => ({ status: 'FAILED', reason, evidence });
 
     await runStage(1, () => normalizedCode.length > 0 && normalizedCode.length <= 100_000
-      ? pass({ source_sha256: sourceHash, bytes: Buffer.byteLength(normalizedCode, 'utf8') })
+      ? pass({ source_sha256: sourceHash, bytes: new TextEncoder().encode(normalizedCode).length })
       : fail('Source must be non-empty and no larger than 100 KB.'));
     await runStage(2, () => paradox
       ? pass({ paradox_code: paradox.code, domain: paradox.domain, canonical_family: paradox.canonical_family, registry_status: paradox.verification_status })
@@ -100,6 +100,20 @@ export class SolutionPipeline {
     const sentinel = await runStage(9, () => /FAIL_STAGE_9|NON_TERMINATION|DIVERGENCE_SENTINEL/.test(normalizedCode)
       ? fail('Sentinel detected fatal specification anomaly', { sentinel_detected: true })
       : pass({ sentinel_detected: false, source_sha256: sourceHash }));
+    if (sentinel.status === 'FAILED') {
+      for (let stage = 10; stage <= 21; stage++) {
+        traces.push({ stage, name: this.STAGES[stage - 1], status: 'BLOCKED', duration_ms: 0, reason: 'Not executed: stage 9 fail-closed circuit breaker halted the pipeline.' });
+      }
+      const completed = traces.filter(t => t.status === 'PASSED').length;
+      return {
+        overall_success: false,
+        completed_stages: completed,
+        total_stages: this.STAGES.length,
+        paradox_code: paradoxCode,
+        stage_traces: traces,
+        rejection_reason: 'Sentinel detected fatal specification anomaly'
+      };
+    }
     await runStage(10, () => {
       const cert = NOPOTVerifier.verifyAlgorithmTermination('ZenoHalving', (x) => Math.floor(x / 2), 64, 100);
       return cert.termination_proved
