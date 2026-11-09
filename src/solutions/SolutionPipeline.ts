@@ -98,6 +98,7 @@ export class SolutionPipeline {
     const sourceHash = computeSha256(normalizedCode);
     const paradox = ParadoxRegistry.getInstance().getByCode(paradoxCode);
     let theoremCertificate = '';
+    let sandboxMemoryEvidence: { current?: number | null; peak?: number | null; limit?: number | null; oom?: number | null } | undefined;
     let haltedAt: number | undefined;
     const runStage = async (stage: number, execute: () => Promise<StageOutcome> | StageOutcome) => {
       const t = Date.now();
@@ -144,10 +145,11 @@ export class SolutionPipeline {
         timeoutMs: 30_000, memoryBytes: 256 * 1024 * 1024, cpuCount: 1, pidsLimit: 64
       });
       if (!result.passed) return block(result.error ?? 'Isolated sandbox rejected or failed the source.', { sandbox_started: true, exit_code: result.exitCode, oom_killed: result.oomKilled, timed_out: result.timedOut });
-      let receipt: { accepted?: boolean; input_sha256?: string };
+      let receipt: { accepted?: boolean; input_sha256?: string; cgroup_memory_current_bytes?: number | null; cgroup_memory_peak_bytes?: number | null; cgroup_memory_limit_bytes?: number | null; cgroup_oom_events?: number | null };
       try { receipt = JSON.parse(result.output.trim()); } catch { return fail('Sandbox did not return a valid machine-readable receipt.'); }
+      sandboxMemoryEvidence = { current: receipt.cgroup_memory_current_bytes, peak: receipt.cgroup_memory_peak_bytes, limit: receipt.cgroup_memory_limit_bytes, oom: receipt.cgroup_oom_events };
       return receipt.accepted === true && receipt.input_sha256 === sourceHash
-        ? pass({ sandbox_started: true, image_digest: image.split('@sha256:')[1], input_sha256: sourceHash, exit_code: result.exitCode, memory_limit_bytes: result.memoryLimitBytes })
+        ? pass({ sandbox_started: true, image_digest: image.split('@sha256:')[1], input_sha256: sourceHash, exit_code: result.exitCode, memory_limit_bytes: result.memoryLimitBytes, cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes, cgroup_oom_events: receipt.cgroup_oom_events })
         : fail('Sandbox receipt did not bind acceptance to the submitted source hash.');
     });
     await runStage(7, () => {
@@ -157,9 +159,13 @@ export class SolutionPipeline {
     await runStage(8, async () => {
       const limit = Number(process.env.SOLVEX_MEMORY_LIMIT_BYTES ?? 256 * 1024 * 1024);
       const snapshot = await MemorySafetyInstrumentation.snapshot(limit);
-      return snapshot.instrumentationAvailable && snapshot.withinLimit
-        ? pass({ memory_instrumentation: true, rss_bytes: snapshot.rssBytes, heap_used_bytes: snapshot.heapUsedBytes, cgroup_current_bytes: snapshot.cgroupCurrentBytes, cgroup_peak_bytes: snapshot.cgroupPeakBytes, cgroup_limit_bytes: snapshot.cgroupLimitBytes, oom_events: snapshot.cgroupOomEvents })
-        : block('Required cgroup memory telemetry is unavailable or the process exceeded its configured memory budget.', { memory_instrumentation: snapshot.instrumentationAvailable, within_limit: snapshot.withinLimit, rss_bytes: snapshot.rssBytes, cgroup_current_bytes: snapshot.cgroupCurrentBytes, cgroup_limit_bytes: snapshot.cgroupLimitBytes, oom_events: snapshot.cgroupOomEvents });
+      const sandbox = sandboxMemoryEvidence;
+      const sandboxMeasured = sandbox?.peak !== null && sandbox?.peak !== undefined &&
+        sandbox?.limit !== null && sandbox?.limit !== undefined && sandbox?.oom !== null && sandbox?.oom !== undefined;
+      const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= limit && sandbox!.limit! <= limit && sandbox!.oom === 0;
+      return snapshot.instrumentationAvailable && snapshot.withinLimit && sandboxWithinLimit
+        ? pass({ memory_instrumentation: true, sandbox_peak_bytes: sandbox!.peak, sandbox_limit_bytes: sandbox!.limit, sandbox_oom_events: sandbox!.oom, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes })
+        : block('Sandbox cgroup peak/limit/OOM telemetry or orchestrator cgroup telemetry is unavailable or outside budget.', { memory_instrumentation: snapshot.instrumentationAvailable, sandbox_telemetry_available: sandboxMeasured, sandbox_peak_bytes: sandbox?.peak, sandbox_limit_bytes: sandbox?.limit, sandbox_oom_events: sandbox?.oom, orchestrator_within_limit: snapshot.withinLimit });
     });
     const sentinel = await runStage(9, () => /FAIL_STAGE_9|NON_TERMINATION|DIVERGENCE_SENTINEL/.test(normalizedCode)
       ? fail('Sentinel detected fatal specification anomaly', { sentinel_detected: true })
