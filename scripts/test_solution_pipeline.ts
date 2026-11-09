@@ -19,10 +19,13 @@ async function main() {
   assert.equal(normal.stage_traces.length, 21);
   assert.equal(normal.stage_traces[0].status, 'PASSED');
   assert.equal(normal.stage_traces[1].status, 'PASSED');
-  assert.equal(normal.stage_traces[10].status === 'PASSED' || normal.stage_traces[10].status === 'FAILED', true,
-    'Z3 stage must report an executed result, not an invented pass');
-  assert.equal(normal.overall_success, false, 'unavailable cleanroom, independent oracle, and tenant isolation must keep closure fail-closed');
-  assert.ok(normal.stage_traces.some(stage => stage.status === 'BLOCKED'));
+  assert.equal(normal.stage_traces[5].status, 'BLOCKED', 'cleanroom isolation must block the pipeline');
+  assert.equal(normal.stage_traces[6].status, 'BLOCKED', 'downstream checks must not run after a blocker');
+  assert.equal(normal.stage_traces[7].status, 'BLOCKED', 'downstream checks must not run after a blocker');
+  assert.equal(normal.stage_traces[8].status, 'PASSED', 'independent sentinel must still inspect the input');
+  assert.ok(normal.stage_traces.slice(9).every(stage => stage.status === 'BLOCKED'),
+    'no downstream solver, ledger, checkpoint, or publication side effects may run after the cleanroom blocker');
+  assert.equal(normal.overall_success, false, 'unavailable cleanroom must keep closure fail-closed');
   console.log(JSON.stringify({
     test: 'solution-pipeline-execution',
     sentinel_circuit_breaker: 'PASS',
