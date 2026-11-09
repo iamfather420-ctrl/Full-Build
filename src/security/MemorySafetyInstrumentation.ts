@@ -19,14 +19,22 @@ export class MemorySafetyInstrumentation {
       readNumber('/sys/fs/cgroup/memory.current'), readNumber('/sys/fs/cgroup/memory.peak'),
       readNumber('/sys/fs/cgroup/memory.max'), readFile('/sys/fs/cgroup/memory.events', 'utf8').catch(() => '')
     ]);
-    const oomLine = eventsText.split('\n').find(line => line.startsWith('oom '));
-    const oom = oomLine ? Number(oomLine.split(/\s+/)[1]) : undefined;
+    const eventCounts = new Map(eventsText.split('\n').filter(Boolean).map(line => {
+      const [name, count] = line.trim().split(/\s+/);
+      return [name, Number(count)] as const;
+    }));
+    const oom = eventCounts.get('oom');
+    const oomKill = eventCounts.get('oom_kill');
+    const oomEvents = oom === undefined || oomKill === undefined ? undefined : oom + oomKill;
     const cgroupLimitBytes = limit;
     const measured = Math.max(m.rss, current ?? 0);
-    const withinLimit = measured <= limitBytes && (cgroupLimitBytes === undefined || cgroupLimitBytes <= limitBytes) && (oom ?? 0) === 0;
+    const instrumentationAvailable = current !== undefined && peak !== undefined && limit !== undefined &&
+      oom !== undefined && oomKill !== undefined;
+    const withinLimit = instrumentationAvailable && measured <= limitBytes &&
+      cgroupLimitBytes! <= limitBytes && oomEvents === 0;
     return { rssBytes: m.rss, heapUsedBytes: m.heapUsed, heapLimitBytes: h.heap_size_limit,
       externalBytes: m.external, arrayBuffersBytes: m.arrayBuffers, maxRssBytes: r.maxRSS * 1024,
-      cgroupCurrentBytes: current, cgroupPeakBytes: peak, cgroupLimitBytes, cgroupOomEvents: oom,
-      withinLimit, instrumentationAvailable: current !== undefined && peak !== undefined && limit !== undefined };
+      cgroupCurrentBytes: current, cgroupPeakBytes: peak, cgroupLimitBytes, cgroupOomEvents: oomEvents,
+      withinLimit, instrumentationAvailable };
   }
 }
