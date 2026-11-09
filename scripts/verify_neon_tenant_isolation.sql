@@ -4,6 +4,7 @@ SELECT set_config('solvex.test_tenant_a', :'tenant_a', false);
 SELECT set_config('solvex.test_tenant_b', :'tenant_b', false);
 
 DO $do$
+<<verify_neon_tenant_isolation>>
 DECLARE
   tenant_a text := current_setting('solvex.test_tenant_a');
   tenant_b text := current_setting('solvex.test_tenant_b');
@@ -19,6 +20,7 @@ DECLARE
   tested integer := 0;
   role_bypass boolean;
   role_super boolean;
+  tenant_column_exists boolean;
   changed_rows integer := 0;
   write_denied boolean := false;
 BEGIN
@@ -40,7 +42,7 @@ BEGIN
       FROM pg_class c
       JOIN pg_namespace n ON n.oid = c.relnamespace
       LEFT JOIN pg_policies p ON p.schemaname = n.nspname AND p.tablename = c.relname
-     WHERE n.nspname = 'public' AND c.relname = table_name AND c.relkind IN ('r','p')
+     WHERE n.nspname = 'public' AND c.relname = verify_neon_tenant_isolation.table_name AND c.relkind IN ('r','p')
      GROUP BY c.relrowsecurity, c.relforcerowsecurity;
 
     IF NOT FOUND THEN RAISE EXCEPTION 'Required tenant fixture table public.% is missing', table_name; END IF;
@@ -51,19 +53,22 @@ BEGIN
     SELECT EXISTS (
       SELECT 1 FROM information_schema.columns
        WHERE table_schema='public' AND information_schema.columns.table_name=verify_neon_tenant_isolation.table_name AND column_name='tenant_id'
-    ) INTO role_super;
-    IF NOT role_super THEN RAISE EXCEPTION 'public.% has no tenant_id column', table_name; END IF;
+    ) INTO tenant_column_exists;
+    IF NOT tenant_column_exists THEN RAISE EXCEPTION 'public.% has no tenant_id column', table_name; END IF;
 
     policy_expr := COALESCE(r.expr, '');
-    IF policy_expr !~* 'tenant_id' OR policy_expr !~ 'current_setting' THEN
+    IF policy_expr !~* 'tenant_id' OR (policy_expr !~ 'current_setting' AND policy_expr !~ 'auth\\.jwt') THEN
       RAISE EXCEPTION 'public.% policy does not expose a recognized tenant_id/current_setting boundary', table_name;
     END IF;
 
     SELECT array_agg(DISTINCT m[1]) INTO tenant_gucs
       FROM pg_policies p
       CROSS JOIN LATERAL regexp_matches(COALESCE(p.qual,'') || ' ' || COALESCE(p.with_check,p.qual,''), $re$current_setting\('([^']+)'$re$, 'g') AS m
-     WHERE p.schemaname='public' AND p.tablename=table_name;
+     WHERE p.schemaname='public' AND p.tablename=verify_neon_tenant_isolation.table_name;
 
+    IF policy_expr ~ 'auth\\.jwt' THEN
+      tenant_gucs := array_append(COALESCE(tenant_gucs, ARRAY[]::text[]), 'request.jwt.claims');
+    END IF;
     IF tenant_gucs IS NULL OR cardinality(tenant_gucs)=0 THEN
       RAISE EXCEPTION 'public.% has no discoverable tenant context setting', table_name;
     END IF;
@@ -101,7 +106,11 @@ BEGIN
     -- Attempt to reassign one tenant-A fixture row to tenant B. The subtransaction
     -- guarantees rollback; a row-level policy or privilege boundary must reject it.
     FOREACH guc_name IN ARRAY tenant_gucs LOOP
-      PERFORM set_config(guc_name, tenant_a, true);
+      IF guc_name = 'request.jwt.claims' THEN
+        PERFORM set_config(guc_name, json_build_object('tenant_id',tenant_a,'tenantId',tenant_a,'sub',tenant_a)::text, true);
+      ELSE
+        PERFORM set_config(guc_name, tenant_a, true);
+      END IF;
     END LOOP;
     changed_rows := 0;
     write_denied := false;
@@ -131,7 +140,7 @@ BEGIN
     END IF;
 
     tested := tested + 1;
-    RAISE NOTICE 'PASS public.%: forced RLS; tenant A and B can read own fixture rows and cannot read each other', table_name;
+    RAISE NOTICE 'PASS public.%: forced RLS; tenant A and B read isolation and cross-tenant UPDATE rejection verified', table_name;
   END LOOP;
 
   IF tested <> cardinality(target_tables) THEN
