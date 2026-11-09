@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { createHash, generateKeyPairSync, sign } from 'node:crypto';
+import { IndependentModelOracle } from '../src/security/IndependentModelOracle';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -27,6 +29,14 @@ async function main() {
     await writeFile(proofPath, JSON.stringify(envelope));
     await assert.rejects(() => proofs.get('proof-1', 'tenant-a'), /integrity|tenant binding/i);
 
+    const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+    const oraclePayloadHash = createHash('sha256').update('oracle-test-input').digest('hex');
+    const oracleFields = { oracleId: 'test-oracle', modelId: 'independent-test-model', inputSha256: oraclePayloadHash, verdict: 'ACCEPT' as const, rationaleSha256: createHash('sha256').update('rationale').digest('hex') };
+    const oracleCanonical = [oracleFields.oracleId, oracleFields.modelId, oracleFields.inputSha256, oracleFields.verdict, oracleFields.rationaleSha256].join('\\n');
+    const attestation = { ...oracleFields, signature: sign(null, Buffer.from(oracleCanonical), privateKey).toString('base64') };
+    assert.equal(IndependentModelOracle.verifyAttestation(attestation, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), true);
+    assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, verdict: 'REJECT' }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);
+
     const snapshot = await MemorySafetyInstrumentation.snapshot(512 * 1024 * 1024);
     assert.equal(typeof snapshot.rssBytes, 'number');
     assert.equal(typeof snapshot.withinLimit, 'boolean');
@@ -36,7 +46,7 @@ async function main() {
       () => IsolatedExecutionSandbox.execute('node:latest', ['/bin/true'], ''),
       /pinned by immutable sha256 digest/
     );
-    console.log('Security controls tests passed: tenant AAD isolation, proof integrity/tamper detection, memory telemetry, and sandbox digest pinning.');
+    console.log('Security controls tests passed: tenant AAD isolation, proof integrity/tamper detection, memory telemetry, Ed25519 oracle signature validation, and sandbox digest pinning.');
   } finally {
     await rm(root, { recursive: true, force: true });
   }
