@@ -31,7 +31,8 @@
     "verify:daisy-safety": "node scripts/verify_daisy_foundational_safety.mjs",
     "verify:67-gates": "tsx scripts/verify_67_gate_registry.ts",
     "test:solution-pipeline": "tsx scripts/test_solution_pipeline.ts",
-    "test:security-controls": "tsx scripts/test_security_controls.ts"
+    "test:security-controls": "tsx scripts/test_security_controls.ts",
+    "verify:neon-tenant-isolation": "bash scripts/verify_neon_tenant_isolation.sh"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
