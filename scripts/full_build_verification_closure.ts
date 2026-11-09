@@ -25,7 +25,8 @@ const commands = [
   'verify:enterprise',
   'verify:authoritative',
   'verify:120',
-  'verify:ci'
+  'verify:ci',
+  'verify:67-gates'
 ];
 const failures: string[] = [];
 
