@@ -262,21 +262,23 @@ export async function runEnterpriseVerification() {
   });
 
   // 14. Pipeline does not claim stage execution without implemented handlers.
-  runTest('21-Stage Pipeline Blocks Unimplemented Stage Handlers', 'PIPELINE', () => {
+  runTest('21-Stage Pipeline Emits Evidence and Blocks Unavailable Controls', 'PIPELINE', async () => {
     const pipeline = SolutionPipeline.getInstance();
-    const result = pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
+    const result = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
     if (result.overall_success) throw new Error('Pipeline claimed success without stage handlers');
-    if (result.completed_stages !== 0 || result.total_stages !== 21) {
-      throw new Error(`Expected 0 of 21 stages completed, got ${result.completed_stages} of ${result.total_stages}`);
+    if (result.stage_traces.length !== 21 || result.total_stages !== 21) {
+      throw new Error(`Expected 21 stage traces, got ${result.stage_traces.length}`);
     }
-    if (!result.rejection_reason?.startsWith('BLOCKED:')) throw new Error('Pipeline did not report a fail-closed blocker');
+    if (result.overall_success || !result.stage_traces.some(stage => stage.status === 'BLOCKED')) {
+      throw new Error('Pipeline did not preserve fail-closed status for unavailable controls');
+    }
   });
 
   // 15. Pipeline Fail-Closed Boundary Rejection
-  runTest('Pipeline Fail-Closed Gate Halts and Quarantines on Error', 'PIPELINE', () => {
+  runTest('Pipeline Fail-Closed Gate Halts and Quarantines on Error', 'PIPELINE', async () => {
     const pipeline = SolutionPipeline.getInstance();
     const badCode = 'export function bad() { /* FAIL_STAGE_9 */ return false; }';
-    const result = pipeline.runPipeline('DH-P-001', badCode);
+    const result = await pipeline.runPipeline('DH-P-001', badCode);
     if (result.overall_success) {
       throw new Error('Poisoned code traversed pipeline unexpectedly without tripping gate!');
     }
