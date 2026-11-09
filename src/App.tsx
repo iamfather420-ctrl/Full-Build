@@ -21,6 +21,7 @@ import { AuditLedgerView } from './components/AuditLedgerView';
 import { EnterpriseAuditRunner } from './components/EnterpriseAuditRunner';
 import { SovereignRole, UserContext } from './auth/AuthService';
 import { DurableStore } from './database/DurableStore';
+import { RegistryConsole } from './components/RegistryConsole';
 
 type ActiveTab =
   | 'OVERVIEW'
@@ -68,15 +69,7 @@ export default function App() {
   };
 
   if (!currentUser) {
-    return (
-      <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-        <section className="max-w-xl rounded-2xl border border-amber-800/70 bg-slate-900 p-8" role="status">
-          <h1 className="text-xl font-bold">SOLVEX + Daisy Haminja — access blocked</h1>
-          <p className="mt-3 text-slate-300">No verified OIDC session is available. This build will not create a demo identity, tenant, or owner session. Production authentication remains disabled until the signed-claims verifier and required readiness gates pass.</p>
-          <p className="mt-3 text-sm text-amber-300">No authenticated application actions are available in this state.</p>
-        </section>
-      </main>
-    );
+    return <RegistryConsole />;
   }
 
   return (
