@@ -223,7 +223,7 @@ export class SolutionPipeline {
         ? pass({ price_cents: price.final_price_cents, calculation_sha256: price.calculation_hash })
         : fail('Pricing formula deterministic assertion failed.');
     });
-    await runStage(17, () => {
+    await runStage(17, async () => {
       const bundle = ProofEngine.getInstance().getBundle('PB-DH-S-001');
       if (!bundle) return block('No proof bundle is registered; no synthetic evidence will be created.');
       try {
