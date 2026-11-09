@@ -93,14 +93,23 @@ export class SolutionPipeline {
     const sourceHash = computeSha256(normalizedCode);
     const paradox = ParadoxRegistry.getInstance().getByCode(paradoxCode);
     let theoremCertificate = '';
-    let latestEvidence: Record<string, unknown> = {};
+    let haltedAt: number | undefined;
     const runStage = async (stage: number, execute: () => Promise<StageOutcome> | StageOutcome) => {
       const t = Date.now();
       let outcome: StageOutcome;
-      try { outcome = await execute(); }
-      catch (error) { outcome = { status: 'FAILED', reason: error instanceof Error ? error.message : String(error) }; }
+      // Stage 9 is an independent mandatory sentinel check. It still runs after
+      // an earlier blocker so fatal input is detected, but no downstream work runs.
+      if (haltedAt !== undefined && stage !== 9) {
+        outcome = {
+          status: 'BLOCKED',
+          reason: `Not executed: pipeline halted after stage ${haltedAt} did not pass.`
+        };
+      } else {
+        try { outcome = await execute(); }
+        catch (error) { outcome = { status: 'FAILED', reason: error instanceof Error ? error.message : String(error) }; }
+      }
       traces.push({ stage, name: this.STAGES[stage - 1], status: outcome.status, duration_ms: Math.max(0, Date.now() - t), evidence: outcome.evidence, reason: outcome.reason });
-      if (outcome.evidence) latestEvidence = { ...latestEvidence, ...outcome.evidence };
+      if (outcome.status !== 'PASSED' && haltedAt === undefined) haltedAt = stage;
       return outcome;
     };
     const pass = (evidence: Record<string, unknown>): StageOutcome => ({ status: 'PASSED', evidence });
