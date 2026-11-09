@@ -173,7 +173,7 @@ try {
   assert.equal(neonResult.present_tables, 27);
   assert.equal(neonResult.tenant_isolation_verified, true);
   assert.equal(neonResult.read_only, true);
-  assert.ok(neonStatements.every(sql => /^\\s*SELECT\\b/i.test(sql)),
+  assert.ok(neonStatements.every(sql => /^\s*SELECT\b/i.test(sql)),
     'Neon audit issues SELECT statements only');
 
   const unsafeNeonAudit = new NeonSandboxReadOnlyAudit(async (sql) => {
