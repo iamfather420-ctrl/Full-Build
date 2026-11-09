@@ -240,7 +240,7 @@ export class DaisySubsystemExecutors {
       // 11. DN-11: 21-Stage Problem Pipeline
       case 'DN-11': {
         const pipe = SolutionPipeline.getInstance();
-        const res = pipe.runPipeline('DH-P-001', 'export function solve() { return true; }');
+        const res = await pipe.runPipeline('DH-P-001', 'export function solve() { return true; }');
         return {
           node_id: 'DN-11',
           name: '21-Stage Problem Pipeline',
@@ -256,7 +256,7 @@ export class DaisySubsystemExecutors {
       // 12. DN-12: Fail-Closed Circuit Breaker
       case 'DN-12': {
         const pipe = SolutionPipeline.getInstance();
-        const res = pipe.runPipeline('DH-P-001', '/* FAIL_STAGE_9 */ return false;');
+        const res = await pipe.runPipeline('DH-P-001', '/* FAIL_STAGE_9 */ return false;');
         const stopped = res.rejection_reason?.includes('Sentinel detected fatal specification anomaly') === true;
         return {
           node_id: 'DN-12',
