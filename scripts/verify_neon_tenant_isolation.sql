@@ -19,6 +19,8 @@ DECLARE
   tested integer := 0;
   role_bypass boolean;
   role_super boolean;
+  changed_rows integer := 0;
+  write_denied boolean := false;
 BEGIN
   IF tenant_a = '' OR tenant_b = '' OR tenant_a = tenant_b THEN
     RAISE EXCEPTION 'Two distinct, non-empty fixture tenant IDs are required';
@@ -98,12 +100,12 @@ BEGIN
 
     -- Attempt to reassign one tenant-A fixture row to tenant B. The subtransaction
     -- guarantees rollback; a row-level policy or privilege boundary must reject it.
-    PERFORM set_config(guc_name, tenant_a, true) FROM unnest(tenant_gucs) AS keys(guc_name);
-    DECLARE
-      changed_rows integer := 0;
-      write_denied boolean := false;
+    FOREACH guc_name IN ARRAY tenant_gucs LOOP
+      PERFORM set_config(guc_name, tenant_a, true);
+    END LOOP;
+    changed_rows := 0;
+    write_denied := false;
     BEGIN
-      BEGIN
         EXECUTE format(
           'UPDATE public.%I SET tenant_id = $1 WHERE ctid = (SELECT ctid FROM public.%I WHERE tenant_id::text = $2 LIMIT 1)',
           table_name, table_name
@@ -123,11 +125,10 @@ BEGIN
           ELSE
             RAISE;
           END IF;
-      END;
-      IF NOT write_denied THEN
-        RAISE EXCEPTION 'Cross-tenant UPDATE was permitted on public.%', table_name;
-      END IF;
     END;
+    IF NOT write_denied THEN
+      RAISE EXCEPTION 'Cross-tenant UPDATE was permitted on public.%', table_name;
+    END IF;
 
     tested := tested + 1;
     RAISE NOTICE 'PASS public.%: forced RLS; tenant A and B can read own fixture rows and cannot read each other', table_name;
