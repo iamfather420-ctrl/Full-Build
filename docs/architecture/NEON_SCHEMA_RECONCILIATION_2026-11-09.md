@@ -77,3 +77,93 @@ Run `scripts/inspect_neon_schema_readonly.sql` on the selected disposable branch
 - `attached_assets/extracted/marketplace/drizzle` and `attached_assets/extracted/platform/drizzle` — historical MySQL schemas
 - `docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md` — recorded production schema and release requirements
 - `scripts/verify_neon_tenant_isolation.sql` on PR #76 — eight-table security probe
+
+
+## Runtime implementation audit (2026-11-09)
+
+The following findings were checked against the exact PR #76 source head
+`0fede9d285a8f569d12664884fd1c2620ab4426a`. They are source-level findings,
+not claims that a production runtime was exercised.
+
+### Authentication and tenant identity
+
+- `src/auth/AuthService.ts` intentionally rejects local token issuance,
+  returns invalid for token verification, and denies authorization until a
+  first-party/OIDC verifier is implemented.
+- `src/auth/SessionGuard.ts` denies protected operations even when a session
+  object is structurally complete. This is fail-closed, but it means a live
+  authenticated workflow is not yet implemented.
+- `src/marketplace/MarketplaceEngine.ts` assigns newly published offers the
+  hard-coded tenant `TENANT_SOVEREIGN_ROOT`. This must be replaced with a
+  verified server-side tenant context.
+- `createOrder(tenantId, offerId)` accepts a tenant ID as an argument and
+  does not verify that the offer belongs to that tenant before constructing
+  the order. The method must derive tenant identity from a verified session
+  and enforce offer ownership in the repository transaction.
+- `src/marketplace/OrderLifecycle.ts` reads an order by ID without a tenant
+  predicate before invoking authorization. Authorization currently denies
+  all requests, but the repository lookup must be tenant-scoped before
+  enabling authenticated transitions.
+
+### Neon and application persistence
+
+- `src/database/NeonPersistence.ts` can connect and inspect table/RLS
+  metadata, but its migration and generic write methods explicitly return
+  BLOCKED. It is not yet a working typed Neon persistence implementation.
+- Its generic tenant read assumes each allowed table has both `tenant_id`
+  and `created_at`, then merges a `payload_json` field into the result.
+  The inspected Neon schema does not provide that common contract for all
+  27 logical tables. A typed repository per domain table is required.
+- `src/database/SqliteStore.ts` uses a generic seven-column
+  `data_json` representation for 27 local tables. Node can use a local
+  SQLite file; browser fallback is in-memory. This local model is not the
+  physical Neon schema.
+- `src/database/DurableStore.ts` persists browser state through
+  `localStorage`; persistence errors are swallowed. Its audit chain is
+  explicitly not digitally signed. This is not evidence of durable,
+  server-side proof or marketplace persistence.
+- `MarketplaceEngine.ts` catches SQLite insert failures and can still
+  return a successful offer/order result. These error paths need to fail
+  closed and report persistence failure rather than acknowledge a write.
+
+### Proof storage and independent oracle
+
+- `src/security/PersistentProofStore.ts` implements atomic file writes and
+  HMAC/readback verification, but requires `SOLVEX_PROOF_DIR` and a
+  32-byte `SOLVEX_PROOF_HMAC_KEY`. The source review did not find evidence
+  that a durable volume, backup policy, key injection, or deployed proof
+  readback is configured.
+- The existing `artifacts/persistence-verification.json` is explicitly
+  scoped `LOCAL`: local SQLite checks passed, while Neon is
+  `PROVIDER_REQUIRED` and `production_persistence_ready=false`. Its
+  evidence date is 2026-11-02 and it is not fresh proof of the current PR
+  head or a live Neon deployment.
+- `src/security/IndependentModelOracle.ts` is a client/verifier wrapper.
+  It requires a digest-pinned `SOLVEX_ORACLE_IMAGE`, `SOLVEX_ORACLE_ID`,
+  and `SOLVEX_ORACLE_ED25519_PUBLIC_KEY`; the source tree does not by
+  itself prove that an independent oracle service/image is built, deployed,
+  reachable, or signing attestations.
+- `sandbox/Dockerfile` is a small digest-pinned Node execution image.
+  `IsolatedExecutionSandbox.ts` invokes the Docker CLI and requires a
+  working Docker daemon. No dedicated sandbox image build/scan/publish/
+  deploy workflow was present in the inspected workflow tree. Vercel
+  serverless deployment is not a substitute for this Docker host boundary.
+
+### Required implementation gates
+
+1. Replace hard-coded or caller-supplied tenant identity with a verified
+   server-side session context.
+2. Implement typed PostgreSQL repositories and transactions against the
+   actual Neon columns and constraints; no generic `payload_json` writes.
+3. Remove success-on-swallowed-write-error paths and add idempotency,
+   rollback, and tenant-scoped readback tests.
+4. Integrate `PersistentProofStore` with durable storage, secret injection,
+   backup/restore, and restart/readback tests against the exact release
+   commit.
+5. Build and scan the sandbox image on a Docker-capable worker, publish it
+   by immutable digest, and verify runtime execution from that worker.
+6. Deploy the independent oracle separately, pin its image digest, inject
+   its Ed25519 public key, and verify a live signed attestation bound to a
+   test input.
+7. Keep production activation and payments disabled until these gates and
+   the real Neon tenant isolation test pass.
