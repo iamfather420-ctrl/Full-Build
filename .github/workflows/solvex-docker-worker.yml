@@ -1,0 +1,63 @@
+name: SolveX Docker sandbox verification
+
+on:
+  pull_request:
+    paths:
+      - "sandbox/**"
+      - "railway/solvex-docker-worker/**"
+      - ".github/workflows/solvex-docker-worker.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "sandbox/**"
+      - "railway/solvex-docker-worker/**"
+      - ".github/workflows/solvex-docker-worker.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  docker-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pull and resolve immutable Node base
+        id: base
+        shell: bash
+        run: |
+          docker pull node:22-alpine
+          BASE="$(docker image inspect node:22-alpine --format '{{index .RepoDigests 0}}')"
+          case "$BASE" in *@sha256:*) ;; *) echo "Could not resolve immutable base digest" >&2; exit 1 ;; esac
+          echo "image=$BASE" >> "$GITHUB_OUTPUT"
+      - name: Build sandbox image
+        run: docker build --build-arg NODE_BASE_IMAGE="${{ steps.base.outputs.image }}" -f sandbox/Dockerfile -t solvex-sandbox:ci .
+      - name: Verify constrained execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/solvex-isolation-check.mjs <<'JS'
+          import { writeFile } from 'node:fs/promises';
+          import assert from 'node:assert/strict';
+          assert.notEqual(process.getuid?.(), 0, 'must not run as root');
+          let rootWriteBlocked = false;
+          try { await writeFile('/solvex-root-write-test', 'bad'); } catch { rootWriteBlocked = true; }
+          assert.equal(rootWriteBlocked, true, 'root filesystem must be read-only');
+          await writeFile('/tmp/solvex-tmp-write-test', 'ok');
+          let networkBlocked = false;
+          try { await fetch('https://example.com', { signal: AbortSignal.timeout(1500) }); } catch { networkBlocked = true; }
+          assert.equal(networkBlocked, true, 'network must be disabled');
+          JS
+          RECEIPT="$(docker run --rm -i --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --memory=256m --memory-swap=256m --cpus=0.5 --pids-limit=64 --user=65534:65534 --tmpfs=/tmp:rw,noexec,nosuid,size=16m --env=NODE_OPTIONS=--max-old-space-size=128 solvex-sandbox:ci < /tmp/solvex-isolation-check.mjs)"
+          echo "$RECEIPT"
+          node -e 'const r=JSON.parse(process.argv[1]); if (!r.accepted || r.exit_code !== 0) process.exit(1)' "$RECEIPT"
+      - name: Verify execution timeout
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/solvex-timeout.mjs <<'JS'
+          await new Promise(resolve => setTimeout(resolve, 30000));
+          JS
+          RECEIPT="$(docker run --rm -i --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --memory=256m --memory-swap=256m --cpus=0.5 --pids-limit=64 --user=65534:65534 --tmpfs=/tmp:rw,noexec,nosuid,size=16m solvex-sandbox:ci < /tmp/solvex-timeout.mjs)"
+          echo "$RECEIPT"
+          node -e 'const r=JSON.parse(process.argv[1]); if (!r.timed_out) process.exit(1)' "$RECEIPT"
