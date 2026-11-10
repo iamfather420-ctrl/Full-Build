@@ -60,7 +60,7 @@ BEGIN
     SELECT EXISTS (
       SELECT 1 FROM information_schema.columns c
        WHERE c.table_schema = 'public'
-         AND c.v_table_name = v_table_name
+         AND c.table_name = v_table_name
          AND c.column_name = 'tenant_id'
     ) INTO tenant_column_exists;
     IF NOT tenant_column_exists THEN
