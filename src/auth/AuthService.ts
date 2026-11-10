@@ -62,7 +62,7 @@ export class AuthService {
       const jwk = jwks.keys?.find(key => key.kid === header.kid && key.kty === expectedKty && (!key.use || key.use === 'sig') && (!key.alg || key.alg === header.alg) && (header.alg !== 'EdDSA' || key.crv === 'Ed25519'));
       if (!jwk) return { valid: false, error: 'No matching signing key in configured JWKS.' };
 
-      const publicKey = createPublicKey({ key: jwk as JsonWebKey, format: 'jwk' });
+      const publicKey = createPublicKey({ key: jwk as any, format: 'jwk' });
       const signatureValid = verifySignature(
         header.alg === 'EdDSA' ? null : 'RSA-SHA256',
         Buffer.from(parts[0] + '.' + parts[1]),
