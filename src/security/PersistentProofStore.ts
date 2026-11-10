@@ -123,10 +123,10 @@ export class PersistentProofStore {
 
   private async s3Request(method: 'GET' | 'PUT', objectKey: string, body?: Buffer, contentType?: string): Promise<Response> {
     const now = new Date();
-    const amzDate = now.toISOString().replace(/[:-]|\\.\\d{3}/g, '');
+    const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
     const dateStamp = amzDate.slice(0, 8);
     const payloadHash = createHash('sha256').update(body ?? Buffer.alloc(0)).digest('hex');
-    const canonicalUri = `${this.endpoint.pathname.replace(/\\/$/, '')}/${this.encodePath(this.bucket)}/${this.encodePath(objectKey)}`;
+    const canonicalUri = `${this.endpoint.pathname.replace(/\/$/, '')}/${this.encodePath(this.bucket)}/${this.encodePath(objectKey)}`;
     const url = new URL(this.endpoint.origin + canonicalUri);
 
     const canonicalHeaders: Record<string, string> = {
@@ -137,15 +137,15 @@ export class PersistentProofStore {
     if (contentType) canonicalHeaders['content-type'] = contentType;
     const signedHeaders = Object.keys(canonicalHeaders).sort().join(';');
     const headerBlock = Object.keys(canonicalHeaders).sort()
-      .map(name => `${name}:${canonicalHeaders[name].trim()}\\n`).join('');
+      .map(name => `${name}:${canonicalHeaders[name].trim()}\n`).join('');
     const canonicalRequest = [
       method, canonicalUri, '', headerBlock, signedHeaders, payloadHash
-    ].join('\\n');
+    ].join('\n');
     const scope = `${dateStamp}/${this.region}/s3/aws4_request`;
     const stringToSign = [
       'AWS4-HMAC-SHA256', amzDate, scope,
       createHash('sha256').update(canonicalRequest).digest('hex')
-    ].join('\\n');
+    ].join('\n');
     const dateKey = this.hmac('AWS4' + this.secretAccessKey, dateStamp);
     const regionKey = this.hmac(dateKey, this.region);
     const serviceKey = this.hmac(regionKey, 's3');
