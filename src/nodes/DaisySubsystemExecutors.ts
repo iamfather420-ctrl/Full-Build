@@ -546,9 +546,9 @@ export class DaisySubsystemExecutors {
         const attempt = await lifecycle.transitionOrder(orderId, 'ORDER_CREATED');
         const storedOrder = sqlite.getRawDb().get('SELECT status FROM orders WHERE id = ?', [orderId]);
         const stateUnchanged = storedOrder?.status === 'OFFER';
-        const blockedAsRequired = !attempt.success &&
-          /BLOCKED:/i.test(attempt.error || '') &&
-          stateUnchanged;
+        const authorizationDenied = !attempt.success &&
+          /verified OIDC identity is required|signed tenant claims are required|tenant boundary rejected/i.test(attempt.error || '');
+        const blockedAsRequired = authorizationDenied && stateUnchanged;
 
         return {
           node_id: 'DN-28',

@@ -8,6 +8,14 @@ async function main() {
   console.log('===========================================================');
 
   const rep = await runDaisy54NodeCoverage();
+  const orderGuard = rep.results.find(node => node.node_id === 'DN-28');
+  if (
+    orderGuard?.status !== 'FAIL_CLOSED' ||
+    orderGuard.evidence.unauthenticated_transition_rejected !== true ||
+    orderGuard.evidence.order_state_unchanged !== true
+  ) {
+    throw new Error('DN-28 must prove unauthenticated order transitions are rejected without changing persisted state.');
+  }
   for (const n of rep.results) {
     console.log(`[${n.node_id}] ${n.name.padEnd(52)}: [${n.status}] (${n.claim_scope})`);
   }

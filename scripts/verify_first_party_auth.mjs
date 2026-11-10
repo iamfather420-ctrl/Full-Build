@@ -1,24 +1,23 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const read = (path: string) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
-
+const read = (path) => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const auth = read('src/auth/AuthService.ts');
-const sessionGuard = read('src/auth/SessionGuard.ts');
-const api = read('src/api/ApiRouter.ts');
+const api = read('server.ts');
 
-assert.match(auth, /throw new Error\('BLOCKED: local token issuance is disabled/,
-  'AuthService must reject local token issuance.');
-assert.match(auth, /valid: false, error: 'BLOCKED: no configured production OIDC verifier is available\./,
-  'AuthService must reject unverified tokens.');
-assert.match(auth, /BLOCKED: verified identity and signed tenant claims are required\./,
-  'AuthService must reject unauthorized access.');
-assert.match(auth, /requireVerifiedSession\(/,
-  'AuthService must expose a verified-session check.');
-assert.match(sessionGuard, /status: 'BLOCKED'/,
-  'SessionGuard must remain fail-closed.');
-assert.match(sessionGuard, /no verified first-party session/,
-  'SessionGuard must require a verified first-party session.');
-assert.match(api, /readiness: 'BLOCKED'/,
-  'System status must remain read-only and blocked until verified auth is implemented.');
-console.log('PASS: first-party auth/session layer remains fail-closed and does not advertise production identity or session authorization.');
+assert.match(auth, /createPublicKey/);
+assert.match(auth, /verifySignature/);
+assert.match(auth, /AUTH_ISSUER/);
+assert.match(auth, /AUTH_AUDIENCE/);
+assert.match(auth, /AUTH_JWKS_URL/);
+assert.match(auth, /claims\.tenant_id/);
+assert.match(auth, /claims\.role/);
+assert.match(auth, /claims\.exp/);
+assert.match(auth, /claims\.iss !== issuer/);
+assert.match(auth, /Only keyed RS256 JWTs are accepted/);
+assert.match(api, /app\.put\('\/api\/proofs\/:proofId'/);
+assert.match(api, /app\.get\('\/api\/proofs\/:proofId'/);
+assert.match(api, /user\.tenant_id/);
+assert.match(api, /DURABLE_READBACK_VERIFIED/);
+assert.match(api, /PROOF_AUTH_NOT_CONFIGURED/);
+console.log('PASS: proof API requires trusted RS256 OIDC identity, signed tenant claims, and durable object readback.');
