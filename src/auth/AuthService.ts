@@ -22,6 +22,8 @@ interface JwtClaims {
   email?: string;
   tenant_id?: string;
   role?: string;
+  organizationId?: string;
+  activeOrganizationId?: string;
 }
 
 export class AuthService {
@@ -53,15 +55,16 @@ export class AuthService {
 
       const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')) as JwtHeader;
       const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as JwtClaims;
-      if (header.alg !== 'RS256' || !header.kid) return { valid: false, error: 'Only keyed RS256 JWTs are accepted.' };
+      if ((header.alg !== 'RS256' && header.alg !== 'EdDSA') || !header.kid) return { valid: false, error: 'Only keyed RS256 or EdDSA JWTs are accepted.' };
 
       const jwks = await this.getJwks(jwksUrl);
-      const jwk = jwks.keys?.find(key => key.kid === header.kid && key.kty === 'RSA' && (!key.use || key.use === 'sig') && (!key.alg || key.alg === 'RS256'));
+      const expectedKty = header.alg === 'EdDSA' ? 'OKP' : 'RSA';
+      const jwk = jwks.keys?.find(key => key.kid === header.kid && key.kty === expectedKty && (!key.use || key.use === 'sig') && (!key.alg || key.alg === header.alg) && (header.alg !== 'EdDSA' || key.crv === 'Ed25519'));
       if (!jwk) return { valid: false, error: 'No matching signing key in configured JWKS.' };
 
       const publicKey = createPublicKey({ key: jwk as JsonWebKey, format: 'jwk' });
       const signatureValid = verifySignature(
-        'RSA-SHA256',
+        header.alg === 'EdDSA' ? null : 'RSA-SHA256',
         Buffer.from(parts[0] + '.' + parts[1]),
         publicKey,
         Buffer.from(parts[2], 'base64url')
@@ -80,17 +83,19 @@ export class AuthService {
       }
 
       const roles: SovereignRole[] = ['OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER'];
-      if (!claims.sub || !claims.email || !claims.tenant_id || !roles.includes(claims.role as SovereignRole)) {
-        return { valid: false, error: 'JWT is missing required verified user, tenant, email, or role claims.' };
+      const tenantId = claims.tenant_id || claims.organizationId || claims.activeOrganizationId || claims.sub;
+      const role = roles.includes(claims.role as SovereignRole) ? claims.role as SovereignRole : 'CUSTOMER';
+      if (!claims.sub || !claims.email || !tenantId) {
+        return { valid: false, error: 'JWT is missing verified subject, email, and tenant scope.' };
       }
 
       return {
         valid: true,
         user: {
           user_id: claims.sub,
-          tenant_id: claims.tenant_id,
+          tenant_id: tenantId,
           email: claims.email,
-          role: claims.role as SovereignRole,
+          role,
           issued_at: claims.iat
         }
       };
