@@ -65,7 +65,7 @@ export class PersistentProofStore {
     const objectKey = this.objectKey(tenantId, proofId);
     const bytes = Buffer.from(JSON.stringify(envelope), 'utf8');
     const uploaded = await this.s3Request('PUT', objectKey, bytes, 'application/json');
-    if (!uploaded.ok) throw new Error(`Proof object upload failed with HTTP ${uploaded.status}.`);
+    if (!uploaded.ok) throw new Error(`Proof object upload failed with HTTP ${uploaded.status}: ${(await uploaded.text()).slice(0,1000)}`);
 
     // Do not acknowledge persistence until a separate GET returns the exact bytes
     // and the envelope passes both digest and tenant-binding verification.
