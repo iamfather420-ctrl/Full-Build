@@ -575,7 +575,7 @@ export class AuthoritativeVerificationPipeline {
       transitionAttempts.every(t => t.success) &&
       actualFinalStatus === 'DEPLOYED';
     const lifecycleBlocked = !e2eOk && transitionAttempts.some(t =>
-      !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
+      !t.success && /verified OIDC identity is required|signed tenant claims are required|tenant boundary rejected/i.test(t.error || '')
     );
     const lifecycleGateStatus: GateResult['status'] = e2eOk
       ? 'PASSED'
