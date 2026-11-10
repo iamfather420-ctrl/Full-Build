@@ -159,6 +159,6 @@ export class PersistentProofStore {
       authorization
     };
     if (contentType) headers['content-type'] = contentType;
-    return fetch(url, { method, headers, ...(body ? { body } : {}) });
+    return fetch(url, { method, headers, ...(body ? { body: new Uint8Array(body) } : {}) });
   }
 }
