@@ -193,6 +193,10 @@ export class NeonStore {
         JOIN pg_namespace n ON n.oid = c.relnamespace
         WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')
           AND c.relname NOT LIKE '\\_%' ESCAPE '\\'
+          AND EXISTS (
+            SELECT 1 FROM information_schema.columns col
+            WHERE col.table_schema = n.nspname AND col.table_name = c.relname AND col.column_name = 'tenant_id'
+          )
         ORDER BY c.relname
       `);
       const tables = Array.isArray(rows) ? rows : [];
