@@ -1,161 +1,92 @@
--- Read-only tenant isolation probe. Run only against a disposable Neon branch.
--- psql variables tenant_a and tenant_b must identify two existing fixture tenants.
-SELECT set_config('solvex.test_tenant_a', :'tenant_a', false);
-SELECT set_config('solvex.test_tenant_b', :'tenant_b', false);
+-- Fail-closed RLS probe for the SolveX signed-claim architecture.
+-- Runs only against the disposable SOLVEX_ISOLATION_TEST Neon branch.
+-- This test deliberately does NOT forge or retrieve SOLVEX_AUTH_SECRET.
+-- It verifies that an absent/invalid app.auth_token produces no claims and
+-- exposes no tenant rows through any protected table. A separate signed-token
+-- integration test is still required to prove authenticated A/B isolation.
+
+SELECT set_config('app.auth_token', '', false);
 
 DO $do$
-<<verify_neon_tenant_isolation>>
 DECLARE
-  tenant_a text := current_setting('solvex.test_tenant_a');
-  tenant_b text := current_setting('solvex.test_tenant_b');
-  target_tables text[] := ARRAY['solutions','offers','orders','proof_bundles','proof_evidence','verification_runs','audit_records','telemetry'];
+  target_tables text[] := ARRAY[
+    'solutions','offers','orders','proof_bundles',
+    'proof_evidence','verification_runs','audit_records','telemetry'
+  ];
   table_name text;
   r record;
+  visible_rows bigint;
   policy_expr text;
-  tenant_gucs text[];
-  guc_name text;
-  guc_value text;
-  visible_own bigint;
-  visible_other bigint;
   tested integer := 0;
   role_bypass boolean;
   role_super boolean;
   tenant_column_exists boolean;
-  tenant_column_type text;
-  changed_rows integer := 0;
-  write_denied boolean := false;
+  claims jsonb;
 BEGIN
-  IF tenant_a = '' OR tenant_b = '' OR tenant_a = tenant_b THEN
-    RAISE EXCEPTION 'Two distinct, non-empty fixture tenant IDs are required';
+  SELECT COALESCE(rolbypassrls, true), COALESCE(rolsuper, true)
+    INTO role_bypass, role_super
+    FROM pg_roles WHERE rolname = current_user;
+
+  IF role_bypass OR role_super THEN
+    RAISE EXCEPTION 'Refusing RLS probe under BYPASSRLS/superuser role: %', current_user;
   END IF;
 
-  SELECT rolbypassrls, rolsuper INTO role_bypass, role_super
-  FROM pg_roles WHERE rolname = current_user;
-  IF COALESCE(role_bypass, true) OR COALESCE(role_super, true) THEN
-    RAISE EXCEPTION 'Refusing tenant test under a BYPASSRLS or superuser role: %', current_user;
+  claims := solvex_private.current_claims();
+  IF claims IS NOT NULL THEN
+    RAISE EXCEPTION 'Empty app.auth_token unexpectedly produced authenticated claims';
   END IF;
 
   FOREACH table_name IN ARRAY target_tables LOOP
     SELECT c.relrowsecurity, c.relforcerowsecurity,
-           string_agg(COALESCE(p.qual, '') || ' ' || COALESCE(p.with_check, p.qual, ''), ' ') AS expr,
-           count(p.policyname)::integer AS policy_count
+           count(p.policyname)::integer AS policy_count,
+           string_agg(COALESCE(p.qual, '') || ' ' || COALESCE(p.with_check, ''), ' ') AS expr
       INTO r
       FROM pg_class c
       JOIN pg_namespace n ON n.oid = c.relnamespace
-      LEFT JOIN pg_policies p ON p.schemaname = n.nspname AND p.tablename = c.relname
-     WHERE n.nspname = 'public' AND c.relname = verify_neon_tenant_isolation.table_name AND c.relkind IN ('r','p')
+      LEFT JOIN pg_policies p
+        ON p.schemaname = n.nspname AND p.tablename = c.relname
+     WHERE n.nspname = 'public'
+       AND c.relname = table_name
+       AND c.relkind IN ('r','p')
      GROUP BY c.relrowsecurity, c.relforcerowsecurity;
 
-    IF NOT FOUND THEN RAISE EXCEPTION 'Required tenant fixture table public.% is missing', table_name; END IF;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Required protected table public.% is missing', table_name;
+    END IF;
     IF NOT r.relrowsecurity OR NOT r.relforcerowsecurity OR r.policy_count < 1 THEN
-      RAISE EXCEPTION 'RLS is not enabled, forced, and policy-backed for public.%', table_name;
+      RAISE EXCEPTION 'RLS must be enabled, forced, and policy-backed on public.%', table_name;
     END IF;
 
     SELECT EXISTS (
-      SELECT 1 FROM information_schema.columns
-       WHERE table_schema='public' AND information_schema.columns.table_name=verify_neon_tenant_isolation.table_name AND column_name='tenant_id'
+      SELECT 1 FROM information_schema.columns c
+       WHERE c.table_schema = 'public'
+         AND c.table_name = table_name
+         AND c.column_name = 'tenant_id'
     ) INTO tenant_column_exists;
-    IF NOT tenant_column_exists THEN RAISE EXCEPTION 'public.% has no tenant_id column', table_name; END IF;
-    SELECT format_type(a.atttypid, a.atttypmod) INTO tenant_column_type
-      FROM pg_attribute a
-      JOIN pg_class c ON c.oid = a.attrelid
-      JOIN pg_namespace n ON n.oid = c.relnamespace
-     WHERE n.nspname = 'public' AND c.relname = verify_neon_tenant_isolation.table_name
-       AND a.attname = 'tenant_id' AND a.attnum > 0 AND NOT a.attisdropped;
-    IF tenant_column_type IS NULL THEN
-      RAISE EXCEPTION 'Could not determine tenant_id type for public.%', table_name;
+    IF NOT tenant_column_exists THEN
+      RAISE EXCEPTION 'public.% has no tenant_id column', table_name;
     END IF;
 
     policy_expr := COALESCE(r.expr, '');
-    IF policy_expr !~* 'tenant_id' OR (policy_expr !~ 'current_setting' AND policy_expr !~ 'auth\.jwt') THEN
-      RAISE EXCEPTION 'public.% policy does not expose a recognized tenant_id/current_setting boundary', table_name;
+    IF policy_expr !~* 'tenant_id'
+       OR policy_expr !~* 'solvex_private[.]current_claims[[:space:]]*[(]' THEN
+      RAISE EXCEPTION 'public.% policy does not bind tenant_id to solvex_private.current_claims()', table_name;
     END IF;
 
-    SELECT array_agg(DISTINCT m[1]) INTO tenant_gucs
-      FROM pg_policies p
-      CROSS JOIN LATERAL regexp_matches(COALESCE(p.qual,'') || ' ' || COALESCE(p.with_check,p.qual,''), $re$current_setting\('([^']+)'$re$, 'g') AS m
-     WHERE p.schemaname='public' AND p.tablename=verify_neon_tenant_isolation.table_name;
-
-    IF policy_expr ~ 'auth\.jwt' THEN
-      tenant_gucs := array_append(COALESCE(tenant_gucs, ARRAY[]::text[]), 'request.jwt.claims');
-    END IF;
-    IF tenant_gucs IS NULL OR cardinality(tenant_gucs)=0 THEN
-      RAISE EXCEPTION 'public.% has no discoverable tenant context setting', table_name;
-    END IF;
-
-    FOREACH guc_name IN ARRAY tenant_gucs LOOP
-      IF guc_name ILIKE '%tenant%' THEN
-        PERFORM set_config(guc_name, tenant_a, true);
-      ELSIF guc_name = 'request.jwt.claims' THEN
-        PERFORM set_config(guc_name, json_build_object('tenant_id',tenant_a,'tenantId',tenant_a,'sub',tenant_a)::text, true);
-      ELSE
-        RAISE EXCEPTION 'Unrecognized RLS context key % in public.%', guc_name, table_name;
-      END IF;
-    END LOOP;
-
-    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text = $1', table_name) INTO visible_own USING tenant_a;
-    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text <> $1', table_name) INTO visible_other USING tenant_a;
-    IF visible_own < 1 OR visible_other <> 0 THEN
-      RAISE EXCEPTION 'Tenant A isolation failed for public.% (own visible %, other visible %)', table_name, visible_own, visible_other;
-    END IF;
-
-    FOREACH guc_name IN ARRAY tenant_gucs LOOP
-      IF guc_name ILIKE '%tenant%' THEN
-        PERFORM set_config(guc_name, tenant_b, true);
-      ELSIF guc_name = 'request.jwt.claims' THEN
-        PERFORM set_config(guc_name, json_build_object('tenant_id',tenant_b,'tenantId',tenant_b,'sub',tenant_b)::text, true);
-      END IF;
-    END LOOP;
-
-    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text = $1', table_name) INTO visible_own USING tenant_b;
-    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text <> $1', table_name) INTO visible_other USING tenant_b;
-    IF visible_own < 1 OR visible_other <> 0 THEN
-      RAISE EXCEPTION 'Tenant B isolation failed for public.% (own visible %, other visible %)', table_name, visible_own, visible_other;
-    END IF;
-
-    -- Attempt to reassign one tenant-A fixture row to tenant B. The subtransaction
-    -- guarantees rollback; a row-level policy or privilege boundary must reject it.
-    FOREACH guc_name IN ARRAY tenant_gucs LOOP
-      IF guc_name = 'request.jwt.claims' THEN
-        PERFORM set_config(guc_name, json_build_object('tenant_id',tenant_a,'tenantId',tenant_a,'sub',tenant_a)::text, true);
-      ELSE
-        PERFORM set_config(guc_name, tenant_a, true);
-      END IF;
-    END LOOP;
-    changed_rows := 0;
-    write_denied := false;
-    BEGIN
-        EXECUTE format(
-          'UPDATE public.%I SET tenant_id = $1::%s WHERE ctid = (SELECT ctid FROM public.%I WHERE tenant_id::text = $2 LIMIT 1)',
-          table_name, tenant_column_type, table_name
-        ) USING tenant_b, tenant_a;
-        GET DIAGNOSTICS changed_rows = ROW_COUNT;
-        IF changed_rows = 0 THEN
-          write_denied := true;
-        ELSE
-          RAISE EXCEPTION 'SOLVEX_WRITE_WAS_ALLOWED';
-        END IF;
-      EXCEPTION
-        WHEN insufficient_privilege OR check_violation THEN
-          write_denied := true;
-        WHEN OTHERS THEN
-          IF SQLERRM = 'SOLVEX_WRITE_WAS_ALLOWED' THEN
-            write_denied := false;
-          ELSE
-            RAISE;
-          END IF;
-    END;
-    IF NOT write_denied THEN
-      RAISE EXCEPTION 'Cross-tenant UPDATE was permitted on public.%', table_name;
+    EXECUTE format('SELECT count(*) FROM public.%I', table_name)
+      INTO visible_rows;
+    IF visible_rows <> 0 THEN
+      RAISE EXCEPTION 'Unauthenticated role can see % rows in public.%', visible_rows, table_name;
     END IF;
 
     tested := tested + 1;
-    RAISE NOTICE 'PASS public.%: forced RLS; tenant A and B read isolation and cross-tenant UPDATE rejection verified', table_name;
+    RAISE NOTICE 'PASS public.%: forced RLS, signed-claims policy, and zero unauthenticated visibility', table_name;
   END LOOP;
 
   IF tested <> cardinality(target_tables) THEN
-    RAISE EXCEPTION 'Only % of % required tenant tables were tested', tested, cardinality(target_tables);
+    RAISE EXCEPTION 'Only % of % protected tables were tested', tested, cardinality(target_tables);
   END IF;
-  RAISE NOTICE 'TENANT_ISOLATION_RESULT=PASS tables=% role=%', tested, current_user;
+
+  RAISE NOTICE 'TENANT_RLS_FAIL_CLOSED_RESULT=PASS tables=% role=%', tested, current_user;
 END
 $do$;
