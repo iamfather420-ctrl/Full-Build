@@ -90,3 +90,93 @@ BEGIN
   RAISE NOTICE 'TENANT_RLS_FAIL_CLOSED_RESULT=PASS tables=% role=%', tested, current_user;
 END
 $do$;
+
+
+-- Authenticated A/B read and cross-tenant UPDATE checks.
+-- The disposable branch provisions solvex_private.issue_ci_isolation_token(text),
+-- a SECURITY DEFINER helper restricted to session_user=solvex_iso_test and the
+-- two fixed fixture tenant IDs. It signs short-lived tokens internally; the
+-- secret and tokens are never printed or returned to CI logs.
+DO $authenticated$
+DECLARE
+  tables text[] := ARRAY['solutions','offers','orders','proof_bundles','proof_evidence','verification_runs','audit_records','telemetry'];
+  t text; token_a text; token_b text; visible_rows bigint; own_rows bigint; foreign_rows bigint;
+  changed bigint; denied boolean; tested_reads integer:=0; tested_writes integer:=0;
+BEGIN
+  IF current_user <> 'solvex_iso_test' OR session_user <> 'solvex_iso_test' THEN
+    RAISE EXCEPTION 'Must run directly as solvex_iso_test';
+  END IF;
+  IF (SELECT rolbypassrls OR rolsuper FROM pg_roles WHERE rolname=current_user) THEN
+    RAISE EXCEPTION 'Test role bypasses RLS';
+  END IF;
+  token_a:=solvex_private.issue_ci_isolation_token('tenant-enterprise-demo');
+  token_b:=solvex_private.issue_ci_isolation_token('tenant-isolation-test-b');
+
+  PERFORM set_config('app.auth_token',token_a,true);
+  IF solvex_private.current_claims()->>'tenant_id' <> 'tenant-enterprise-demo' THEN
+    RAISE EXCEPTION 'Tenant A token invalid';
+  END IF;
+  FOREACH t IN ARRAY tables LOOP
+    EXECUTE format('SELECT count(*) FROM public.%I',t) INTO visible_rows;
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text=$1',t)
+      INTO own_rows USING 'tenant-enterprise-demo';
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text<>$1',t)
+      INTO foreign_rows USING 'tenant-enterprise-demo';
+    IF visible_rows<>own_rows OR foreign_rows<>0 THEN
+      RAISE EXCEPTION 'Tenant A isolation failed on % visible=% own=% foreign=%',
+        t,visible_rows,own_rows,foreign_rows;
+    END IF;
+    tested_reads:=tested_reads+1;
+  END LOOP;
+
+  PERFORM set_config('app.auth_token',token_b,true);
+  IF solvex_private.current_claims()->>'tenant_id' <> 'tenant-isolation-test-b' THEN
+    RAISE EXCEPTION 'Tenant B token invalid';
+  END IF;
+  FOREACH t IN ARRAY tables LOOP
+    EXECUTE format('SELECT count(*) FROM public.%I',t) INTO visible_rows;
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text=$1',t)
+      INTO own_rows USING 'tenant-isolation-test-b';
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text<>$1',t)
+      INTO foreign_rows USING 'tenant-isolation-test-b';
+    IF visible_rows<>own_rows OR foreign_rows<>0 THEN
+      RAISE EXCEPTION 'Tenant B isolation failed on % visible=% own=% foreign=%',
+        t,visible_rows,own_rows,foreign_rows;
+    END IF;
+    tested_reads:=tested_reads+1;
+  END LOOP;
+
+  -- Use Tenant A's signed context to attempt moving its rows to Tenant B.
+  -- The exception subtransaction rolls back every attempted update.
+  PERFORM set_config('app.auth_token',token_a,true);
+  FOREACH t IN ARRAY tables LOOP
+    EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text=$1',t)
+      INTO own_rows USING 'tenant-enterprise-demo';
+    IF own_rows>0 THEN
+      denied:=false;
+      changed:=0;
+      BEGIN
+        EXECUTE format('UPDATE public.%I SET tenant_id=$1 WHERE tenant_id::text=$2',t)
+          USING 'tenant-isolation-test-b','tenant-enterprise-demo';
+        GET DIAGNOSTICS changed=ROW_COUNT;
+        IF changed>0 THEN
+          RAISE EXCEPTION 'CROSS_TENANT_WRITE_ALLOWED table=% rows=%',t,changed;
+        END IF;
+      EXCEPTION WHEN insufficient_privilege OR check_violation THEN
+        denied:=true;
+      END;
+      IF NOT denied THEN
+        RAISE EXCEPTION 'Cross-tenant UPDATE was not rejected on %',t;
+      END IF;
+      tested_writes:=tested_writes+1;
+    END IF;
+  END LOOP;
+
+  PERFORM set_config('app.auth_token','',true);
+  IF solvex_private.current_claims() IS NOT NULL THEN
+    RAISE EXCEPTION 'Invalid token did not fail closed';
+  END IF;
+  RAISE NOTICE 'AUTHENTICATED_TENANT_ISOLATION=PASS read_table_checks=% cross_tenant_write_checks=%',
+    tested_reads,tested_writes;
+END
+$authenticated$;
