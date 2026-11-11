@@ -1,4 +1,4 @@
-export type OutreachDeliveryOutcome = "not_claimed" | "delivered" | "delivery_unknown";
+export type OutreachDeliveryOutcome = "not_claimed" | "delivered" | "delivery_unknown" | "persistence_incomplete";
 
 export interface OutreachDeliveryDependencies {
   claim(): Promise<boolean>;
@@ -6,12 +6,14 @@ export interface OutreachDeliveryDependencies {
   markDelivered(messageId: string): Promise<void>;
   recordDelivered(messageId: string): Promise<void>;
   recordUnknown(): Promise<void>;
+  recordPersistenceIncomplete(messageId: string): Promise<void>;
 }
 
 /**
- * Runs delivery only after an atomic claim. Once send() is entered, every
- * failure is ambiguous: Gmail may have accepted the message before a timeout
- * or a later persistence failure. Never release the claim for automatic retry.
+ * A failed Gmail request is ambiguous: remote acceptance may have happened
+ * before the client timed out. Keep the atomic claim and never auto-retry.
+ * If Gmail returns an ID but persistence then fails, delivery is confirmed;
+ * retain the claim and reconcile storage without sending again.
  */
 export async function executeClaimedOutreachDelivery(
   deps: OutreachDeliveryDependencies,
@@ -19,20 +21,28 @@ export async function executeClaimedOutreachDelivery(
   const claimed = await deps.claim();
   if (!claimed) return "not_claimed";
 
+  let result: { id: string };
   try {
-    const result = await deps.send();
-    // Persist the returned Gmail ID before marking the prospect delivered.
+    result = await deps.send();
+  } catch {
+    try {
+      await deps.recordUnknown();
+    } catch {
+      // The prospect remains "sending" even if event persistence also fails.
+    }
+    return "delivery_unknown";
+  }
+
+  try {
     await deps.recordDelivered(result.id);
     await deps.markDelivered(result.id);
     return "delivered";
   } catch {
-    // A failure can happen after Gmail accepted the message. Keep the
-    // prospect in "sending" and require manual reconciliation before retry.
     try {
-      await deps.recordUnknown();
+      await deps.recordPersistenceIncomplete(result.id);
     } catch {
-      // Preserve the no-retry state even if the audit event cannot be written.
+      // Keep the claim: a confirmed send must never be automatically repeated.
     }
-    return "delivery_unknown";
+    return "persistence_incomplete";
   }
 }
