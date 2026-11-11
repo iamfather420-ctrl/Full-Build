@@ -676,17 +676,17 @@
     },
     {
       "node_id": "DN-36",
-      "name": "Fiat Settlement Policy Guard (Stripe Prohibited / PayPal Exclusive)",
+      "name": "Fiat Settlement Policy Guard",
       "category": "SECURITY",
       "executed": true,
       "claim_scope": "LOCAL",
       "status": "PROHIBITED_BLOCKED",
       "duration_ms": 0.012633000000278116,
       "evidence": {
-        "directive": "SOVEREIGN_DIRECTIVE_STRIPE_PROHIBITED",
+        "directive": "SOVEREIGN_DIRECTIVE_PAYPAL_EXCLUSIVE",
         "enforced": true,
         "fiat_designated_gateway": "DN-35-PAYPAL",
-        "stripe_blocked": true
+        "unapproved_payment_blocked": true
       },
       "registered": true,
       "instantiated": true,
@@ -1687,17 +1687,17 @@
       },
       {
         "node_id": "DN-36",
-        "name": "Fiat Settlement Policy Guard (Stripe Prohibited / PayPal Exclusive)",
+        "name": "Fiat Settlement Policy Guard",
         "category": "SECURITY",
         "executed": true,
         "claim_scope": "LOCAL",
         "status": "PROHIBITED_BLOCKED",
         "duration_ms": 0.012633000000278116,
         "evidence": {
-          "directive": "SOVEREIGN_DIRECTIVE_STRIPE_PROHIBITED",
+          "directive": "SOVEREIGN_DIRECTIVE_PAYPAL_EXCLUSIVE",
           "enforced": true,
           "fiat_designated_gateway": "DN-35-PAYPAL",
-          "stripe_blocked": true
+          "unapproved_payment_blocked": true
         },
         "registered": true,
         "instantiated": true,
