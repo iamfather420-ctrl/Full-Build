@@ -529,9 +529,9 @@ export class AuthoritativeVerificationPipeline {
           status: !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : (neonConn ? 'CONNECTED' : 'CONNECTION_FAILED'),
           claim_scope: 'LOCAL'
         },
-        stripe: {
+        fiat_policy: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Sovereign Security Directive forbids Stripe; fiat settlements route exclusively to PayPal DN-35'
+          policy: 'Fiat settlements route exclusively to PayPal DN-35'
         }
       }
     );
@@ -748,7 +748,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       gateways: {
         neon: hasNeon ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
         paypal: hasPayPal ? 'CONFIGURED' : 'CONFIGURATION_REQUIRED',
-        stripe: 'PROHIBITED_BLOCKED'
+        fiat_policy: 'PAYPAL_EXCLUSIVE'
       }
     };
     const manifestStr = JSON.stringify(manifestObj, null, 2);
@@ -936,7 +936,7 @@ ${report.production_blockers.map(b => `- ${b}`).join('\n')}
 - **Persistence Verification:** 9 / 9 Local SQLite invariants verified; Neon reports PROVIDER_REQUIRED.
 - **External Gateways:** 2 (DN-34 Neon PostgreSQL, DN-35 PayPal Gateway)
 - **Settlement Escrow:** DN-38 Sovereign Settlement Escrow Program (Native cryptographic state verification)
-- **Policy Guard:** DN-36 (Stripe Prohibited Interlock; Exclusive PayPal DN-35 routing)
+- **Policy Guard:** DN-36 (Exclusive PayPal DN-35 settlement routing)
 
 ---
 *Evidence Artifact generated automatically by AuthoritativeVerificationPipeline. Zero synthetic receipts, zero mock claims.*
