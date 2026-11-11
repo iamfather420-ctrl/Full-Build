@@ -712,7 +712,7 @@ export class DaisySubsystemExecutors {
           status: 'PROHIBITED_BLOCKED',
           duration_ms: performance.now() - start,
           evidence: {
-            directive: 'SOVEREIGN_DIRECTIVE_STRIPE_PROHIBITED',
+            directive: 'SOVEREIGN_DIRECTIVE_PAYPAL_EXCLUSIVE',
             enforced: true,
             fiat_designated_gateway: 'DN-35-PAYPAL',
             stripe_blocked: true
