@@ -27,6 +27,14 @@ app.use(cors({ origin: process.env.APP_ORIGIN ?? false }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ ok: true, service: "solvex-outreach", database: "configured" }));
+app.get("/api/outreach/ai-status", (_req, res) => {
+  res.json({
+    configured: Boolean(process.env.OPENAI_API_KEY),
+    model: process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini",
+    mode: process.env.OPENAI_API_KEY ? "ai-composition" : "lead-discovery-only",
+    deliveryEnabled: false,
+  });
+});
 app.get("/api/outreach/stats", async (_req, res) => {
   try {
     const [row] = await db.select({
