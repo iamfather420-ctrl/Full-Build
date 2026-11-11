@@ -641,7 +641,7 @@ export const CreateEscrowResponse = zod.object({
 
 
 /**
- * @summary Create Stripe payment intent for escrow
+ * @summary Create escrow payment intent
  */
 export const CreatePaymentIntentBody = zod.object({
   "problemId": zod.number(),
