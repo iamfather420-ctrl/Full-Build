@@ -247,15 +247,15 @@
           "autoincrement": false,
           "default": "'pending'"
         },
-        "stripePaymentIntentId": {
-          "name": "stripePaymentIntentId",
+        "paymentReference": {
+          "name": "paymentReference",
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "stripeTransferId": {
-          "name": "stripeTransferId",
+        "paymentTransferReference": {
+          "name": "paymentTransferReference",
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false,
