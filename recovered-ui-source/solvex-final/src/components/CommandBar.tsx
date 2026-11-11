@@ -12,7 +12,6 @@ interface CommandBarProps {
 const SUGGESTED_COMMANDS = [
   "Analyze Paradox 58: Anti-Tamper Fracture",
   "Buy Autonomous Business Template for $99",
-  "Route a unified Stripe payment of $150",
   "Perform diagnostic ping on the 54-node grid"
 ];
 
