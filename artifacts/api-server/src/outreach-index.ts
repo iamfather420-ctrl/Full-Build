@@ -34,10 +34,12 @@ app.get("/api/outreach/ai-status", async (_req, res) => {
   const externalConfigured = Boolean(process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY);
   res.json({
     configured: local.ready || (externalOptIn && externalConfigured),
-    mode: local.ready ? "daisy-first-party-local" :
+    mode: local.ready ? "daisy-local-assets-configured" :
       externalOptIn && externalConfigured ? "explicit-external-fallback" : "lead-discovery-only",
     firstParty: {
-      ready: local.ready,
+      assetsPresent: local.ready,
+      probeReady: local.ready,
+      inferenceExecutionVerified: false,
       runtimeId: local.runtimeId,
       modelId: local.modelId,
       modelVersion: local.modelVersion,
