@@ -715,7 +715,7 @@ export class DaisySubsystemExecutors {
             directive: 'SOVEREIGN_DIRECTIVE_PAYPAL_EXCLUSIVE',
             enforced: true,
             fiat_designated_gateway: 'DN-35-PAYPAL',
-            stripe_blocked: true
+            unapproved_payment_blocked: true
           }
         };
       }
