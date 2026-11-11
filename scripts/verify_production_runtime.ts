@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { NeonStore } from '../src/database/NeonPersistence';
 import { ProductionStateService } from '../src/production/ProductionState';
+import { getOidcConfig, ISSUER_URL, OIDC_CLIENT_ID } from '../artifacts/api-server/src/lib/auth';
 
 async function main() {
   const artifactsDir = path.resolve('artifacts');
@@ -26,6 +27,8 @@ async function main() {
     rls_posture: null,
     paypal_live_authentication: null,
     secrets_disclosed: false,
+    oidc_configured: Boolean(ISSUER_URL && OIDC_CLIENT_ID),
+    oidc_discovery_verified: false,
     blockers: issues
   };
 
@@ -49,6 +52,19 @@ async function main() {
       if (!report.rls_posture.success) {
         issues.push('Tenant-isolation RLS gate failed: RLS must be enabled and forced, each public table must have a policy, and the connected role must not bypass RLS.');
       }
+    }
+  }
+
+  // Verify that the exact OIDC issuer/client configuration used by the API
+  // can complete provider discovery. Configuration presence alone is not proof.
+  if (!ISSUER_URL || !OIDC_CLIENT_ID) {
+    issues.push('OIDC_ISSUER_URL and OIDC_CLIENT_ID must both be configured for the API OIDC flow.');
+  } else {
+    try {
+      await getOidcConfig();
+      report.oidc_discovery_verified = true;
+    } catch {
+      issues.push('OIDC provider discovery failed for the configured OIDC_ISSUER_URL.');
     }
   }
 
