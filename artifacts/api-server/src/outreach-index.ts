@@ -27,11 +27,27 @@ app.use(cors({ origin: process.env.APP_ORIGIN ?? false }));
 app.use(express.json());
 
 app.get("/health", (_req, res) => res.json({ ok: true, service: "solvex-outreach", database: "configured" }));
-app.get("/api/outreach/ai-status", (_req, res) => {
+app.get("/api/outreach/ai-status", async (_req, res) => {
+  const { getLocalInferenceRuntime } = await import("../../../src/inference/LocalInferenceRuntime");
+  const local = await getLocalInferenceRuntime().probe();
+  const externalOptIn = process.env.ALLOW_EXTERNAL_OUTREACH_PROVIDER === "true";
+  const externalConfigured = Boolean(process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY);
   res.json({
-    configured: Boolean(process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY),
-    model: process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini",
-    mode: (process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY) ? "ai-composition" : "lead-discovery-only",
+    configured: local.ready || (externalOptIn && externalConfigured),
+    mode: local.ready ? "daisy-first-party-local" :
+      externalOptIn && externalConfigured ? "explicit-external-fallback" : "lead-discovery-only",
+    firstParty: {
+      ready: local.ready,
+      runtimeId: local.runtimeId,
+      modelId: local.modelId,
+      modelVersion: local.modelVersion,
+      offlineCapable: local.offlineCapable,
+    },
+    externalProvider: {
+      enabledByExplicitOptIn: externalOptIn,
+      configured: externalConfigured,
+      model: externalOptIn ? (process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini") : null,
+    },
     deliveryEnabled: false,
   });
 });
