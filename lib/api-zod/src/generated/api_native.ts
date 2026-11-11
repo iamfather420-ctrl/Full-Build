@@ -533,7 +533,7 @@ export const GetProblemResponse = zod.object({
   "amount": zod.string(),
   "currency": zod.string().optional(),
   "status": zod.enum(['pending', 'held', 'released', 'refunded', 'failed']),
-  "stripePaymentIntentId": zod.string().nullish(),
+  "paymentReference": zod.string().nullish(),
   "releasedAt": zod.string().nullish(),
   "refundedAt": zod.string().nullish(),
   "createdAt": zod.string().optional()
@@ -633,7 +633,7 @@ export const CreateEscrowResponse = zod.object({
   "amount": zod.string(),
   "currency": zod.string().optional(),
   "status": zod.enum(['pending', 'held', 'released', 'refunded', 'failed']),
-  "stripePaymentIntentId": zod.string().nullish(),
+  "paymentReference": zod.string().nullish(),
   "releasedAt": zod.string().nullish(),
   "refundedAt": zod.string().nullish(),
   "createdAt": zod.string().optional()
@@ -668,7 +668,7 @@ export const GetEscrowByProblemResponse = zod.object({
   "amount": zod.string(),
   "currency": zod.string().optional(),
   "status": zod.enum(['pending', 'held', 'released', 'refunded', 'failed']),
-  "stripePaymentIntentId": zod.string().nullish(),
+  "paymentReference": zod.string().nullish(),
   "releasedAt": zod.string().nullish(),
   "refundedAt": zod.string().nullish(),
   "createdAt": zod.string().optional()
