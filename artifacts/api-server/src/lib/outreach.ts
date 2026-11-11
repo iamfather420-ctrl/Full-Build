@@ -161,7 +161,7 @@ async function huntStackExchange(tag: string, site: string): Promise<RawLead[]> 
 
 const firstPartyOutreachInference = new InferenceRouter();
 
-async function composeAI(prompt: string): Promise<string> {
+async function composeAI(prompt: string): Promise<{ text: string; source: string; model: string | null }> {
   const systemInstruction = [
     "You are dAIsy haMINJA, a careful technical community outreach writer for SolveX.",
     "Write a useful, specific public reply to the supplied post. Address the author's actual question or problem before mentioning SolveX.",
@@ -183,7 +183,7 @@ async function composeAI(prompt: string): Promise<string> {
   });
   const localText = local.result.text?.trim();
   if (local.result.status === "OK" && localText && local.source === "first_party_local") {
-    return localText;
+    return { text: localText, source: "first_party_local", model: local.result.modelId };
   }
 
   // External generation is a separate, explicit operator opt-in. A configured
@@ -233,7 +233,7 @@ async function composeAI(prompt: string): Promise<string> {
     if (/this is a solved class of problem|separating the control plane from the evidence plane/i.test(text)) {
       throw new Error("Generated draft failed the anti-boilerplate quality check");
     }
-    return text;
+    return { text, source: "explicit_external_fallback", model };
   } finally {
     clearTimeout(timer);
   }
@@ -345,7 +345,8 @@ async function composeDraft(p: typeof outreachProspects.$inferSelect) {
     "",
     "Write a reply that is useful to this author, not a generic sales pitch."
   ].join("\n");
-  const draft = await composeAI(prompt);
+  const generated = await composeAI(prompt);
+  const draft = generated.text;
   validateDraft(draft, p);
   await db.update(outreachProspects).set({
     stage: "composed", productId, productName, draftMessage: draft,
@@ -353,7 +354,7 @@ async function composeDraft(p: typeof outreachProspects.$inferSelect) {
     updatedAt: new Date(),
   }).where(eq(outreachProspects.id, p.id));
   await logEvent(p.id, p.sourceAuthor ?? p.company, "compose",
-    `AI DRAFT READY [${process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini"}] → reply to "${p.sourceTitle}" (${p.platform}): "${draft}" — matched instrument: ${productName}. Status: queued for review; not sent.`);
+    `AI DRAFT READY [${generated.source}${generated.model ? `: ${generated.model}` : ""}] → reply to "${p.sourceTitle}" (${p.platform}): "${draft}" — matched instrument: ${productName}. Status: queued for review; not sent.`);
 }
 
 const EVENT_RETENTION_DAYS = 30;
