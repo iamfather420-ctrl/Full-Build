@@ -259,7 +259,7 @@
     },
     {
       "node_id": "DN-36",
-      "node_name": "Fiat Settlement Policy Guard (Stripe Prohibited / PayPal Exclusive)",
+      "node_name": "Fiat Settlement Policy Guard",
       "status": "PROHIBITED_BLOCKED",
       "claim_scope": "LOCAL",
       "evidence_hash": "9ef288cf6607ae8afc7cd3daa6af0c245b9e1d131e72ce97244eb97bec0172ef"
