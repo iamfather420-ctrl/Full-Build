@@ -22,6 +22,7 @@ import { randomUUID } from "node:crypto";
 import { db, outreachProspects, outreachEvents } from "@workspace/db";
 import { eq, sql, asc } from "drizzle-orm";
 import { logger } from "./logger";
+import { InferenceRouter } from "../../../../src/inference/InferenceRouter";
 
 const TICK_MS = 40_000; // one autonomous action every 40s
 const HUNT_COOLDOWN_MS = 5 * 60_000; // min gap between hunts per source (API quota respect)
@@ -158,9 +159,44 @@ async function huntStackExchange(tag: string, site: string): Promise<RawLead[]> 
     });
 }
 
+const firstPartyOutreachInference = new InferenceRouter();
+
 async function composeAI(prompt: string): Promise<string> {
+  const systemInstruction = [
+    "You are dAIsy haMINJA, a careful technical community outreach writer for SolveX.",
+    "Write a useful, specific public reply to the supplied post. Address the author's actual question or problem before mentioning SolveX.",
+    "Use only facts supported by the supplied post and generally established technical knowledge. Never claim SolveX has solved, deployed, certified, benchmarked, or guarantees something unless the supplied context explicitly proves it.",
+    "If the post lacks enough detail for a substantive answer, ask one relevant clarifying question instead of inventing an answer.",
+    "Do not mention SolveX, its products, or its capabilities in the reply. Keep the reply focused entirely on the author's stated problem and useful technical guidance; never imply affiliation, product fit, or unverified results.",
+    "Aim for 45–65 words and never exceed 80 words. Use 2–4 concise sentences. No greeting, signature, preamble, fabricated capability, product mention, or generic control-plane/evidence-plane slogan. Output only the reply body."
+  ].join(" ");
+
+  // Daisy's first-party local inference is always attempted first.
+  const local = await firstPartyOutreachInference.resolveChat({
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: prompt }
+    ],
+    timeoutMs: 25_000,
+    maxOutputTokens: 350,
+    temperature: 0.2
+  });
+  const localText = local.result.text?.trim();
+  if (local.result.status === "OK" && localText && local.source === "first_party_local") {
+    return localText;
+  }
+
+  // External generation is a separate, explicit operator opt-in. A configured
+  // API key alone is not consent to route outreach content to a third party.
+  if (process.env.ALLOW_EXTERNAL_OUTREACH_PROVIDER !== "true") {
+    throw new Error(
+      "Daisy first-party outreach inference is unavailable and external outreach inference is not explicitly enabled. " +
+      (local.result.error || local.result.code || "Local model unavailable.")
+    );
+  }
+
   const apiKey = process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY;
-  if (!apiKey) throw new Error("Neither OPENAI_API_KEY nor SOLVEX_FLY is configured");
+  if (!apiKey) throw new Error("External outreach inference is enabled but neither OPENAI_API_KEY nor SOLVEX_FLY is configured");
   const model = process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 25_000);
@@ -174,17 +210,7 @@ async function composeAI(prompt: string): Promise<string> {
         max_completion_tokens: 350,
         store: false,
         messages: [
-          {
-            role: "system",
-            content: [
-              "You are dAIsy haMINJA, a careful technical community outreach writer for SolveX.",
-              "Write a useful, specific public reply to the supplied post. Address the author's actual question or problem before mentioning SolveX.",
-              "Use only facts supported by the supplied post and generally established technical knowledge. Never claim SolveX has solved, deployed, certified, benchmarked, or guarantees something unless the supplied context explicitly proves it.",
-              "If the post lacks enough detail for a substantive answer, ask one relevant clarifying question instead of inventing an answer.",
-              "Do not mention SolveX, its products, or its capabilities in the reply. Keep the reply focused entirely on the author’s stated problem and useful technical guidance; never imply affiliation, product fit, or unverified results.",
-              "Aim for 45–65 words and never exceed 80 words. Use 2–4 concise sentences. No greeting, signature, preamble, fabricated capability, product mention, or generic control-plane/evidence-plane slogan. Output only the reply body."
-            ].join(" ")
-          },
+          { role: "system", content: systemInstruction },
           { role: "user", content: prompt }
         ]
       })
@@ -212,7 +238,6 @@ async function composeAI(prompt: string): Promise<string> {
     clearTimeout(timer);
   }
 }
-
 function validateDraft(draft: string, p: typeof outreachProspects.$inferSelect): void {
   const words = draft.trim().split(/\s+/).filter(Boolean);
   if (words.length < 8 || words.length > 90) {
