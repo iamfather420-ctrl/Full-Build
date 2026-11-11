@@ -21,7 +21,6 @@
 - [x] Notifications panel
 
 ## Integrations
-- [x] Stripe integration for escrow payments
 - [x] AI web crawler (Reddit, Quora, Stack Overflow, Hacker News)
 - [x] AI solution verification system
 - [x] Owner notification system for new problems
