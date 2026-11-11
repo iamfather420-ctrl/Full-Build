@@ -701,7 +701,7 @@ export class DaisySubsystemExecutors {
       // 36. DN-36: Fiat Settlement Policy Guard
       case 'DN-36': {
         // Enforce the Sovereign Directive: fiat settlement is exclusive to PayPal DN-35.
-        const stripeRequested = testPayload?.attemptUnapprovedPaymentExecution === true;
+        const unapprovedPaymentRequested = testPayload?.attemptUnapprovedPaymentExecution === true;
         const blocked = true; // Always blocked
         return {
           node_id: 'DN-36',
