@@ -3911,7 +3911,7 @@
   },
   {
     "verification_id": "DN-36",
-    "name": "Daisy Subsystem: Fiat Settlement Policy Guard (Stripe Prohibited / PayPal Exclusive)",
+    "name": "Daisy Subsystem: Fiat Settlement Policy Guard",
     "category": "DAISY_54_NODE_ARCHITECTURE",
     "source_file": "src/nodes/DaisySubsystemExecutors.ts",
     "test_file": "src/tests/daisy54NodeCoverage.ts",
