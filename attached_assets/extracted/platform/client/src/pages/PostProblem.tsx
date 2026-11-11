@@ -217,7 +217,7 @@ export default function PostProblem() {
             <div className="flex items-center justify-between pt-4 border-t border-border">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <AlertCircle className="w-3.5 h-3.5" />
-                Payment will be processed via Stripe
+                Payment will be processed through the configured payment gateway
               </div>
               <Button
                 type="submit"
