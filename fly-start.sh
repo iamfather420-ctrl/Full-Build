@@ -11,4 +11,4 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=register_database_url.sh
 source "$DIR/register_database_url.sh"
 
-exec bun x tsx artifacts/api-server/src/index.ts
+exec bun x tsx artifacts/api-server/src/outreach-index.ts
