@@ -47,7 +47,7 @@
 - **Output Asserted:** 54
 - **Evidence Generated:** 54
 - **Sovereign Cryptographic Settlement Escrow (DN-38):** **VERIFIED** (Replaced Solana; Ed25519 multi-sig and timelock enforced)
-- **Policy Guard (DN-36 - Stripe Prohibited):** **VERIFIED** (Strictly blocked; PayPal exclusive)
+- **Policy Guard (DN-36):** **VERIFIED** (Strictly blocked; PayPal exclusive)
 - **External Gateways (DN-34 Neon, DN-37 Coinbase, DN-39 EVM):** **PROVIDER_REQUIRED** (Fail-closed)
 
 ---
