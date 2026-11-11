@@ -251,7 +251,7 @@ export class DaisyBrain {
         },
         fiat_policy_dn36: {
           status: 'PROHIBITED_BLOCKED',
-          policy: 'Stripe prohibited per Sovereign Directive; fiat settlements exclusively route via PayPal DN-35'
+          policy: 'Fiat settlements route exclusively via PayPal DN-35'
         }
       },
       activation_status: brainActive ? 'ACTIVE' : 'BLOCKED',
