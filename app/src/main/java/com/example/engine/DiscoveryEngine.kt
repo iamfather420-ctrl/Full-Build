@@ -27,7 +27,7 @@ class DiscoveryEngine(
                 Identify missing external services, protocols, APIs, or libraries that the user will need to learn about or integrate to complete their goal.
                 Return a valid JSON array of objects, where each object has these exact fields:
                 - "title": (String) name of the documentation, api spec, or library reference
-                - "url": (String) valid web URL of the official docs/references (e.g. https://stripe.com/docs/api, https://firebase.google.com/docs, etc.)
+                - "url": (String) valid web URL of the official docs/references (e.g. https://developer.paypal.com/api/rest/, https://firebase.google.com/docs, etc.)
                 - "description": (String) how this fits into their project goal
                 - "requiredInfo": (String) specific classes, parameters, headers, or API contracts that they need to pay attention to.
 
