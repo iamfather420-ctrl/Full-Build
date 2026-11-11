@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { desc, sql } from "drizzle-orm";
+import { desc, gt, sql } from "drizzle-orm";
 import { db, outreachProspects, outreachEvents } from "@workspace/db";
 import { logger } from "./lib/logger";
 import { startOutreachEngine } from "./lib/outreach";
@@ -55,7 +55,7 @@ app.get("/api/outreach/prospects", async (_req, res) => {
 app.get("/api/outreach/events", async (req, res) => {
   try {
     const limit = Math.min(parseInt(String(req.query.limit ?? "40"), 10) || 40, 200);
-    res.json(await db.select().from(outreachEvents).orderBy(desc(outreachEvents.createdAt)).limit(limit));
+    res.json(await db.select().from(outreachEvents).where(gt(outreachEvents.id, 0)).orderBy(desc(outreachEvents.createdAt)).limit(limit));
   } catch (err) { logger.error({ err }, "outreach events query failed"); res.status(503).json({ error: "Outreach database query failed" }); }
 });
 app.listen(port, () => { logger.info({ port, databaseTarget: safeDatabaseTarget() }, "SolveX outreach API listening"); startOutreachEngine(); });
