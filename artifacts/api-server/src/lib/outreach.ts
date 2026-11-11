@@ -139,7 +139,7 @@ async function huntHackerNews(query: string): Promise<RawLead[]> {
 
 async function huntStackExchange(tag: string, site: string): Promise<RawLead[]> {
   const since = Math.floor((Date.now() - LOOKBACK_DAYS * 86_400_000) / 1000);
-  const u = `https://api.stackexchange.com/2.3/questions?order=desc&sort=creation&tagged=${encodeURIComponent(tag)}&site=${site}&pagesize=6&fromdate=${since}`;
+  const u = `https://api.stackexchange.com/2.3/questions?order=desc&sort=creation&tagged=${encodeURIComponent(tag)}&site=${site}&pagesize=6&fromdate=${since}&filter=withbody`;
   const data = (await fetchJson(u)) as { items?: Array<Record<string, unknown>> };
   return (data.items ?? [])
     .filter(i => typeof i.link === "string" && typeof i.title === "string")
@@ -150,40 +150,65 @@ async function huntStackExchange(tag: string, site: string): Promise<RawLead[]> 
         url: String(i.link),
         title: stripHtml(String(i.title)),
         author: String(owner.display_name ?? "unknown"),
-        snippet: Array.isArray(i.tags) ? `Tags: ${(i.tags as string[]).join(", ")}` : "",
+        snippet: stripHtml(String(i.body ?? "")).slice(0, 1800) || (Array.isArray(i.tags) ? `Tags: ${(i.tags as string[]).join(", ")}` : ""),
         postedAt: new Date(Number(i.creation_date ?? 0) * 1000),
         unanswered: i.is_answered === false,
       };
     });
 }
 
-async function composeAI(prompt: string, fallback: string): Promise<string> {
+async function composeAI(prompt: string): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return fallback;
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not configured");
+  const model = process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini";
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25_000);
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25_000);
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        signal: controller.signal,
-        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini",
-          max_completion_tokens: 2048,
-          messages: [
-            { role: "system", content: "You are dAIsy haMINJA, SolveX sales intelligence. Write a genuinely helpful public reply to a real technical post. Address the question first, mention SolveX once without hype. Maximum 90 words. No greeting. Output only the message body." },
-            { role: "user", content: prompt }
-          ]
-        })
-      });
-      if (!response.ok) throw new Error(`AI API returned HTTP ${response.status}`);
-      const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
-      return data.choices?.[0]?.message?.content?.trim() || fallback;
-    } finally { clearTimeout(timer); }
-  } catch (err) {
-    logger.warn({ err: (err as Error).message }, "OUTREACH: AI compose fallback used");
-    return fallback;
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        max_completion_tokens: 350,
+        store: false,
+        messages: [
+          {
+            role: "system",
+            content: [
+              "You are dAIsy haMINJA, a careful technical community outreach writer for SolveX.",
+              "Write a useful, specific public reply to the supplied post. Address the author's actual question or problem before mentioning SolveX.",
+              "Use only facts supported by the supplied post and generally established technical knowledge. Never claim SolveX has solved, deployed, certified, benchmarked, or guarantees something unless the supplied context explicitly proves it.",
+              "If the post lacks enough detail for a substantive answer, ask one relevant clarifying question instead of inventing an answer.",
+              "Mention SolveX at most once, briefly and accurately; do not use hype, fake familiarity, or pressure.",
+              "Maximum 90 words. No greeting, no fabricated capability spec, no generic control-plane/evidence-plane slogan. Output only the reply body."
+            ].join(" ")
+          },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      let detail = body.slice(0, 500);
+      try {
+        const parsed = JSON.parse(body) as { error?: { message?: string; code?: string } };
+        detail = parsed.error?.message ?? parsed.error?.code ?? detail;
+      } catch {}
+      throw new Error(`OpenAI HTTP ${response.status}: ${detail || "request rejected"}`);
+    }
+    const data = await response.json() as {
+      choices?: Array<{ message?: { content?: string | null }; finish_reason?: string }>;
+      error?: { message?: string };
+    };
+    const text = data.choices?.[0]?.message?.content?.trim();
+    if (!text || text.length < 20) throw new Error("OpenAI returned an empty or unusably short draft");
+    if (/this is a solved class of problem|separating the control plane from the evidence plane/i.test(text)) {
+      throw new Error("Generated draft failed the anti-boilerplate quality check");
+    }
+    return text;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -258,20 +283,24 @@ async function huntLeads(): Promise<number> {
 async function composeDraft(p: typeof outreachProspects.$inferSelect) {
   const productName = "SolveX institutional solution";
   const productId = p.productId ?? "SOLVEX-MASTER";
-  const draft = await composeAI(
-    `Real post on ${p.platform} by ${p.sourceAuthor}:
-Title: "${p.sourceTitle}"
-${p.snippet ? `Context: ${p.snippet}\n` : ""}
-Write a public reply that genuinely helps with their question about ${p.sector}, then briefly notes that SolveX provides institutional solutions for this class of problem.`,
-    `Re "${p.sourceTitle}": this is a solved class of problem in ${p.sector} — the key is separating the control plane from the evidence plane. SolveX provides institutional solutions engineered for this class of challenge; happy to point you at the capability spec. — dAIsy haMINJA, SolveX`,
-  );
+  const prompt = [
+    `Platform: ${p.platform}`,
+    `Author: ${p.sourceAuthor ?? "unknown"}`,
+    `Sector matched by discovery: ${p.sector}`,
+    `Post title: "${p.sourceTitle ?? "Untitled"}"`,
+    p.snippet ? `Post body/context: ${p.snippet}` : "Post body/context: not available; do not infer details beyond the title.",
+    `Source URL: ${p.sourceUrl ?? "not available"}`,
+    "",
+    "Write a reply that is useful to this author, not a generic sales pitch."
+  ].join("\n");
+  const draft = await composeAI(prompt);
   await db.update(outreachProspects).set({
     stage: "composed", productId, productName, draftMessage: draft,
-    lastAction: "Reply draft composed — queued for delivery (channel required)",
+    lastAction: "AI-generated reply draft composed — queued for human review; not sent",
     updatedAt: new Date(),
   }).where(eq(outreachProspects.id, p.id));
   await logEvent(p.id, p.sourceAuthor ?? p.company, "compose",
-    `DRAFT READY → reply to "${p.sourceTitle}" (${p.platform}): "${draft}" — matched instrument: ${productName}. Status: queued — connect a delivery channel to transmit.`);
+    `AI DRAFT READY [${process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini"}] → reply to "${p.sourceTitle}" (${p.platform}): "${draft}" — matched instrument: ${productName}. Status: queued for review; not sent.`);
 }
 
 const EVENT_RETENTION_DAYS = 30;
@@ -288,24 +317,39 @@ async function pruneOld() {
 }
 
 let running = false;
+const composeRetryAfter = new Map<number, number>();
 
 async function tick() {
   if (running) return;
   running = true;
   try {
-    // Priority 1: compose drafts for real leads awaiting one
-    const [pending] = await db
-      .select()
-      .from(outreachProspects)
-      .where(eq(outreachProspects.stage, "discovered"))
-      .orderBy(asc(outreachProspects.updatedAt))
-      .limit(1);
-
-    if (pending) {
-      await composeDraft(pending);
-    } else {
-      // Priority 2: hunt for new real leads
+    const aiConfigured = Boolean(process.env.OPENAI_API_KEY);
+    if (!aiConfigured) {
+      // Continue discovering prospects, but never disguise a canned fallback as AI output.
       await huntLeads();
+    } else {
+      const pendingRows = await db
+        .select()
+        .from(outreachProspects)
+        .where(eq(outreachProspects.stage, "discovered"))
+        .orderBy(asc(outreachProspects.updatedAt))
+        .limit(25);
+      const now = Date.now();
+      const pending = pendingRows.find(p => (composeRetryAfter.get(p.id) ?? 0) <= now);
+      if (pending) {
+        try {
+          await composeDraft(pending);
+          composeRetryAfter.delete(pending.id);
+        } catch (err) {
+          composeRetryAfter.set(pending.id, now + 5 * 60_000);
+          const message = (err as Error).message;
+          logger.error({ prospectId: pending.id, error: message }, "OUTREACH: AI composition failed; prospect remains undispatched");
+          await logEvent(pending.id, pending.sourceAuthor ?? pending.company, "compose_error",
+            `AI composition failed; no draft was approved or sent. Retry in 5 minutes. Reason: ${message.slice(0, 350)}`);
+        }
+      } else if (pendingRows.length === 0) {
+        await huntLeads();
+      }
     }
     await pruneOld();
   } catch (err) {
