@@ -3,6 +3,9 @@ import { spawn } from "node:child_process";
 import { timingSafeEqual, createHash } from "node:crypto";
 
 const port = Number(process.env.PORT || 8080);
+// Default to loopback. Set SOLVEX_WORKER_HOST=0.0.0.0 only when a trusted
+// platform ingress or host firewall enforces the public TLS/auth boundary.
+const host = process.env.SOLVEX_WORKER_HOST || "127.0.0.1";
 const token = process.env.SOLVEX_WORKER_TOKEN || "";
 const image = process.env.SOLVEX_SANDBOX_IMAGE || "";
 const maxBody = 100_000;
@@ -81,4 +84,4 @@ const server = createServer(async (req, res) => {
     return json(res, result.reason === "timeout" ? 408 : 200, receipt);
   } finally { active--; }
 });
-server.listen(port, "0.0.0.0");
+server.listen(port, host);
