@@ -114,14 +114,6 @@ export const PARADOX_REGISTRY: ParadoxOperator[] = [
 // Unified payment connections presets
 export const INITIAL_PROVIDERS: PaymentProvider[] = [
   {
-    id: 'stripe',
-    name: 'Stripe',
-    type: 'card',
-    status: 'configured',
-    icon: 'CreditCard',
-    connectionId: 'conn_stripe_0x4f92'
-  },
-  {
     id: 'paypal',
     name: 'PayPal Checkout',
     type: 'wallet',
