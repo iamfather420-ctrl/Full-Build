@@ -6,7 +6,8 @@ This service is the **host-side dispatcher**, not the execution image. It requir
 
 - `SOLVEX_WORKER_TOKEN`: high-entropy bearer token, stored only as a Railway service secret.
 - `SOLVEX_SANDBOX_IMAGE`: immutable image reference ending in `@sha256:<64 lowercase hex chars>`.
-- `PORT`: supplied by Railway.
+- `PORT`: supplied by the host platform (default `8080`).
+- `SOLVEX_WORKER_HOST`: bind address. Defaults to `127.0.0.1` for a host-local reverse proxy such as Caddy. Set to `0.0.0.0` only when a trusted platform ingress or host firewall provides the public TLS/authentication boundary.
 
 Do not configure production database credentials, Neon owner credentials, oracle signing keys, or payment secrets on this worker.
 
