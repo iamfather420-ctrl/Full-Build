@@ -10,22 +10,19 @@ WORKDIR /app
 ENV NODE_ENV="production"
 ENV PORT="8080"
 
-# Install packages needed to build node modules
+# Install packages needed to build native Node/Bun modules.
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3
 
-# Install node modules (root workspace for shared deps)
+# Install dependencies from the repository lockfile.
 COPY .npmrc bun.lock package-lock.json package.json ./
 RUN bun install
 
-# Copy application code
+# Copy application code.
 COPY . .
 
-# Remove development dependencies for a lean runtime image
-RUN rm -rf node_modules && \
-    bun install --ci --production
-
-# API server entry point: artifacts/api-server/src/index.ts
-# It reads PORT, boots the outreach engine, crawler, vault, and workers.
+# Keep tsx available: the API entry point is TypeScript and tsx is currently
+# declared in devDependencies. Removing devDependencies here makes the
+# container's startup command unable to resolve tsx.
 EXPOSE 8080
 CMD [ "bun", "x", "tsx", "artifacts/api-server/src/index.ts" ]
