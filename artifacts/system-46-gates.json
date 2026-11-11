@@ -227,9 +227,9 @@
           "status": "EXTERNAL_PROVIDER_REQUIRED",
           "claim_scope": "LOCAL"
         },
-        "stripe": {
+        "fiat_policy": {
           "status": "PROHIBITED_BLOCKED",
-          "policy": "Sovereign Security Directive forbids Stripe; fiat settlements route exclusively to PayPal DN-35"
+          "policy": "Fiat settlements route exclusively to PayPal DN-35"
         }
       }
     },
