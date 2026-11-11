@@ -118,7 +118,15 @@ router.post("/outreach/prospects/:id/send", requireOwner, async (req, res) => {
         prospectId: id,
         company: draft.company,
         type: "delivery_unknown",
-        message: "Delivery outcome is unknown after a send-path error. Do not retry until the Gmail Sent folder is checked and the result is reconciled.",
+        message: "Delivery outcome is unknown after a Gmail transport error. Do not retry until the Gmail Sent folder is checked and the result is reconciled.",
+      });
+    },
+    recordPersistenceIncomplete: async (messageId) => {
+      await db.insert(outreachEvents).values({
+        prospectId: id,
+        company: draft.company,
+        type: "delivery_unknown",
+        message: `Gmail returned message ID ${messageId}, but delivery-state persistence failed. Delivery is confirmed; reconcile the prospect record manually and do not retry.`,
       });
     },
   });
@@ -130,6 +138,11 @@ router.post("/outreach/prospects/:id/send", requireOwner, async (req, res) => {
   if (outcome === "delivery_unknown") {
     req.log.error({ prospectId: id }, "OUTREACH: delivery outcome requires reconciliation");
     res.status(502).json({ error: "Delivery outcome requires reconciliation; do not retry until Gmail is checked." });
+    return;
+  }
+  if (outcome === "persistence_incomplete") {
+    req.log.error({ prospectId: id }, "OUTREACH: Gmail confirmed delivery but state persistence requires reconciliation");
+    res.status(502).json({ error: "Gmail confirmed delivery, but state persistence requires reconciliation; do not retry." });
     return;
   }
   res.json({ success: true });
