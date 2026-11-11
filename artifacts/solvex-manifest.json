@@ -35,6 +35,6 @@
   "gateways": {
     "neon": "EXTERNAL_PROVIDER_REQUIRED",
     "paypal": "CONFIGURATION_REQUIRED",
-    "stripe": "PROHIBITED_BLOCKED"
+    "paypal": "CONFIGURATION_REQUIRED"
   }
 }
