@@ -14,7 +14,7 @@ function safeDatabaseTarget() {
       configured: true,
       host: parsed.hostname,
       user: decodeURIComponent(parsed.username),
-      database: parsed.pathname.replace(/^\\//, "").split("/")[0] || "default",
+      database: parsed.pathname.replace(/^\/+/, "").split("/")[0] || "default",
     };
   } catch {
     return { configured: true, parseable: false };
