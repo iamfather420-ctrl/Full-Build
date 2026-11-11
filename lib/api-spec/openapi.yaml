@@ -648,7 +648,7 @@ paths:
     post:
       operationId: createPaymentIntent
       tags: [escrow]
-      summary: Create Stripe payment intent for escrow
+      summary: Create escrow payment intent
       requestBody:
         required: true
         content:
