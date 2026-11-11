@@ -118,3 +118,45 @@ Treat `execution-gates.md`, `production-gate-evaluation.md`, and their JSON coun
 6. Operational production prerequisites remain unverified: production-target deployment, secrets-manager configuration, canonical-domain routing/TLS, monitoring/alerts, backup restore rehearsal, rollback, and incident operations.
 
 **Final verdict remains NOT PRODUCTION-READY.** This is a hardened integration candidate. Local/model checks do not substitute for real external-provider verification, archive provenance, reproducible build evidence, or deployment readiness. Keep GATE-14 and the production gate blocked until the evidence is current and independently reviewable.
+
+
+---
+
+## Reconciliation update — 2026-11-11 (canonical main and deployment wiring)
+
+This section supersedes older deployment statements where they conflict with the current Vercel account/project records. It does not turn a READY Vercel build into proof that every service or the custom production domain is live.
+
+### Production evaluator and API OIDC configuration
+
+- The full API's OIDC implementation reads `OIDC_ISSUER_URL` and `OIDC_CLIENT_ID` in `artifacts/api-server/src/lib/auth.ts`.
+- The earlier `src/production/ProductionState.ts` checked `OIDC_ISSUER`, `OIDC_CLIENT_ID`, or `OIDC_AUTHORITY`, then unconditionally added a blocker saying first-party OIDC verification was not implemented. That contradicted the actual full API's OIDC/PKCE implementation and could report the wrong configuration state.
+- Commit `79527ed5dd130883266de3311498888484069898` changes the evaluator to check the exact issuer/client variable names consumed by the API. It reports authentication as configured only when both are present. This is a configuration check, **not** a live OIDC provider round-trip or an independent security certification.
+- The evaluator still checks the production environment, Neon URL presence, and the intentional payments-disabled policy. Runtime database connectivity, schema inventory, RLS, and actual OIDC discovery must still be verified by their own runtime checks.
+
+### Daisy inference and outreach integration
+
+- `src/inference/InferenceRouter.ts` already selects first-party local inference and returns `MODEL_UNAVAILABLE` rather than inventing output when the local model/engine is absent.
+- Before this update, `artifacts/api-server/src/lib/outreach.ts` bypassed that router and sent draft prompts directly to OpenAI whenever `OPENAI_API_KEY` or `SOLVEX_FLY` was present.
+- Commit `b3a00498ffa60599ad546df98e771d4abb570c3c` changes outreach composition to attempt Daisy's first-party local inference first. External OpenAI generation is now a separate fallback that requires the explicit `ALLOW_EXTERNAL_OUTREACH_PROVIDER=true` setting as well as a configured key. A key by itself no longer authorizes third-party routing.
+- Commit `7e177b9599f3a773bd3262254ad7a301a5609fa8` records the actual inference source/model in each successful draft event instead of always labeling the draft with the external model default.
+- Commit `6ef6784149c858a2d2a8010982f4dc83bf0e6aa5` updates `/api/outreach/ai-status` to report local readiness, explicit external opt-in/configuration, and the actual operating mode separately.
+- Local Daisy inference is not yet proven active in the Fly production worker. It requires valid `DAISY_MODEL_PATH` and executable `DAISY_INFERENCE_ENGINE` values in that worker's runtime, followed by a successful real inference call. If those assets are absent and external opt-in is false, outreach discovery continues but composition correctly fails closed. Delivery remains disabled.
+
+### Vercel source and deployment evidence
+
+Vercel account records inspected on 2026-11-11 show:
+
+- A Vercel project named `full-build` exists, ID `prj_xDcwUu9Ls9OWsJ7EHuYGlKaqE5go`, and is connected to GitHub repository `iamfather420-ctrl/Full-Build`.
+- Its latest inspected production deployment is `READY` at commit `b3a00498ffa60599ad546df98e771d4abb570c3c`, deployment ID `dpl_CWkwGJxKt4JAuJmBWkmDdWS1EpbH`.
+- The previous production deployment at `79527ed5dd130883266de3311498888484069898` is also `READY`.
+- The project reports aliases `full-build-lake.vercel.app`, `full-build-solvex-b2b-solutions.vercel.app`, and `full-build-git-main-solvex-b2b-solutions.vercel.app`. The production-domain listing confirms `full-build-lake.vercel.app` as verified. The project record does not establish that `uarefake.space` is attached to this project.
+- The project has SSO protection enabled for deployments other than custom domains. A READY deployment must not be described as publicly reachable without testing the actual intended URL and access policy.
+- The latest inspected GitHub status for commit `6ef6784149c858a2d2a8010982f4dc83bf0e6aa5` reports a Vercel failure whose target identifies the build-rate limit. The latest Vercel production deployment record inspected remains the earlier `b3a00498...` deployment. Therefore the newer `6ef678...` and `7e177b...` changes are committed to main but were not yet proven deployed by the inspected Vercel records.
+- The prior statement that the deployed project used `iamfather420-ctrl/Uarefake-1` is a historical observation about the other domain/project, not a description of the current `full-build` Vercel project. Keep the two deployment targets distinct until domain routing is verified.
+
+### Release evidence interpretation
+
+- A GitHub Actions pass, a Vercel READY deployment, and a live custom-domain check are three different evidence types.
+- The current source commits above are not covered by the older CI/formal-evidence run solely because earlier commits passed.
+- Do not mark the latest changes as deployed until a Vercel deployment bound to the latest main SHA reaches READY, and do not mark the intended public site as verified until its exact domain and access behavior are checked.
+- No deployment settings, SSO policy, custom-domain mapping, production secrets, or live service configuration were changed by this reconciliation.
