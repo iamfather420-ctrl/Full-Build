@@ -4,6 +4,7 @@ import { outreachProspects, outreachEvents } from "@workspace/db";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod/v4";
 import { gmailConnected, sendEmail } from "../lib/gmail";
+import { executeClaimedOutreachDelivery } from "../lib/outreachDelivery";
 import { requireOwner } from "../middlewares/requireOwner";
 
 const router: IRouter = Router();
@@ -70,69 +71,68 @@ router.post("/outreach/prospects/:id/send", requireOwner, async (req, res) => {
     return;
   }
 
-  // Atomically claim the prospect so concurrent requests can't double-send
-  const claimed = await db
-    .update(outreachProspects)
-    .set({ stage: "sending", updatedAt: new Date() })
-    .where(and(eq(outreachProspects.id, id), eq(outreachProspects.stage, "composed")))
-    .returning();
-  const p = claimed[0];
-  if (!p) {
-    res.status(409).json({ error: "No composed draft available for this prospect (already sent or not ready)" });
-    return;
-  }
-  if (!p.draftMessage) {
-    await db
-      .update(outreachProspects)
-      .set({ stage: "composed", updatedAt: new Date() })
-      .where(eq(outreachProspects.id, id));
+  const [draft] = await db.select().from(outreachProspects).where(eq(outreachProspects.id, id)).limit(1);
+  if (!draft || !draft.draftMessage || draft.stage !== "composed") {
     res.status(409).json({ error: "No composed draft available for this prospect" });
     return;
   }
 
   const subject =
     parsed.data.subject ??
-    `Re: ${(p.sourceTitle ?? "your post").replace(/[\r\n]+/g, " ").slice(0, 150)} — a possible solution`;
+    `Re: ${(draft.sourceTitle ?? "your post").replace(/[\\r\\n]+/g, " ").slice(0, 150)} — a possible solution`;
   const body =
-    `${p.draftMessage}\n\n` +
-    `—\nThis message references your public post: ${p.sourceUrl ?? "(source unavailable)"}\n` +
+    `${draft.draftMessage}\\n\\n` +
+    `—\\nThis message references your public post: ${draft.sourceUrl ?? "(source unavailable)"}\\n` +
     `Sent via SolveX outreach.`;
 
-  try {
-    const result = await sendEmail(parsed.data.to, subject, body);
-    await db
-      .update(outreachProspects)
-      .set({
-        stage: "delivered",
-        lastAction: `Draft emailed to ${parsed.data.to} via Gmail (message ${result.id})`,
-        updatedAt: new Date(),
-      })
-      .where(eq(outreachProspects.id, id));
-    await db.insert(outreachEvents).values({
-      prospectId: id,
-      company: p.company,
-      type: "deliver",
-      message: `EMAIL SENT → "${subject}" delivered to ${parsed.data.to} via Gmail. Gmail message id: ${result.id}.`,
-    });
-    res.json({ success: true, messageId: result.id });
-  } catch (err) {
-    // Fail closed: a transport or persistence error can occur after Gmail has
-    // accepted the message. Keep the atomic "sending" claim so a retry cannot
-    // accidentally deliver a duplicate. Reconcile this prospect against Gmail
-    // before manually returning it to "composed".
-    req.log.error({ err, prospectId: id }, "OUTREACH: delivery outcome requires reconciliation");
-    try {
+  const outcome = await executeClaimedOutreachDelivery({
+    claim: async () => {
+      const claimed = await db
+        .update(outreachProspects)
+        .set({ stage: "sending", updatedAt: new Date() })
+        .where(and(eq(outreachProspects.id, id), eq(outreachProspects.stage, "composed")))
+        .returning({ id: outreachProspects.id });
+      return claimed.length > 0;
+    },
+    send: () => sendEmail(parsed.data.to, subject, body),
+    recordDelivered: async (messageId) => {
       await db.insert(outreachEvents).values({
         prospectId: id,
-        company: p.company,
+        company: draft.company,
+        type: "deliver",
+        message: `EMAIL SENT → "${subject}" delivered to ${parsed.data.to} via Gmail. Gmail message id: ${messageId}.`,
+      });
+    },
+    markDelivered: async (messageId) => {
+      await db
+        .update(outreachProspects)
+        .set({
+          stage: "delivered",
+          lastAction: `Draft emailed to ${parsed.data.to} via Gmail (message ${messageId})`,
+          updatedAt: new Date(),
+        })
+        .where(eq(outreachProspects.id, id));
+    },
+    recordUnknown: async () => {
+      await db.insert(outreachEvents).values({
+        prospectId: id,
+        company: draft.company,
         type: "delivery_unknown",
         message: "Delivery outcome is unknown after a send-path error. Do not retry until the Gmail Sent folder is checked and the result is reconciled.",
       });
-    } catch (eventErr) {
-      req.log.error({ err: eventErr, prospectId: id }, "OUTREACH: failed to persist delivery reconciliation event");
-    }
-    res.status(502).json({ error: "Delivery outcome requires reconciliation; do not retry until Gmail is checked." });
+    },
+  });
+
+  if (outcome === "not_claimed") {
+    res.status(409).json({ error: "No composed draft available for this prospect (already sent or not ready)" });
+    return;
   }
+  if (outcome === "delivery_unknown") {
+    req.log.error({ prospectId: id }, "OUTREACH: delivery outcome requires reconciliation");
+    res.status(502).json({ error: "Delivery outcome requires reconciliation; do not retry until Gmail is checked." });
+    return;
+  }
+  res.json({ success: true });
 });
 
 export default router;
