@@ -91,17 +91,17 @@ class DiscoveryEngine(
         val missingGaps = mutableListOf<DiscoveryLink>()
         val lowercasePrompt = prompt.lowercase()
 
-        // 1. Stripe/Payment Gaps
-        if (lowercasePrompt.contains("payment") || lowercasePrompt.contains("stripe") || lowercasePrompt.contains("checkout")) {
-            val hasStripe = currentFiles.any { it.content.contains("stripe", ignoreCase = true) }
-            if (!hasStripe) {
+        // 1. Payment Integration Gaps
+        if (lowercasePrompt.contains("payment") || lowercasePrompt.contains("checkout")) {
+            val hasPaymentDocs = currentFiles.any { it.content.contains("payment", ignoreCase = true) }
+            if (!hasPaymentDocs) {
                 missingGaps.add(
                     DiscoveryLink(
-                        title = "Stripe Core API Spec",
-                        url = "https://stripe.com/docs/api",
+                        title = "PayPal REST API Spec",
+                        url = "https://developer.paypal.com/api/rest/",
                         description = "Required schemas for implementing decentralized payment tethers.",
                         status = "PENDING",
-                        requiredInfo = "Stripe-Signature, PaymentIntent validation contracts"
+                        requiredInfo = "OAuth authorization, order creation, capture, and webhook verification contracts"
                     )
                 )
             }
