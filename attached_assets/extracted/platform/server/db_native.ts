@@ -222,7 +222,7 @@ export async function getEscrowByProblemId(problemId: number) {
 
 export async function updateEscrowStatus(
   id: number,
-  data: Partial<Pick<InsertEscrowTransaction, "status" | "stripePaymentIntentId" | "stripeTransferId" | "releasedAt" | "refundedAt">>
+  data: Partial<Pick<InsertEscrowTransaction, "status" | "paymentReference" | "paymentTransferReference" | "releasedAt" | "refundedAt">>
 ) {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
