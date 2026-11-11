@@ -16,7 +16,6 @@ import ownerRouter from "./owner";
 import brainRouter from "./brain";
 import telemetryRouter from "./telemetry";
 import signerRouter from "./signer";
-import stripeRouter from "./stripe";
 import cryptoRouter from "./crypto";
 import kineticRouter from "./kinetic";
 import deliveryRouter from "./delivery";
@@ -26,31 +25,12 @@ import openaiRouter from "./openai";
 import outreachRouter from "./outreach";
 
 const router: IRouter = Router();
-
-router.use(healthRouter);
-router.use(authRouter);
-router.use(productsRouter);
-router.use(ordersRouter);
-router.use(vaultRouter);
-router.use(libraryRouter);
-router.use(problemsRouter);
-router.use(solutionsRouter);
-router.use(escrowRouter);
-router.use(crawlerRouter);
-router.use(notificationsRouter);
-router.use(earningsRouter);
-router.use(offersRouter);
-router.use(ownerRouter);
-router.use(brainRouter);
-router.use(telemetryRouter);
-router.use(signerRouter);
-router.use(stripeRouter);
-router.use(cryptoRouter);
-router.use(kineticRouter);
-router.use(deliveryRouter);
-router.use(challengesRouter);
-router.use(quantumRouter);
-router.use(openaiRouter);
-router.use(outreachRouter);
+router.use(
+  healthRouter, authRouter, productsRouter, ordersRouter, vaultRouter,
+  libraryRouter, problemsRouter, solutionsRouter, escrowRouter, crawlerRouter,
+  notificationsRouter, earningsRouter, offersRouter, ownerRouter, brainRouter,
+  telemetryRouter, signerRouter, cryptoRouter, kineticRouter, deliveryRouter,
+  challengesRouter, quantumRouter, openaiRouter, outreachRouter,
+);
 
 export default router;
