@@ -24,7 +24,7 @@ async function main() {
   console.log(`BASELINE INTERNAL (18):    ${rep.internal_previously_covered}`);
   console.log(`EXPANDED INTERNAL (33):    ${rep.internal_newly_covered}`);
   console.log(`EXTERNAL GATEWAYS (3):     ${rep.external_gateways}`);
-  console.log(`STRIPE PROHIBITED GUARD:   ${rep.policy_interlocks}`);
+  console.log(`FIAT PAYMENT POLICY GUARD:   ${rep.policy_interlocks}`);
   console.log(`ALL SUBSYSTEMS SATISFIED:  ${rep.all_passed ? 'YES' : 'NO'}`);
   console.log('===========================================================');
 
