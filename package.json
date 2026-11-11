@@ -32,7 +32,8 @@
     "verify:67-gates": "tsx scripts/verify_67_gate_registry.ts",
     "test:solution-pipeline": "tsx scripts/test_solution_pipeline.ts",
     "test:security-controls": "tsx scripts/test_security_controls.ts",
-    "verify:neon-tenant-isolation": "bash scripts/verify_neon_tenant_isolation.sh"
+    "verify:neon-tenant-isolation": "bash scripts/verify_neon_tenant_isolation.sh",
+    "test:production-state": "tsx scripts/test_production_state.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
