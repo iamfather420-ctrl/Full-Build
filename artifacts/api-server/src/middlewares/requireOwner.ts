@@ -14,7 +14,11 @@ export function requireOwner(req: Request, res: Response, next: NextFunction) {
     return;
   }
   const allowedId = process.env.OWNER_USER_ID;
-  if (allowedId && req.user.id !== allowedId) {
+  if (!allowedId) {
+    res.status(503).json({ error: "Owner authorization is not configured" });
+    return;
+  }
+  if (req.user.id !== allowedId) {
     res.status(403).json({ error: "Owner access required" });
     return;
   }
