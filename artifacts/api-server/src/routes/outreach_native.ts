@@ -17,7 +17,7 @@ async function emailChannelConnected(): Promise<boolean> {
   return connected;
 }
 
-router.get("/outreach/stats", async (_req, res) => {
+router.get("/outreach/stats", requireOwner, async (_req, res) => {
   const [row] = await db
     .select({
       total: sql<number>`count(*)::int`,
@@ -32,7 +32,7 @@ router.get("/outreach/stats", async (_req, res) => {
   res.json({ ...row, channelConnected });
 });
 
-router.get("/outreach/prospects", async (_req, res) => {
+router.get("/outreach/prospects", requireOwner, async (_req, res) => {
   const rows = await db
     .select()
     .from(outreachProspects)
@@ -41,7 +41,7 @@ router.get("/outreach/prospects", async (_req, res) => {
   res.json(rows);
 });
 
-router.get("/outreach/events", async (req, res) => {
+router.get("/outreach/events", requireOwner, async (req, res) => {
   const limit = Math.min(parseInt(String(req.query.limit ?? "40"), 10) || 40, 200);
   const rows = await db
     .select()
@@ -116,13 +116,22 @@ router.post("/outreach/prospects/:id/send", requireOwner, async (req, res) => {
     });
     res.json({ success: true, messageId: result.id });
   } catch (err) {
-    // Release the claim so the draft can be retried — it was NOT delivered
-    await db
-      .update(outreachProspects)
-      .set({ stage: "composed", updatedAt: new Date() })
-      .where(and(eq(outreachProspects.id, id), eq(outreachProspects.stage, "sending")));
-    req.log.error({ err, prospectId: id }, "OUTREACH: email send failed");
-    res.status(502).json({ error: (err as Error).message });
+    // Fail closed: a transport or persistence error can occur after Gmail has
+    // accepted the message. Keep the atomic "sending" claim so a retry cannot
+    // accidentally deliver a duplicate. Reconcile this prospect against Gmail
+    // before manually returning it to "composed".
+    req.log.error({ err, prospectId: id }, "OUTREACH: delivery outcome requires reconciliation");
+    try {
+      await db.insert(outreachEvents).values({
+        prospectId: id,
+        company: p.company,
+        type: "delivery_unknown",
+        message: "Delivery outcome is unknown after a send-path error. Do not retry until the Gmail Sent folder is checked and the result is reconciled.",
+      });
+    } catch (eventErr) {
+      req.log.error({ err: eventErr, prospectId: id }, "OUTREACH: failed to persist delivery reconciliation event");
+    }
+    res.status(502).json({ error: "Delivery outcome requires reconciliation; do not retry until Gmail is checked." });
   }
 });
 
