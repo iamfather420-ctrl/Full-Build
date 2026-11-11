@@ -42,7 +42,7 @@ export class ExternalAdapterRegistry {
       },
       {
         adapter_id: 'DN-36',
-        name: 'Fiat Settlement Policy Guard (Stripe Prohibited)',
+        name: 'Fiat Settlement Policy Guard',
         category: 'POLICY_INTERLOCK',
         status: 'AVAILABLE',
         required_env_vars: [],
