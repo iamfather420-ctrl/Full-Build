@@ -1684,7 +1684,7 @@ components:
         status:
           type: string
           enum: [pending, held, released, refunded, failed]
-        stripePaymentIntentId:
+        paymentReference:
           type: ["string", "null"]
         releasedAt:
           type: ["string", "null"]
