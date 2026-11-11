@@ -53,7 +53,7 @@ The underlying mathematical model and local execution systems are verified, but 
 - **Persistence Verification:** 9 / 9 Local SQLite invariants verified; Neon reports PROVIDER_REQUIRED.
 - **External Gateways:** 2 (DN-34 Neon PostgreSQL, DN-35 PayPal Gateway)
 - **Settlement Escrow:** DN-38 Sovereign Settlement Escrow Program (Native cryptographic state verification)
-- **Policy Guard:** DN-36 (Stripe Prohibited Interlock; Exclusive PayPal DN-35 routing)
+- **Policy Guard:** DN-36 (Exclusive PayPal DN-35 settlement routing)
 
 ---
 *Evidence Artifact generated automatically by AuthoritativeVerificationPipeline. Zero synthetic receipts, zero mock claims.*
