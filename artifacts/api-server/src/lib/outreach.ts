@@ -18,6 +18,7 @@
  * exposed via /api/outreach/* for the live Outreach Ops console.
  */
 
+import { randomUUID } from "node:crypto";
 import { db, outreachProspects, outreachEvents } from "@workspace/db";
 import { eq, sql, asc } from "drizzle-orm";
 import { logger } from "./logger";
@@ -212,6 +213,32 @@ async function composeAI(prompt: string): Promise<string> {
   }
 }
 
+function validateDraft(draft: string, p: typeof outreachProspects.$inferSelect): void {
+  const words = draft.trim().split(/\s+/).filter(Boolean);
+  if (words.length < 8 || words.length > 100) {
+    throw new Error(`Draft quality check failed: expected 8–100 words, received ${words.length}`);
+  }
+  if (/\b(this is a solved class of problem|happy to point you at|capability spec|engineered for this class|unlock the power|cutting[- ]edge|revolutionary|world[- ]class|game[- ]changing|seamlessly transform)\b/i.test(draft)) {
+    throw new Error("Draft quality check failed: generic promotional or boilerplate language");
+  }
+  if (/\bSolveX\s+(?:has|have|is|was|provides|offers|delivers|guarantees|certifies|certified|proves|proven|deployed|built|solved|eliminates|prevents|ensures|supports|can)\b/i.test(draft)) {
+    throw new Error("Draft quality check failed: unsupported capability claim about SolveX");
+  }
+  const solvexMentions = (draft.match(/\bSolveX\b/gi) ?? []).length;
+  if (solvexMentions > 1) {
+    throw new Error("Draft quality check failed: repeated brand promotion");
+  }
+  const context = `${p.sourceTitle ?? ""} ${p.snippet ?? ""}`.toLowerCase();
+  const stop = new Set(["about", "after", "again", "against", "being", "could", "does", "from", "have", "into", "more", "other", "should", "their", "there", "these", "they", "this", "those", "through", "under", "using", "what", "when", "where", "which", "while", "with", "would", "your", "question", "problem"]);
+  const keywords = [...new Set((context.match(/[a-z0-9-]{4,}/g) ?? []).filter(w => !stop.has(w)))];
+  const lowerDraft = draft.toLowerCase();
+  const relevantHits = keywords.filter(w => lowerDraft.includes(w)).length;
+  const requiredHits = keywords.length >= 2 ? 2 : 1;
+  if (keywords.length > 0 && relevantHits < requiredHits) {
+    throw new Error("Draft quality check failed: reply does not sufficiently reference the source post");
+  }
+}
+
 async function logEvent(prospectId: number, company: string, type: string, message: string) {
   await db.insert(outreachEvents).values({ prospectId, company, type, message });
 }
@@ -294,6 +321,7 @@ async function composeDraft(p: typeof outreachProspects.$inferSelect) {
     "Write a reply that is useful to this author, not a generic sales pitch."
   ].join("\n");
   const draft = await composeAI(prompt);
+  validateDraft(draft, p);
   await db.update(outreachProspects).set({
     stage: "composed", productId, productName, draftMessage: draft,
     lastAction: "AI-generated reply draft composed — queued for human review; not sent",
@@ -319,10 +347,45 @@ async function pruneOld() {
 let running = false;
 const composeRetryAfter = new Map<number, number>();
 
+// Neon HTTP is stateless between requests, so use an atomic lease row in the
+// existing events table rather than a session-scoped advisory lock. ID -1 is
+// reserved exclusively for this lock and filtered out of the public events API.
+const WORKER_LOCK_ID = -1;
+const WORKER_LOCK_TTL_SECONDS = 120;
+
+async function acquireWorkerLease(token: string): Promise<boolean> {
+  const result = await db.execute(sql`
+    INSERT INTO outreach_events (id, prospect_id, company, type, message, created_at)
+    VALUES (${WORKER_LOCK_ID}, 0, 'SOLVEX_WORKER', 'worker_lock', ${token}, now())
+    ON CONFLICT (id) DO UPDATE
+      SET message = EXCLUDED.message, created_at = now()
+      WHERE outreach_events.created_at < now() - interval '120 seconds'
+    RETURNING id
+  `);
+  return result.rows.length > 0;
+}
+
+async function releaseWorkerLease(token: string): Promise<void> {
+  await db.execute(sql`
+    DELETE FROM outreach_events
+    WHERE id = ${WORKER_LOCK_ID}
+      AND company = 'SOLVEX_WORKER'
+      AND type = 'worker_lock'
+      AND message = ${token}
+  `);
+}
+
 async function tick() {
   if (running) return;
   running = true;
+  const leaseToken = randomUUID();
+  let leaseAcquired = false;
   try {
+    leaseAcquired = await acquireWorkerLease(leaseToken);
+    if (!leaseAcquired) {
+      logger.debug("OUTREACH: another Fly machine owns the worker lease; skipping this cycle");
+      return;
+    }
     const aiConfigured = Boolean(process.env.OPENAI_API_KEY);
     if (!aiConfigured) {
       // Continue discovering prospects, but never disguise a canned fallback as AI output.
@@ -343,9 +406,9 @@ async function tick() {
         } catch (err) {
           composeRetryAfter.set(pending.id, now + 5 * 60_000);
           const message = (err as Error).message;
-          logger.error({ prospectId: pending.id, error: message }, "OUTREACH: AI composition failed; prospect remains undispatched");
+          logger.error({ prospectId: pending.id, error: message }, "OUTREACH: AI composition or quality check failed; prospect remains undispatched");
           await logEvent(pending.id, pending.sourceAuthor ?? pending.company, "compose_error",
-            `AI composition failed; no draft was approved or sent. Retry in 5 minutes. Reason: ${message.slice(0, 350)}`);
+            `AI composition/quality check failed; no draft was approved or sent. Retry in 5 minutes. Reason: ${message.slice(0, 350)}`);
         }
       } else if (pendingRows.length === 0) {
         await huntLeads();
@@ -355,6 +418,13 @@ async function tick() {
   } catch (err) {
     logger.error({ err }, "OUTREACH: tick failed");
   } finally {
+    if (leaseAcquired) {
+      try {
+        await releaseWorkerLease(leaseToken);
+      } catch (err) {
+        logger.error({ err, leaseToken }, "OUTREACH: worker lease release failed; lease expires automatically");
+      }
+    }
     running = false;
   }
 }
