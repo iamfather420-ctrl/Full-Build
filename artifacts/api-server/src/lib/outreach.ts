@@ -18,10 +18,8 @@
  * exposed via /api/outreach/* for the live Outreach Ops console.
  */
 
-import { db } from "@workspace/db";
-import { outreachProspects, outreachEvents, paradoxProductsTable } from "@workspace/db";
+import { db, outreachProspects, outreachEvents } from "@workspace/db";
 import { eq, sql, asc } from "drizzle-orm";
-import { openai } from "@workspace/integrations-openai-ai-server";
 import { logger } from "./logger";
 
 const TICK_MS = 40_000; // one autonomous action every 40s
@@ -160,24 +158,29 @@ async function huntStackExchange(tag: string, site: string): Promise<RawLead[]> 
 }
 
 async function composeAI(prompt: string, fallback: string): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return fallback;
   try {
-    const resp = await Promise.race([
-      openai.chat.completions.create({
-        model: "gpt-5.4",
-        max_completion_tokens: 2048,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are dAIsy haMINJA, the autonomous sales intelligence of the SolveX institutional marketplace. You write genuinely helpful public replies to real technical posts. Lead with substance that addresses their actual question, then mention the relevant SolveX instrument once, briefly, with no hype. Max 90 words. No greetings. Output only the message body.",
-          },
-          { role: "user", content: prompt },
-        ],
-      }),
-      new Promise<never>((_, rej) => setTimeout(() => rej(new Error("ai-timeout")), 25_000)),
-    ]);
-    const text = resp.choices[0]?.message?.content?.trim();
-    return text && text.length > 0 ? text : fallback;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 25_000);
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini",
+          max_completion_tokens: 2048,
+          messages: [
+            { role: "system", content: "You are dAIsy haMINJA, SolveX sales intelligence. Write a genuinely helpful public reply to a real technical post. Address the question first, mention SolveX once without hype. Maximum 90 words. No greeting. Output only the message body." },
+            { role: "user", content: prompt }
+          ]
+        })
+      });
+      if (!response.ok) throw new Error(`AI API returned HTTP ${response.status}`);
+      const data = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+      return data.choices?.[0]?.message?.content?.trim() || fallback;
+    } finally { clearTimeout(timer); }
   } catch (err) {
     logger.warn({ err: (err as Error).message }, "OUTREACH: AI compose fallback used");
     return fallback;
@@ -253,40 +256,22 @@ async function huntLeads(): Promise<number> {
 }
 
 async function composeDraft(p: typeof outreachProspects.$inferSelect) {
-  const prefix = p.productId ?? "SOLVEX-ZK-";
-  const prods = await db
-    .select()
-    .from(paradoxProductsTable)
-    .where(sql`${paradoxProductsTable.id} LIKE ${prefix + "%"}`)
-    .limit(30);
-  const prod = prods.length > 0 ? pick(prods) : null;
-  const productName = prod?.name ?? "Master Apex Bundle";
-  const productId = prod?.id ?? "SOLVEX-MASTER-29";
-
+  const productName = "SolveX institutional solution";
+  const productId = p.productId ?? "SOLVEX-MASTER";
   const draft = await composeAI(
-    `Real post on ${p.platform} by ${p.sourceAuthor}:\nTitle: "${p.sourceTitle}"\n${p.snippet ? `Context: ${p.snippet}\n` : ""}\nWrite a public reply that genuinely helps with their question about ${p.sector}, then briefly notes that the SolveX marketplace carries "${productName}" for exactly this class of problem.`,
-    `Re "${p.sourceTitle}": this is a solved class of problem in ${p.sector} — the key is separating the control plane from the evidence plane. The SolveX marketplace carries ${productName} engineered for exactly this; happy to point you at the capability spec. — dAIsy haMINJA, SolveX`,
+    `Real post on ${p.platform} by ${p.sourceAuthor}:
+Title: "${p.sourceTitle}"
+${p.snippet ? `Context: ${p.snippet}\n` : ""}
+Write a public reply that genuinely helps with their question about ${p.sector}, then briefly notes that SolveX provides institutional solutions for this class of problem.`,
+    `Re "${p.sourceTitle}": this is a solved class of problem in ${p.sector} — the key is separating the control plane from the evidence plane. SolveX provides institutional solutions engineered for this class of challenge; happy to point you at the capability spec. — dAIsy haMINJA, SolveX`,
   );
-
-  await db
-    .update(outreachProspects)
-    .set({
-      stage: "composed",
-      productId,
-      productName,
-      listPriceEth: prod?.priceEth ?? null,
-      draftMessage: draft,
-      lastAction: "Reply draft composed — queued for delivery (channel required)",
-      updatedAt: new Date(),
-    })
-    .where(eq(outreachProspects.id, p.id));
-
-  await logEvent(
-    p.id,
-    p.sourceAuthor ?? p.company,
-    "compose",
-    `DRAFT READY → reply to "${p.sourceTitle}" (${p.platform}): "${draft}" — matched instrument: ${productName}. Status: queued — connect a delivery channel to transmit.`,
-  );
+  await db.update(outreachProspects).set({
+    stage: "composed", productId, productName, draftMessage: draft,
+    lastAction: "Reply draft composed — queued for delivery (channel required)",
+    updatedAt: new Date(),
+  }).where(eq(outreachProspects.id, p.id));
+  await logEvent(p.id, p.sourceAuthor ?? p.company, "compose",
+    `DRAFT READY → reply to "${p.sourceTitle}" (${p.platform}): "${draft}" — matched instrument: ${productName}. Status: queued — connect a delivery channel to transmit.`);
 }
 
 const EVENT_RETENTION_DAYS = 30;
