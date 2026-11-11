@@ -10,7 +10,7 @@ interface PaymentGatewayProps {
 
 export default function PaymentGateway({ providers, onToggleProvider, onAddTransaction }: PaymentGatewayProps) {
   // Checkout simulator state
-  const [selectedProvider, setSelectedProvider] = useState('stripe');
+  const [selectedProvider, setSelectedProvider] = useState('paypal');
   const [checkoutAmount, setCheckoutAmount] = useState('99');
   const [checkoutItem, setCheckoutItem] = useState('Autonomous API Template Integration');
   const [isLoading, setIsLoading] = useState(false);
