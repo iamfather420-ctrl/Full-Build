@@ -1,18 +1,22 @@
-# fly.toml app configuration file generated for full-build on 2026-11-11T18:38:43Z
-#
+# fly.toml app configuration for Full-Build outreach engine
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
 
 app = 'full-build'
 primary_region = 'ord'
 
 [build]
+
+[env]
+  PORT = "8080"
+  NODE_ENV = "production"
+  SOLVEX_ENV = "production"
+
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = 'off'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
 [[vm]]
