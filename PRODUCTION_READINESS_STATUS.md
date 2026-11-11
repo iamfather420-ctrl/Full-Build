@@ -175,6 +175,11 @@ The uploaded 46-gate artifact for that run is not an all-green production verdic
 - GATE-14 is blocked by the lifecycle blocker and because the authoritative run used local rather than production mode.
 - GATE-46 master closure is therefore blocked. The 41 passed gates are meaningful local/model verification, not a production activation verdict.
 
-The latest main commit after the completed run is `0c7150779067235b357b45274c44251e2860c947`, which clarifies that the outreach AI status endpoint's local asset probe is not the same as a successfully executed inference request. A new CI run was triggered for that commit and must finish before its result is claimed.
+The follow-up commit `0c7150779067235b357b45274c44251e2860c947` clarifies that the outreach AI status endpoint's local asset probe is not the same as a successfully executed inference request. The subsequent CI run for commit `7b4826e32a9df4420bfb537891487fd696a65183` completed successfully; the final `.env.example` alignment commit `c5b0b1132d31a1af74047de0c64138c2a10cba13` has its own CI run in progress at the time of this update.
 
 The Vercel build-rate-limit status remains separate: GitHub CI success does not clear the Vercel account's deployment-build limit. The latest inspected Vercel production deployment is still bound to `b3a00498...`, not the latest `main` commit. No upgrade, billing change, SSO change, or manual deployment bypass was attempted.
+
+
+### Daisy model asset availability
+
+A fresh recursive tree scan of the current `main` commit `c5b0b1132d31a1af74047de0c64138c2a10cba13` found no tracked `.gguf`, `.bin`, `.onnx`, `.safetensors`, Llama, SmolLM, or model-weight assets. The local inference implementation is now connected to outreach, but the actual model weights and executable inference engine must be provisioned on the Fly worker (or its mounted volume) and verified there. Until that is done, do not claim Daisy local inference is active. The new `.env.example` documents the exact OIDC, model-path, engine-path and explicit external-fallback variables.
