@@ -29,9 +29,9 @@ app.use(express.json());
 app.get("/health", (_req, res) => res.json({ ok: true, service: "solvex-outreach", database: "configured" }));
 app.get("/api/outreach/ai-status", (_req, res) => {
   res.json({
-    configured: Boolean(process.env.OPENAI_API_KEY),
+    configured: Boolean(process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY),
     model: process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini",
-    mode: process.env.OPENAI_API_KEY ? "ai-composition" : "lead-discovery-only",
+    mode: (process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY) ? "ai-composition" : "lead-discovery-only",
     deliveryEnabled: false,
   });
 });
