@@ -48,7 +48,7 @@ export class ExternalAdapterRegistry {
         required_env_vars: [],
         provided_env_vars: [],
         live_connected: false,
-        notes: 'Stripe prohibited per Sovereign Security Directive. Fiat payments and escrow settle exclusively via PayPal DN-35.'
+        notes: 'Fiat payments and escrow settle exclusively via PayPal DN-35.'
       },
       {
         adapter_id: 'DN-37',
