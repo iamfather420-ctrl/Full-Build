@@ -43,7 +43,6 @@ import {
 import { PROBLEM_CATEGORIES } from "../drizzle/schema";
 import { runAICrawler } from "./crawler.ts";
 import { verifyWithAI } from "./verifier.ts";
-import { createEscrowPaymentIntent } from "./stripe.ts";
 
 // Helper: check if user is owner/admin
 function requireAdmin(ctx: any) {
@@ -305,45 +304,13 @@ export const appRouter = router({
       }),
 
     confirmPayment: protectedProcedure
-      .input(z.object({ escrowId: z.number(), paymentIntentId: z.string() }))
+      .input(z.object({ escrowId: z.number(), transactionReference: z.string() }))
       .mutation(async ({ ctx, input }) => {
         await updateEscrowStatus(input.escrowId, {
           status: "held",
-          stripePaymentIntentId: input.paymentIntentId,
+          paymentReference: input.transactionReference,
         });
         return { success: true };
-      }),
-
-    createPaymentIntent: protectedProcedure
-      .input(z.object({ problemId: z.number(), amount: z.number().min(1) }))
-      .mutation(async ({ ctx, input }) => {
-        const problem = await getProblemById(input.problemId);
-        if (!problem) throw new TRPCError({ code: "NOT_FOUND" });
-        if (problem.clientId !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
-
-        const pi = await createEscrowPaymentIntent({
-          amount: input.amount,
-          problemId: input.problemId,
-          problemTitle: problem.title,
-          userId: ctx.user.id,
-          userEmail: ctx.user.email ?? undefined,
-        });
-
-        // Create escrow record in pending state
-        const existing = await getEscrowByProblemId(input.problemId);
-        if (!existing) {
-          await createEscrowTransaction({
-            problemId: input.problemId,
-            clientId: ctx.user.id,
-            amount: String(input.amount),
-            status: "pending",
-            stripePaymentIntentId: pi.id,
-          });
-        } else {
-          await updateEscrowStatus(existing.id, { stripePaymentIntentId: pi.id });
-        }
-
-        return { clientSecret: pi.client_secret, paymentIntentId: pi.id };
       }),
 
     getByProblem: protectedProcedure
