@@ -39,7 +39,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
-  # ── Auth (Replit OIDC) ────────────────────────────────────────────────
+  # ── Authentication (OpenID Connect) ────────────────────────────────────────────────
   /auth/user:
     get:
       tags: [Auth]
