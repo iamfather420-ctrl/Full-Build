@@ -25,4 +25,4 @@ COPY . .
 # declared in devDependencies. Removing devDependencies here makes the
 # container's startup command unable to resolve tsx.
 EXPOSE 8080
-CMD [ "bun", "x", "tsx", "artifacts/api-server/src/index.ts" ]
+CMD [ "bash", "./fly-start.sh" ]
