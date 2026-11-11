@@ -2617,7 +2617,7 @@ export const getCreatePaymentIntentUrl = () => {
 }
 
 /**
- * @summary Create Stripe payment intent for escrow
+ * @summary Create escrow payment intent
  */
 export const createPaymentIntent = async (paymentIntentInput: PaymentIntentInput, options?: RequestInit): Promise<PaymentIntentResult> => {
 
@@ -2665,7 +2665,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CreatePaymentIntentMutationError = ErrorType<unknown>
 
     /**
- * @summary Create Stripe payment intent for escrow
+ * @summary Create escrow payment intent
  */
 export const useCreatePaymentIntent = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPaymentIntent>>, TError,{data: BodyType<PaymentIntentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
