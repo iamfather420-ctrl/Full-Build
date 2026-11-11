@@ -383,9 +383,10 @@ async function tick() {
   try {
     leaseAcquired = await acquireWorkerLease(leaseToken);
     if (!leaseAcquired) {
-      logger.debug("OUTREACH: another Fly machine owns the worker lease; skipping this cycle");
+      logger.info({ hostname: process.env.FLY_MACHINE_ID ?? process.env.HOSTNAME ?? "unknown" }, "OUTREACH: another Fly machine owns the worker lease; skipping this cycle");
       return;
     }
+    logger.info({ hostname: process.env.FLY_MACHINE_ID ?? process.env.HOSTNAME ?? "unknown" }, "OUTREACH: worker lease acquired; this machine owns the current cycle");
     const aiConfigured = Boolean(process.env.OPENAI_API_KEY);
     if (!aiConfigured) {
       // Continue discovering prospects, but never disguise a canned fallback as AI output.
