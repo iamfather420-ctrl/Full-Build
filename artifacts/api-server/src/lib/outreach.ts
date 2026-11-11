@@ -181,7 +181,7 @@ async function composeAI(prompt: string): Promise<string> {
               "Write a useful, specific public reply to the supplied post. Address the author's actual question or problem before mentioning SolveX.",
               "Use only facts supported by the supplied post and generally established technical knowledge. Never claim SolveX has solved, deployed, certified, benchmarked, or guarantees something unless the supplied context explicitly proves it.",
               "If the post lacks enough detail for a substantive answer, ask one relevant clarifying question instead of inventing an answer.",
-              "Mention SolveX at most once, briefly and accurately; do not use hype, fake familiarity, or pressure.",
+              "Do not mention SolveX, its products, or its capabilities in the reply. Keep the reply focused entirely on the author’s stated problem and useful technical guidance; never imply affiliation, product fit, or unverified results.",
               "Maximum 90 words. No greeting, no fabricated capability spec, no generic control-plane/evidence-plane slogan. Output only the reply body."
             ].join(" ")
           },
