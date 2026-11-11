@@ -1,7 +1,7 @@
 {
   "proof_id": "PROOF-RECEIPT-DN-36",
   "verification_id": "DN-36",
-  "claim": "Daisy Subsystem: Fiat Settlement Policy Guard (Stripe Prohibited / PayPal Exclusive)",
+  "claim": "Daisy Subsystem: Fiat Settlement Policy Guard",
   "preconditions": [
     "Target repository commit frozen at 728625581c2f89210c752d03fda0a154812b2366",
     "Independent Z3 WASM kernel & SQLite Native persistence active",
