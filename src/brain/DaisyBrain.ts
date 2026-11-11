@@ -66,7 +66,7 @@ export interface CompleteBrainState {
       mode: string;
       claim_scope: string;
     };
-    stripe_dn36: {
+    fiat_policy_dn36: {
       status: string;
       policy: string;
     };
@@ -249,7 +249,7 @@ export class DaisyBrain {
           mode: 'NOT_ENABLED_UNVERIFIED',
           claim_scope: 'LOCAL'
         },
-        stripe_dn36: {
+        fiat_policy_dn36: {
           status: 'PROHIBITED_BLOCKED',
           policy: 'Stripe prohibited per Sovereign Directive; fiat settlements exclusively route via PayPal DN-35'
         }
