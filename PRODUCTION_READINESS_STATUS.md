@@ -160,3 +160,21 @@ Vercel account records inspected on 2026-11-11 show:
 - The current source commits above are not covered by the older CI/formal-evidence run solely because earlier commits passed.
 - Do not mark the latest changes as deployed until a Vercel deployment bound to the latest main SHA reaches READY, and do not mark the intended public site as verified until its exact domain and access behavior are checked.
 - No deployment settings, SSO policy, custom-domain mapping, production secrets, or live service configuration were changed by this reconciliation.
+
+
+### Fresh GitHub verification snapshot — 2026-11-11
+
+A new Build and Enterprise CI run completed successfully on commit `ae65ba8388968750d8bc38ede0e287c01431872a` (workflow run `43123422594`). The completed job reported success for dependency installation, release-safety checks, Daisy safety, first-party inference fail-closed tests, the new production OIDC configuration regression test, native server compile, payment-disabled checks, security controls, disposable Neon tenant isolation, application build, TypeScript, enterprise invariants, the formal verification corpus, proof closure, and the authoritative 46-gate verification command. The separate 120-case workflow `43123422427` also completed successfully.
+
+The uploaded 46-gate artifact for that run is not an all-green production verdict:
+
+- 46 total gates; 41 passed; 4 blocked; 1 external-provider-required; 0 failed.
+- GATE-00 is blocked because the verification runner sees 11 modified/generated working-tree files, so repository baseline cleanliness is not established.
+- GATE-11 is external-provider-required because the run did not have configured/connected Neon and PayPal provider credentials. Payments remain intentionally disabled.
+- GATE-12 is blocked: the solution pipeline completed only 2 of 21 stages, and order lifecycle transitions were correctly denied because verified identity and signed tenant claims were unavailable. No order transition or deployment occurred.
+- GATE-14 is blocked by the lifecycle blocker and because the authoritative run used local rather than production mode.
+- GATE-46 master closure is therefore blocked. The 41 passed gates are meaningful local/model verification, not a production activation verdict.
+
+The latest main commit after the completed run is `0c7150779067235b357b45274c44251e2860c947`, which clarifies that the outreach AI status endpoint's local asset probe is not the same as a successfully executed inference request. A new CI run was triggered for that commit and must finish before its result is claimed.
+
+The Vercel build-rate-limit status remains separate: GitHub CI success does not clear the Vercel account's deployment-build limit. The latest inspected Vercel production deployment is still bound to `b3a00498...`, not the latest `main` commit. No upgrade, billing change, SSO change, or manual deployment bypass was attempted.
