@@ -5,6 +5,22 @@ import { db, outreachProspects, outreachEvents } from "@workspace/db";
 import { logger } from "./lib/logger";
 import { startOutreachEngine } from "./lib/outreach";
 
+function safeDatabaseTarget() {
+  const raw = process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL;
+  if (!raw) return { configured: false };
+  try {
+    const parsed = new URL(raw);
+    return {
+      configured: true,
+      host: parsed.hostname,
+      user: decodeURIComponent(parsed.username),
+      database: parsed.pathname.replace(/^\\//, "").split("/")[0] || "default",
+    };
+  } catch {
+    return { configured: true, parseable: false };
+  }
+}
+
 const app = express();
 const port = Number(process.env.PORT ?? 8080);
 app.use(cors({ origin: process.env.APP_ORIGIN ?? false }));
@@ -34,4 +50,4 @@ app.get("/api/outreach/events", async (req, res) => {
     res.json(await db.select().from(outreachEvents).orderBy(desc(outreachEvents.createdAt)).limit(limit));
   } catch (err) { logger.error({ err }, "outreach events query failed"); res.status(503).json({ error: "Outreach database query failed" }); }
 });
-app.listen(port, () => { logger.info({ port }, "SolveX outreach API listening"); startOutreachEngine(); });
+app.listen(port, () => { logger.info({ port, databaseTarget: safeDatabaseTarget() }, "SolveX outreach API listening"); startOutreachEngine(); });
