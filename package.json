@@ -33,7 +33,8 @@
     "test:solution-pipeline": "tsx scripts/test_solution_pipeline.ts",
     "test:security-controls": "tsx scripts/test_security_controls.ts",
     "verify:neon-tenant-isolation": "bash scripts/verify_neon_tenant_isolation.sh",
-    "test:proof-store": "tsx scripts/test_persistent_proof_store.ts"
+    "test:proof-store": "tsx scripts/test_persistent_proof_store.ts",
+    "test:outreach-delivery": "tsx scripts/test_outreach_delivery.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
