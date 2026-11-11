@@ -700,7 +700,7 @@ export class DaisySubsystemExecutors {
 
       // 36. DN-36: Fiat Settlement Policy Guard
       case 'DN-36': {
-        // Enforce strict Sovereign Directive: Stripe is strictly prohibited. Fiat route is exclusive to PayPal DN-35.
+        // Enforce the Sovereign Directive: fiat settlement is exclusive to PayPal DN-35.
         const stripeRequested = testPayload?.attemptStripeExecution === true;
         const blocked = true; // Always blocked
         return {
