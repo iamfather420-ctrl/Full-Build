@@ -10,19 +10,13 @@ WORKDIR /app
 ENV NODE_ENV="production"
 ENV PORT="8080"
 
-# Install packages needed to build native Node/Bun modules.
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3
 
-# Install dependencies from the repository lockfile.
-COPY .npmrc bun.lock package-lock.json package.json ./
-RUN bun install
-
-# Copy application code.
+# Copy the full source tree before installing so Bun can discover local workspaces.
+# The repository bun.lock is npm-format/unsupported by this Bun version; resolve from package.json.
 COPY . .
+RUN rm -f bun.lock && bun install
 
-# Keep tsx available: the API entry point is TypeScript and tsx is currently
-# declared in devDependencies. Removing devDependencies here makes the
-# container's startup command unable to resolve tsx.
 EXPOSE 8080
 CMD [ "bash", "./fly-start.sh" ]
