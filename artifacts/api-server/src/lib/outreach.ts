@@ -159,8 +159,8 @@ async function huntStackExchange(tag: string, site: string): Promise<RawLead[]> 
 }
 
 async function composeAI(prompt: string): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY is not configured");
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY;
+  if (!apiKey) throw new Error("Neither OPENAI_API_KEY nor SOLVEX_FLY is configured");
   const model = process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 25_000);
@@ -387,7 +387,7 @@ async function tick() {
       return;
     }
     logger.info({ hostname: process.env.FLY_MACHINE_ID ?? process.env.HOSTNAME ?? "unknown" }, "OUTREACH: worker lease acquired; this machine owns the current cycle");
-    const aiConfigured = Boolean(process.env.OPENAI_API_KEY);
+    const aiConfigured = Boolean(process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY);
     if (!aiConfigured) {
       // Continue discovering prospects, but never disguise a canned fallback as AI output.
       await huntLeads();
