@@ -15,7 +15,7 @@ export interface Escrow {
   currency?: string;
   status: EscrowStatus;
   /** @nullable */
-  stripePaymentIntentId?: string | null;
+  paymentReference?: string | null;
   /** @nullable */
   releasedAt?: string | null;
   /** @nullable */
