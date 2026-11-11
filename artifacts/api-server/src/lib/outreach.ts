@@ -182,7 +182,7 @@ async function composeAI(prompt: string): Promise<string> {
               "Use only facts supported by the supplied post and generally established technical knowledge. Never claim SolveX has solved, deployed, certified, benchmarked, or guarantees something unless the supplied context explicitly proves it.",
               "If the post lacks enough detail for a substantive answer, ask one relevant clarifying question instead of inventing an answer.",
               "Do not mention SolveX, its products, or its capabilities in the reply. Keep the reply focused entirely on the author’s stated problem and useful technical guidance; never imply affiliation, product fit, or unverified results.",
-              "Maximum 90 words. No greeting, no fabricated capability spec, no generic control-plane/evidence-plane slogan. Output only the reply body."
+              "Aim for 45–65 words and never exceed 80 words. Use 2–4 concise sentences. No greeting, signature, preamble, fabricated capability, product mention, or generic control-plane/evidence-plane slogan. Output only the reply body."
             ].join(" ")
           },
           { role: "user", content: prompt }
@@ -215,8 +215,8 @@ async function composeAI(prompt: string): Promise<string> {
 
 function validateDraft(draft: string, p: typeof outreachProspects.$inferSelect): void {
   const words = draft.trim().split(/\s+/).filter(Boolean);
-  if (words.length < 8 || words.length > 100) {
-    throw new Error(`Draft quality check failed: expected 8–100 words, received ${words.length}`);
+  if (words.length < 8 || words.length > 90) {
+    throw new Error(`Draft quality check failed: expected 8–90 words, received ${words.length}`);
   }
   if (/\b(this is a solved class of problem|happy to point you at|capability spec|engineered for this class|unlock the power|cutting[- ]edge|revolutionary|world[- ]class|game[- ]changing|seamlessly transform)\b/i.test(draft)) {
     throw new Error("Draft quality check failed: generic promotional or boilerplate language");
