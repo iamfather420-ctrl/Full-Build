@@ -91,6 +91,7 @@ export async function authMiddleware(
     let claims = refreshed.tenant_token
       ? await verifyOidcTenantToken(refreshed.tenant_token)
       : null;
+    if (claims && claims.user_id !== refreshed.user.id) claims = null;
 
     if (!claims) {
       const identity = await resolveOidcTenantIdentity(
