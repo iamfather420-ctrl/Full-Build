@@ -1,7 +1,7 @@
 import * as oidc from "openid-client";
 import { type Request, type Response, type NextFunction } from "express";
-import type { AuthUser } from "@workspace/api-zod";
-import { resolveOidcTenantIdentity, verifyOidcTenantToken } from "@workspace/db";
+import type { AuthUser } from "../../../../lib/api-zod/src/generated/types/authUser.js";
+import { resolveOidcTenantIdentity, verifyOidcTenantToken } from "../../../../packages/db/src/index.js";
 import {
   clearSession,
   getOidcConfig,
