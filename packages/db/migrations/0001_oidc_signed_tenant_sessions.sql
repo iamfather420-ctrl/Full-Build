@@ -105,8 +105,18 @@ END
 $function$;
 
 REVOKE ALL ON FUNCTION solvex_private.issue_oidc_session_claim(text,text) FROM PUBLIC;
+GRANT USAGE ON SCHEMA public, solvex_private TO solvex_runtime_login_v2;
 GRANT EXECUTE ON FUNCTION solvex_private.issue_oidc_session_claim(text,text) TO neondb_owner, solvex_runtime_login_v2;
-GRANT USAGE ON SCHEMA solvex_private TO solvex_runtime_login_v2;
 GRANT EXECUTE ON FUNCTION solvex_private.current_claims() TO solvex_runtime_login_v2;
 GRANT SELECT ON public.users, public.tenants, public.roles, public.tenant_memberships TO solvex_runtime_login_v2;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.auth_sessions TO solvex_runtime_login_v2;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
+  public.access_requests, public.adapter_status, public.audit_events, public.audit_records,
+  public.chain_records, public.checkpoints, public.deployments, public.execution_runs,
+  public.failures, public.invariants, public.licenses, public.node_registry, public.offers,
+  public.orders, public.paradoxes, public.payments, public.permissions, public.problems,
+  public.proof_bundles, public.proof_evidence, public.rollback_records, public.solutions,
+  public.solvex_task_events, public.solvex_tasks, public.telemetry, public.tests,
+  public.verification_runs
+TO solvex_runtime_login_v2;
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO solvex_runtime_login_v2;

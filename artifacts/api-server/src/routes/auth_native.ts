@@ -90,6 +90,8 @@ router.get("/callback", async (req: Request, res: Response) => {
     expires_at: tokens.expiresIn() ? now + tokens.expiresIn()! : claims.exp,
     tenant_claims: { user_id: identity.user_id, tenant_id: identity.tenant_id, email: identity.email, role: identity.role },
     tenant_token: identity.signed_token,
+      oidc_subject: subject,
+    oidc_subject: subject,
   };
   setSessionCookie(res, await createSession(sessionData));
   res.redirect(returnTo);

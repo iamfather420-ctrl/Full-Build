@@ -64,11 +64,35 @@ BEGIN
 END
 $claims$;
 
--- A second active membership must make identity resolution ambiguous and fail closed.
+-- A second tenant and user must remain invisible under the first tenant's signed claim.
 INSERT INTO public.tenants
   (id,name,tier,isolated_storage_key,status,created_at,updated_at)
 VALUES
   ('ci-oidc-tenant-b','CI OIDC tenant B','STANDARD','ci-oidc-storage-b','ACTIVE',1,1);
+INSERT INTO public.users
+  (id,tenant_id,email,display_name,role,status,created_at,updated_at,oidc_subject)
+VALUES
+  ('ci-oidc-user-b','ci-oidc-tenant-b','oidc-ci-b@example.invalid','OIDC CI User B','OPERATOR','ACTIVE',1,1,'ci-oidc-subject-b');
+
+SELECT set_config(
+  'app.auth_token',
+  (SELECT signed_token FROM solvex_private.issue_oidc_session_claim('ci-oidc-subject-a','oidc-ci@example.invalid')),
+  true
+);
+SET LOCAL ROLE solvex_runtime_login_v2;
+DO $rls$
+DECLARE visible_tenants integer; visible_users integer;
+BEGIN
+  SELECT count(*) INTO visible_tenants FROM public.tenants;
+  SELECT count(*) INTO visible_users FROM public.users;
+  IF visible_tenants <> 1 OR visible_users <> 1 THEN
+    RAISE EXCEPTION 'Tenant RLS leaked rows: tenants %, users %', visible_tenants, visible_users;
+  END IF;
+END
+$rls$;
+RESET ROLE;
+
+-- A second active membership must make identity resolution ambiguous and fail closed.
 INSERT INTO public.roles
   (id,tenant_id,name,permissions_json,created_at,updated_at,status)
 VALUES

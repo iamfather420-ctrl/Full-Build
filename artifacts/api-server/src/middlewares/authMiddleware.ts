@@ -94,8 +94,15 @@ export async function authMiddleware(
     if (claims && claims.user_id !== refreshed.user.id) claims = null;
 
     if (!claims) {
+      // The OIDC issuer subject is not the internal database user id.
+      // Older sessions without this field fail closed and must sign in again.
+      if (!refreshed.oidc_subject) {
+        await clearSession(res, sid);
+        next();
+        return;
+      }
       const identity = await resolveOidcTenantIdentity(
-        refreshed.user.id,
+        refreshed.oidc_subject,
         refreshed.user.email ?? "",
       );
       if (identity.user_id !== refreshed.user.id) {
