@@ -39,13 +39,15 @@ export function NeonAuthPages() {
   const [notice, setNotice] = useState("");
 
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
+  // Only continue an OAuth authorization when this page was opened with an OAuth request.
+  const hasOAuthRequest = params.has("client_id") && params.has("redirect_uri");
 
   useEffect(() => {
     let alive = true;
     const resume = async () => {
       try {
         const { data } = await neonAuthClient.getSession();
-        if (data?.user) {
+        if (data?.user && hasOAuthRequest) {
           const result = await auth.oauth2.continue({ selected: true });
           if (result.error && alive) setError("This sign-in request expired. Return to SolveX and start again.");
         }
@@ -53,7 +55,7 @@ export function NeonAuthPages() {
         // Signed-out visitors remain on the login form.
       }
     };
-    if (!isConsent) void resume();
+    if (!isConsent && hasOAuthRequest) void resume();
     if (isConsent) {
       const clientId = params.get("client_id") ?? "";
       if (!clientId) {
@@ -69,7 +71,7 @@ export function NeonAuthPages() {
         .catch(() => alive && setError("Unable to load the requesting application."));
     }
     return () => { alive = false; };
-  }, [isConsent, params]);
+  }, [isConsent, params, hasOAuthRequest]);
 
   const signIn = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -83,9 +85,11 @@ export function NeonAuthPages() {
           setNeedsVerification(true);
           setNotice("Check your inbox for the one-time sign-in code, then enter it below.");
         }
-      } else if (!result.data?.redirect) {
+      } else if (!result.data?.redirect && hasOAuthRequest) {
         const continued = await auth.oauth2.continue({ selected: true });
         if (continued.error) setError("This authorization request expired. Start again from SolveX.");
+      } else if (!result.data?.redirect) {
+        setNotice("You are signed in to SolveX.");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
@@ -107,9 +111,11 @@ export function NeonAuthPages() {
     try {
       const result = await auth.signIn.emailOtp({ email, otp });
       if (result.error) setError(result.error.message || "Email-code sign-in failed.");
-      else {
+      else if (hasOAuthRequest) {
         const continued = await auth.oauth2.continue({ selected: true });
         if (continued.error) setError("Sign-in succeeded, but the authorization request expired. Start again from SolveX.");
+      } else {
+        setNotice("Email verified. You are signed in to SolveX.");
       }
     } catch (err) { setError(err instanceof Error ? err.message : "Verification failed."); }
     finally { setBusy(false); }
