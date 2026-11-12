@@ -107,7 +107,7 @@ export function NeonAuthPages() {
     try {
       const result = await auth.signIn.emailOtp({ email, otp });
       if (result.error) setError(result.error.message || "Email-code sign-in failed.");
-      else if (!result.data?.redirect) {
+      else {
         const continued = await auth.oauth2.continue({ selected: true });
         if (continued.error) setError("Sign-in succeeded, but the authorization request expired. Start again from SolveX.");
       }
