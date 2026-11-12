@@ -58,7 +58,7 @@ BEGIN
   BEGIN
     PERFORM * FROM solvex_private.issue_oidc_session_claim('ci-oidc-user-a','wrong@example.invalid');
     RAISE EXCEPTION 'OIDC email mismatch was unexpectedly accepted';
-  EXCEPTION WHEN insufficient_privilege THEN
+  EXCEPTION WHEN invalid_authorization_specification THEN
     NULL;
   END;
 END
