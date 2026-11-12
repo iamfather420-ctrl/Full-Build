@@ -93,10 +93,6 @@ $rls$;
 RESET ROLE;
 
 -- A second active membership must make identity resolution ambiguous and fail closed.
-INSERT INTO public.tenants
-  (id,name,tier,isolated_storage_key,status,created_at,updated_at)
-VALUES
-  ('ci-oidc-tenant-b','CI OIDC tenant B','STANDARD','ci-oidc-storage-b','ACTIVE',1,1);
 INSERT INTO public.roles
   (id,tenant_id,name,permissions_json,created_at,updated_at,status)
 VALUES
