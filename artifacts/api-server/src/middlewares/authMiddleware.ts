@@ -1,6 +1,7 @@
 import * as oidc from "openid-client";
 import { type Request, type Response, type NextFunction } from "express";
 import type { AuthUser } from "@workspace/api-zod";
+import { resolveOidcTenantIdentity, verifyOidcTenantToken } from "@workspace/db";
 import {
   clearSession,
   getOidcConfig,
@@ -18,6 +19,8 @@ declare global {
       isAuthenticated(): this is AuthedRequest;
 
       user?: User | undefined;
+      tenantClaims?: Record<string, unknown> | undefined;
+      tenantToken?: string | undefined;
     }
 
     export interface AuthedRequest {
@@ -82,6 +85,43 @@ export async function authMiddleware(
     return;
   }
 
-  req.user = refreshed.user;
-  next();
+  // Re-resolve membership on every request. This both detects revoked/ambiguous
+  // memberships immediately and rotates the 15-minute DB-signed tenant token.
+  try {
+    let claims = refreshed.tenant_token
+      ? await verifyOidcTenantToken(refreshed.tenant_token)
+      : null;
+    if (claims && claims.user_id !== refreshed.user.id) claims = null;
+
+    if (!claims) {
+      const identity = await resolveOidcTenantIdentity(
+        refreshed.user.id,
+        refreshed.user.email ?? "",
+      );
+      if (identity.user_id !== refreshed.user.id) {
+        await clearSession(res, sid);
+        next();
+        return;
+      }
+      refreshed.tenant_claims = {
+        user_id: identity.user_id,
+        tenant_id: identity.tenant_id,
+        email: identity.email,
+        role: identity.role,
+      };
+      refreshed.tenant_token = identity.signed_token;
+      claims = refreshed.tenant_claims;
+    } else {
+      refreshed.tenant_claims = claims;
+    }
+    await updateSession(sid, refreshed);
+    req.user = refreshed.user;
+    req.tenantClaims = refreshed.tenant_claims;
+    req.tenantToken = refreshed.tenant_token;
+    next();
+  } catch (error) {
+    req.log?.warn({ error }, "OIDC session has no valid active tenant membership");
+    await clearSession(res, sid);
+    next();
+  }
 }
