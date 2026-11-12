@@ -107,7 +107,10 @@ export function NeonAuthPages() {
         const continued = await auth.oauth2.continue({ selected: true });
         if (continued.error) setError("This authorization request expired. Start again from SolveX.");
       } else if (!result.data?.redirect) {
-        setNotice("You are signed in to SolveX.");
+        // Neon Auth sign-in establishes the identity-provider session. Complete
+        // the separate SolveX server session through the OIDC callback before
+        // showing the protected workspace.
+        window.location.assign("/api/login");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed.");
@@ -212,7 +215,8 @@ export function NeonAuthPages() {
           setNotice("Your email is verified. Sign in with your SolveX password to continue.");
           setError(signInResult.error.message || "Email verified, but password sign-in did not complete.");
         } else {
-          setNotice("Email verified. You are signed in to SolveX.");
+          // Complete the SolveX server-side OIDC session after Neon Auth login.
+          window.location.assign("/api/login");
         }
       } else {
         setNeedsVerification(false);
