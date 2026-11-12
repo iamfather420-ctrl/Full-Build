@@ -5,8 +5,8 @@ import {
   ExchangeMobileAuthorizationCodeBody,
   ExchangeMobileAuthorizationCodeResponse,
   LogoutMobileSessionResponse,
-} from "@workspace/api-zod";
-import { resolveOidcTenantIdentity, type OidcTenantIdentity } from "@workspace/db";
+} from "../../../../lib/api-zod/src/generated/api_native.js";
+import { resolveOidcTenantIdentity, type OidcTenantIdentity } from "../../../../packages/db/src/index.js";
 import {
   clearSession, getOidcConfig, getSessionId, createSession, deleteSession,
   SESSION_COOKIE, SESSION_TTL, ISSUER_URL, OIDC_CLIENT_ID, type SessionData,
