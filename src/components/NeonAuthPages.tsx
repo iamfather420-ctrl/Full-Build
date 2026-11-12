@@ -20,6 +20,9 @@ type AuthExtension = {
   signIn: {
     emailOtp(input: { email: string; otp: string }): Promise<{ data?: { redirect?: boolean } | null; error?: { message?: string } | null }>;
   };
+  signUp: {
+    email(input: { email: string; password: string; name: string }): Promise<{ data?: { user?: { id: string; email: string }; token?: string | null } | null; error?: { message?: string } | null }>;
+  };
 };
 
 // These methods are part of Neon Auth's Managed OAuth and email-OTP plugins.
@@ -29,8 +32,11 @@ const auth = neonAuthClient as typeof neonAuthClient & AuthExtension;
 
 export function NeonAuthPages() {
   const isConsent = window.location.pathname === "/auth/consent";
+  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [needsVerification, setNeedsVerification] = useState(false);
   const [client, setClient] = useState<OAuthClientInfo | null>(null);
@@ -77,13 +83,17 @@ export function NeonAuthPages() {
     event.preventDefault();
     setBusy(true); setError(""); setNotice("");
     try {
-      const result = await neonAuthClient.signIn.email({ email, password });
+      const result = await neonAuthClient.signIn.email({ email: email.trim(), password });
       if (result.error) {
         const message = result.error.message || "Sign-in failed.";
-        setError(message);
         if (/verif|unverified/i.test(message)) {
           setNeedsVerification(true);
-          setNotice("Check your inbox for the one-time sign-in code, then enter it below.");
+          setError("");
+          setNotice("Your email needs verification. Send a one-time code, then enter it below.");
+        } else if (/not found|no user|invalid email or password|invalid credentials/i.test(message)) {
+          setError("We couldn't sign in with those details. If you have not created a SolveX account yet, choose Create account below.");
+        } else {
+          setError(message);
         }
       } else if (!result.data?.redirect && hasOAuthRequest) {
         const continued = await auth.oauth2.continue({ selected: true });
@@ -96,12 +106,55 @@ export function NeonAuthPages() {
     } finally { setBusy(false); }
   };
 
+  const signUp = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true); setError(""); setNotice("");
+    if (password.length < 8) {
+      setError("Use a password with at least 8 characters.");
+      setBusy(false);
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("The passwords do not match.");
+      setBusy(false);
+      return;
+    }
+    try {
+      const result = await auth.signUp.email({
+        email: email.trim(),
+        password,
+        name: name.trim(),
+      });
+      if (result.error) {
+        const message = result.error.message || "Account creation failed.";
+        if (/already exists|already registered|email.*taken/i.test(message)) {
+          setError("An account already exists for this email. Switch to Sign in instead.");
+        } else {
+          setError(message);
+        }
+      } else {
+        setMode("sign-in");
+        setConfirmPassword("");
+        setPassword("");
+        setNeedsVerification(false);
+        setOtp("");
+        setNotice("Your SolveX account has been created. Sign in with this email and password to continue. If email verification is requested, send a one-time code below.");
+        if (hasOAuthRequest) {
+          const continued = await auth.oauth2.continue({ selected: true });
+          if (continued.error) setNotice("Your account was created. The authorization request expired; return to SolveX and start sign-in again.");
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Account creation failed.");
+    } finally { setBusy(false); }
+  };
+
   const sendVerification = async () => {
     setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.emailOtp.sendVerificationOtp({ email, type: "sign-in" });
+      const result = await auth.emailOtp.sendVerificationOtp({ email: email.trim(), type: "sign-in" });
       if (result.error) setError(result.error.message || "Could not send a verification code.");
-      else { setNeedsVerification(true); setNotice("A one-time sign-in code has been sent to your email."); }
+      else { setNeedsVerification(true); setOtp(""); setNotice("A new one-time sign-in code has been sent. Use the newest code from your inbox."); }
     } catch (err) { setError(err instanceof Error ? err.message : "Could not send a verification code."); }
     finally { setBusy(false); }
   };
@@ -109,7 +162,7 @@ export function NeonAuthPages() {
   const verifyEmail = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.signIn.emailOtp({ email, otp });
+      const result = await auth.signIn.emailOtp({ email: email.trim(), otp: otp.trim() });
       if (result.error) setError(result.error.message || "Email-code sign-in failed.");
       else if (hasOAuthRequest) {
         const continued = await auth.oauth2.continue({ selected: true });
@@ -134,33 +187,58 @@ export function NeonAuthPages() {
     <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-5">
       <section className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-7 shadow-2xl">
         <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">SolveX Paradox Box</p>
-        <h1 className="mt-3 text-2xl font-semibold">{isConsent ? "Authorize SolveX API access" : "Sign in to SolveX"}</h1>
+        <h1 className="mt-3 text-2xl font-semibold">{isConsent ? "Authorize SolveX API access" : mode === "sign-up" ? "Create your SolveX account" : "Sign in to SolveX"}</h1>
         <p className="mt-2 text-sm text-slate-400">
-          {isConsent ? "Review the application requesting access before continuing." : "Sign in with your verified Neon Auth account to continue."}
+          {isConsent ? "Review the application requesting access before continuing." : mode === "sign-up" ? "Create your SolveX login using your email address." : "Sign in with your SolveX application account. Your Neon Console login is separate."}
         </p>
         {error && <p role="alert" className="mt-5 rounded-lg border border-rose-800 bg-rose-950/40 p-3 text-sm text-rose-200">{error}</p>}
         {notice && <p role="status" className="mt-5 rounded-lg border border-cyan-800 bg-cyan-950/40 p-3 text-sm text-cyan-200">{notice}</p>}
 
         {!isConsent && (
           <>
-            <form onSubmit={signIn} className="mt-6 space-y-4">
-              <label className="block text-sm text-slate-300">Email
-                <input autoComplete="email" type="email" required value={email} onChange={e=>setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
-              </label>
-              <label className="block text-sm text-slate-300">Password
-                <input autoComplete="current-password" type="password" required value={password} onChange={e=>setPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
-              </label>
-              <button disabled={busy} className="w-full rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? "Working…" : "Sign in"}</button>
-            </form>
-            {needsVerification && (
-              <form onSubmit={verifyEmail} className="mt-5 space-y-3 border-t border-slate-800 pt-5">
-                <label className="block text-sm text-slate-300">Email sign-in code
-                  <input inputMode="numeric" autoComplete="one-time-code" required value={otp} onChange={e=>setOtp(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" />
+            {mode === "sign-up" ? (
+              <form onSubmit={signUp} className="mt-6 space-y-4">
+                <label className="block text-sm text-slate-300">Name
+                  <input autoComplete="name" type="text" required value={name} onChange={e=>setName(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
                 </label>
-                <button disabled={busy} className="w-full rounded-lg border border-cyan-700 px-4 py-3 font-semibold text-cyan-200 disabled:opacity-50">Verify email</button>
+                <label className="block text-sm text-slate-300">Email
+                  <input autoComplete="email" type="email" required value={email} onChange={e=>setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
+                </label>
+                <label className="block text-sm text-slate-300">Create password
+                  <input autoComplete="new-password" type="password" minLength={8} required value={password} onChange={e=>setPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
+                </label>
+                <label className="block text-sm text-slate-300">Confirm password
+                  <input autoComplete="new-password" type="password" minLength={8} required value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
+                </label>
+                <button disabled={busy} className="w-full rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? "Creating account…" : "Create account"}</button>
+              </form>
+            ) : (
+              <form onSubmit={signIn} className="mt-6 space-y-4">
+                <label className="block text-sm text-slate-300">Email
+                  <input autoComplete="email" type="email" required value={email} onChange={e=>setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
+                </label>
+                <label className="block text-sm text-slate-300">Password
+                  <input autoComplete="current-password" type="password" required value={password} onChange={e=>setPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
+                </label>
+                <button disabled={busy} className="w-full rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? "Working…" : "Sign in"}</button>
               </form>
             )}
-            <button type="button" onClick={sendVerification} disabled={busy || !email} className="mt-4 w-full text-sm text-cyan-300 underline disabled:opacity-40">Send or resend sign-in code</button>
+            <button type="button" onClick={() => { setMode(mode === "sign-in" ? "sign-up" : "sign-in"); setError(""); setNotice(""); setNeedsVerification(false); }} disabled={busy} className="mt-4 w-full text-sm text-cyan-300 underline disabled:opacity-40">
+              {mode === "sign-in" ? "Create a SolveX account" : "Already have an account? Sign in"}
+            </button>
+            {mode === "sign-in" && (
+              <>
+                {needsVerification && (
+                  <form onSubmit={verifyEmail} className="mt-5 space-y-3 border-t border-slate-800 pt-5">
+                    <label className="block text-sm text-slate-300">Email sign-in code
+                      <input inputMode="numeric" autoComplete="one-time-code" required value={otp} onChange={e=>setOtp(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" />
+                    </label>
+                    <button disabled={busy} className="w-full rounded-lg border border-cyan-700 px-4 py-3 font-semibold text-cyan-200 disabled:opacity-50">Verify email</button>
+                  </form>
+                )}
+                <button type="button" onClick={sendVerification} disabled={busy || !email.trim()} className="mt-4 w-full text-sm text-cyan-300 underline disabled:opacity-40">Send or resend sign-in code</button>
+              </>
+            )}
           </>
         )}
 
@@ -183,7 +261,7 @@ export function NeonAuthPages() {
             ) : !error ? <p className="text-sm text-slate-400">Loading authorization details…</p> : null}
           </div>
         )}
-        <p className="mt-6 text-xs text-slate-500">Protected by Neon Auth. Your account must have one active SolveX tenant membership.</p>
+        <p className="mt-6 text-xs text-slate-500">Protected by Neon Auth. SolveX workspace access also requires an active tenant membership.</p>
       </section>
     </main>
   );
