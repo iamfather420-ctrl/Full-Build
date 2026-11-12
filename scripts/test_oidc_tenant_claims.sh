@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${SOLVEX_ISOLATION_TEST_DATABASE_URL:?Set SOLVEX_ISOLATION_TEST_DATABASE_URL to a disposable Neon validation branch.}"
+: "${SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL:?Set SOLVEX_ISOLATION_TEST_DATABASE_URL to a disposable Neon validation branch.}"
 if [[ -n "${NEON_DATABASE_URL:-}" && "$SOLVEX_ISOLATION_TEST_DATABASE_URL" == "$NEON_DATABASE_URL" ]]; then
   echo "Refusing to run tenant-claim integration tests against NEON_DATABASE_URL." >&2
   exit 1
