@@ -31,6 +31,8 @@ jobs:
         run: bun run test:production-state
       - name: Compile native Daisy server entrypoint
         run: bunx esbuild Solvex-core/server.ts --bundle --platform=node --format=cjs --packages=external --outfile=/tmp/solvex-core-server.cjs
+      - name: Owner authorization fail-closed regression test
+        run: bun run test:owner-access
       - name: Payments-disabled boundary checks
         run: bun run verify:payments-disabled
       - name: Sandbox, memory, proof persistence, and tenant crypto tests
