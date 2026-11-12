@@ -1,4 +1,6 @@
 -- Provision the SolveX account only after Neon Auth has verified its email.
+-- Before running in the SQL editor, set the session variable to the verified email:
+-- SET solvex.owner_email = 'your-verified-email@example.com';
 -- Run once on the production branch. This is intentionally fail-closed and
 -- creates exactly one active OWNER membership in the sole active tenant.
 BEGIN;
