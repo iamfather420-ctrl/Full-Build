@@ -15,7 +15,8 @@ type AuthExtension = {
     consent(input: { accept: boolean }): Promise<{ error?: { message?: string } | null }>;
   };
   emailOtp: {
-    sendVerificationOtp(input: { email: string; type: "sign-in" }): Promise<{ error?: { message?: string } | null }>;
+    sendVerificationOtp(input: { email: string; type: "sign-in" | "email-verification" }): Promise<{ error?: { message?: string } | null }>;
+    verifyEmail(input: { email: string; otp: string }): Promise<{ data?: unknown; error?: { message?: string } | null }>;
   };
   signIn: {
     emailOtp(input: { email: string; otp: string }): Promise<{ data?: { redirect?: boolean } | null; error?: { message?: string } | null }>;
@@ -152,7 +153,7 @@ export function NeonAuthPages() {
   const sendVerification = async () => {
     setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.emailOtp.sendVerificationOtp({ email: email.trim(), type: "sign-in" });
+      const result = await auth.emailOtp.sendVerificationOtp({ email: email.trim(), type: "email-verification" });
       if (result.error) setError(result.error.message || "Could not send a verification code.");
       else { setNeedsVerification(true); setOtp(""); setNotice("A new one-time sign-in code has been sent. Use the newest code from your inbox."); }
     } catch (err) { setError(err instanceof Error ? err.message : "Could not send a verification code."); }
@@ -162,13 +163,24 @@ export function NeonAuthPages() {
   const verifyEmail = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.signIn.emailOtp({ email: email.trim(), otp: otp.trim() });
-      if (result.error) setError(result.error.message || "Email-code sign-in failed.");
-      else if (hasOAuthRequest) {
+      const result = await auth.emailOtp.verifyEmail({ email: email.trim(), otp: otp.trim() });
+      if (result.error) {
+        setError(result.error.message || "Email verification failed.");
+      } else if (hasOAuthRequest) {
         const continued = await auth.oauth2.continue({ selected: true });
-        if (continued.error) setError("Sign-in succeeded, but the authorization request expired. Start again from SolveX.");
+        if (continued.error) setError("Email verified, but the authorization request expired. Start again from SolveX.");
+      } else if (password) {
+        const signInResult = await neonAuthClient.signIn.email({ email: email.trim(), password });
+        if (signInResult.error) {
+          setNotice("Your email is verified. Sign in with your SolveX password to continue.");
+          setError(signInResult.error.message || "Email verified, but password sign-in did not complete.");
+        } else {
+          setNotice("Email verified. You are signed in to SolveX.");
+        }
       } else {
-        setNotice("Email verified. You are signed in to SolveX.");
+        setNeedsVerification(false);
+        setOtp("");
+        setNotice("Your email is verified. Now sign in with your SolveX email and password.");
       }
     } catch (err) { setError(err instanceof Error ? err.message : "Verification failed."); }
     finally { setBusy(false); }
