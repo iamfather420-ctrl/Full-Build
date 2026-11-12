@@ -79,7 +79,7 @@ export function NeonAuthPages() {
         setError(message);
         if (/verif|unverified/i.test(message)) {
           setNeedsVerification(true);
-          setNotice("Check your inbox for the verification code, then enter it below.");
+          setNotice("Check your inbox for the one-time sign-in code, then enter it below.");
         }
       } else if (!result.data?.redirect) {
         const continued = await auth.oauth2.continue({ selected: true });
@@ -93,9 +93,9 @@ export function NeonAuthPages() {
   const sendVerification = async () => {
     setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.emailOtp.sendVerificationOtp({ email, type: "email-verification" });
+      const result = await auth.emailOtp.sendVerificationOtp({ email, type: "sign-in" });
       if (result.error) setError(result.error.message || "Could not send a verification code.");
-      else { setNeedsVerification(true); setNotice("A verification code has been sent to your email."); }
+      else { setNeedsVerification(true); setNotice("A one-time sign-in code has been sent to your email."); }
     } catch (err) { setError(err instanceof Error ? err.message : "Could not send a verification code."); }
     finally { setBusy(false); }
   };
@@ -103,11 +103,11 @@ export function NeonAuthPages() {
   const verifyEmail = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.emailOtp.verifyEmail({ email, otp });
-      if (result.error) setError(result.error.message || "Verification failed.");
-      else {
+      const result = await auth.signIn.emailOtp({ email, otp });
+      if (result.error) setError(result.error.message || "Email-code sign-in failed.");
+      else if (!result.data?.redirect) {
         const continued = await auth.oauth2.continue({ selected: true });
-        if (continued.error) setError("Email verified, but the authorization request expired. Start again from SolveX.");
+        if (continued.error) setError("Sign-in succeeded, but the authorization request expired. Start again from SolveX.");
       }
     } catch (err) { setError(err instanceof Error ? err.message : "Verification failed."); }
     finally { setBusy(false); }
@@ -146,13 +146,13 @@ export function NeonAuthPages() {
             </form>
             {needsVerification && (
               <form onSubmit={verifyEmail} className="mt-5 space-y-3 border-t border-slate-800 pt-5">
-                <label className="block text-sm text-slate-300">Email verification code
+                <label className="block text-sm text-slate-300">Email sign-in code
                   <input inputMode="numeric" autoComplete="one-time-code" required value={otp} onChange={e=>setOtp(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" />
                 </label>
                 <button disabled={busy} className="w-full rounded-lg border border-cyan-700 px-4 py-3 font-semibold text-cyan-200 disabled:opacity-50">Verify email</button>
               </form>
             )}
-            <button type="button" onClick={sendVerification} disabled={busy || !email} className="mt-4 w-full text-sm text-cyan-300 underline disabled:opacity-40">Send or resend verification code</button>
+            <button type="button" onClick={sendVerification} disabled={busy || !email} className="mt-4 w-full text-sm text-cyan-300 underline disabled:opacity-40">Send or resend sign-in code</button>
           </>
         )}
 
