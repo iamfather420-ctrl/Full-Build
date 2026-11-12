@@ -15,13 +15,18 @@ type AuthExtension = {
     consent(input: { accept: boolean }): Promise<{ error?: { message?: string } | null }>;
   };
   emailOtp: {
-    sendVerificationOtp(input: { email: string; type: "sign-in" }): Promise<{ error?: { message?: string } | null }>;
+    sendVerificationOtp(input: { email: string; type: "sign-in" | "email-verification" }): Promise<{ error?: { message?: string } | null }>;
+    verifyEmail(input: { email: string; otp: string }): Promise<{ data?: unknown; error?: { message?: string } | null }>;
+    resetPassword(input: { email: string; otp: string; password: string }): Promise<{ error?: { message?: string } | null }>;
   };
   signIn: {
     emailOtp(input: { email: string; otp: string }): Promise<{ data?: { redirect?: boolean } | null; error?: { message?: string } | null }>;
   };
   signUp: {
     email(input: { email: string; password: string; name: string }): Promise<{ data?: { user?: { id: string; email: string }; token?: string | null } | null; error?: { message?: string } | null }>;
+  };
+  forgetPassword: {
+    emailOtp(input: { email: string }): Promise<{ error?: { message?: string } | null }>;
   };
 };
 
@@ -33,6 +38,9 @@ const auth = neonAuthClient as typeof neonAuthClient & AuthExtension;
 export function NeonAuthPages() {
   const isConsent = window.location.pathname === "/auth/consent";
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [recoveryMode, setRecoveryMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -152,23 +160,64 @@ export function NeonAuthPages() {
   const sendVerification = async () => {
     setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.emailOtp.sendVerificationOtp({ email: email.trim(), type: "sign-in" });
+      const result = await auth.emailOtp.sendVerificationOtp({ email: email.trim(), type: "email-verification" });
       if (result.error) setError(result.error.message || "Could not send a verification code.");
       else { setNeedsVerification(true); setOtp(""); setNotice("A new one-time sign-in code has been sent. Use the newest code from your inbox."); }
     } catch (err) { setError(err instanceof Error ? err.message : "Could not send a verification code."); }
     finally { setBusy(false); }
   };
 
+  const sendPasswordResetCode = async () => {
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const result = await auth.forgetPassword.emailOtp({ email: email.trim() });
+      if (result.error) setError(result.error.message || "Could not send a password-reset code.");
+      else { setRecoveryMode(true); setOtp(""); setNotice("A password-reset code has been sent. Use the newest code from your inbox."); }
+    } catch (err) { setError(err instanceof Error ? err.message : "Could not send a password-reset code."); }
+    finally { setBusy(false); }
+  };
+
+  const resetPassword = async (event: React.FormEvent) => {
+    event.preventDefault(); setBusy(true); setError(""); setNotice("");
+    if (newPassword.length < 8) {
+      setError("Use a password with at least 8 characters."); setBusy(false); return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError("The new passwords do not match."); setBusy(false); return;
+    }
+    try {
+      const result = await auth.emailOtp.resetPassword({ email: email.trim(), otp: otp.trim(), password: newPassword });
+      if (result.error) setError(result.error.message || "Password reset failed.");
+      else {
+        setPassword(newPassword); setMode("sign-in"); setRecoveryMode(false); setNeedsVerification(false);
+        setOtp(""); setNewPassword(""); setConfirmNewPassword("");
+        setNotice("Password updated. Sign in with your new password.");
+      }
+    } catch (err) { setError(err instanceof Error ? err.message : "Password reset failed."); }
+    finally { setBusy(false); }
+  };
+
   const verifyEmail = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
-      const result = await auth.signIn.emailOtp({ email: email.trim(), otp: otp.trim() });
-      if (result.error) setError(result.error.message || "Email-code sign-in failed.");
-      else if (hasOAuthRequest) {
+      const result = await auth.emailOtp.verifyEmail({ email: email.trim(), otp: otp.trim() });
+      if (result.error) {
+        setError(result.error.message || "Email verification failed.");
+      } else if (hasOAuthRequest) {
         const continued = await auth.oauth2.continue({ selected: true });
-        if (continued.error) setError("Sign-in succeeded, but the authorization request expired. Start again from SolveX.");
+        if (continued.error) setError("Email verified, but the authorization request expired. Start again from SolveX.");
+      } else if (password) {
+        const signInResult = await neonAuthClient.signIn.email({ email: email.trim(), password });
+        if (signInResult.error) {
+          setNotice("Your email is verified. Sign in with your SolveX password to continue.");
+          setError(signInResult.error.message || "Email verified, but password sign-in did not complete.");
+        } else {
+          setNotice("Email verified. You are signed in to SolveX.");
+        }
       } else {
-        setNotice("Email verified. You are signed in to SolveX.");
+        setNeedsVerification(false);
+        setOtp("");
+        setNotice("Your email is verified. Now sign in with your SolveX email and password.");
       }
     } catch (err) { setError(err instanceof Error ? err.message : "Verification failed."); }
     finally { setBusy(false); }
@@ -196,7 +245,7 @@ export function NeonAuthPages() {
 
         {!isConsent && (
           <>
-            {mode === "sign-up" ? (
+            {!recoveryMode && mode === "sign-up" ? (
               <form onSubmit={signUp} className="mt-6 space-y-4">
                 <label className="block text-sm text-slate-300">Name
                   <input autoComplete="name" type="text" required value={name} onChange={e=>setName(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white outline-none focus:border-cyan-500" />
@@ -212,6 +261,22 @@ export function NeonAuthPages() {
                 </label>
                 <button disabled={busy} className="w-full rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? "Creating account…" : "Create account"}</button>
               </form>
+            ) : recoveryMode ? (
+              <form onSubmit={resetPassword} className="mt-6 space-y-4">
+                <label className="block text-sm text-slate-300">Email
+                  <input autoComplete="email" type="email" required value={email} onChange={e=>setEmail(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" />
+                </label>
+                <label className="block text-sm text-slate-300">Password reset code
+                  <input inputMode="numeric" autoComplete="one-time-code" required value={otp} onChange={e=>setOtp(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" />
+                </label>
+                <label className="block text-sm text-slate-300">New password
+                  <input autoComplete="new-password" type="password" minLength={8} required value={newPassword} onChange={e=>setNewPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" />
+                </label>
+                <label className="block text-sm text-slate-300">Confirm new password
+                  <input autoComplete="new-password" type="password" minLength={8} required value={confirmNewPassword} onChange={e=>setConfirmNewPassword(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-white" />
+                </label>
+                <button disabled={busy} className="w-full rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? "Updating password…" : "Reset password"}</button>
+              </form>
             ) : (
               <form onSubmit={signIn} className="mt-6 space-y-4">
                 <label className="block text-sm text-slate-300">Email
@@ -223,10 +288,13 @@ export function NeonAuthPages() {
                 <button disabled={busy} className="w-full rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? "Working…" : "Sign in"}</button>
               </form>
             )}
-            <button type="button" onClick={() => { setMode(mode === "sign-in" ? "sign-up" : "sign-in"); setError(""); setNotice(""); setNeedsVerification(false); }} disabled={busy} className="mt-4 w-full text-sm text-cyan-300 underline disabled:opacity-40">
+            {!recoveryMode && <button type="button" onClick={() => { setMode(mode === "sign-in" ? "sign-up" : "sign-in"); setError(""); setNotice(""); setNeedsVerification(false); }} disabled={busy} className="mt-4 w-full text-sm text-cyan-300 underline disabled:opacity-40">
               {mode === "sign-in" ? "Create a SolveX account" : "Already have an account? Sign in"}
-            </button>
-            {mode === "sign-in" && (
+            </button>}
+            {mode === "sign-in" && !recoveryMode && (
+              <button type="button" onClick={sendPasswordResetCode} disabled={busy || !email.trim()} className="mt-3 w-full text-sm text-cyan-300 underline disabled:opacity-40">Forgot password? Send a reset code</button>
+            )}
+            {mode === "sign-in" && !recoveryMode && (
               <>
                 {needsVerification && (
                   <form onSubmit={verifyEmail} className="mt-5 space-y-3 border-t border-slate-800 pt-5">
