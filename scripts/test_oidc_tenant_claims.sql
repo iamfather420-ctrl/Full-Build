@@ -56,7 +56,7 @@ BEGIN
   END IF;
 
   BEGIN
-    PERFORM * FROM solvex_private.issue_oidc_session_claim('ci-oidc-user-a','wrong@example.invalid');
+    PERFORM * FROM solvex_private.issue_oidc_session_claim('ci-oidc-subject-a','wrong@example.invalid');
     RAISE EXCEPTION 'OIDC email mismatch was unexpectedly accepted';
   EXCEPTION WHEN invalid_authorization_specification THEN
     NULL;
@@ -81,9 +81,9 @@ VALUES
 DO $ambiguous$
 BEGIN
   BEGIN
-    PERFORM * FROM solvex_private.issue_oidc_session_claim('ci-oidc-user-a','oidc-ci@example.invalid');
+    PERFORM * FROM solvex_private.issue_oidc_session_claim('ci-oidc-subject-a','oidc-ci@example.invalid');
     RAISE EXCEPTION 'Ambiguous multi-tenant identity was unexpectedly accepted';
-  EXCEPTION WHEN insufficient_privilege THEN
+  EXCEPTION WHEN invalid_authorization_specification THEN
     NULL;
   END;
 END
