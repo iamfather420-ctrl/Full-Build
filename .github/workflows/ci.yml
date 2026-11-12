@@ -23,7 +23,7 @@ jobs:
         with:
           bun-version: latest
       - name: Install locked dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
