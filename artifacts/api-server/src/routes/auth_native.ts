@@ -71,7 +71,18 @@ router.get("/callback", async (req: Request, res: Response) => {
   if (!claims) { res.redirect("/api/login"); return; }
   const subject = typeof claims.sub === "string" ? claims.sub : "";
   const email = typeof claims.email === "string" ? claims.email : "";
-  const identity = await resolveOidcTenantIdentity(subject, email);
+  if (!subject || !email || claims.email_verified !== true) {
+    res.status(403).json({ error: "A verified OIDC email and subject are required for tenant access." });
+    return;
+  }
+  let identity;
+  try {
+    identity = await resolveOidcTenantIdentity(subject, email);
+  } catch (error) {
+    req.log.warn({ error }, "OIDC login denied: no unique active tenant membership");
+    res.status(403).json({ error: "No unique active SolveX tenant membership is assigned to this account." });
+    return;
+  }
   const now = Math.floor(Date.now() / 1000);
   const sessionData: SessionData = {
     user: { id: identity.user_id, email: identity.email, firstName: identity.display_name, lastName: null, profileImageUrl: null },
@@ -109,6 +120,10 @@ router.post("/mobile-auth/token-exchange", async (req: Request, res: Response) =
     if (!claims) { res.status(401).json({ error: "No claims in ID token" }); return; }
     const subject = typeof claims.sub === "string" ? claims.sub : "";
     const email = typeof claims.email === "string" ? claims.email : "";
+    if (!subject || !email || claims.email_verified !== true) {
+      res.status(403).json({ error: "A verified OIDC email and subject are required for tenant access." });
+      return;
+    }
     const identity = await resolveOidcTenantIdentity(subject, email);
     const now = Math.floor(Date.now() / 1000);
     const sessionData: SessionData = {
