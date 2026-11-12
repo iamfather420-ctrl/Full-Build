@@ -6,6 +6,70 @@ const databaseUrl = process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL or NEON_DATABASE_URL must be configured for the outreach worker");
 
 export const db = drizzle(neon(databaseUrl));
+const authSql = neon(databaseUrl);
+
+export interface OidcTenantIdentity {
+  user_id: string;
+  email: string;
+  display_name: string | null;
+  tenant_id: string;
+  role: "OWNER" | "ADMIN" | "VERIFIER" | "CUSTOMER";
+  signed_token: string;
+}
+
+/** Issues a short-lived claim only for an existing active OIDC user and membership. */
+export async function resolveOidcTenantIdentity(subject: string, email: string): Promise<OidcTenantIdentity> {
+  const rows = await authSql`
+    SELECT * FROM solvex_private.issue_oidc_session_claim(${subject}, ${email})
+  `;
+  if (rows.length !== 1) throw new Error("OIDC identity did not resolve to exactly one active tenant membership.");
+  const row = rows[0] as OidcTenantIdentity;
+  if (!row.user_id || !row.tenant_id || !row.signed_token ||
+      !["OWNER", "ADMIN", "VERIFIER", "CUSTOMER"].includes(row.role)) {
+    throw new Error("OIDC tenant identity response is incomplete or invalid.");
+  }
+  return row;
+}
+
+/** Verifies signature, expiry, and current active membership on every authenticated request. */
+export async function verifyOidcTenantToken(token: string): Promise<Record<string, unknown> | null> {
+  if (!token || token.length > 8192) return null;
+  const rows = await authSql`
+    WITH token_context AS MATERIALIZED (
+      SELECT set_config('app.auth_token', ${token}, true) AS configured
+    ),
+    claims AS MATERIALIZED (
+      SELECT solvex_private.current_claims() AS value FROM token_context
+    )
+    SELECT c.value
+      FROM claims c
+      JOIN public.users u
+        ON u.id = c.value->>'user_id'
+       AND u.email = c.value->>'email'
+       AND u.status = 'ACTIVE'
+      JOIN public.tenant_memberships m
+        ON m.user_id = u.id
+       AND m.tenant_id = c.value->>'tenant_id'
+       AND m.status = 'ACTIVE'
+      JOIN public.tenants t
+        ON t.id = m.tenant_id
+       AND t.status = 'ACTIVE'
+      JOIN public.roles r
+        ON r.id = m.role_id
+       AND r.tenant_id = m.tenant_id
+       AND r.status = 'ACTIVE'
+       AND upper(r.name) = c.value->>'role'
+     WHERE c.value IS NOT NULL
+       AND (SELECT count(*) FROM public.tenant_memberships m2
+            JOIN public.tenants t2 ON t2.id=m2.tenant_id AND t2.status='ACTIVE'
+            JOIN public.roles r2 ON r2.id=m2.role_id AND r2.tenant_id=m2.tenant_id AND r2.status='ACTIVE'
+            WHERE m2.user_id=u.id AND m2.status='ACTIVE'
+              AND upper(r2.name) IN ('OWNER','ADMIN','VERIFIER','CUSTOMER')) = 1
+  `;
+  return rows.length === 1 && rows[0].value && typeof rows[0].value === "object"
+    ? rows[0].value as Record<string, unknown>
+    : null;
+}
 
 export const outreachProspects = pgTable("outreach_prospects", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
