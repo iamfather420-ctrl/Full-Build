@@ -10,7 +10,7 @@ import { resolveOidcTenantIdentity, type OidcTenantIdentity } from "@workspace/d
 import {
   clearSession, getOidcConfig, getSessionId, createSession, deleteSession,
   SESSION_COOKIE, SESSION_TTL, ISSUER_URL, OIDC_CLIENT_ID, type SessionData,
-} from "../lib/auth";
+} from "../lib/auth.js";
 
 const OIDC_COOKIE_TTL = 10 * 60 * 1000;
 const router: IRouter = Router();
