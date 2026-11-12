@@ -60,7 +60,7 @@
     "pino-http": "^10.5.0",
     "zod": "^4.1.12",
     "@workspace/db": "workspace:*",
-    "@neondatabase/auth": "^0.7.0-beta"
+    "@neon/auth": "^0.8.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
