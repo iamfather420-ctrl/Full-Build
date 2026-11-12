@@ -58,7 +58,7 @@ export function NeonAuthPages() {
         setError("The OAuth request is missing its client identifier.");
         return () => { alive = false; };
       }
-      void neonAuthClient.oauth2.publicClient({ query: { client_id: clientId } })
+      void auth.oauth2.publicClient({ query: { client_id: clientId } })
         .then(({ data, error: requestError }) => {
           if (!alive) return;
           if (requestError || !data) setError("Unable to load the requesting application.");
@@ -82,7 +82,7 @@ export function NeonAuthPages() {
           setNotice("Check your inbox for the verification code, then enter it below.");
         }
       } else if (!result.data?.redirect) {
-        const continued = await neonAuthClient.oauth2.continue({ selected: true });
+        const continued = await auth.oauth2.continue({ selected: true });
         if (continued.error) setError("This authorization request expired. Start again from SolveX.");
       }
     } catch (err) {
@@ -103,10 +103,10 @@ export function NeonAuthPages() {
   const verifyEmail = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");
     try {
-      const result = await neonAuthClient.emailOtp.verifyEmail({ email, otp });
+      const result = await auth.emailOtp.verifyEmail({ email, otp });
       if (result.error) setError(result.error.message || "Verification failed.");
       else {
-        const continued = await neonAuthClient.oauth2.continue({ selected: true });
+        const continued = await auth.oauth2.continue({ selected: true });
         if (continued.error) setError("Email verified, but the authorization request expired. Start again from SolveX.");
       }
     } catch (err) { setError(err instanceof Error ? err.message : "Verification failed."); }
@@ -116,7 +116,7 @@ export function NeonAuthPages() {
   const decideConsent = async (accept: boolean) => {
     setBusy(true); setError("");
     try {
-      const result = await neonAuthClient.oauth2.consent({ accept });
+      const result = await auth.oauth2.consent({ accept });
       if (result.error) setError(result.error.message || "Could not submit consent.");
     } catch (err) { setError(err instanceof Error ? err.message : "Could not submit consent."); }
     finally { setBusy(false); }
