@@ -21,7 +21,8 @@ import { AuditLedgerView } from './components/AuditLedgerView';
 import { EnterpriseAuditRunner } from './components/EnterpriseAuditRunner';
 import { SovereignRole, UserContext } from './auth/AuthService';
 import { DurableStore } from './database/DurableStore';
-import { RegistryConsole } from './components/RegistryConsole';
+import { AuthLanding } from './components/AuthLanding';
+import { NeonAuthPages } from './components/NeonAuthPages';
 
 type ActiveTab =
   | 'OVERVIEW'
@@ -40,6 +41,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('OVERVIEW');
   const [activeTenant, setActiveTenant] = useState('');
   const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const isAuthRoute = window.location.pathname === '/auth/sign-in' || window.location.pathname === '/auth/consent';
 
   const [chainValid, setChainValid] = useState(false);
   const [auditHead, setAuditHead] = useState('');
@@ -47,6 +50,30 @@ export default function App() {
 
   useEffect(() => {
     refreshSystemStatus();
+    if (isAuthRoute) { setSessionLoading(false); return; }
+    let active = true;
+    fetch('/api/auth/tenant-session', { credentials: 'include' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('No authenticated session');
+        return response.json();
+      })
+      .then((result) => {
+        if (!active || !result?.user || !result?.tenant) return;
+        const claims = result.tenant;
+        const user: UserContext = {
+          user_id: String(claims.user_id),
+          tenant_id: String(claims.tenant_id),
+          email: String(claims.email),
+          role: claims.role,
+          issued_at: Number(claims.issued_at),
+          signed_token: result.signed_token,
+        };
+        setCurrentUser(user);
+        setActiveTenant(user.tenant_id);
+      })
+      .catch(() => { if (active) setCurrentUser(null); })
+      .finally(() => { if (active) setSessionLoading(false); });
+    return () => { active = false; };
   }, []);
 
   const refreshSystemStatus = () => {
@@ -68,9 +95,8 @@ export default function App() {
     setCurrentUser(prev => prev ? ({ ...prev, tenant_id: tenant }) : null);
   };
 
-  if (!currentUser) {
-    return <RegistryConsole />;
-  }
+  if (isAuthRoute) return <NeonAuthPages />;
+  if (!currentUser) return <AuthLanding loading={sessionLoading} />;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -359,6 +385,7 @@ export default function App() {
             <span>PayPal Gateway: DN-35</span>
             <span>•</span>
             <span className="text-emerald-400">Zero Mocks Certified</span>
+            <button onClick={() => window.location.assign('/api/logout')} className="ml-3 text-cyan-300 hover:text-white">Sign out</button>
           </div>
         </div>
       </footer>
