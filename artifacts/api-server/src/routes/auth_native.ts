@@ -33,6 +33,16 @@ function getSafeReturnTo(value: unknown): string {
 router.get("/auth/user", (req: Request, res: Response) => {
   res.json(GetCurrentAuthUserResponse.parse({ user: req.isAuthenticated() ? req.user : null }));
 });
+
+router.get("/auth/tenant-session", (req: Request, res: Response) => {
+  if (!req.isAuthenticated() || !req.tenantClaims || !req.tenantToken) {
+    res.status(401).json({ user: null, tenant: null });
+    return;
+  }
+  res.setHeader("Cache-Control", "no-store");
+  res.json({ user: req.user, tenant: req.tenantClaims, signed_token: req.tenantToken });
+});
+
 router.get("/login", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
   const callbackUrl = `${getOrigin(req)}/api/callback`;
@@ -40,8 +50,10 @@ router.get("/login", async (req: Request, res: Response) => {
   const nonce = oidc.randomNonce();
   const codeVerifier = oidc.randomPKCECodeVerifier();
   const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
+  const resource = process.env.OIDC_RESOURCE_URL;
+  if (!resource) throw new Error("OIDC_RESOURCE_URL must identify the protected SolveX API resource.");
   const redirectTo = oidc.buildAuthorizationUrl(config, {
-    redirect_uri: callbackUrl, scope: "openid email profile offline_access",
+    redirect_uri: callbackUrl, resource, scope: "openid email profile offline_access",
     code_challenge: codeChallenge, code_challenge_method: "S256",
     prompt: "login", state, nonce,
   });
@@ -61,9 +73,12 @@ router.get("/callback", async (req: Request, res: Response) => {
   const currentUrl = new URL(`${callbackUrl}?${new URL(req.url, `http://${req.headers.host}`).searchParams}`);
   let tokens: oidc.TokenEndpointResponse & oidc.TokenEndpointResponseHelpers;
   try {
-    tokens = await oidc.authorizationCodeGrant(config, currentUrl, {
-      pkceCodeVerifier: codeVerifier, expectedNonce: nonce, expectedState, idTokenExpected: true,
-    });
+    tokens = await oidc.authorizationCodeGrant(
+      config,
+      currentUrl,
+      { pkceCodeVerifier: codeVerifier, expectedNonce: nonce, expectedState, idTokenExpected: true },
+      { resource: process.env.OIDC_RESOURCE_URL! },
+    );
   } catch { res.redirect("/api/login"); return; }
   const returnTo = getSafeReturnTo(req.cookies?.return_to);
   for (const name of ["code_verifier", "nonce", "state", "return_to"]) res.clearCookie(name, { path: "/" });
@@ -91,7 +106,6 @@ router.get("/callback", async (req: Request, res: Response) => {
     tenant_claims: { user_id: identity.user_id, tenant_id: identity.tenant_id, email: identity.email, role: identity.role },
     tenant_token: identity.signed_token,
       oidc_subject: subject,
-    oidc_subject: subject,
   };
   setSessionCookie(res, await createSession(sessionData));
   res.redirect(returnTo);
@@ -115,9 +129,12 @@ router.post("/mobile-auth/token-exchange", async (req: Request, res: Response) =
     callbackUrl.searchParams.set("code", code);
     callbackUrl.searchParams.set("state", state);
     callbackUrl.searchParams.set("iss", ISSUER_URL);
-    const tokens = await oidc.authorizationCodeGrant(config, callbackUrl, {
-      pkceCodeVerifier: code_verifier, expectedNonce: nonce ?? undefined, expectedState: state, idTokenExpected: true,
-    });
+    const tokens = await oidc.authorizationCodeGrant(
+      config,
+      callbackUrl,
+      { pkceCodeVerifier: code_verifier, expectedNonce: nonce ?? undefined, expectedState: state, idTokenExpected: true },
+      { resource: process.env.OIDC_RESOURCE_URL! },
+    );
     const claims = tokens.claims();
     if (!claims) { res.status(401).json({ error: "No claims in ID token" }); return; }
     const subject = typeof claims.sub === "string" ? claims.sub : "";
