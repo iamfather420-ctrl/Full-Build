@@ -15,6 +15,8 @@ export interface SessionData {
   access_token: string;
   refresh_token?: string;
   expires_at?: number;
+  tenant_claims: Record<string, unknown>;
+  tenant_token: string;
 }
 
 let oidcConfig: client.Configuration | null = null;
