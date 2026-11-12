@@ -92,6 +92,20 @@ END
 $rls$;
 RESET ROLE;
 
+-- A revoked membership must no longer permit claim renewal.
+UPDATE public.tenant_memberships SET status='REVOKED' WHERE id='ci-oidc-membership-a';
+DO $revoked$
+BEGIN
+  BEGIN
+    PERFORM * FROM solvex_private.issue_oidc_session_claim('ci-oidc-subject-a','oidc-ci@example.invalid');
+    RAISE EXCEPTION 'Revoked membership unexpectedly renewed a tenant claim';
+  EXCEPTION WHEN invalid_authorization_specification THEN
+    NULL;
+  END;
+END
+$revoked$;
+UPDATE public.tenant_memberships SET status='ACTIVE' WHERE id='ci-oidc-membership-a';
+
 -- A second active membership must make identity resolution ambiguous and fail closed.
 INSERT INTO public.roles
   (id,tenant_id,name,permissions_json,created_at,updated_at,status)
