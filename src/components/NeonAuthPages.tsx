@@ -15,8 +15,10 @@ type AuthExtension = {
     consent(input: { accept: boolean }): Promise<{ error?: { message?: string } | null }>;
   };
   emailOtp: {
-    sendVerificationOtp(input: { email: string; type: "email-verification" }): Promise<{ error?: { message?: string } | null }>;
-    verifyEmail(input: { email: string; otp: string }): Promise<{ error?: { message?: string } | null }>;
+    sendVerificationOtp(input: { email: string; type: "sign-in" }): Promise<{ error?: { message?: string } | null }>;
+  };
+  signIn: {
+    emailOtp(input: { email: string; otp: string }): Promise<{ data?: { redirect?: boolean } | null; error?: { message?: string } | null }>;
   };
 };
 
