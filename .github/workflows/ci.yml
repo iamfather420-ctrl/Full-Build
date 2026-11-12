@@ -12,6 +12,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,8 +49,6 @@ jobs:
       - name: Signed OIDC tenant-claim lifecycle and RLS integration test
         if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
         env:
-          SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
           SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
         run: bun run test:oidc-tenant-claims
       - name: Report isolated OIDC integration secret requirement
