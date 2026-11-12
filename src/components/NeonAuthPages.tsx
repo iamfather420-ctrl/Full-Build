@@ -17,6 +17,7 @@ type AuthExtension = {
   emailOtp: {
     sendVerificationOtp(input: { email: string; type: "sign-in" | "email-verification" }): Promise<{ error?: { message?: string } | null }>;
     verifyEmail(input: { email: string; otp: string }): Promise<{ data?: unknown; error?: { message?: string } | null }>;
+    resetPassword(input: { email: string; otp: string; password: string }): Promise<{ error?: { message?: string } | null }>;
   };
   signIn: {
     emailOtp(input: { email: string; otp: string }): Promise<{ data?: { redirect?: boolean } | null; error?: { message?: string } | null }>;
@@ -26,9 +27,6 @@ type AuthExtension = {
   };
   forgetPassword: {
     emailOtp(input: { email: string }): Promise<{ error?: { message?: string } | null }>;
-  };
-  emailOtp: AuthExtension["emailOtp"] & {
-    resetPassword(input: { email: string; otp: string; password: string }): Promise<{ error?: { message?: string } | null }>;
   };
 };
 
