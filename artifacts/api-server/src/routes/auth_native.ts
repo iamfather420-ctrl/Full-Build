@@ -83,14 +83,27 @@ router.get("/callback", async (req: Request, res: Response) => {
   } catch { res.redirect("/api/login"); return; }
   const returnTo = getSafeReturnTo(req.cookies?.return_to);
   for (const name of ["code_verifier", "nonce", "state", "return_to"]) res.clearCookie(name, { path: "/" });
-  const claims = tokens.claims();
-  if (!claims) { res.redirect("/api/login"); return; }
-  const subject = typeof claims.sub === "string" ? claims.sub : "";
-  const email = typeof claims.email === "string" ? claims.email : "";
-  if (!subject || !email || claims.email_verified !== true) {
-    res.status(403).json({ error: "A verified OIDC email and subject are required for tenant access." });
+  const idTokenClaims = tokens.claims();
+  const subject = typeof idTokenClaims?.sub === "string" ? idTokenClaims.sub : "";
+  if (!subject) {
+    res.status(403).json({ error: "The OIDC ID token did not contain a subject." });
     return;
   }
+  // Better Auth/Neon returns email profile claims from UserInfo in the
+  // authorization-code flow; they are not guaranteed to be in the ID token.
+  const userInfo = await oidc.fetchUserInfo(config, tokens.access_token, subject);
+  const email = typeof userInfo.email === "string" ? userInfo.email : "";
+  if (!email || userInfo.email_verified !== true) {
+    req.log.warn({
+      hasSubject: true,
+      hasEmail: Boolean(email),
+      emailVerified: userInfo.email_verified ?? null,
+      userInfoClaimKeys: Object.keys(userInfo),
+    }, "OIDC UserInfo did not provide a verified email");
+    res.status(403).json({ error: "A verified OIDC email is required for tenant access." });
+    return;
+  }
+  const claims = { ...idTokenClaims, ...userInfo };
   let identity: OidcTenantIdentity;
   try {
     identity = await resolveOidcTenantIdentity(subject, email);
@@ -148,14 +161,22 @@ router.post("/mobile-auth/token-exchange", async (req: Request, res: Response) =
       { pkceCodeVerifier: code_verifier, expectedNonce: nonce ?? undefined, expectedState: state, idTokenExpected: true },
       { resource: process.env.OIDC_RESOURCE_URL! },
     );
-    const claims = tokens.claims();
-    if (!claims) { res.status(401).json({ error: "No claims in ID token" }); return; }
-    const subject = typeof claims.sub === "string" ? claims.sub : "";
-    const email = typeof claims.email === "string" ? claims.email : "";
-    if (!subject || !email || claims.email_verified !== true) {
-      res.status(403).json({ error: "A verified OIDC email and subject are required for tenant access." });
+    const idTokenClaims = tokens.claims();
+    const subject = typeof idTokenClaims?.sub === "string" ? idTokenClaims.sub : "";
+    if (!subject) { res.status(401).json({ error: "No subject in ID token" }); return; }
+    const userInfo = await oidc.fetchUserInfo(config, tokens.access_token, subject);
+    const email = typeof userInfo.email === "string" ? userInfo.email : "";
+    if (!email || userInfo.email_verified !== true) {
+      req.log.warn({
+        hasSubject: true,
+        hasEmail: Boolean(email),
+        emailVerified: userInfo.email_verified ?? null,
+        userInfoClaimKeys: Object.keys(userInfo),
+      }, "Mobile OIDC UserInfo did not provide a verified email");
+      res.status(403).json({ error: "A verified OIDC email is required for tenant access." });
       return;
     }
+    const claims = { ...idTokenClaims, ...userInfo };
     const identity = await resolveOidcTenantIdentity(subject, email);
     const now = Math.floor(Date.now() / 1000);
     const sessionData: SessionData = {
