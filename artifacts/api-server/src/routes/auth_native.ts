@@ -6,7 +6,7 @@ import {
   ExchangeMobileAuthorizationCodeResponse,
   LogoutMobileSessionResponse,
 } from "@workspace/api-zod";
-import { db, usersTable } from "@workspace/db";
+import { resolveOidcTenantIdentity } from "@workspace/db";
 import {
   clearSession, getOidcConfig, getSessionId, createSession, deleteSession,
   SESSION_COOKIE, SESSION_TTL, ISSUER_URL, OIDC_CLIENT_ID, type SessionData,
@@ -29,19 +29,7 @@ function setOidcCookie(res: Response, name: string, value: string) {
 function getSafeReturnTo(value: unknown): string {
   return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/";
 }
-async function upsertUser(claims: Record<string, unknown>) {
-  const userData = {
-    id: claims.sub as string,
-    email: (claims.email as string) || null,
-    firstName: (claims.given_name as string) || (claims.first_name as string) || null,
-    lastName: (claims.family_name as string) || (claims.last_name as string) || null,
-    profileImageUrl: (claims.picture || claims.profile_image_url) as string | null,
-  };
-  const [user] = await db.insert(usersTable).values(userData)
-    .onConflictDoUpdate({ target: usersTable.id, set: { ...userData, updatedAt: new Date() } })
-    .returning();
-  return user;
-}
+
 router.get("/auth/user", (req: Request, res: Response) => {
   res.json(GetCurrentAuthUserResponse.parse({ user: req.isAuthenticated() ? req.user : null }));
 });
@@ -81,12 +69,16 @@ router.get("/callback", async (req: Request, res: Response) => {
   for (const name of ["code_verifier", "nonce", "state", "return_to"]) res.clearCookie(name, { path: "/" });
   const claims = tokens.claims();
   if (!claims) { res.redirect("/api/login"); return; }
-  const dbUser = await upsertUser(claims as unknown as Record<string, unknown>);
+  const subject = typeof claims.sub === "string" ? claims.sub : "";
+  const email = typeof claims.email === "string" ? claims.email : "";
+  const identity = await resolveOidcTenantIdentity(subject, email);
   const now = Math.floor(Date.now() / 1000);
   const sessionData: SessionData = {
-    user: { id: dbUser.id, email: dbUser.email, firstName: dbUser.firstName, lastName: dbUser.lastName, profileImageUrl: dbUser.profileImageUrl },
+    user: { id: identity.user_id, email: identity.email, firstName: identity.display_name, lastName: null, profileImageUrl: null },
     access_token: tokens.access_token, refresh_token: tokens.refresh_token,
     expires_at: tokens.expiresIn() ? now + tokens.expiresIn()! : claims.exp,
+    tenant_claims: { user_id: identity.user_id, tenant_id: identity.tenant_id, email: identity.email, role: identity.role },
+    tenant_token: identity.signed_token,
   };
   setSessionCookie(res, await createSession(sessionData));
   res.redirect(returnTo);
@@ -115,12 +107,16 @@ router.post("/mobile-auth/token-exchange", async (req: Request, res: Response) =
     });
     const claims = tokens.claims();
     if (!claims) { res.status(401).json({ error: "No claims in ID token" }); return; }
-    const dbUser = await upsertUser(claims as unknown as Record<string, unknown>);
+    const subject = typeof claims.sub === "string" ? claims.sub : "";
+    const email = typeof claims.email === "string" ? claims.email : "";
+    const identity = await resolveOidcTenantIdentity(subject, email);
     const now = Math.floor(Date.now() / 1000);
     const sessionData: SessionData = {
-      user: { id: dbUser.id, email: dbUser.email, firstName: dbUser.firstName, lastName: dbUser.lastName, profileImageUrl: dbUser.profileImageUrl },
+      user: { id: identity.user_id, email: identity.email, firstName: identity.display_name, lastName: null, profileImageUrl: null },
       access_token: tokens.access_token, refresh_token: tokens.refresh_token,
       expires_at: tokens.expiresIn() ? now + tokens.expiresIn()! : claims.exp,
+      tenant_claims: { user_id: identity.user_id, tenant_id: identity.tenant_id, email: identity.email, role: identity.role },
+      tenant_token: identity.signed_token,
     };
     res.json(ExchangeMobileAuthorizationCodeResponse.parse({ token: await createSession(sessionData) }));
   } catch (err) {
