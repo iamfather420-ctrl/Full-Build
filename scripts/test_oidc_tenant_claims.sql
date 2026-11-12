@@ -13,12 +13,12 @@ $preflight$;
 INSERT INTO public.tenants
   (id,name,tier,isolated_storage_key,status,created_at,updated_at)
 VALUES
-  ('ci-oidc-tenant-a','CI OIDC tenant A','TEST','ci-oidc-storage-a','ACTIVE',1,1);
+  ('ci-oidc-tenant-a','CI OIDC tenant A','STANDARD','ci-oidc-storage-a','ACTIVE',1,1);
 
 INSERT INTO public.users
-  (id,tenant_id,email,display_name,role,status,created_at,updated_at)
+  (id,tenant_id,email,display_name,role,status,created_at,updated_at,oidc_subject)
 VALUES
-  ('ci-oidc-user-a','ci-oidc-tenant-a','oidc-ci@example.invalid','OIDC CI User','OPERATOR','ACTIVE',1,1);
+  ('ci-oidc-user-a','ci-oidc-tenant-a','oidc-ci@example.invalid','OIDC CI User','OPERATOR','ACTIVE',1,1,'ci-oidc-subject-a');
 
 INSERT INTO public.roles
   (id,tenant_id,name,permissions_json,created_at,updated_at,status)
@@ -34,7 +34,7 @@ DO $claims$
 DECLARE issued record; verified jsonb;
 BEGIN
   SELECT * INTO issued
-    FROM solvex_private.issue_oidc_session_claim('ci-oidc-user-a','oidc-ci@example.invalid');
+    FROM solvex_private.issue_oidc_session_claim('ci-oidc-subject-a','oidc-ci@example.invalid');
   IF issued.user_id <> 'ci-oidc-user-a'
      OR issued.tenant_id <> 'ci-oidc-tenant-a'
      OR issued.role <> 'CUSTOMER'
@@ -68,7 +68,7 @@ $claims$;
 INSERT INTO public.tenants
   (id,name,tier,isolated_storage_key,status,created_at,updated_at)
 VALUES
-  ('ci-oidc-tenant-b','CI OIDC tenant B','TEST','ci-oidc-storage-b','ACTIVE',1,1);
+  ('ci-oidc-tenant-b','CI OIDC tenant B','STANDARD','ci-oidc-storage-b','ACTIVE',1,1);
 INSERT INTO public.roles
   (id,tenant_id,name,permissions_json,created_at,updated_at,status)
 VALUES
