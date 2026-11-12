@@ -1,6 +1,11 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import pinoHttp from 'pino-http';
+import authRouter from './artifacts/api-server/src/routes/auth_native';
+import { authMiddleware } from './artifacts/api-server/src/middlewares/authMiddleware';
+import { logger } from './artifacts/api-server/src/lib/logger';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SovereignApiRouter } from './src/api/ApiRouter';
@@ -14,6 +19,8 @@ async function startServer() {
   const port = Number(process.env.PORT || 8080);
   app.disable('x-powered-by');
   app.use(express.json({ limit: '64kb', strict: true }));
+  // Mount the production OIDC endpoints on the same origin as the SPA.
+  app.use('/api', pinoHttp({ logger }), cookieParser(), authMiddleware, authRouter);
 
   app.get('/healthz', (_req, res) => {
     res.status(200).json({ status: 'ok', payments_enabled: false });
