@@ -8,6 +8,23 @@ type OAuthClientInfo = {
   redirect_uris?: string[];
 };
 
+type AuthExtension = {
+  oauth2: {
+    continue(input: { selected: true }): Promise<{ error?: { message?: string } | null }>;
+    publicClient(input: { query: { client_id: string } }): Promise<{ data: OAuthClientInfo | null; error?: { message?: string } | null }>;
+    consent(input: { accept: boolean }): Promise<{ error?: { message?: string } | null }>;
+  };
+  emailOtp: {
+    sendVerificationOtp(input: { email: string; type: "email-verification" }): Promise<{ error?: { message?: string } | null }>;
+    verifyEmail(input: { email: string; otp: string }): Promise<{ error?: { message?: string } | null }>;
+  };
+};
+
+// These methods are part of Neon Auth's Managed OAuth and email-OTP plugins.
+// The current SDK runtime exposes them while its generated TypeScript client
+// type omits those plugin method declarations.
+const auth = neonAuthClient as typeof neonAuthClient & AuthExtension;
+
 export function NeonAuthPages() {
   const isConsent = window.location.pathname === "/auth/consent";
   const [email, setEmail] = useState("");
@@ -27,7 +44,7 @@ export function NeonAuthPages() {
       try {
         const { data } = await neonAuthClient.getSession();
         if (data?.user) {
-          const result = await neonAuthClient.oauth2.continue({ selected: true });
+          const result = await auth.oauth2.continue({ selected: true });
           if (result.error && alive) setError("This sign-in request expired. Return to SolveX and start again.");
         }
       } catch {
@@ -76,7 +93,7 @@ export function NeonAuthPages() {
   const sendVerification = async () => {
     setBusy(true); setError(""); setNotice("");
     try {
-      const result = await neonAuthClient.emailOtp.sendVerificationOtp({ email, type: "email-verification" });
+      const result = await auth.emailOtp.sendVerificationOtp({ email, type: "email-verification" });
       if (result.error) setError(result.error.message || "Could not send a verification code.");
       else { setNeedsVerification(true); setNotice("A verification code has been sent to your email."); }
     } catch (err) { setError(err instanceof Error ? err.message : "Could not send a verification code."); }
