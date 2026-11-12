@@ -64,7 +64,7 @@ export default function App() {
           user_id: String(claims.user_id),
           tenant_id: String(claims.tenant_id),
           email: String(claims.email),
-          role: claims.role,
+          role: claims.role as SovereignRole,
           issued_at: Number(claims.issued_at),
           signed_token: result.signed_token,
         };
