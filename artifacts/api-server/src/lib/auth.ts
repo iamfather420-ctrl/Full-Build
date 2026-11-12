@@ -17,6 +17,8 @@ export interface SessionData {
   expires_at?: number;
   tenant_claims: Record<string, unknown>;
   tenant_token: string;
+  /** Original OIDC issuer subject; distinct from the internal database user id. */
+  oidc_subject: string;
 }
 
 let oidcConfig: client.Configuration | null = null;
