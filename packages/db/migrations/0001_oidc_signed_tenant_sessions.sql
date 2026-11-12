@@ -7,6 +7,19 @@ CREATE TABLE IF NOT EXISTS public.auth_sessions (
 );
 CREATE INDEX IF NOT EXISTS auth_sessions_expire_idx ON public.auth_sessions(expire);
 
+-- Map the verified OIDC issuer subject to an existing internal user id.
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS oidc_subject text;
+CREATE UNIQUE INDEX IF NOT EXISTS users_oidc_subject_unique
+  ON public.users(oidc_subject) WHERE oidc_subject IS NOT NULL;
+
+-- The tenants table is keyed by id; tenant_id is an optional parent/reference field.
+-- Replace the previous tenant_id-based policies, which hid tenant rows from RLS clients.
+DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.tenants;
+DROP POLICY IF EXISTS solvex_tenant_access ON public.tenants;
+CREATE POLICY solvex_signed_tenant_context ON public.tenants
+  USING (id = (solvex_private.current_claims()->>'tenant_id'))
+  WITH CHECK (id = (solvex_private.current_claims()->>'tenant_id'));
+
 CREATE OR REPLACE FUNCTION solvex_private.issue_oidc_session_claim(
   p_subject text,
   p_email text
@@ -45,7 +58,7 @@ BEGIN
       ON t.id = m.tenant_id AND t.status = 'ACTIVE'
     JOIN public.roles r
       ON r.id = m.role_id AND r.tenant_id = m.tenant_id AND r.status = 'ACTIVE'
-   WHERE u.id = p_subject
+   WHERE u.oidc_subject = p_subject
      AND lower(u.email) = lower(p_email)
      AND u.status = 'ACTIVE'
      AND upper(r.name) IN ('OWNER','ADMIN','VERIFIER','CUSTOMER')
@@ -92,4 +105,8 @@ END
 $function$;
 
 REVOKE ALL ON FUNCTION solvex_private.issue_oidc_session_claim(text,text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION solvex_private.issue_oidc_session_claim(text,text) TO neondb_owner;
+GRANT EXECUTE ON FUNCTION solvex_private.issue_oidc_session_claim(text,text) TO neondb_owner, solvex_runtime_login_v2;
+GRANT USAGE ON SCHEMA solvex_private TO solvex_runtime_login_v2;
+GRANT EXECUTE ON FUNCTION solvex_private.current_claims() TO solvex_runtime_login_v2;
+GRANT SELECT ON public.users, public.tenants, public.roles, public.tenant_memberships TO solvex_runtime_login_v2;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.auth_sessions TO solvex_runtime_login_v2;
