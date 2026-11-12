@@ -2,8 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import pino from "pino";
 import pinoHttp from "pino-http";
-import { authMiddleware } from "../artifacts/api-server/src/middlewares/authMiddleware";
-import authRouter from "../artifacts/api-server/src/routes/auth_native";
+import { authMiddleware } from "../artifacts/api-server/src/middlewares/authMiddleware.js";
+import authRouter from "../artifacts/api-server/src/routes/auth_native.js";
 
 // Vercel routes /api/* requests to this serverless function. Reuse the same
 // middleware and OIDC router mounted by the full Express server.
