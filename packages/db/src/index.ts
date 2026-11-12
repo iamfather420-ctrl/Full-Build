@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { pgTable, bigserial, bigint, text, integer, boolean, timestamp, numeric, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, bigserial, bigint, text, integer, boolean, timestamp, numeric, index, uniqueIndex, jsonb, varchar } from "drizzle-orm/pg-core";
 
 const databaseUrl = process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL or NEON_DATABASE_URL must be configured for the outreach worker");
@@ -43,3 +43,14 @@ export const outreachEvents = pgTable("outreach_events", {
   message: text("message").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({ createdIdx: index("idx_outreach_events_created").on(t.createdAt) }));
+
+
+// API login sessions are separate from the outreach prospect/event tables.
+// The matching SQL migration creates this table in the shared Neon database.
+export const sessionsTable = pgTable("auth_sessions", {
+  sid: varchar("sid", { length: 64 }).primaryKey(),
+  sess: jsonb("sess").$type<Record<string, unknown>>().notNull(),
+  expire: timestamp("expire", { withTimezone: true }).notNull(),
+}, (t) => ({
+  expireIdx: index("auth_sessions_expire_idx").on(t.expire),
+}));
