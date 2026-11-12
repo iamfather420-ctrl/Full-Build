@@ -1,9 +1,9 @@
 import * as client from "openid-client";
 import crypto from "crypto";
 import { type Request, type Response } from "express";
-import { db, sessionsTable } from "@workspace/db";
+import { db, sessionsTable } from "../../../../packages/db/src/index.js";
 import { eq } from "drizzle-orm";
-import type { AuthUser } from "@workspace/api-zod";
+import type { AuthUser } from "../../../../lib/api-zod/src/generated/types/authUser.js";
 
 export const ISSUER_URL = process.env.OIDC_ISSUER_URL ?? "";
 export const OIDC_CLIENT_ID = process.env.OIDC_CLIENT_ID ?? "";
