@@ -6,7 +6,7 @@ import {
   ExchangeMobileAuthorizationCodeResponse,
   LogoutMobileSessionResponse,
 } from "@workspace/api-zod";
-import { resolveOidcTenantIdentity } from "@workspace/db";
+import { resolveOidcTenantIdentity, type OidcTenantIdentity } from "@workspace/db";
 import {
   clearSession, getOidcConfig, getSessionId, createSession, deleteSession,
   SESSION_COOKIE, SESSION_TTL, ISSUER_URL, OIDC_CLIENT_ID, type SessionData,
@@ -75,7 +75,7 @@ router.get("/callback", async (req: Request, res: Response) => {
     res.status(403).json({ error: "A verified OIDC email and subject are required for tenant access." });
     return;
   }
-  let identity;
+  let identity: OidcTenantIdentity;
   try {
     identity = await resolveOidcTenantIdentity(subject, email);
   } catch (error) {
