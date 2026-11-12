@@ -72,7 +72,7 @@ BEGIN
   IF (SELECT count(*) FROM public.tenant_memberships m
       JOIN public.tenants t ON t.id=m.tenant_id AND t.status='ACTIVE'
       JOIN public.roles r ON r.id=m.role_id AND r.tenant_id=m.tenant_id AND r.status='ACTIVE'
-      WHERE m.user_id=p_subject AND m.status='ACTIVE'
+      WHERE m.user_id=identity_row.id AND m.status='ACTIVE'
         AND upper(r.name) IN ('OWNER','ADMIN','VERIFIER','CUSTOMER')) <> 1 THEN
     RAISE EXCEPTION 'OIDC identity must resolve to exactly one active tenant membership' USING ERRCODE = '28000';
   END IF;
