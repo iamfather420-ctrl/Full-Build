@@ -64,6 +64,7 @@ router.get("/login", async (req: Request, res: Response) => {
   res.redirect(redirectTo.href);
 });
 router.get("/callback", async (req: Request, res: Response) => {
+  try {
   const config = await getOidcConfig();
   const callbackUrl = `${getOrigin(req)}/api/callback`;
   const codeVerifier = req.cookies?.code_verifier;
@@ -109,6 +110,18 @@ router.get("/callback", async (req: Request, res: Response) => {
   };
   setSessionCookie(res, await createSession(sessionData));
   res.redirect(returnTo);
+  } catch (error) {
+    // Express 4 does not forward rejected async route handlers to its error
+    // middleware. Catch callback failures here so Vercel returns a traceable
+    // HTTP response instead of terminating the function invocation.
+    req.log.error({ err: error, requestId: req.id }, "Neon OIDC callback failed");
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: "OIDC_CALLBACK_FAILED",
+        request_id: req.id,
+      });
+    }
+  }
 });
 router.get("/logout", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
