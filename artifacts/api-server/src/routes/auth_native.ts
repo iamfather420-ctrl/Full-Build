@@ -73,10 +73,12 @@ router.get("/callback", async (req: Request, res: Response) => {
   const currentUrl = new URL(`${callbackUrl}?${new URL(req.url, `http://${req.headers.host}`).searchParams}`);
   let tokens: oidc.TokenEndpointResponse & oidc.TokenEndpointResponseHelpers;
   try {
-    tokens = await oidc.authorizationCodeGrant(config, currentUrl, {
-      pkceCodeVerifier: codeVerifier, expectedNonce: nonce, expectedState, idTokenExpected: true,
-      tokenEndpointParams: { resource: process.env.OIDC_RESOURCE_URL! },
-    });
+    tokens = await oidc.authorizationCodeGrant(
+      config,
+      currentUrl,
+      { pkceCodeVerifier: codeVerifier, expectedNonce: nonce, expectedState, idTokenExpected: true },
+      { resource: process.env.OIDC_RESOURCE_URL! },
+    );
   } catch { res.redirect("/api/login"); return; }
   const returnTo = getSafeReturnTo(req.cookies?.return_to);
   for (const name of ["code_verifier", "nonce", "state", "return_to"]) res.clearCookie(name, { path: "/" });
@@ -127,9 +129,12 @@ router.post("/mobile-auth/token-exchange", async (req: Request, res: Response) =
     callbackUrl.searchParams.set("code", code);
     callbackUrl.searchParams.set("state", state);
     callbackUrl.searchParams.set("iss", ISSUER_URL);
-    const tokens = await oidc.authorizationCodeGrant(config, callbackUrl, {
-      pkceCodeVerifier: code_verifier, expectedNonce: nonce ?? undefined, expectedState: state, idTokenExpected: true,
-    });
+    const tokens = await oidc.authorizationCodeGrant(
+      config,
+      callbackUrl,
+      { pkceCodeVerifier: code_verifier, expectedNonce: nonce ?? undefined, expectedState: state, idTokenExpected: true },
+      { resource: process.env.OIDC_RESOURCE_URL! },
+    );
     const claims = tokens.claims();
     if (!claims) { res.status(401).json({ error: "No claims in ID token" }); return; }
     const subject = typeof claims.sub === "string" ? claims.sub : "";
