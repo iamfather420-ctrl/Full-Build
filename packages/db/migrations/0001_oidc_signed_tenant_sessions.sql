@@ -92,3 +92,4 @@ END
 $function$;
 
 REVOKE ALL ON FUNCTION solvex_private.issue_oidc_session_claim(text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION solvex_private.issue_oidc_session_claim(text,text) TO CURRENT_USER;
