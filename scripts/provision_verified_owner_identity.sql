@@ -8,15 +8,20 @@ DECLARE
   auth_identity record;
   active_tenant_id text;
   active_tenant_count integer;
+  owner_email text := current_setting('solvex.owner_email', true);
   app_user_id text;
   owner_role_id text;
   membership_id text;
   now_ms bigint := floor(extract(epoch FROM clock_timestamp()) * 1000);
 BEGIN
+  IF coalesce(trim(owner_email), '') = '' THEN
+    RAISE EXCEPTION 'Provisioning blocked: set solvex.owner_email to the verified account email in this SQL session.';
+  END IF;
+
   SELECT id, email, name
     INTO auth_identity
     FROM neon_auth."user"
-   WHERE lower(email) = lower('daisy.haminja@gmail.com')
+   WHERE lower(email) = lower(owner_email)
      AND "emailVerified" IS TRUE;
 
   IF NOT FOUND THEN
