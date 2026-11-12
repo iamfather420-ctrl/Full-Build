@@ -70,7 +70,20 @@ router.get("/callback", async (req: Request, res: Response) => {
   const codeVerifier = req.cookies?.code_verifier;
   const nonce = req.cookies?.nonce;
   const expectedState = req.cookies?.state;
-  if (!codeVerifier || !expectedState) { res.redirect("/api/login"); return; }
+  if (!codeVerifier || !expectedState) {
+    // Do not bounce back to /api/login: missing state cookies would create an
+    // endless OIDC redirect loop. Stop and let the user restart explicitly.
+    req.log.warn({
+      hasCodeVerifier: Boolean(codeVerifier),
+      hasNonce: Boolean(nonce),
+      hasExpectedState: Boolean(expectedState),
+    }, "OIDC callback missing browser state cookies");
+    for (const name of ["code_verifier", "nonce", "state", "return_to"]) {
+      res.clearCookie(name, { path: "/" });
+    }
+    res.status(400).send("Sign-in expired because the browser did not return the login state cookies. Close this tab and start sign-in again.");
+    return;
+  }
   const currentUrl = new URL(`${callbackUrl}?${new URL(req.url, `http://${req.headers.host}`).searchParams}`);
   let tokens: oidc.TokenEndpointResponse & oidc.TokenEndpointResponseHelpers;
   try {
@@ -80,7 +93,16 @@ router.get("/callback", async (req: Request, res: Response) => {
       { pkceCodeVerifier: codeVerifier, expectedNonce: nonce, expectedState, idTokenExpected: true },
       { resource: process.env.OIDC_RESOURCE_URL! },
     );
-  } catch { res.redirect("/api/login"); return; }
+  } catch (error) {
+    // An invalid/expired authorization response must never restart login
+    // automatically; that behavior causes a rapid browser redirect loop.
+    req.log.warn({ err: error }, "OIDC authorization response could not be validated");
+    for (const name of ["code_verifier", "nonce", "state", "return_to"]) {
+      res.clearCookie(name, { path: "/" });
+    }
+    res.status(400).send("The sign-in response could not be verified or has expired. Close this tab and start sign-in again.");
+    return;
+  }
   const returnTo = getSafeReturnTo(req.cookies?.return_to);
   for (const name of ["code_verifier", "nonce", "state", "return_to"]) res.clearCookie(name, { path: "/" });
   const idTokenClaims = tokens.claims();
