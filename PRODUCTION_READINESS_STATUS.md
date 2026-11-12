@@ -183,3 +183,12 @@ The Vercel build-rate-limit status remains separate: GitHub CI success does not 
 ### Daisy model asset availability
 
 A fresh recursive tree scan of the current `main` commit `c5b0b1132d31a1af74047de0c64138c2a10cba13` found no tracked `.gguf`, `.bin`, `.onnx`, `.safetensors`, Llama, SmolLM, or model-weight assets. The local inference implementation is now connected to outreach, but the actual model weights and executable inference engine must be provisioned on the Fly worker (or its mounted volume) and verified there. Until that is done, do not claim Daisy local inference is active. The new `.env.example` documents the exact OIDC, model-path, engine-path and explicit external-fallback variables.
+
+
+### Latest source snapshot verification — commit `63642f536df6b71d46b5ed96eae158e30ebec826`
+
+The Build and Enterprise CI run `43123865093` completed successfully on this commit. Dependency installation, safety checks, first-party inference tests, OIDC configuration regression test, native server compile, Neon tenant-isolation test, application build, TypeScript, enterprise invariants, 120-case formal verification, proof closure, and the authoritative 46-gate command all completed successfully.
+
+The uploaded artifact `system-46-gates` (execution `gate46_exec_1794441576547`) again reports **41/46 passed, 4 blocked, 1 external-provider-required, 0 failed**. The same five non-passed entries remain: GATE-00 (11 generated/modified working-tree files), GATE-11 (Neon/PayPal providers not configured in this CI execution), GATE-12 (lifecycle authorization blocked; pipeline 2/21), GATE-14 (production verdict blocked), and GATE-46 (closure blocked). CI success means the verification process completed successfully; it does not mean the production gates all passed.
+
+Vercel still reports the account build-rate-limit failure for this commit. The most recent READY production deployment remains commit `b3a00498ffa60599ad546df98e771d4abb570c3c`. Therefore the latest code is CI-verified but not yet Vercel-deployed.
