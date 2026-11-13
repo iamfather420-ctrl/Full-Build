@@ -18,6 +18,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
+import type { UserContext } from '../auth/AuthService';
 
 export interface GateResult {
   gate_index: number;
@@ -559,8 +560,31 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
+    let lifecycleUser: UserContext | undefined;
+    let lifecycleIdentityResolution = 'NOT_CONFIGURED';
+    // Only CI's disposable Neon validation branch may supply the test identity.
+    // Never read a browser session or mint an application-side tenant token here.
+    if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) {
+      try {
+        const { resolveUniqueActiveOidcOwnerIdentity } = await import('@workspace/db');
+        const identity = await resolveUniqueActiveOidcOwnerIdentity(
+          process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
+        );
+        lifecycleUser = {
+          user_id: identity.user_id,
+          tenant_id: identity.tenant_id,
+          email: identity.email,
+          role: identity.role,
+          issued_at: Date.now(),
+          signed_token: identity.signed_token
+        };
+        lifecycleIdentityResolution = 'VERIFIED_DISPOSABLE_NEON_OWNER';
+      } catch (error) {
+        lifecycleIdentityResolution = 'BLOCKED: ' + (error instanceof Error ? error.message : 'OIDC identity resolution failed');
+      }
+    }
     for (const targetState of plannedTransitions) {
-      const result = await orderMgr.transitionOrder(testOrderId, targetState);
+      const result = await orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
       if (!result.success) break;
@@ -599,7 +623,8 @@ export class AuthoritativeVerificationPipeline {
         final_order_status: actualFinalStatus,
         authorization_blocked: lifecycleBlocked,
         payment_processing: 'DISABLED',
-        claim_scope: 'LOCAL'
+        claim_scope: 'LOCAL',
+        identity_resolution: lifecycleIdentityResolution
       }
     );
 
@@ -617,6 +642,7 @@ export class AuthoritativeVerificationPipeline {
           total_stages: pipeRes.total_stages,
           solution_id: pipeRes.solution_id
         },
+        identity_resolution: lifecycleIdentityResolution,
         order_lifecycle: {
           order_id: testOrderId,
           planned_transitions: plannedTransitions,
