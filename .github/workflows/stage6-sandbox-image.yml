@@ -1,0 +1,101 @@
+name: Stage 6 — Build and verify isolated sandbox image
+
+on:
+  push:
+    branches:
+      - build/stage6-sandbox-image
+    paths:
+      - "sandbox/**"
+      - ".github/workflows/stage6-sandbox-image.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: stage6-sandbox-image
+  cancel-in-progress: false
+
+jobs:
+  build-test-publish:
+    name: Build, smoke-test, and publish sandbox image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve immutable official Node base digest
+        id: base
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect node:22.23-bookworm-slim > /tmp/node-manifest.txt
+          digest="$(awk '/^Digest:/ { print $2; exit }' /tmp/node-manifest.txt)"
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]] || { cat /tmp/node-manifest.txt; echo "Could not resolve immutable Node manifest digest" >&2; exit 1; }
+          echo "image=node:22.23-bookworm-slim@${digest}" >> "$GITHUB_OUTPUT"
+          echo "Resolved official Node base: node:22.23-bookworm-slim@${digest}"
+
+      - name: Build sandbox image using digest-pinned base
+        shell: bash
+        env:
+          NODE_BASE_IMAGE: ${{ steps.base.outputs.image }}
+        run: |
+          set -euo pipefail
+          docker build --pull --build-arg "NODE_BASE_IMAGE=$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t solvex-sandbox:stage6 sandbox
+          docker image inspect solvex-sandbox:stage6 --format 'IMAGE_ID={{.Id}}'
+
+      - name: Verify runtime isolation and execution receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          receipt="$(printf '%s' "process.stdout.write(JSON.stringify({sandbox_smoke_test:'PASS'}))" | docker run --rm --interactive --network=none --read-only --user=65534:65534 --tmpfs /tmp:rw,noexec,nosuid,size=16m --memory=256m --memory-swap=256m --cpus=0.5 --pids-limit=64 --security-opt=no-new-privileges --cap-drop=ALL solvex-sandbox:stage6)"
+          echo "SANDBOX_RECEIPT=$receipt"
+          node -e 'const r=JSON.parse(process.argv[1]); if(r.accepted!==true || !/^[a-f0-9]{64}$/.test(r.input_sha256) || r.exit_code!==0 || r.timed_out!==false) process.exit(1); console.log("STAGE6_CONTAINER_SMOKE_TEST=PASS")' "$receipt"
+
+      - name: Authenticate to GitHub Container Registry
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Publish immutable image
+        id: publish
+        shell: bash
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/solvex-sandbox
+        run: |
+          set -euo pipefail
+          image_tag="$IMAGE:stage6-$GITHUB_SHA"
+          docker tag solvex-sandbox:stage6 "$image_tag"
+          docker push "$image_tag"
+          digest="$(docker buildx imagetools inspect "$image_tag" | awk '/^Digest:/ { print $2; exit }')"
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "Published image digest could not be verified" >&2; exit 1; }
+          echo "image=$IMAGE@$digest" >> "$GITHUB_OUTPUT"
+          echo "PUBLISHED_IMAGE=$IMAGE@$digest"
+          echo "PUBLISHED_TAG=$image_tag"
+
+      - name: Record Stage 6 build evidence
+        shell: bash
+        env:
+          BASE_IMAGE: ${{ steps.base.outputs.image }}
+          PUBLISHED_IMAGE: ${{ steps.publish.outputs.image }}
+        run: |
+          {
+            echo "STAGE6_BUILD=PASS"
+            echo "BASE_IMAGE=$BASE_IMAGE"
+            echo "PUBLISHED_IMAGE=$PUBLISHED_IMAGE"
+            echo "COMMIT=$GITHUB_SHA"
+            echo "RUNTIME_SMOKE_TEST=PASS"
+          } | tee stage6-build-evidence.txt
+
+      - name: Upload Stage 6 build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage6-sandbox-build-evidence
+          path: stage6-build-evidence.txt
+          if-no-files-found: error
+          retention-days: 90
