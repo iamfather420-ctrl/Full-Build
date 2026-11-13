@@ -30,19 +30,19 @@ export class OrderLifecycleManager {
     return OrderLifecycleManager.instance;
   }
 
-  public transitionOrder(
+  public async transitionOrder(
     orderId: string,
     targetState: string,
     user?: UserContext,
     evidencePayload?: any
-  ): { success: boolean; order?: any; error?: string } {
+  ): Promise<{ success: boolean; order?: any; error?: string }> {
     const rawDb = this.sqlite.getRawDb();
     const order = rawDb.get('SELECT * FROM orders WHERE id = ?', [orderId]);
     if (!order) {
       return { success: false, error: `Order [${orderId}] not found in SQLite store` };
     }
 
-    const authorization = AuthService.getInstance().authorize(user, 'ORDER_TRANSITION', order.tenant_id);
+    const authorization = await AuthService.getInstance().authorize(user, 'ORDER_TRANSITION', order.tenant_id);
     if (!authorization.authorized) {
       return { success: false, error: authorization.reason || 'BLOCKED: verified authorization required.' };
     }
