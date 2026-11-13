@@ -18,8 +18,10 @@ tenant_id="gate12-ci-tenant-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
 user_id="gate12-ci-user-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
 role_id="gate12-ci-role-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
 membership_id="gate12-ci-membership-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
-subject="gate12-ci-subject-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
-email="gate12-ci-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}@example.invalid"
+# Bind the disposable CI tenant fixture to the user's already-verified production Neon Auth subject.
+# The fixture tenant and app-user row remain isolated and are removed after the run.
+subject="550895be-a27e-4e75-9bd7-ee8b5d3cd0f0"
+email="i.am.father.420@gmail.com"
 now_ms="$(date +%s%3N)"
 
 psql "$url" --no-psqlrc --set=ON_ERROR_STOP=1 -f packages/db/migrations/0001_oidc_signed_tenant_sessions.sql
