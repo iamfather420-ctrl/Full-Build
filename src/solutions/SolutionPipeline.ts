@@ -13,6 +13,7 @@ import { MemorySafetyInstrumentation } from '../security/MemorySafetyInstrumenta
 import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { PersistentProofStore } from '../security/PersistentProofStore';
 import { TenantCrypto } from '../security/TenantCrypto';
+import { verifyStaticTyping } from './StaticTypingVerifier';
 import { execFileSync } from 'node:child_process';
 
 export type PipelineStageStatus = 'PASSED' | 'FAILED' | 'BLOCKED';
