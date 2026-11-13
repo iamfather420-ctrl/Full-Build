@@ -1,5 +1,8 @@
 import * as path from 'node:path';
-import ts from 'typescript';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const ts = require('typescript') as typeof import('typescript');
 
 export interface StaticTypingDiagnostic {
   code: number;
