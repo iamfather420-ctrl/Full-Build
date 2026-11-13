@@ -18,8 +18,9 @@ export interface OidcTenantIdentity {
 }
 
 /** Issues a short-lived claim only for an existing active OIDC user and membership. */
-export async function resolveOidcTenantIdentity(subject: string, email: string): Promise<OidcTenantIdentity> {
-  const rows = await authSql`
+export async function resolveOidcTenantIdentity(subject: string, email: string, databaseUrl?: string): Promise<OidcTenantIdentity> {
+  const sql = databaseUrl ? neon(databaseUrl) : authSql;
+  const rows = await sql`
     SELECT * FROM solvex_private.issue_oidc_session_claim(${subject}, ${email})
   `;
   if (rows.length !== 1) throw new Error("OIDC identity did not resolve to exactly one active tenant membership.");
@@ -29,6 +30,34 @@ export async function resolveOidcTenantIdentity(subject: string, email: string):
     throw new Error("OIDC tenant identity response is incomplete or invalid.");
   }
   return row;
+}
+
+/**
+ * Resolve exactly one active OWNER OIDC identity from a disposable validation database.
+ * This deliberately does not select identities from the normal production URL.
+ */
+export async function resolveUniqueActiveOidcOwnerIdentity(databaseUrl: string): Promise<OidcTenantIdentity> {
+  if (!databaseUrl) throw new Error("A disposable Neon validation database URL is required.");
+  const sql = neon(databaseUrl);
+  const owners = await sql`
+    SELECT u.oidc_subject, u.email
+      FROM public.users u
+      JOIN public.tenant_memberships m ON m.user_id = u.id AND m.tenant_id = u.tenant_id
+      JOIN public.roles r ON r.id = m.role_id AND r.tenant_id = m.tenant_id
+      JOIN public.tenants t ON t.id = u.tenant_id
+     WHERE u.status = 'ACTIVE'
+       AND m.status = 'ACTIVE'
+       AND r.status = 'ACTIVE'
+       AND upper(r.name) = 'OWNER'
+       AND t.status = 'ACTIVE'
+       AND u.oidc_subject IS NOT NULL
+     ORDER BY u.created_at
+     LIMIT 2
+  `;
+  if (owners.length !== 1 || !owners[0].oidc_subject || !owners[0].email) {
+    throw new Error("Disposable Neon database must resolve to exactly one active OWNER OIDC identity.");
+  }
+  return resolveOidcTenantIdentity(String(owners[0].oidc_subject), String(owners[0].email), databaseUrl);
 }
 
 /** Verifies signature, expiry, and current active membership on every authenticated request. */
