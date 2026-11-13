@@ -24,12 +24,14 @@ export class AuthService {
   }
 
   /** Verify the DB-issued HMAC token and re-check the live membership/role. */
-  public async verifyToken(token: string): Promise<{ valid: boolean; user?: UserContext; error?: string }> {
+  public async verifyToken(token: string, verificationDatabaseUrl?: string): Promise<{ valid: boolean; user?: UserContext; error?: string }> {
     if (!token || token.length > 8192) return { valid: false, error: 'BLOCKED: missing or oversized signed tenant token.' };
     try {
       // Dynamic import keeps offline/local verification tools usable without a database URL.
-      const { verifyOidcTenantToken } = await import('@workspace/db');
-      const claims = await verifyOidcTenantToken(token);
+      const { verifyOidcTenantToken } = await import('@workspace/db/oidc');
+      const databaseUrl = verificationDatabaseUrl || process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+      if (!databaseUrl) return { valid: false, error: 'BLOCKED: isolated tenant-claim verification database is not configured.' };
+      const claims = await verifyOidcTenantToken(token, databaseUrl);
       if (!claims) return { valid: false, error: 'BLOCKED: signature, expiry, or active tenant membership verification failed.' };
       const role = claims.role;
       if (typeof claims.user_id !== 'string' || typeof claims.tenant_id !== 'string' ||
@@ -62,7 +64,7 @@ export class AuthService {
     if (!supplied?.signed_token) {
       return { authorized: false, reason: 'BLOCKED: verified identity and signed tenant claims are required.' };
     }
-    const verified = await this.verifyToken(supplied.signed_token);
+    const verified = await this.verifyToken(supplied.signed_token, process.env.SOLVEX_GATE12_DATABASE_URL);
     if (!verified.valid || !verified.user) {
       return { authorized: false, reason: verified.error || 'BLOCKED: signed tenant claim verification failed.' };
     }

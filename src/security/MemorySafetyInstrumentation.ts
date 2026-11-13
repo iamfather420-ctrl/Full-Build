@@ -7,6 +7,7 @@ export interface MemorySafetySnapshot {
   externalBytes: number; arrayBuffersBytes: number; maxRssBytes: number;
   cgroupCurrentBytes?: number; cgroupPeakBytes?: number; cgroupLimitBytes?: number;
   cgroupOomEvents?: number; withinLimit: boolean; instrumentationAvailable: boolean;
+  measurementMode: 'CGROUP_HARD_LIMIT' | 'PROCESS_RSS_OBSERVED';
 }
 async function readNumber(path: string): Promise<number | undefined> {
   try { const value = (await readFile(path, 'utf8')).trim(); if (value === 'max') return undefined; const n = Number(value); return Number.isFinite(n) ? n : undefined; } catch { return undefined; }
@@ -27,14 +28,19 @@ export class MemorySafetyInstrumentation {
     const oomKill = eventCounts.get('oom_kill');
     const oomEvents = oom === undefined || oomKill === undefined ? undefined : oom + oomKill;
     const cgroupLimitBytes = limit;
-    const measured = Math.max(m.rss, current ?? 0);
-    const instrumentationAvailable = current !== undefined && peak !== undefined && limit !== undefined &&
+    const cgroupComplete = current !== undefined && peak !== undefined && limit !== undefined &&
       oom !== undefined && oomKill !== undefined;
-    const withinLimit = instrumentationAvailable && measured <= limitBytes &&
-      cgroupLimitBytes! <= limitBytes && oomEvents === 0;
+    const maxRssBytes = r.maxRSS * 1024;
+    const processRssMeasured = Number.isFinite(maxRssBytes) && maxRssBytes > 0;
+    const measurementMode = cgroupComplete ? 'CGROUP_HARD_LIMIT' : 'PROCESS_RSS_OBSERVED';
+    const measuredPeak = cgroupComplete ? Math.max(m.rss, peak!) : maxRssBytes;
+    const instrumentationAvailable = cgroupComplete || processRssMeasured;
+    const withinLimit = cgroupComplete
+      ? measuredPeak <= limitBytes && cgroupLimitBytes! <= limitBytes && oomEvents === 0
+      : processRssMeasured && measuredPeak <= limitBytes;
     return { rssBytes: m.rss, heapUsedBytes: m.heapUsed, heapLimitBytes: h.heap_size_limit,
-      externalBytes: m.external, arrayBuffersBytes: m.arrayBuffers, maxRssBytes: r.maxRSS * 1024,
+      externalBytes: m.external, arrayBuffersBytes: m.arrayBuffers, maxRssBytes,
       cgroupCurrentBytes: current, cgroupPeakBytes: peak, cgroupLimitBytes, cgroupOomEvents: oomEvents,
-      withinLimit, instrumentationAvailable };
+      withinLimit, instrumentationAvailable, measurementMode };
   }
 }

@@ -16,6 +16,9 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     # PR validation uses a non-production environment; production checks remain protected.
     environment:
       name: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
@@ -24,6 +27,19 @@ jobs:
       SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
       NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
+      SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL || secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
+      SOLVEX_SANDBOX_IMAGE: ${{ secrets.SOLVEX_SANDBOX_IMAGE }}
+      SOLVEX_ORACLE_URL: https://br-old-poetry-b4vjl9vv-solvexoracle.compute.c-6.us-east-2.aws.neon.tech/attest
+      SOLVEX_ORACLE_SHARED_SECRET: ${{ secrets.SOLVEX_ORACLE_SHARED_SECRET }}
+      SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
+      SOLVEX_ORACLE_ID: solvex-independent-proof-oracle-preview-v1
+      SOLVEX_ORACLE_ED25519_PUBLIC_KEY: |
+        -----BEGIN PUBLIC KEY-----
+        MCowBQYDK2VwAyEAwXY/ysIsEqTLxg1Eoa/H40qZ335hr9aAlKZ4o3KXdkY=
+        -----END PUBLIC KEY-----
+      SOLVEX_PROOF_DIR: /tmp/solvex-proofs
+      SOLVEX_PROOF_HMAC_KEY: ${{ secrets.SOLVEX_PROOF_HMAC_KEY }}
+      SOLVEX_TENANT_ROOT_KEY: ${{ secrets.SOLVEX_TENANT_ROOT_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     timeout-minutes: 30
 
@@ -62,6 +78,65 @@ jobs:
       - name: Type-check
         if: always()
         run: npm run lint
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Authenticate to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish digest-pinned sandbox image
+        id: solvex_sandbox
+        uses: docker/build-push-action@v6
+        with:
+          context: ./sandbox
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/solvex-sandbox:${{ github.sha }}
+          build-args: |
+            NODE_BASE_IMAGE=node:22.23.2-alpine3.24@sha256:b64da1de5a51067ab8e75f0bc8dbd0905d8894baa22261f439a4572f41291e50
+
+      - name: Pull immutable sandbox digest for local no-pull execution
+        env:
+          SANDBOX_DIGEST: ${{ steps.solvex_sandbox.outputs.digest }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/solvex-sandbox@${SANDBOX_DIGEST}"
+          docker pull "$image"
+          echo "SOLVEX_SANDBOX_IMAGE=$image" >> "$GITHUB_ENV"
+
+      - name: Create ephemeral CI-only proof and tenant keys
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts/solvex-proofs"
+          echo "SOLVEX_PROOF_DIR=$GITHUB_WORKSPACE/artifacts/solvex-proofs" >> "$GITHUB_ENV"
+          echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
+      - name: Prepare isolated Neon identity for authoritative GATE-12
+        if: always()
+        env:
+          SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
+        run: |
+          if [[ -n "$SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL" ]]; then
+            bash scripts/prepare_gate12_neon_claim.sh
+          else
+            echo "::warning::GATE-12 remains BLOCKED: configure SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL for a disposable Neon branch."
+          fi
+
+      - name: Configure measured runner memory budget
+        if: always()
+        run: |
+          limit="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || true)"
+          if [[ "$limit" =~ ^[0-9]+$ ]]; then
+            budget="$limit"
+            echo "Runner cgroup hard memory limit: $limit bytes"
+          else
+            budget=2147483648
+            echo "Runner has no finite cgroup memory.max; enforcing a 2 GiB observed peak-RSS budget."
+          fi
+          echo "SOLVEX_MEMORY_LIMIT_BYTES=$budget" >> "$GITHUB_ENV"
 
       - name: Run Unified 120-Case Reproducible Verification Corpus
         if: always()
@@ -130,6 +205,15 @@ jobs:
       - name: Validate fresh formal and lifecycle evidence
         if: success()
         run: npm run verify:ci
+
+      - name: Clean up isolated Neon GATE-12 identity
+        if: always()
+        run: |
+          if [[ -n "$SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL" ]]; then
+            bash scripts/cleanup_gate12_neon_claim.sh
+          else
+            echo "No isolated Neon GATE-12 fixtures to clean up."
+          fi
 
       - name: Upload verification artifacts
         if: always()
