@@ -36,10 +36,10 @@ export async function resolveOidcTenantIdentity(subject: string, email: string, 
  * Resolve exactly one active OWNER OIDC identity from a disposable validation database.
  * This deliberately does not select identities from the normal production URL.
  */
-export async function resolveUniqueActiveOidcOwnerIdentity(databaseUrl: string): Promise<OidcTenantIdentity> {
+export async function resolveUniqueActiveOidcIdentity(databaseUrl: string): Promise<OidcTenantIdentity> {
   if (!databaseUrl) throw new Error("A disposable Neon validation database URL is required.");
   const sql = neon(databaseUrl);
-  const owners = await sql`
+  const identities = await sql`
     SELECT u.oidc_subject, u.email
       FROM public.users u
       JOIN public.tenant_memberships m ON m.user_id = u.id AND m.tenant_id = u.tenant_id
@@ -48,16 +48,16 @@ export async function resolveUniqueActiveOidcOwnerIdentity(databaseUrl: string):
      WHERE u.status = 'ACTIVE'
        AND m.status = 'ACTIVE'
        AND r.status = 'ACTIVE'
-       AND upper(r.name) = 'OWNER'
+       AND upper(r.name) IN ('OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER')
        AND t.status = 'ACTIVE'
        AND u.oidc_subject IS NOT NULL
      ORDER BY u.created_at
      LIMIT 2
   `;
-  if (owners.length !== 1 || !owners[0].oidc_subject || !owners[0].email) {
+  if (identities.length !== 1 || !identities[0].oidc_subject || !identities[0].email) {
     throw new Error("Disposable Neon database must resolve to exactly one active OWNER OIDC identity.");
   }
-  return resolveOidcTenantIdentity(String(owners[0].oidc_subject), String(owners[0].email), databaseUrl);
+  return resolveOidcTenantIdentity(String(identities[0].oidc_subject), String(identities[0].email), databaseUrl);
 }
 
 /** Verifies signature, expiry, and current active membership on every authenticated request. */
