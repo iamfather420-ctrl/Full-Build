@@ -281,8 +281,8 @@ export class SolutionPipeline {
         });
         const failClosedPassed = output.includes('TENANT_RLS_FAIL_CLOSED_RESULT=PASS');
         const authenticatedPassed = output.includes('AUTHENTICATED_TENANT_ISOLATION=PASS');
-        const readMatch = output.match(/read_table_checks=(\\d+)/i);
-        const writeMatch = output.match(/cross_tenant_write_checks=(\\d+)/i);
+        const readMatch = output.match(/read_table_checks=([0-9]+)/i);
+        const writeMatch = output.match(/cross_tenant_write_checks=([0-9]+)/i);
         const readChecks = readMatch ? Number(readMatch[1]) : 0;
         const writeChecks = writeMatch ? Number(writeMatch[1]) : 0;
         evidence.database_rls_verified = failClosedPassed && authenticatedPassed;
