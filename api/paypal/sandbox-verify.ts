@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 
 type VercelRequest = IncomingMessage & { method?: string; headers: IncomingMessage['headers'] };
 type VercelResponse = ServerResponse & {
+  send: (body: string) => void;
   status: (code: number) => VercelResponse;
   json: (body: unknown) => void;
   setHeader: (name: string, value: string) => void;
@@ -23,6 +24,27 @@ function safeEqual(received: string | undefined, expected: string): boolean {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Preview deployments are protected by Vercel SSO. This same-origin console
+  // lets an authenticated project member start the check without copying a key.
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'no-store, max-age=0');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'");
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(200).send(`<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SolveX PayPal Sandbox Verification</title>
+<style>body{font:16px system-ui;max-width:620px;margin:12vh auto;padding:24px;color:#172033}button{padding:12px 18px;font-weight:650}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f4f8;padding:14px;border-radius:8px}small{color:#526078}</style>
+<h1>PayPal sandbox verification</h1>
+<p>This runs one sandbox OAuth authentication check only. Payments remain disabled. No orders, captures, refunds, or transactions are attempted.</p>
+<button id="run">Run sandbox verification</button>
+<p><small>Available only on the protected Vercel preview for the verification branch.</small></p>
+<pre id="result" aria-live="polite">Not run.</pre>
+<script>
+const button=document.getElementById('run'), output=document.getElementById('result');
+button.addEventListener('click',async()=>{button.disabled=true;output.textContent='Running sandbox OAuth check…';try{const r=await fetch(location.pathname,{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'}});const data=await r.json();output.textContent=JSON.stringify(data,null,2)}catch(e){output.textContent='Request failed. Check Vercel runtime logs.'}finally{button.disabled=false}});
+</script></html>`);
+  }
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return reply(res, 405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
@@ -32,7 +54,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!gateSecret || gateSecret.length < 32) {
     return reply(res, 503, { ok: false, error: 'VERIFICATION_GATE_NOT_CONFIGURED' });
   }
-  if (!safeEqual(req.headers['x-solvex-verification-key'] as string | undefined, gateSecret)) {
+  const suppliedKey = req.headers['x-solvex-verification-key'] as string | undefined;
+  const hmacAuthorized = safeEqual(suppliedKey, gateSecret);
+  const host = (req.headers['x-forwarded-host'] || req.headers.host || '').toString().split(',')[0].trim();
+  const origin = (req.headers.origin || '').toString();
+  const sameOriginPreviewAuthorized =
+    process.env.VERCEL_ENV === 'preview' &&
+    process.env.VERCEL_GIT_COMMIT_REF === 'feature/external-dependency-railway-v2' &&
+    !!host &&
+    origin === `https://${host}`;
+  if (!hmacAuthorized && !sameOriginPreviewAuthorized) {
     return reply(res, 401, { ok: false, error: 'UNAUTHORIZED' });
   }
 
