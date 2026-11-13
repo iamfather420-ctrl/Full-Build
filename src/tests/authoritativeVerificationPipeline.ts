@@ -522,9 +522,6 @@ export class AuthoritativeVerificationPipeline {
           environment: ppCreds?.environment || 'NOT_CONFIGURED',
           authenticated: ppAuth,
           status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
-          claim_scope: verifiedLifecycleUser ? 'ISOLATED_NEON_VERIFIED' : 'BLOCKED_NO_NEON_CLAIM',
-          verified_user_id: verifiedLifecycleUser?.user_id ?? null,
-          verified_tenant_id: verifiedLifecycleUser?.tenant_id ?? null
         },
         neon: {
           configured: hasNeon,
@@ -610,7 +607,9 @@ export class AuthoritativeVerificationPipeline {
         final_order_status: actualFinalStatus,
         authorization_blocked: lifecycleBlocked,
         payment_processing: 'DISABLED',
-        claim_scope: 'LOCAL'
+        claim_scope: verifiedLifecycleUser ? 'ISOLATED_NEON_VERIFIED' : 'BLOCKED_NO_NEON_CLAIM',
+        verified_user_id: verifiedLifecycleUser?.user_id ?? null,
+        verified_tenant_id: verifiedLifecycleUser?.tenant_id ?? null
       }
     );
 
