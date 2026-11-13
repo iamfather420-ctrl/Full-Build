@@ -15,6 +15,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Capture clean repository baseline
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            echo "Checkout is not clean; refusing to establish a repository baseline." >&2
+            git status --short
+            exit 1
+          fi
+          echo "SOLVEX_BASELINE_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "SOLVEX_BASELINE_WORKTREE_CLEAN=true" >> "$GITHUB_ENV"
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
