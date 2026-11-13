@@ -65,12 +65,6 @@ jobs:
       - name: Report isolated OIDC integration secret requirement
         if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
         run: echo "OIDC database integration was validated directly on the isolated Neon branch; add SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL (owner connection for a disposable branch) to enable this CI step."
-      - name: Seed disposable Neon OIDC fixture for GATE-12
-        env:
-          SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
-        run: |
-          test "$SOLVEX_NEON_ISOLATION_TEST_CONFIRM" = "DISPOSABLE_NEON_BRANCH_ONLY"
-          psql "$SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL" --no-psqlrc --set=ON_ERROR_STOP=1 --set=tenant_a="$SOLVEX_NEON_TEST_TENANT_A" --file=scripts/seed_gate12_oidc_fixture.sql
       - name: Build
         run: bun run build
       - name: TypeScript
@@ -90,7 +84,3 @@ jobs:
           name: system-46-gates
           path: artifacts/system-46-gates.json
           if-no-files-found: ignore
-      - name: Clean up disposable Neon GATE-12 fixture
-        if: ${{ always() && env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL != '' }}
-        run: |
-          psql "$SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL" --no-psqlrc --set=ON_ERROR_STOP=1 --file=scripts/cleanup_gate12_oidc_fixture.sql
