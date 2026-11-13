@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 export interface StaticTypingDiagnostic {
   code: number;
