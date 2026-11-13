@@ -24,12 +24,12 @@ export class AuthService {
   }
 
   /** Verify the DB-issued HMAC token and re-check the live membership/role. */
-  public async verifyToken(token: string): Promise<{ valid: boolean; user?: UserContext; error?: string }> {
+  public async verifyToken(token: string, verificationDatabaseUrl?: string): Promise<{ valid: boolean; user?: UserContext; error?: string }> {
     if (!token || token.length > 8192) return { valid: false, error: 'BLOCKED: missing or oversized signed tenant token.' };
     try {
       // Dynamic import keeps offline/local verification tools usable without a database URL.
       const { verifyOidcTenantToken } = await import('@workspace/db');
-      const claims = await verifyOidcTenantToken(token);
+      const claims = await verifyOidcTenantToken(token, verificationDatabaseUrl);
       if (!claims) return { valid: false, error: 'BLOCKED: signature, expiry, or active tenant membership verification failed.' };
       const role = claims.role;
       if (typeof claims.user_id !== 'string' || typeof claims.tenant_id !== 'string' ||
