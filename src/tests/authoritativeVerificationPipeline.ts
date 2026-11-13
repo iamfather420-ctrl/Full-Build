@@ -561,12 +561,18 @@ export class AuthoritativeVerificationPipeline {
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
 
-    // GATE-12 must consume a real, provider-signed OIDC JWT. Never synthesize a
-    // UserContext or reuse the SQL integration test's rolled-back fixture token.
-    const lifecycleToken = process.env.SOLVEX_GATE12_OIDC_TOKEN;
-    const identity = lifecycleToken
-      ? await AuthService.getInstance().verifyToken(lifecycleToken)
-      : { valid: false, error: 'SOLVEX_GATE12_OIDC_TOKEN is not configured.' };
+    // GATE-12 accepts either a provider-signed OIDC JWT, or a short-lived
+    // database-issued tenant claim. The latter is minted only after Neon Auth's
+    // verified subject/email resolve to exactly one active tenant membership.
+    // Never synthesize a UserContext or trust an unsigned client-supplied tenant.
+    const authService = AuthService.getInstance();
+    const providerToken = process.env.SOLVEX_GATE12_OIDC_TOKEN;
+    const neonTenantClaim = process.env.SOLVEX_GATE12_NEON_TENANT_CLAIM;
+    const identity = providerToken
+      ? await authService.verifyToken(providerToken)
+      : neonTenantClaim
+        ? authService.verifyNeonTenantClaim(neonTenantClaim)
+        : { valid: false, error: 'A provider OIDC token or verified Neon tenant claim is required.' };
     const verifiedUser = identity.valid ? identity.user : undefined;
     if (!verifiedUser || verifiedUser.tenant_id !== 'tenant-enterprise-demo') {
       transitionAttempts.push({
