@@ -542,7 +542,7 @@ export class AuthoritativeVerificationPipeline {
     const g12Start = performance.now();
     const pipe = SolutionPipeline.getInstance();
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
-    const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode);
+    const pipeRes = await pipe.runPipeline('DH-P-001', zenoCode);
 
     const gate12Token = process.env.SOLVEX_GATE12_NEON_TENANT_CLAIM;
     const gate12DatabaseUrl = process.env.SOLVEX_GATE12_DATABASE_URL;
