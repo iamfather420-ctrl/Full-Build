@@ -29,7 +29,12 @@ export class AuthService {
     try {
       // Dynamic import keeps offline/local verification tools usable without a database URL.
       const { verifyOidcTenantToken } = await import('@workspace/db');
-      const claims = await verifyOidcTenantToken(token);
+      // CI lifecycle verification must validate against the same disposable Neon branch
+      // that issued the token. Outside GitHub Actions, normal configured DB routing is unchanged.
+      const validationDatabaseUrl = process.env.GITHUB_ACTIONS === 'true'
+        ? process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
+        : undefined;
+      const claims = await verifyOidcTenantToken(token, validationDatabaseUrl);
       if (!claims) return { valid: false, error: 'BLOCKED: signature, expiry, or active tenant membership verification failed.' };
       const role = claims.role;
       if (typeof claims.user_id !== 'string' || typeof claims.tenant_id !== 'string' ||
