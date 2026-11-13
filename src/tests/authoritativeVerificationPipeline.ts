@@ -556,6 +556,14 @@ export class AuthoritativeVerificationPipeline {
       neonArtifact?.evidence_sha256 === computeSha256(JSON.stringify(neonEvidence))
     );
 
+    // Keep legacy manifest and final-verdict fields aligned with delegated evidence.
+    // Sandbox receipts never satisfy production live-credential requirements.
+    const hasNeon = neonEvidenceValid && env !== 'production';
+    const hasPayPal = paypalEvidenceValid && env !== 'production';
+    const ppCreds = paypalEvidenceValid ? { environment: 'sandbox' as const } : null;
+    const ppAuth = paypalEvidenceValid && env !== 'production';
+    const neonConn = neonEvidenceValid && env !== 'production';
+
     const g11Passed = paypalEvidenceValid && neonEvidenceValid;
     recordGate(
       11,
