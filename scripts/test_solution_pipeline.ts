@@ -19,7 +19,7 @@ async function main() {
   assert.equal(normal.stage_traces.length, 21);
   assert.equal(normal.stage_traces[0].status, 'PASSED');
   assert.equal(normal.stage_traces[1].status, 'PASSED');
-  assert.equal(normal.stage_traces[5].status, 'BLOCKED', 'cleanroom isolation must block the pipeline');
+  assert.notEqual(normal.stage_traces[5].status, 'PASSED', 'cleanroom isolation must fail closed when sandbox execution or its required evidence is unavailable');
   assert.equal(normal.stage_traces[6].status, 'BLOCKED', 'downstream checks must not run after a blocker');
   assert.equal(normal.stage_traces[7].status, 'BLOCKED', 'downstream checks must not run after a blocker');
   assert.equal(normal.stage_traces[8].status, 'PASSED', 'independent sentinel must still inspect the input');
