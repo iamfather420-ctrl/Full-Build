@@ -50,6 +50,11 @@ jobs:
       - name: Proof closure
         run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification
+        env:
+          AUTH_ISSUER: ${{ secrets.AUTH_ISSUER }}
+          AUTH_AUDIENCE: ${{ secrets.AUTH_AUDIENCE }}
+          AUTH_JWKS_URL: ${{ secrets.AUTH_JWKS_URL }}
+          SOLVEX_GATE12_OIDC_TOKEN: ${{ secrets.SOLVEX_GATE12_OIDC_TOKEN }}
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Upload 46-gate evidence
         if: always()
