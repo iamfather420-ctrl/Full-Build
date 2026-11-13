@@ -32,7 +32,7 @@ export class AuthService {
       // CI lifecycle verification must validate against the same disposable Neon branch
       // that issued the token. Outside GitHub Actions, normal configured DB routing is unchanged.
       const validationDatabaseUrl = process.env.GITHUB_ACTIONS === 'true'
-        ? process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
+        ? process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL
         : undefined;
       const claims = await verifyOidcTenantToken(token, validationDatabaseUrl);
       if (!claims) return { valid: false, error: 'BLOCKED: signature, expiry, or active tenant membership verification failed.' };
