@@ -18,6 +18,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
+import { AuthService } from '../auth/AuthService';
 
 export interface GateResult {
   gate_index: number;
@@ -521,7 +522,9 @@ export class AuthoritativeVerificationPipeline {
           environment: ppCreds?.environment || 'NOT_CONFIGURED',
           authenticated: ppAuth,
           status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
-          claim_scope: 'LOCAL'
+          claim_scope: verifiedLifecycleUser ? 'ISOLATED_NEON_VERIFIED' : 'BLOCKED_NO_NEON_CLAIM',
+          verified_user_id: verifiedLifecycleUser?.user_id ?? null,
+          verified_tenant_id: verifiedLifecycleUser?.tenant_id ?? null
         },
         neon: {
           configured: hasNeon,
@@ -544,9 +547,17 @@ export class AuthoritativeVerificationPipeline {
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
     const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode);
 
+    const gate12Token = process.env.SOLVEX_GATE12_NEON_TENANT_CLAIM;
+    const gate12DatabaseUrl = process.env.SOLVEX_GATE12_DATABASE_URL;
+    const gate12Identity = gate12Token && gate12DatabaseUrl
+      ? await AuthService.getInstance().verifyToken(gate12Token, gate12DatabaseUrl)
+      : { valid: false, error: 'Isolated GATE-12 Neon claim and database are required.' };
+    const verifiedLifecycleUser = gate12Identity.valid ? gate12Identity.user : undefined;
+    const lifecycleTenantId = verifiedLifecycleUser?.tenant_id ?? 'TENANT_ENTERPRISE_DEMO';
+
     const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
-    sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
+    sqliteInst.insertTenantRecord('orders', lifecycleTenantId, {
       id: testOrderId,
       title: 'E2E Verified Delivery Order',
       solution_id: pipeRes.solution_id || 'DH-S-001',
@@ -560,7 +571,7 @@ export class AuthoritativeVerificationPipeline {
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     for (const targetState of plannedTransitions) {
-      const result = await orderMgr.transitionOrder(testOrderId, targetState);
+      const result = await orderMgr.transitionOrder(testOrderId, targetState, verifiedLifecycleUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
       if (!result.success) break;
@@ -586,7 +597,7 @@ export class AuthoritativeVerificationPipeline {
 
     const durableInst = DurableStore.getInstance();
     const e2eAudit = durableInst.appendAudit(
-      'TENANT_ENTERPRISE_DEMO',
+      lifecycleTenantId,
       'E2E_VERIFIER',
       lifecycleAuditAction,
       'ORDER',
@@ -607,7 +618,7 @@ export class AuthoritativeVerificationPipeline {
       12,
       'GATE-12',
       'End-to-End Lifecycle Execution',
-      'LOCAL',
+      verifiedLifecycleUser ? 'SANDBOX' : 'LOCAL',
       lifecycleGateStatus,
       performance.now() - g12Start,
       {
@@ -624,7 +635,9 @@ export class AuthoritativeVerificationPipeline {
           transitions_executed: successfulTransitions,
           final_status: actualFinalStatus,
           authorization_blocked: lifecycleBlocked,
-          payment_processing: 'DISABLED'
+          payment_processing: 'DISABLED',
+          authenticated_identity: verifiedLifecycleUser ? 'NEON_SIGNED_CLAIM_VERIFIED' : 'NOT_VERIFIED',
+          tenant_id: lifecycleTenantId
         },
         merkle_audit_append: {
           action: lifecycleAuditAction,
