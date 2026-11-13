@@ -17,9 +17,14 @@ jobs:
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL || secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       SOLVEX_SANDBOX_IMAGE: ${{ secrets.SOLVEX_SANDBOX_IMAGE }}
+      SOLVEX_ORACLE_URL: https://br-old-poetry-b4vjl9vv-solvexoracle.compute.c-6.us-east-2.aws.neon.tech/attest
+      SOLVEX_ORACLE_SHARED_SECRET: ${{ secrets.SOLVEX_ORACLE_SHARED_SECRET }}
       SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
-      SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
-      SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
+      SOLVEX_ORACLE_ID: solvex-independent-proof-oracle-preview-v1
+      SOLVEX_ORACLE_ED25519_PUBLIC_KEY: |
+        -----BEGIN PUBLIC KEY-----
+        MCowBQYDK2VwAyEAwXY/ysIsEqTLxg1Eoa/H40qZ335hr9aAlKZ4o3KXdkY=
+        -----END PUBLIC KEY-----
       SOLVEX_PROOF_DIR: /tmp/solvex-proofs
       SOLVEX_PROOF_HMAC_KEY: ${{ secrets.SOLVEX_PROOF_HMAC_KEY }}
       SOLVEX_TENANT_ROOT_KEY: ${{ secrets.SOLVEX_TENANT_ROOT_KEY }}
