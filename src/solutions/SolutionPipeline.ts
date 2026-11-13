@@ -13,6 +13,7 @@ import { MemorySafetyInstrumentation } from '../security/MemorySafetyInstrumenta
 import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { PersistentProofStore } from '../security/PersistentProofStore';
 import { TenantCrypto } from '../security/TenantCrypto';
+import { execFileSync } from 'node:child_process';
 
 export type PipelineStageStatus = 'PASSED' | 'FAILED' | 'BLOCKED';
 export interface PipelineExecutionResult {
@@ -245,18 +246,63 @@ export class SolutionPipeline {
         : fail(chain.reason || 'Merkle-linked audit chain validation failed.');
     });
     await runStage(19, () => {
+      const evidence: Record<string, unknown> = {
+        database_rls_verified: false,
+        tenant_isolation_verified: false
+      };
       try {
         const crypto = new TenantCrypto();
         const record = crypto.encrypt('TENANT_SOVEREIGN_ROOT', sourceHash);
         const sameTenant = crypto.decrypt('TENANT_SOVEREIGN_ROOT', record);
         let crossTenantDenied = false;
         try { crypto.decrypt('TENANT_OTHER', record); } catch { crossTenantDenied = true; }
-        const databaseRlsVerified = process.env.SOLVEX_GATE12_RLS_VERIFIED === 'true';
-        return sameTenant === sourceHash && crossTenantDenied && databaseRlsVerified
-          ? pass({ tenant_record_encryption: true, cipher: 'AES-256-GCM', key_derivation: 'HKDF-SHA256', cross_tenant_ciphertext_rejected: true, database_rls_verified: true, rls_evidence: 'isolated Neon runtime-role cross-tenant visibility probe', tenant_isolation_verified: true })
-          : block('Tenant cryptography passed but the isolated Neon runtime-role RLS probe is absent or failed.', { tenant_record_encryption: sameTenant === sourceHash, cipher: 'AES-256-GCM', key_derivation: 'HKDF-SHA256', cross_tenant_ciphertext_rejected: crossTenantDenied, database_rls_verified: databaseRlsVerified, tenant_isolation_verified: false });
+        evidence.tenant_record_encryption = sameTenant === sourceHash;
+        evidence.cipher = 'AES-256-GCM';
+        evidence.key_derivation = 'HKDF-SHA256';
+        evidence.cross_tenant_ciphertext_rejected = crossTenantDenied;
+
+        if (process.env.SOLVEX_ENV === 'production') {
+          return block('Stage 19 database isolation probe is restricted to the explicitly configured disposable Neon test branch.', evidence);
+        }
+        const databaseUrl = process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL;
+        const tenantA = process.env.SOLVEX_NEON_TEST_TENANT_A;
+        const tenantB = process.env.SOLVEX_NEON_TEST_TENANT_B;
+        if (!databaseUrl || !tenantA || !tenantB || tenantA === tenantB) {
+          return block('Disposable Neon isolation URL and two distinct tenant fixtures are required; environment flags alone are not accepted as RLS evidence.', evidence);
+        }
+
+        const output = execFileSync('bash', ['scripts/verify_neon_tenant_isolation.sh'], {
+          encoding: 'utf8',
+          timeout: 120_000,
+          env: {
+            ...process.env,
+            SOLVEX_NEON_ISOLATION_TEST_CONFIRM: 'DISPOSABLE_NEON_BRANCH_ONLY'
+          }
+        });
+        const failClosedPassed = output.includes('TENANT_RLS_FAIL_CLOSED_RESULT=PASS');
+        const authenticatedPassed = output.includes('AUTHENTICATED_TENANT_ISOLATION=PASS');
+        const readMatch = output.match(/read_table_checks=(\\d+)/i);
+        const writeMatch = output.match(/cross_tenant_write_checks=(\\d+)/i);
+        const readChecks = readMatch ? Number(readMatch[1]) : 0;
+        const writeChecks = writeMatch ? Number(writeMatch[1]) : 0;
+        evidence.database_rls_verified = failClosedPassed && authenticatedPassed;
+        evidence.neon_fail_closed_tables = failClosedPassed ? 8 : 0;
+        evidence.neon_authenticated_read_checks = readChecks;
+        evidence.neon_cross_tenant_write_checks = writeChecks;
+        evidence.neon_role = 'solvex_iso_test';
+        evidence.neon_tenant_fixtures_distinct = true;
+        evidence.tenant_isolation_verified =
+          sameTenant === sourceHash &&
+          crossTenantDenied &&
+          failClosedPassed &&
+          authenticatedPassed &&
+          readChecks === 16 &&
+          writeChecks >= 1;
+        return evidence.tenant_isolation_verified
+          ? pass(evidence)
+          : block('Neon isolation script did not produce complete fail-closed, A/B read, and cross-tenant write evidence.', evidence);
       } catch (error) {
-        return block(error instanceof Error ? error.message : String(error), { tenant_isolation_verified: false });
+        return block(error instanceof Error ? error.message : String(error), evidence);
       }
     });
     await runStage(20, () => {
