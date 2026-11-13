@@ -33,10 +33,10 @@ export async function resolveOidcTenantIdentity(subject: string, email: string, 
 }
 
 /**
- * Resolve exactly one active OIDC identity from a disposable validation database.
+ * Resolve exactly one active OWNER OIDC identity from a disposable validation database.
  * This deliberately does not select identities from the normal production URL.
  */
-export async function resolveUniqueActiveOidcIdentity(databaseUrl: string): Promise<OidcTenantIdentity> {
+export async function resolveUniqueActiveOidcOwnerIdentity(databaseUrl: string): Promise<OidcTenantIdentity> {
   if (!databaseUrl) throw new Error("A disposable Neon validation database URL is required.");
   const sql = neon(databaseUrl);
   const identities = await sql`
@@ -48,14 +48,14 @@ export async function resolveUniqueActiveOidcIdentity(databaseUrl: string): Prom
      WHERE u.status = 'ACTIVE'
        AND m.status = 'ACTIVE'
        AND r.status = 'ACTIVE'
-       AND upper(r.name) IN ('OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER')
+       AND upper(r.name) = 'OWNER'
        AND t.status = 'ACTIVE'
        AND u.oidc_subject IS NOT NULL
      ORDER BY u.created_at
      LIMIT 2
   `;
   if (identities.length !== 1 || !identities[0].oidc_subject || !identities[0].email) {
-    throw new Error("Disposable Neon database must resolve to exactly one active OIDC identity.");
+    throw new Error("Disposable Neon database must resolve to exactly one active OWNER OIDC identity.");
   }
   return resolveOidcTenantIdentity(String(identities[0].oidc_subject), String(identities[0].email), databaseUrl);
 }
