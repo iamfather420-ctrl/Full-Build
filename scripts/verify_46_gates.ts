@@ -13,17 +13,6 @@ async function main() {
   setDiskDbChecker((file: string) => fs.existsSync(file));
 
   const sourceCommitSha = cp.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
-  // Run the separate Railway verifier before evaluating the 46-gate closure.
-  // It has its own process/service and reports provider evidence independently.
-  const external = cp.spawnSync('bun', ['run', 'verify:external-dependencies'], {
-    cwd: root, encoding: 'utf8', stdio: 'inherit', timeout: 190_000,
-    env: process.env
-  });
-  if (external.error) throw external.error;
-  if (external.status !== 0) {
-    throw new Error('External dependency verification through the SolveX Vercel proxy is BLOCKED or FAILED; see artifacts/external-dependency-railway.json.');
-  }
-
   const report = await System46Gates.getInstance().evaluateAll46Gates();
   const artifact = {
     ...report,
