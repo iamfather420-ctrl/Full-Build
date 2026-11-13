@@ -552,8 +552,8 @@ export class AuthoritativeVerificationPipeline {
     if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) {
       try {
         const { resolveUniqueActiveOidcOwnerIdentity } = await import('@workspace/db');
-        const identity = await resolveUniqueActiveOidcIdentity(
-          process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL
+        const identity = await resolveUniqueActiveOidcOwnerIdentity(
+          process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
         );
         lifecycleUser = {
           user_id: identity.user_id,
