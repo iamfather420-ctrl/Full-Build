@@ -20,7 +20,6 @@ const env = { ...process.env, SOLVEX_ENV: 'ci', PAYMENTS_ENABLED: 'false' };
 const commands = [
   'verify:release-safety',
   'verify:payments-disabled',
-  'verify:paypal',
   'verify:nodes',
   'verify:enterprise',
   'verify:authoritative',
@@ -51,10 +50,11 @@ for (const name of artifactNames) {
   }
 }
 
-// The former sandboxVerificationPipeline.ts module is absent from the checked-in
-// source tree. The current dependency-free release contract is verify_payments_disabled.mjs,
-// which is executed above and asserts no provider network calls and a permanent disabled
-// adapter boundary. Do not fabricate the missing legacy module or report provider tests as run.
+// PayPal provider verification is deliberately not run in this local/CI process.
+// The sandbox credentials are configured only in Vercel (full-build preview/development),
+// so this runner must not require or copy them into GitHub Actions, Railway, Neon, or local env.
+// The 46-gate pipeline records PayPal as EXTERNAL_PROVIDER_REQUIRED / deferred to Vercel;
+// this is not a sandbox-authentication pass. The payments-disabled boundary is verified below.
 const paymentBoundarySource = path.resolve('scripts/verify_payments_disabled.mjs');
 if (!fs.existsSync(paymentBoundarySource)) {
   failures.push('payment safety verification BLOCKED: scripts/verify_payments_disabled.mjs is absent.');

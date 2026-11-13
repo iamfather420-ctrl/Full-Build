@@ -1,0 +1,46 @@
+{
+  "evidence_payload": {
+    "test_suite": "NEON_READ_ONLY_CONNECTIVITY_AND_UNAUTHENTICATED_RLS_PROBE",
+    "checked_at": "2026-11-13T02:31:28.966Z",
+    "provider": "Neon",
+    "project": {
+      "name": "SolveX",
+      "id": "flat-unit-34950816"
+    },
+    "branch": {
+      "name": "SOLVEX_ISOLATION_TEST",
+      "id": "br-old-poetry-b4vjl9vv",
+      "state": "ready"
+    },
+    "connection": {
+      "database_name": "neondb",
+      "query": "SELECT 1",
+      "status": "PASS"
+    },
+    "runtime_role_probe": {
+      "role_name": "solvex_iso_test",
+      "is_superuser": false,
+      "bypass_rls": false,
+      "unauthenticated_claims_null": true,
+      "visible_rows": {
+        "solutions": 0,
+        "offers": 0,
+        "orders": 0,
+        "proof_bundles": 0,
+        "proof_evidence": 0,
+        "verification_runs": 0,
+        "audit_records": 0,
+        "telemetry": 0
+      },
+      "status": "PASS"
+    },
+    "scope": "NEON_CONNECTIVITY_AND_UNAUTHENTICATED_FAIL_CLOSED_ONLY",
+    "does_not_prove": [
+      "authenticated tenant A/B isolation",
+      "cross-tenant write rejection",
+      "production database readiness",
+      "backup and restore readiness"
+    ]
+  },
+  "evidence_sha256": "7e81eb2b84da936c4331e8f53dfa1c905e99c9bfc5e719c7ef21e1f030a63a71"
+}
