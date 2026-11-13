@@ -21,7 +21,7 @@ async function main() {
   const originalMemoryLimit = process.env.SOLVEX_MEMORY_LIMIT_BYTES;
   delete process.env.SOLVEX_SANDBOX_IMAGE;
   delete process.env.SOLVEX_MEMORY_LIMIT_BYTES;
-  let normal;
+  let normal: Awaited<ReturnType<typeof pipeline.runPipeline>>;
   try {
     normal = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
   } finally {
