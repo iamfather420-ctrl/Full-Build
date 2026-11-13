@@ -35,9 +35,8 @@ jobs:
         run: bun run test:owner-access
       - name: Payments-disabled boundary checks
         run: bun run verify:payments-disabled
-      - name: Sandbox, memory, proof persistence, and tenant crypto tests
-      # Provider-backed Neon and PayPal checks are not run in GitHub Actions.
-      # Their credentials remain server-side in Vercel; no provider secrets are injected here.
+      # Provider-backed Neon and PayPal checks are deliberately excluded from GitHub Actions.
+      # Their credentials remain in Vercel; tenant isolation remains blocked pending a disposable Neon test branch.
       - name: Build
         run: bun run build
       - name: TypeScript
