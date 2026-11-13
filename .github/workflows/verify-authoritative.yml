@@ -65,14 +65,15 @@ jobs:
         run: npm run lint
 
       - name: Prepare isolated Neon identity for authoritative GATE-12
-        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
+        if: always()
         env:
           SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
-        run: bash scripts/prepare_gate12_neon_claim.sh
-
-      - name: Report missing isolated Neon GATE-12 database
-        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
-        run: echo "GATE-12 will remain BLOCKED: configure SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL for a disposable Neon branch."
+        run: |
+          if [[ -n "$SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL" ]]; then
+            bash scripts/prepare_gate12_neon_claim.sh
+          else
+            echo "::warning::GATE-12 remains BLOCKED: configure SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL for a disposable Neon branch."
+          fi
 
       - name: Run Unified 120-Case Reproducible Verification Corpus
         if: always()
@@ -143,8 +144,13 @@ jobs:
         run: npm run verify:ci
 
       - name: Clean up isolated Neon GATE-12 identity
-        if: ${{ always() && env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
-        run: bash scripts/cleanup_gate12_neon_claim.sh
+        if: always()
+        run: |
+          if [[ -n "$SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL" ]]; then
+            bash scripts/cleanup_gate12_neon_claim.sh
+          else
+            echo "No isolated Neon GATE-12 fixtures to clean up."
+          fi
 
       - name: Upload verification artifacts
         if: always()
