@@ -18,7 +18,7 @@ jobs:
       PAYPAL_SANDBOX_CLIENT_ID: ${{ secrets.PAYPAL_SANDBOX_CLIENT_ID }}
       PAYPAL_SANDBOX_CLIENT_SECRET: ${{ secrets.PAYPAL_SANDBOX_CLIENT_SECRET }}
       PAYPAL_ENVIRONMENT: sandbox
-      PAYMENTS_ENABLED: 'false'
+      PAYMENTS_ENABLED: 'false'\n      EXTERNAL_DEPENDENCY_RAILWAY_URL: ${{ secrets.EXTERNAL_DEPENDENCY_RAILWAY_URL }}\n      EXTERNAL_DEPENDENCY_RAILWAY_TOKEN: ${{ secrets.EXTERNAL_DEPENDENCY_RAILWAY_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
