@@ -24,6 +24,7 @@ jobs:
       SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
       NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
+      SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     timeout-minutes: 30
 
@@ -62,6 +63,16 @@ jobs:
       - name: Type-check
         if: always()
         run: npm run lint
+
+      - name: Prepare isolated Neon identity for authoritative GATE-12
+        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
+        env:
+          SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
+        run: bash scripts/prepare_gate12_neon_claim.sh
+
+      - name: Report missing isolated Neon GATE-12 database
+        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
+        run: echo "GATE-12 will remain BLOCKED: configure SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL for a disposable Neon branch."
 
       - name: Run Unified 120-Case Reproducible Verification Corpus
         if: always()
@@ -130,6 +141,10 @@ jobs:
       - name: Validate fresh formal and lifecycle evidence
         if: success()
         run: npm run verify:ci
+
+      - name: Clean up isolated Neon GATE-12 identity
+        if: ${{ always() && env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
+        run: bash scripts/cleanup_gate12_neon_claim.sh
 
       - name: Upload verification artifacts
         if: always()
