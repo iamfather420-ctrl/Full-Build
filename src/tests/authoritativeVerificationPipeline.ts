@@ -625,7 +625,9 @@ export class AuthoritativeVerificationPipeline {
           success: pipeRes.overall_success,
           completed_stages: pipeRes.completed_stages,
           total_stages: pipeRes.total_stages,
-          solution_id: pipeRes.solution_id
+          solution_id: pipeRes.solution_id,
+          rejection_reason: pipeRes.rejection_reason ?? null,
+          stage_traces: pipeRes.stage_traces
         },
         order_lifecycle: {
           order_id: testOrderId,
