@@ -517,11 +517,16 @@ export class AuthoritativeVerificationPipeline {
       performance.now() - g11Start,
       {
         paypal: {
-          configured: hasPayPal,
-          environment: ppCreds?.environment || 'NOT_CONFIGURED',
-          authenticated: ppAuth,
-          status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
-          claim_scope: 'LOCAL'
+          configured_in_this_runner: false,
+          credential_owner: 'VERCEL',
+          vercel_project: 'full-build',
+          vercel_environment: 'preview',
+          delegated_verification: true,
+          environment: 'sandbox',
+          authenticated: false,
+          status: 'EXTERNAL_PROVIDER_REQUIRED',
+          note: 'PayPal sandbox credentials are held only by Vercel. This local/CI gate does not require, read, copy, or test provider credentials. Sandbox authentication must be proven by a protected Vercel-hosted check.',
+          claim_scope: 'VERCEL_SANDBOX_PENDING'
         },
         neon: {
           configured: hasNeon,
