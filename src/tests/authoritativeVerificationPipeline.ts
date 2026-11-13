@@ -545,21 +545,6 @@ export class AuthoritativeVerificationPipeline {
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
     const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode);
 
-    const testOrderId = 'e2e_order_' + Date.now();
-    const sqliteInst = SqliteStore.getInstance();
-    sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
-      id: testOrderId,
-      title: 'E2E Verified Delivery Order',
-      solution_id: pipeRes.solution_id || 'DH-S-001',
-      price: 2500,
-      currency: 'USD',
-      status: 'OFFER',
-      created_at: Date.now()
-    });
-
-    const orderMgr = OrderLifecycleManager.getInstance();
-    const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
-    const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     let lifecycleUser: UserContext | undefined;
     let lifecycleIdentityResolution = 'NOT_CONFIGURED';
     // Only CI's disposable Neon validation branch may supply the test identity.
@@ -583,6 +568,22 @@ export class AuthoritativeVerificationPipeline {
         lifecycleIdentityResolution = 'BLOCKED: ' + (error instanceof Error ? error.message : 'OIDC identity resolution failed');
       }
     }
+
+    const testOrderId = 'e2e_order_' + Date.now();
+    const sqliteInst = SqliteStore.getInstance();
+    sqliteInst.insertTenantRecord('orders', lifecycleUser?.tenant_id ?? 'TENANT_ENTERPRISE_DEMO', {
+      id: testOrderId,
+      title: 'E2E Verified Delivery Order',
+      solution_id: pipeRes.solution_id || 'DH-S-001',
+      price: 2500,
+      currency: 'USD',
+      status: 'OFFER',
+      created_at: Date.now()
+    });
+
+    const orderMgr = OrderLifecycleManager.getInstance();
+    const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
+    const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     for (const targetState of plannedTransitions) {
       const result = await orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
@@ -610,7 +611,7 @@ export class AuthoritativeVerificationPipeline {
 
     const durableInst = DurableStore.getInstance();
     const e2eAudit = durableInst.appendAudit(
-      'TENANT_ENTERPRISE_DEMO',
+      lifecycleUser?.tenant_id ?? 'TENANT_ENTERPRISE_DEMO',
       'E2E_VERIFIER',
       lifecycleAuditAction,
       'ORDER',
