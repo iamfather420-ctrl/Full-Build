@@ -55,13 +55,15 @@ jobs:
         if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
         run: echo "OIDC database integration was validated directly on the isolated Neon branch; add SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL (owner connection for a disposable branch) to enable this CI step."
       - name: Prepare isolated Neon identity for authoritative GATE-12
-        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
+        if: always()
         env:
           SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
-        run: bash scripts/prepare_gate12_neon_claim.sh
-      - name: Report missing isolated Neon GATE-12 database
-        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
-        run: echo "GATE-12 remains BLOCKED: configure SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL with an isolated disposable Neon branch owner URL."
+        run: |
+          if [[ -n "$SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL" ]]; then
+            bash scripts/prepare_gate12_neon_claim.sh
+          else
+            echo "::warning::GATE-12 remains BLOCKED: configure SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL with an isolated disposable Neon branch owner URL."
+          fi
       - name: Build
         run: bun run build
       - name: TypeScript
@@ -75,8 +77,13 @@ jobs:
       - name: Authoritative 46-gate verification
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Clean up isolated Neon GATE-12 identity
-        if: ${{ always() && env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
-        run: bash scripts/cleanup_gate12_neon_claim.sh
+        if: always()
+        run: |
+          if [[ -n "$SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL" ]]; then
+            bash scripts/cleanup_gate12_neon_claim.sh
+          else
+            echo "No isolated Neon GATE-12 fixtures to clean up."
+          fi
       - name: Upload 46-gate evidence
         if: always()
         uses: actions/upload-artifact@v4
