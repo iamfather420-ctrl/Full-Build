@@ -1,0 +1,46 @@
+name: Stage 6 — Dedicated Sandbox Isolation
+
+on:
+  workflow_dispatch:
+    inputs:
+      sandbox_image:
+        description: 'Immutable GHCR image reference ending in @sha256:<64 hex chars>'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  stage-6-sandbox:
+    name: Execute Stage 6 only
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SOLVEX_SANDBOX_IMAGE: ${{ inputs.sandbox_image }}
+    steps:
+      - name: Validate immutable image reference
+        shell: bash
+        run: |
+          if [[ ! "$SOLVEX_SANDBOX_IMAGE" =~ @sha256:[a-fA-F0-9]{64}$ ]]; then
+            echo "A digest-pinned sandbox image is required." >&2
+            exit 1
+          fi
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: Authenticate to GHCR
+        if: ${{ startsWith(inputs.sandbox_image, 'ghcr.io/') }}
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Pull exact immutable sandbox image
+        run: docker pull "$SOLVEX_SANDBOX_IMAGE"
+      - name: Execute Stage 6 dedicated source-bound isolation check
+        run: bun run verify:stage6-sandbox
