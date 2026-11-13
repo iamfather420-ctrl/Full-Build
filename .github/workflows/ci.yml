@@ -75,7 +75,7 @@ jobs:
       - name: Authoritative 46-gate verification
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Clean up isolated Neon GATE-12 identity
-        if: always() && env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != ''
+        if: ${{ always() && env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
         run: bash scripts/cleanup_gate12_neon_claim.sh
       - name: Upload 46-gate evidence
         if: always()
