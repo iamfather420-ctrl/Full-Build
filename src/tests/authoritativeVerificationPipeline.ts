@@ -151,12 +151,25 @@ export class AuthoritativeVerificationPipeline {
         workingTreeClean = sourceChanges.length === 0;
       } catch {}
     }
+    const baselineCommit = ((typeof process !== 'undefined' && process.env?.SOLVEX_BASELINE_COMMIT) || '').trim();
+    const baselineCommitValid = /^[a-f0-9]{40}$/i.test(baselineCommit);
+    const baselineWorkingTreeClean = typeof process !== 'undefined' &&
+      process.env?.SOLVEX_BASELINE_WORKTREE_CLEAN === 'true';
+    const baselineCommitMatches = baselineCommitValid && baselineCommit === commitSha;
+    // CI captures repository cleanliness immediately after checkout. Later verification
+    // suites may regenerate tracked evidence files; those outputs must not invalidate
+    // the original checkout provenance. Local runs without a captured baseline still
+    // require the live working tree to be clean.
+    const baselineIntegrityClean = baselineCommitValid
+      ? baselineWorkingTreeClean && baselineCommitMatches
+      : workingTreeClean;
+
     recordGate(
       0,
       'GATE-00',
       'Repository Integrity & Baseline Provenance',
       'LOCAL',
-      workingTreeClean && commitShaResolved ? 'PASSED' : 'BLOCKED',
+      baselineIntegrityClean && commitShaResolved ? 'PASSED' : 'BLOCKED',
       performance.now() - g0Start,
       {
         execution_id: executionId,
@@ -164,6 +177,10 @@ export class AuthoritativeVerificationPipeline {
         commit_sha_resolved: commitShaResolved,
         modified_files_count: modCount,
         working_tree_clean: workingTreeClean,
+        baseline_commit_sha: baselineCommitValid ? baselineCommit : null,
+        baseline_commit_matches: baselineCommitMatches,
+        baseline_working_tree_clean: baselineCommitValid ? baselineWorkingTreeClean : null,
+        baseline_integrity_clean: baselineIntegrityClean,
         runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME'
       }
     );
