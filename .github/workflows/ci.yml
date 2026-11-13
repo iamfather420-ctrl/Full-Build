@@ -54,6 +54,14 @@ jobs:
       - name: Report isolated OIDC integration secret requirement
         if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
         run: echo "OIDC database integration was validated directly on the isolated Neon branch; add SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL (owner connection for a disposable branch) to enable this CI step."
+      - name: Prepare isolated Neon identity for authoritative GATE-12
+        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
+        env:
+          SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
+        run: bash scripts/prepare_gate12_neon_claim.sh
+      - name: Report missing isolated Neon GATE-12 database
+        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
+        run: echo "GATE-12 remains BLOCKED: configure SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL with an isolated disposable Neon branch owner URL."
       - name: Build
         run: bun run build
       - name: TypeScript
@@ -66,6 +74,9 @@ jobs:
         run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification
         run: bunx tsx scripts/verify_46_gates.ts
+      - name: Clean up isolated Neon GATE-12 identity
+        if: always() && env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != ''
+        run: bash scripts/cleanup_gate12_neon_claim.sh
       - name: Upload 46-gate evidence
         if: always()
         uses: actions/upload-artifact@v4
