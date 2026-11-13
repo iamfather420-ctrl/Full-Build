@@ -31,7 +31,7 @@ export function verifyStaticTyping(source: string): StaticTypingResult {
     };
   }
 
-  const virtualFile = path.resolve(process.cwd(), '.solvex-stage7-input.ts');
+  const virtualFile = path.resolve('.', '.solvex-stage7-input.ts');
   const normalizedVirtualFile = path.normalize(virtualFile);
   const options: ts.CompilerOptions = {
     strict: true,
