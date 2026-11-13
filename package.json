@@ -35,9 +35,7 @@
     "verify:neon-tenant-isolation": "bash scripts/verify_neon_tenant_isolation.sh",
     "test:production-state": "tsx scripts/test_production_state.ts",
     "test:owner-access": "tsx scripts/test_owner_access.ts",
-    "test:oidc-tenant-claims": "bash scripts/test_oidc_tenant_claims.sh",
-    "verify:external-dependencies": "tsx scripts/verify_external_dependency_railway.ts",
-    "external-dependency-railway": "bun scripts/external_dependency_railway.ts"
+    "test:oidc-tenant-claims": "bash scripts/test_oidc_tenant_claims.sh"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
