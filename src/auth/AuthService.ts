@@ -1,4 +1,5 @@
-import { createPublicKey, createHmac, timingSafeEqual, verify as verifySignature } from 'node:crypto';
+import { createPublicKey, verify as verifySignature } from 'node:crypto';
+import { neon } from '@neondatabase/serverless';
 
 export type SovereignRole = 'OWNER' | 'ADMIN' | 'VERIFIER' | 'CUSTOMER';
 
@@ -8,6 +9,7 @@ export interface UserContext {
   email: string;
   role: SovereignRole;
   issued_at: number;
+  signed_token?: string;
 }
 
 interface JwtHeader { alg?: string; kid?: string; typ?: string; }
@@ -111,37 +113,57 @@ export class AuthService {
    * active tenant membership. This is a separate trust path from provider JWTs:
    * it accepts only the database's base64(JSON).hex(HMAC-SHA256) envelope.
    */
-  public verifyNeonTenantClaim(token: string): { valid: boolean; user?: UserContext; error?: string } {
+  /** Verify the DB-issued HMAC claim and re-check current active membership in Neon. */
+  public async verifyNeonTenantClaim(token: string): Promise<{ valid: boolean; user?: UserContext; error?: string }> {
     try {
-      const secret = process.env.SOLVEX_AUTH_SECRET;
-      if (!secret || Buffer.byteLength(secret, 'utf8') < 32) {
-        return { valid: false, error: 'Neon tenant-claim signing secret is not configured.' };
-      }
+      const databaseUrl = process.env.SOLVEX_GATE12_DATABASE_URL;
+      if (!databaseUrl) return { valid: false, error: 'Isolated GATE-12 Neon database URL is not configured.' };
       if (typeof token !== 'string' || token.length > 8192 || token.length < 80) {
         return { valid: false, error: 'Invalid Neon tenant-claim length.' };
       }
-      const parts = token.split('.');
-      if (parts.length !== 2 || !/^[A-Za-z0-9+/]+=*$/.test(parts[0]) || !/^[a-f0-9]{64}$/i.test(parts[1])) {
-        return { valid: false, error: 'Malformed Neon tenant-claim envelope.' };
+      const sql = neon(databaseUrl);
+      const rows = await sql`
+        WITH token_context AS MATERIALIZED (
+          SELECT set_config('app.auth_token', ${token}, true) AS configured
+        ),
+        claims AS MATERIALIZED (
+          SELECT solvex_private.current_claims() AS value FROM token_context
+        )
+        SELECT c.value
+          FROM claims c
+          JOIN public.users u
+            ON u.id = c.value->>'user_id'
+           AND lower(u.email) = lower(c.value->>'email')
+           AND u.status = 'ACTIVE'
+          JOIN public.tenant_memberships m
+            ON m.user_id = u.id
+           AND m.tenant_id = c.value->>'tenant_id'
+           AND m.status = 'ACTIVE'
+          JOIN public.tenants t
+            ON t.id = m.tenant_id AND t.status = 'ACTIVE'
+          JOIN public.roles r
+            ON r.id = m.role_id
+           AND r.tenant_id = m.tenant_id
+           AND r.status = 'ACTIVE'
+           AND upper(r.name) = c.value->>'role'
+         WHERE c.value IS NOT NULL
+           AND (SELECT count(*)
+                  FROM public.tenant_memberships m2
+                  JOIN public.tenants t2 ON t2.id = m2.tenant_id AND t2.status = 'ACTIVE'
+                  JOIN public.roles r2 ON r2.id = m2.role_id
+                    AND r2.tenant_id = m2.tenant_id AND r2.status = 'ACTIVE'
+                 WHERE m2.user_id = u.id AND m2.status = 'ACTIVE'
+                   AND upper(r2.name) IN ('OWNER','ADMIN','VERIFIER','CUSTOMER')) = 1
+      `;
+      if (rows.length !== 1 || !rows[0].value || typeof rows[0].value !== 'object') {
+        return { valid: false, error: 'Neon rejected signature, expiry, or active tenant membership.' };
       }
-      const expected = createHmac('sha256', secret).update(parts[0], 'utf8').digest();
-      const supplied = Buffer.from(parts[1], 'hex');
-      if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
-        return { valid: false, error: 'Neon tenant-claim signature verification failed.' };
-      }
-
-      const claims = JSON.parse(Buffer.from(parts[0], 'base64').toString('utf8')) as {
-        user_id?: string; email?: string; tenant_id?: string; role?: string;
-        issued_at?: number; expires_at?: number;
-      };
-      const now = Date.now();
+      const claims = rows[0].value as Record<string, unknown>;
       const roles: SovereignRole[] = ['OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER'];
-      if (!claims.user_id || !claims.email || !claims.tenant_id ||
-          !roles.includes(claims.role as SovereignRole) ||
-          typeof claims.issued_at !== 'number' || typeof claims.expires_at !== 'number' ||
-          claims.issued_at > now + 30_000 || claims.expires_at <= now ||
-          claims.expires_at <= claims.issued_at || claims.expires_at - claims.issued_at > 15 * 60 * 1000) {
-        return { valid: false, error: 'Neon tenant-claim identity, role, or time bounds are invalid.' };
+      if (typeof claims.user_id !== 'string' || typeof claims.email !== 'string' ||
+          typeof claims.tenant_id !== 'string' || !roles.includes(claims.role as SovereignRole) ||
+          typeof claims.issued_at !== 'number') {
+        return { valid: false, error: 'Neon tenant claim has invalid identity fields.' };
       }
       return {
         valid: true,
@@ -150,11 +172,12 @@ export class AuthService {
           email: claims.email,
           tenant_id: claims.tenant_id,
           role: claims.role as SovereignRole,
-          issued_at: Math.floor(claims.issued_at / 1000)
+          issued_at: Math.floor(claims.issued_at / 1000),
+          signed_token: token
         }
       };
     } catch {
-      return { valid: false, error: 'Neon tenant-claim validation failed.' };
+      return { valid: false, error: 'Neon tenant-claim verification service unavailable.' };
     }
   }
 
@@ -172,20 +195,26 @@ export class AuthService {
     return body;
   }
 
-  public authorize(user: UserContext | null | undefined, _action: string, targetTenantId?: string): { authorized: boolean; reason: string } {
-    if (!user) return { authorized: false, reason: 'A verified OIDC identity is required.' };
-    if (targetTenantId && user.tenant_id !== targetTenantId) return { authorized: false, reason: 'Tenant boundary rejected this request.' };
-    return { authorized: true, reason: 'Verified OIDC tenant context accepted.' };
+  public async authorize(user: UserContext | null | undefined, action: string, targetTenantId?: string): Promise<{ authorized: boolean; reason: string }> {
+    if (!user?.signed_token) return { authorized: false, reason: 'BLOCKED: verified identity and signed tenant claims are required.' };
+    const verified = await this.verifyNeonTenantClaim(user.signed_token);
+    if (!verified.valid || !verified.user) return { authorized: false, reason: verified.error || 'BLOCKED: signed tenant claim verification failed.' };
+    const current = verified.user;
+    if (current.user_id !== user.user_id || current.email !== user.email || current.tenant_id !== user.tenant_id || current.role !== user.role) {
+      return { authorized: false, reason: 'BLOCKED: supplied identity does not match current signed tenant claims.' };
+    }
+    if (targetTenantId && current.tenant_id !== targetTenantId) return { authorized: false, reason: 'BLOCKED: tenant boundary rejected this request.' };
+    if (action !== 'ORDER_TRANSITION') return { authorized: false, reason: 'BLOCKED: action is not authorized by this lifecycle policy.' };
+    return { authorized: true, reason: 'Verified signed tenant claim and current active membership.' };
   }
 
-  public requireVerifiedSession(session: UserContext | null | undefined, action: string, targetTenantId?: string): { authenticated: boolean; authorized: boolean; status: 'BLOCKED' | 'AUTHENTICATED'; reason: string; session?: UserContext } {
-    const decision = this.authorize(session, action, targetTenantId);
+  public async requireVerifiedSession(session: UserContext | null | undefined, action: string, targetTenantId?: string): Promise<{ authenticated: boolean; authorized: boolean; status: 'BLOCKED' | 'AUTHENTICATED'; reason: string }> {
+    const decision = await this.authorize(session, action, targetTenantId);
     return {
-      authenticated: Boolean(session),
+      authenticated: Boolean(session?.signed_token && decision.authorized),
       authorized: decision.authorized,
       status: decision.authorized ? 'AUTHENTICATED' : 'BLOCKED',
-      reason: decision.reason,
-      ...(session ? { session } : {})
+      reason: decision.reason
     };
   }
 }
