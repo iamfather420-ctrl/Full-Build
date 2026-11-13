@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const tscPath = require.resolve('typescript/bin/tsc');
+const tscPath = path.resolve(process.cwd(), 'node_modules/typescript/bin/tsc');
 
 export interface StaticTypingDiagnostic {
   code: number;
@@ -53,7 +53,7 @@ export function verifyStaticTyping(source: string): StaticTypingResult {
       '--module', 'ESNext',
       '--moduleResolution', 'Bundler',
       '--skipLibCheck',
-      '--types', '',
+      '--pretty', 'false',
       '--exactOptionalPropertyTypes',
       '--noUncheckedIndexedAccess',
       sourceFile
