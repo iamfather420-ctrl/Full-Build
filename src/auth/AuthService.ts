@@ -1,4 +1,4 @@
-import { createPublicKey, verify as verifySignature } from 'node:crypto';
+import { createPublicKey, createHmac, timingSafeEqual, verify as verifySignature } from 'node:crypto';
 
 export type SovereignRole = 'OWNER' | 'ADMIN' | 'VERIFIER' | 'CUSTOMER';
 
@@ -101,6 +101,60 @@ export class AuthService {
       };
     } catch {
       return { valid: false, error: 'JWT validation failed.' };
+    }
+  }
+
+
+  /**
+   * Verify a short-lived tenant context issued by the database SECURITY DEFINER
+   * function after it resolves a verified Neon Auth subject to exactly one
+   * active tenant membership. This is a separate trust path from provider JWTs:
+   * it accepts only the database's base64(JSON).hex(HMAC-SHA256) envelope.
+   */
+  public verifyNeonTenantClaim(token: string): { valid: boolean; user?: UserContext; error?: string } {
+    try {
+      const secret = process.env.SOLVEX_AUTH_SECRET;
+      if (!secret || Buffer.byteLength(secret, 'utf8') < 32) {
+        return { valid: false, error: 'Neon tenant-claim signing secret is not configured.' };
+      }
+      if (typeof token !== 'string' || token.length > 8192 || token.length < 80) {
+        return { valid: false, error: 'Invalid Neon tenant-claim length.' };
+      }
+      const parts = token.split('.');
+      if (parts.length !== 2 || !/^[A-Za-z0-9+/]+=*$/.test(parts[0]) || !/^[a-f0-9]{64}$/i.test(parts[1])) {
+        return { valid: false, error: 'Malformed Neon tenant-claim envelope.' };
+      }
+      const expected = createHmac('sha256', secret).update(parts[0], 'utf8').digest();
+      const supplied = Buffer.from(parts[1], 'hex');
+      if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+        return { valid: false, error: 'Neon tenant-claim signature verification failed.' };
+      }
+
+      const claims = JSON.parse(Buffer.from(parts[0], 'base64').toString('utf8')) as {
+        user_id?: string; email?: string; tenant_id?: string; role?: string;
+        issued_at?: number; expires_at?: number;
+      };
+      const now = Date.now();
+      const roles: SovereignRole[] = ['OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER'];
+      if (!claims.user_id || !claims.email || !claims.tenant_id ||
+          !roles.includes(claims.role as SovereignRole) ||
+          typeof claims.issued_at !== 'number' || typeof claims.expires_at !== 'number' ||
+          claims.issued_at > now + 30_000 || claims.expires_at <= now ||
+          claims.expires_at <= claims.issued_at || claims.expires_at - claims.issued_at > 15 * 60 * 1000) {
+        return { valid: false, error: 'Neon tenant-claim identity, role, or time bounds are invalid.' };
+      }
+      return {
+        valid: true,
+        user: {
+          user_id: claims.user_id,
+          email: claims.email,
+          tenant_id: claims.tenant_id,
+          role: claims.role as SovereignRole,
+          issued_at: Math.floor(claims.issued_at / 1000)
+        }
+      };
+    } catch {
+      return { valid: false, error: 'Neon tenant-claim validation failed.' };
     }
   }
 
