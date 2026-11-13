@@ -1,0 +1,45 @@
+{
+  "artifact_type": "EXTERNAL_PROVIDER_SANDBOX_AUTHENTICATION_EVIDENCE",
+  "artifact_version": "1.0",
+  "provider": "PayPal",
+  "claim_scope": "SANDBOX_ONLY",
+  "source": {
+    "system": "SolveX Vercel protected preview verification console",
+    "test_suite": "PAYPAL_SANDBOX_OAUTH_AUTHENTICATION",
+    "timestamp": "2026-11-13T02:24:20.212Z",
+    "oauth_endpoint": "https://api-m.sandbox.paypal.com/v1/oauth2/token"
+  },
+  "result": {
+    "ok": true,
+    "status": "PASS",
+    "oauth_http_status": 200,
+    "environment": "sandbox",
+    "sandbox_credentials_present": true,
+    "sandbox_oauth_authenticated": true,
+    "payments_enabled": false,
+    "live_credentials_read": false,
+    "live_api_contacted": false,
+    "transaction_attempted": false,
+    "token_persisted": false
+  },
+  "evidence_sha256": "e21c021eca87bd5796c3a1a2ace992755b33bc430cd8ed1d4072a96e41abae8b",
+  "security_boundary": {
+    "secrets_included": false,
+    "access_token_included": false,
+    "live_environment_tested": false,
+    "orders_captures_refunds_or_transactions_attempted": false,
+    "payments_enabled": false
+  },
+  "gate_usage": {
+    "candidate_gate": "GATE-11",
+    "subclaim": "PayPal sandbox OAuth authentication",
+    "does_not_prove": [
+      "PayPal live authentication",
+      "live API connectivity",
+      "production transaction readiness",
+      "Neon connectivity",
+      "end-to-end order lifecycle authorization"
+    ],
+    "required_handling": "Treat as sandbox provider evidence only. Validate the evidence hash and source provenance before consuming it. Do not mark the entire GATE-11 or production readiness as passed solely from this artifact."
+  }
+}
