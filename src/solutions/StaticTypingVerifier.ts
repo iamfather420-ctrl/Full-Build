@@ -56,6 +56,7 @@ export function verifyStaticTyping(source: string): StaticTypingResult {
   try {
     writeFileSync(sourceFile, source, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
     const result = run([
+      '--ignoreConfig',
       '--noEmit',
       '--strict',
       '--target', 'ES2022',
