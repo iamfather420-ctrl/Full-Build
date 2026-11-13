@@ -13,6 +13,7 @@ import { MemorySafetyInstrumentation } from '../security/MemorySafetyInstrumenta
 import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { PersistentProofStore } from '../security/PersistentProofStore';
 import { TenantCrypto } from '../security/TenantCrypto';
+import { verifyStaticTyping } from './StaticTypingVerifier';
 import { execFileSync } from 'node:child_process';
 
 export type PipelineStageStatus = 'PASSED' | 'FAILED' | 'BLOCKED';
@@ -154,8 +155,17 @@ export class SolutionPipeline {
         : fail('Sandbox receipt did not bind acceptance to the submitted source hash.');
     });
     await runStage(7, () => {
-      const balanced = (normalizedCode.match(/{/g) ?? []).length === (normalizedCode.match(/}/g) ?? []).length;
-      return balanced ? pass({ lexical_brace_balance: true, compiler_semantics: 'NOT_ASSERTED' }) : fail('Unbalanced block delimiters.');
+      const typing = verifyStaticTyping(normalizedCode);
+      return typing.passed
+        ? pass({ compiler: typing.compiler, compiler_version: typing.compiler_version, strict: typing.strict, diagnostics: 0, source_sha256: sourceHash, no_emit: true })
+        : fail('Strict TypeScript static typing or semantic diagnostics rejected the submitted source.', {
+            compiler: typing.compiler,
+            compiler_version: typing.compiler_version,
+            strict: typing.strict,
+            diagnostics: typing.diagnostics.slice(0, 50),
+            diagnostic_count: typing.diagnostics.length,
+            no_emit: true
+          });
     });
     await runStage(8, async () => {
       const limit = Number(process.env.SOLVEX_MEMORY_LIMIT_BYTES ?? 256 * 1024 * 1024);
