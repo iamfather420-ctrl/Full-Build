@@ -547,7 +547,7 @@ export class AuthoritativeVerificationPipeline {
 
     const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
-    sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
+    sqliteInst.insertTenantRecord('orders', 'tenant-enterprise-demo', {
       id: testOrderId,
       title: 'E2E Verified Delivery Order',
       solution_id: pipeRes.solution_id || 'DH-S-001',
@@ -568,11 +568,11 @@ export class AuthoritativeVerificationPipeline {
       ? await AuthService.getInstance().verifyToken(lifecycleToken)
       : { valid: false, error: 'SOLVEX_GATE12_OIDC_TOKEN is not configured.' };
     const verifiedUser = identity.valid ? identity.user : undefined;
-    if (!verifiedUser || verifiedUser.tenant_id !== 'TENANT_ENTERPRISE_DEMO') {
+    if (!verifiedUser || verifiedUser.tenant_id !== 'tenant-enterprise-demo') {
       transitionAttempts.push({
         target_state: plannedTransitions[0],
         success: false,
-        error: identity.error || 'BLOCKED: verified OIDC identity for TENANT_ENTERPRISE_DEMO is required.'
+        error: identity.error || 'BLOCKED: verified OIDC identity for tenant-enterprise-demo is required.'
       });
     } else {
       for (const targetState of plannedTransitions) {
@@ -603,7 +603,7 @@ export class AuthoritativeVerificationPipeline {
 
     const durableInst = DurableStore.getInstance();
     const e2eAudit = durableInst.appendAudit(
-      'TENANT_ENTERPRISE_DEMO',
+      'tenant-enterprise-demo',
       'E2E_VERIFIER',
       lifecycleAuditAction,
       'ORDER',
