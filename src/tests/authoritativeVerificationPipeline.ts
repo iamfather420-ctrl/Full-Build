@@ -571,7 +571,7 @@ export class AuthoritativeVerificationPipeline {
     const identity = providerToken
       ? await authService.verifyToken(providerToken)
       : neonTenantClaim
-        ? authService.verifyNeonTenantClaim(neonTenantClaim)
+        ? await authService.verifyNeonTenantClaim(neonTenantClaim)
         : { valid: false, error: 'A provider OIDC token or verified Neon tenant claim is required.' };
     const verifiedUser = identity.valid ? identity.user : undefined;
     if (!verifiedUser || verifiedUser.tenant_id !== 'tenant-enterprise-demo') {
