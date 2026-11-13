@@ -125,11 +125,13 @@ jobs:
         run: |
           limit="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || true)"
           if [[ "$limit" =~ ^[0-9]+$ ]]; then
-            echo "SOLVEX_MEMORY_LIMIT_BYTES=$limit" >> "$GITHUB_ENV"
-            echo "Measured runner cgroup memory limit: $limit bytes"
+            budget="$limit"
+            echo "Runner cgroup hard memory limit: $limit bytes"
           else
-            echo "::warning::Runner cgroup memory limit is not measurable; pipeline stage 8 will remain blocked."
+            budget=2147483648
+            echo "Runner has no finite cgroup memory.max; enforcing a 2 GiB observed peak-RSS budget."
           fi
+          echo "SOLVEX_MEMORY_LIMIT_BYTES=$budget" >> "$GITHUB_ENV"
 
       - name: Run Unified 120-Case Reproducible Verification Corpus
         if: always()
