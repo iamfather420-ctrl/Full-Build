@@ -102,6 +102,9 @@ DECLARE
   tables text[] := ARRAY['solutions','offers','orders','proof_bundles','proof_evidence','verification_runs','audit_records','telemetry'];
   t text; token_a text; token_b text; visible_rows bigint; own_rows bigint; foreign_rows bigint;
   changed bigint; denied boolean; tested_reads integer:=0; tested_writes integer:=0;
+  fixture_suffix text := replace(gen_random_uuid()::text,'-','');
+  fixture_a text := 'solvex-stage19-a-' || fixture_suffix;
+  fixture_b text := 'solvex-stage19-b-' || fixture_suffix;
 BEGIN
   IF current_user <> 'solvex_iso_test' OR session_user <> 'solvex_iso_test' THEN
     RAISE EXCEPTION 'Must run directly as solvex_iso_test';
@@ -116,6 +119,18 @@ BEGIN
   IF solvex_private.current_claims()->>'tenant_id' <> 'tenant-enterprise-demo' THEN
     RAISE EXCEPTION 'Tenant A token invalid';
   END IF;
+  INSERT INTO public.solutions
+    (id,tenant_id,code,title,domain,implementation_source,implementation_hash,verification_status,created_at)
+  VALUES
+    (fixture_a,'tenant-enterprise-demo',fixture_a,'Stage 19 disposable tenant A fixture','security',
+     'TEST_ONLY_NOT_A_SOLUTION',repeat('a',64),'PENDING_VERIFICATION',extract(epoch FROM clock_timestamp())::bigint);
+  PERFORM set_config('app.auth_token',token_b,true);
+  INSERT INTO public.solutions
+    (id,tenant_id,code,title,domain,implementation_source,implementation_hash,verification_status,created_at)
+  VALUES
+    (fixture_b,'tenant-isolation-test-b',fixture_b,'Stage 19 disposable tenant B fixture','security',
+     'TEST_ONLY_NOT_A_SOLUTION',repeat('b',64),'PENDING_VERIFICATION',extract(epoch FROM clock_timestamp())::bigint);
+  PERFORM set_config('app.auth_token',token_a,true);
   FOREACH t IN ARRAY tables LOOP
     EXECUTE format('SELECT count(*) FROM public.%I',t) INTO visible_rows;
     EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id::text=$1',t)
@@ -176,7 +191,22 @@ BEGIN
   IF solvex_private.current_claims() IS NOT NULL THEN
     RAISE EXCEPTION 'Invalid token did not fail closed';
   END IF;
-  RAISE NOTICE 'AUTHENTICATED_TENANT_ISOLATION=PASS read_table_checks=% cross_tenant_write_checks=%',
+  IF tested_reads <> cardinality(tables) * 2 THEN
+    RAISE EXCEPTION 'Expected % authenticated read checks, got %', cardinality(tables) * 2, tested_reads;
+  END IF;
+  IF tested_writes < 1 THEN
+    RAISE EXCEPTION 'No populated cross-tenant UPDATE rejection was exercised';
+  END IF;
+  PERFORM set_config('app.auth_token',token_a,true);
+  DELETE FROM public.solutions WHERE id=fixture_a;
+  GET DIAGNOSTICS changed=ROW_COUNT;
+  IF changed <> 1 THEN RAISE EXCEPTION 'Tenant A fixture cleanup failed'; END IF;
+  PERFORM set_config('app.auth_token',token_b,true);
+  DELETE FROM public.solutions WHERE id=fixture_b;
+  GET DIAGNOSTICS changed=ROW_COUNT;
+  IF changed <> 1 THEN RAISE EXCEPTION 'Tenant B fixture cleanup failed'; END IF;
+  PERFORM set_config('app.auth_token','',true);
+  RAISE NOTICE 'AUTHENTICATED_TENANT_ISOLATION=PASS read_table_checks=% cross_tenant_write_checks=% fixture_cleanup=PASS',
     tested_reads,tested_writes;
 END
 $authenticated$;
