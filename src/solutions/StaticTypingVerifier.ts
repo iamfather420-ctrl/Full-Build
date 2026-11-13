@@ -1,11 +1,7 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
-const tscPath = path.resolve(process.cwd(), 'node_modules/typescript/bin/tsc');
 
 export interface StaticTypingDiagnostic {
   code: number;
@@ -23,21 +19,35 @@ export interface StaticTypingResult {
 }
 
 /**
- * Checks a submitted TypeScript module with the installed tsc CLI.
- * The source is written only to a unique OS temporary directory, compiled
- * with noEmit, and removed in a finally block. It is never executed.
+ * Strictly type-checks an isolated TypeScript module with the repository's
+ * installed compiler. The source is never executed and all temporary files
+ * are removed even when the compiler fails or times out.
  */
 export function verifyStaticTyping(source: string): StaticTypingResult {
-  const versionRun = spawnSync(process.execPath, [tscPath, '--version'], { encoding: 'utf8' });
-  const version = (versionRun.stdout || versionRun.stderr || 'unknown').trim().replace(/^Version /, '');
+  const root = process.cwd();
+  const tscPath = path.resolve(root, 'node_modules/typescript/bin/tsc');
+  const run = (args: string[]) => spawnSync(process.execPath, [tscPath, ...args], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 15000,
+    maxBuffer: 1024 * 1024
+  });
+
+  const versionRun = run(['--version']);
+  const versionOutput = (versionRun.stdout || versionRun.stderr || '').trim();
+  const version = versionOutput.replace(/^Version\s+/i, '') || 'unknown';
 
   if (typeof source !== 'string' || source.trim().length === 0) {
     return {
-      passed: false,
-      compiler: 'typescript',
-      compiler_version: version,
-      strict: true,
+      passed: false, compiler: 'typescript', compiler_version: version, strict: true,
       diagnostics: [{ code: 0, message: 'Source must be a non-empty TypeScript module.' }]
+    };
+  }
+
+  if (versionRun.error || versionRun.status !== 0) {
+    return {
+      passed: false, compiler: 'typescript', compiler_version: version, strict: true,
+      diagnostics: [{ code: 0, message: versionRun.error?.message || versionOutput || 'Unable to start TypeScript compiler.' }]
     };
   }
 
@@ -45,8 +55,7 @@ export function verifyStaticTyping(source: string): StaticTypingResult {
   const sourceFile = path.join(tempDir, 'input.ts');
   try {
     writeFileSync(sourceFile, source, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
-    const result = spawnSync(process.execPath, [
-      tscPath,
+    const result = run([
       '--noEmit',
       '--strict',
       '--target', 'ES2022',
@@ -56,32 +65,33 @@ export function verifyStaticTyping(source: string): StaticTypingResult {
       '--pretty', 'false',
       '--exactOptionalPropertyTypes',
       '--noUncheckedIndexedAccess',
+      '--typeRoots', path.resolve(root, 'node_modules/@types'),
       sourceFile
-    ], { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 1024 });
+    ]);
 
-    if (result.error) {
-      return {
-        passed: false, compiler: 'typescript', compiler_version: version, strict: true,
-        diagnostics: [{ code: 0, message: result.error.message }]
-      };
-    }
-
-    const output = (result.stdout + '\n' + result.stderr).trim();
-    const diagnostics = output
+    const output = [result.stdout, result.stderr].filter(Boolean).join('\n').trim();
+    const diagnostics: StaticTypingDiagnostic[] = output
       ? output.split(/\r?\n/).filter(Boolean).map(line => {
-          const match = line.match(/input\.ts\((\d+),(\d+)\): error TS(\d+): (.*)/);
-          return match
-            ? { line: Number(match[1]), column: Number(match[2]), code: Number(match[3]), message: match[4] }
-            : { code: 0, message: line };
+          const match = line.match(/input\.ts(?:\((\d+),(\d+)\)|:(\d+):(\d+)):\s*error TS(\d+):\s*(.*)/);
+          if (!match) return { code: 0, message: line };
+          return {
+            line: Number(match[1] || match[3]),
+            column: Number(match[2] || match[4]),
+            code: Number(match[5]),
+            message: match[6]
+          };
         })
       : [];
 
+    const passed = !result.error && result.status === 0 && diagnostics.length === 0;
+    if (result.error) diagnostics.push({ code: 0, message: result.error.message });
+    if (result.signal) diagnostics.push({ code: 0, message: `TypeScript compiler terminated by signal ${result.signal}.` });
+    if (result.status !== 0 && diagnostics.length === 0) {
+      diagnostics.push({ code: 0, message: `TypeScript compiler exited with status ${String(result.status)}.` });
+    }
+
     return {
-      passed: result.status === 0 && diagnostics.length === 0,
-      compiler: 'typescript',
-      compiler_version: version,
-      strict: true,
-      diagnostics
+      passed, compiler: 'typescript', compiler_version: version, strict: true, diagnostics
     };
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
