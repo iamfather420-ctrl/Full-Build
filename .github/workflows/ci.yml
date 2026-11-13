@@ -15,6 +15,13 @@ jobs:
     env:
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      SOLVEX_SANDBOX_IMAGE: ${{ secrets.SOLVEX_SANDBOX_IMAGE }}
+      SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
+      SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
+      SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
+      SOLVEX_PROOF_DIR: /tmp/solvex-proofs
+      SOLVEX_PROOF_HMAC_KEY: ${{ secrets.SOLVEX_PROOF_HMAC_KEY }}
+      SOLVEX_TENANT_ROOT_KEY: ${{ secrets.SOLVEX_TENANT_ROOT_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,6 +81,16 @@ jobs:
         run: bun run verify:120
       - name: Proof closure
         run: bun run verify:proof-closure
+      - name: Configure measured runner memory budget
+        if: always()
+        run: |
+          limit="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || true)"
+          if [[ "$limit" =~ ^[0-9]+$ ]]; then
+            echo "SOLVEX_MEMORY_LIMIT_BYTES=$limit" >> "$GITHUB_ENV"
+            echo "Measured runner cgroup memory limit: $limit bytes"
+          else
+            echo "::warning::Runner cgroup memory limit is not measurable; pipeline stage 8 will remain blocked."
+          fi
       - name: Authoritative 46-gate verification
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Clean up isolated Neon GATE-12 identity
