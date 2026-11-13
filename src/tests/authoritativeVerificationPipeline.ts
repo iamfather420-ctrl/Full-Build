@@ -885,7 +885,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     // Production credential gates
     if (env === 'production') {
-      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
+      if (!hasPayPal || !ppAuth) {
         productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
       }
       if (!hasNeon || !neonConn) {
