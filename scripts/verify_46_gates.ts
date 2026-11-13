@@ -13,7 +13,7 @@ async function main() {
   setDiskDbChecker((file: string) => fs.existsSync(file));
 
   const sourceCommitSha = cp.execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
-  const report = await System46Gates.getInstance().evaluateAll46Gates();
+  // Run the separate Railway verifier before evaluating the 46-gate closure.\n  // It has its own process/service and reports provider evidence independently.\n  const external = cp.spawnSync('bun', ['run', 'verify:external-dependencies'], {\n    cwd: root, encoding: 'utf8', stdio: 'inherit', timeout: 190_000,\n    env: process.env\n  });\n  if (external.error) throw external.error;\n  if (external.status !== 0) {\n    throw new Error('External dependency Railway verification is BLOCKED or FAILED; see artifacts/external-dependency-railway.json.');\n  }\n\n  const report = await System46Gates.getInstance().evaluateAll46Gates();
   const artifact = {
     ...report,
     source_commit_sha: sourceCommitSha,
