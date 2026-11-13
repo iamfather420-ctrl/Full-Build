@@ -7,6 +7,12 @@ on:
     paths:
       - "sandbox/**"
       - ".github/workflows/stage6-sandbox-image.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "sandbox/**"
+      - ".github/workflows/stage6-sandbox-image.yml"
   workflow_dispatch:
 
 permissions:
