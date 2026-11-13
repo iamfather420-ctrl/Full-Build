@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { verifyStaticTyping } from '../src/solutions/StaticTypingVerifier';
 
 const valid = verifyStaticTyping('const answer: number = 42;');
-assert.equal(valid.passed, true, 'valid strict TypeScript should pass');
+assert.equal(valid.passed, true, `valid strict TypeScript should pass; verifier returned: ${JSON.stringify(valid)}`);
 assert.equal(valid.diagnostics.length, 0);
 
 const mismatch = verifyStaticTyping('const answer: string = 42;');
