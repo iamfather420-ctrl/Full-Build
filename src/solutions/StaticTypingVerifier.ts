@@ -1,8 +1,11 @@
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const ts = require('typescript') as typeof import('typescript');
+const tscPath = require.resolve('typescript/bin/tsc');
 
 export interface StaticTypingDiagnostic {
   code: number;
@@ -20,68 +23,67 @@ export interface StaticTypingResult {
 }
 
 /**
- * Type-checks submitted source as an isolated TypeScript module.
- * The compiler is run with noEmit: source is never executed or emitted.
+ * Checks a submitted TypeScript module with the installed tsc CLI.
+ * The source is written only to a unique OS temporary directory, compiled
+ * with noEmit, and removed in a finally block. It is never executed.
  */
 export function verifyStaticTyping(source: string): StaticTypingResult {
+  const versionRun = spawnSync(process.execPath, [tscPath, '--version'], { encoding: 'utf8' });
+  const version = (versionRun.stdout || versionRun.stderr || 'unknown').trim().replace(/^Version /, '');
+
   if (typeof source !== 'string' || source.trim().length === 0) {
     return {
       passed: false,
       compiler: 'typescript',
-      compiler_version: ts.version,
+      compiler_version: version,
       strict: true,
       diagnostics: [{ code: 0, message: 'Source must be a non-empty TypeScript module.' }]
     };
   }
 
-  const virtualFile = path.resolve('.', '.solvex-stage7-input.ts');
-  const normalizedVirtualFile = path.normalize(virtualFile);
-  const options: ts.CompilerOptions = {
-    strict: true,
-    noEmit: true,
-    target: ts.ScriptTarget.ES2022,
-    module: ts.ModuleKind.ESNext,
-    moduleResolution: ts.ModuleResolutionKind.Bundler,
-    skipLibCheck: true,
-    types: [],
-    exactOptionalPropertyTypes: true,
-    noUncheckedIndexedAccess: true,
-    allowImportingTsExtensions: true
-  };
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'solvex-stage7-'));
+  const sourceFile = path.join(tempDir, 'input.ts');
+  try {
+    writeFileSync(sourceFile, source, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+    const result = spawnSync(process.execPath, [
+      tscPath,
+      '--noEmit',
+      '--strict',
+      '--target', 'ES2022',
+      '--module', 'ESNext',
+      '--moduleResolution', 'Bundler',
+      '--skipLibCheck',
+      '--types', '',
+      '--exactOptionalPropertyTypes',
+      '--noUncheckedIndexedAccess',
+      sourceFile
+    ], { encoding: 'utf8', timeout: 15000, maxBuffer: 1024 * 1024 });
 
-  const host = ts.createCompilerHost(options);
-  const originalGetSourceFile = host.getSourceFile.bind(host);
-  const originalFileExists = host.fileExists.bind(host);
-  const originalReadFile = host.readFile.bind(host);
-
-  host.getSourceFile = (fileName, languageVersion, onError, shouldCreateNewSourceFile) => {
-    if (path.normalize(path.resolve(fileName)) === normalizedVirtualFile) {
-      return ts.createSourceFile(fileName, source, languageVersion, true);
+    if (result.error) {
+      return {
+        passed: false, compiler: 'typescript', compiler_version: version, strict: true,
+        diagnostics: [{ code: 0, message: result.error.message }]
+      };
     }
-    return originalGetSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile);
-  };
-  host.fileExists = fileName =>
-    path.normalize(path.resolve(fileName)) === normalizedVirtualFile || originalFileExists(fileName);
-  host.readFile = fileName =>
-    path.normalize(path.resolve(fileName)) === normalizedVirtualFile ? source : originalReadFile(fileName);
 
-  const program = ts.createProgram([virtualFile], options, host);
-  const diagnostics = ts.getPreEmitDiagnostics(program).map(diagnostic => {
-    const position = diagnostic.file && diagnostic.start !== undefined
-      ? diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start)
-      : undefined;
+    const output = (result.stdout + '\n' + result.stderr).trim();
+    const diagnostics = output
+      ? output.split(/\r?\n/).filter(Boolean).map(line => {
+          const match = line.match(/input\.ts\((\d+),(\d+)\): error TS(\d+): (.*)/);
+          return match
+            ? { line: Number(match[1]), column: Number(match[2]), code: Number(match[3]), message: match[4] }
+            : { code: 0, message: line };
+        })
+      : [];
+
     return {
-      code: diagnostic.code,
-      message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\\n'),
-      ...(position ? { line: position.line + 1, column: position.character + 1 } : {})
+      passed: result.status === 0 && diagnostics.length === 0,
+      compiler: 'typescript',
+      compiler_version: version,
+      strict: true,
+      diagnostics
     };
-  });
-
-  return {
-    passed: diagnostics.length === 0,
-    compiler: 'typescript',
-    compiler_version: ts.version,
-    strict: true,
-    diagnostics
-  };
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
 }
