@@ -61,9 +61,10 @@ export async function resolveUniqueActiveOidcOwnerIdentity(databaseUrl: string):
 }
 
 /** Verifies signature, expiry, and current active membership on every authenticated request. */
-export async function verifyOidcTenantToken(token: string): Promise<Record<string, unknown> | null> {
+export async function verifyOidcTenantToken(token: string, databaseUrl?: string): Promise<Record<string, unknown> | null> {
   if (!token || token.length > 8192) return null;
-  const rows = await authSql`
+  const sql = databaseUrl ? neon(databaseUrl) : authSql;
+  const rows = await sql`
     WITH token_context AS MATERIALIZED (
       SELECT set_config('app.auth_token', ${token}, true) AS configured
     ),
