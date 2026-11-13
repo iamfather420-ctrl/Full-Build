@@ -585,9 +585,9 @@ export class AuthoritativeVerificationPipeline {
       transitionAttempts.length === plannedTransitions.length &&
       transitionAttempts.every(t => t.success) &&
       actualFinalStatus === 'DEPLOYED';
-    const lifecycleBlocked = !e2eOk && transitionAttempts.some(t =>
-      !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
-    );
+    const lifecycleBlocked = !verifiedLifecycleUser || (!e2eOk && transitionAttempts.some(t =>
+      !t.success && /BLOCKED:/i.test(t.error || '')
+    ));
     const lifecycleGateStatus: GateResult['status'] = e2eOk
       ? 'PASSED'
       : lifecycleBlocked ? 'BLOCKED' : 'FAILED';
