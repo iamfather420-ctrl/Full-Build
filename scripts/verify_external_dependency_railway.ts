@@ -20,7 +20,7 @@ async function main() {
     };
   } else {
     const url = new URL(endpoint);
-    if (url.protocol !== 'https:') throw new Error('External dependency Railway endpoint must use HTTPS.');
+    if (url.protocol !== 'https:' && !(url.protocol === 'http:' && url.hostname.endsWith('.railway.internal'))) throw new Error('External dependency Railway endpoint must use HTTPS or Railway private networking.');
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 180_000);
     try {
