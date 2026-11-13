@@ -551,6 +551,10 @@ export class AuthoritativeVerificationPipeline {
     // Never read a browser session or mint an application-side tenant token here.
     if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) {
       try {
+        // The DB package initializes its default client from DATABASE_URL at module load.
+        // Bind that default explicitly to the disposable validation branch before importing it;
+        // never fall back to a production/application database for this CI lifecycle proof.
+        process.env.DATABASE_URL = process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL;
         const { resolveUniqueActiveOidcOwnerIdentity } = await import('@workspace/db');
         const identity = await resolveUniqueActiveOidcOwnerIdentity(
           process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
