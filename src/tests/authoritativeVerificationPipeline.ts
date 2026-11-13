@@ -477,62 +477,138 @@ export class AuthoritativeVerificationPipeline {
 
     // ==========================================
     // GATE 11: External Provider Verification (Neon, PayPal)
+    // Consumes fresh, hash-validated delegated provider evidence.
+    // PayPal is sandbox-only; no live credentials or transactions are used.
     // ==========================================
     const g11Start = performance.now();
-    const pp = PayPalAdapter.getInstance();
-    const hasPayPal = pp.hasActiveCredentials();
-    const ppCreds = pp.getEffectiveCredentials();
-    let ppAuth = false;
-    if (hasPayPal && ppCreds) {
-      const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
-      ppAuth = testPP.valid;
-    }
+    const readProviderEvidence = (filename: string): any | null => {
+      if (!platform.fs || !platform.path) return null;
+      try {
+        const filePath = platform.path.resolve(rootDir, 'artifacts', 'provider-evidence', filename);
+        const parsed = JSON.parse(platform.fs.readFileSync(filePath, 'utf8'));
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch {
+        return null;
+      }
+    };
+    const isFreshEvidence = (timestamp: unknown): boolean => {
+      if (typeof timestamp !== 'string') return false;
+      const time = Date.parse(timestamp);
+      return Number.isFinite(time) && time <= Date.now() + 5 * 60 * 1000 && Date.now() - time <= 24 * 60 * 60 * 1000;
+    };
 
-    const neon = NeonStore.getInstance();
-    const hasNeon = neon.isConfigured();
-    let neonConn = false;
-    if (hasNeon) {
-      neonConn = await neon.connect();
-    }
+    const paypalArtifact = readProviderEvidence('paypal-sandbox-oauth-2026-11-13.json');
+    const paypalResult = paypalArtifact?.result;
+    const paypalSource = paypalArtifact?.source;
+    const paypalCanonicalReport = paypalArtifact ? {
+      test_suite: paypalSource?.test_suite,
+      timestamp: paypalSource?.timestamp,
+      environment: paypalResult?.environment,
+      oauth_endpoint: paypalSource?.oauth_endpoint,
+      oauth_http_status: paypalResult?.oauth_http_status,
+      sandbox_credentials_present: paypalResult?.sandbox_credentials_present,
+      sandbox_oauth_authenticated: paypalResult?.sandbox_oauth_authenticated,
+      payments_enabled: paypalResult?.payments_enabled,
+      live_credentials_read: paypalResult?.live_credentials_read,
+      live_api_contacted: paypalResult?.live_api_contacted,
+      transaction_attempted: paypalResult?.transaction_attempted,
+      token_persisted: paypalResult?.token_persisted,
+      status: paypalResult?.status
+    } : null;
+    const paypalEvidenceValid = Boolean(
+      paypalArtifact?.artifact_type === 'EXTERNAL_PROVIDER_SANDBOX_AUTHENTICATION_EVIDENCE' &&
+      paypalArtifact?.claim_scope === 'SANDBOX_ONLY' &&
+      paypalSource?.system === 'SolveX Vercel protected preview verification console' &&
+      paypalSource?.test_suite === 'PAYPAL_SANDBOX_OAUTH_AUTHENTICATION' &&
+      isFreshEvidence(paypalSource?.timestamp) &&
+      paypalResult?.ok === true &&
+      paypalResult?.status === 'PASS' &&
+      paypalResult?.environment === 'sandbox' &&
+      paypalResult?.oauth_http_status === 200 &&
+      paypalResult?.sandbox_credentials_present === true &&
+      paypalResult?.sandbox_oauth_authenticated === true &&
+      paypalResult?.payments_enabled === false &&
+      paypalResult?.live_credentials_read === false &&
+      paypalResult?.live_api_contacted === false &&
+      paypalResult?.transaction_attempted === false &&
+      paypalResult?.token_persisted === false &&
+      paypalArtifact?.evidence_sha256 === computeSha256(JSON.stringify(paypalCanonicalReport))
+    );
 
-    let g11Status: GateResult['status'] = 'EXTERNAL_PROVIDER_REQUIRED';
-    if (!hasPayPal && !hasNeon) {
-      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    } else if (hasPayPal && !ppAuth) {
-      g11Status = 'FAILED';
-    } else if (hasNeon && !neonConn) {
-      g11Status = 'FAILED';
-    } else if (ppAuth && neonConn) {
-      g11Status = 'PASSED';
-    } else {
-      g11Status = 'CONFIGURED';
-    }
+    const neonArtifact = readProviderEvidence('neon-readonly-connectivity-2026-11-13.json');
+    const neonEvidence = neonArtifact?.evidence_payload;
+    const neonProbe = neonEvidence?.runtime_role_probe;
+    const neonVisibleRows = neonProbe?.visible_rows;
+    const neonEvidenceValid = Boolean(
+      neonEvidence?.test_suite === 'NEON_READ_ONLY_CONNECTIVITY_AND_UNAUTHENTICATED_RLS_PROBE' &&
+      neonEvidence?.provider === 'Neon' &&
+      neonEvidence?.project?.name === 'SolveX' &&
+      neonEvidence?.branch?.name === 'SOLVEX_ISOLATION_TEST' &&
+      neonEvidence?.branch?.state === 'ready' &&
+      isFreshEvidence(neonEvidence?.checked_at) &&
+      neonEvidence?.connection?.status === 'PASS' &&
+      neonProbe?.status === 'PASS' &&
+      neonProbe?.is_superuser === false &&
+      neonProbe?.bypass_rls === false &&
+      neonProbe?.unauthenticated_claims_null === true &&
+      neonVisibleRows && Object.values(neonVisibleRows).length === 8 &&
+      Object.values(neonVisibleRows).every((count: any) => count === 0) &&
+      neonArtifact?.evidence_sha256 === computeSha256(JSON.stringify(neonEvidence))
+    );
 
+    // Keep legacy manifest and final-verdict fields aligned with delegated evidence.
+    // Sandbox receipts never satisfy production live-credential requirements.
+    const hasNeon = neonEvidenceValid && env !== 'production';
+    const hasPayPal = paypalEvidenceValid && env !== 'production';
+    const ppCreds = paypalEvidenceValid ? { environment: 'sandbox' as const } : null;
+    const ppAuth = paypalEvidenceValid && env !== 'production';
+    const neonConn = neonEvidenceValid && env !== 'production';
+
+    const g11Passed = paypalEvidenceValid && neonEvidenceValid;
     recordGate(
       11,
       'GATE-11',
       'External Provider Gateways (Neon, PayPal)',
-      'LOCAL',
-      g11Status,
+      'SANDBOX',
+      g11Passed ? 'PASSED' : 'EXTERNAL_PROVIDER_REQUIRED',
       performance.now() - g11Start,
       {
         paypal: {
-          configured: hasPayPal,
-          environment: ppCreds?.environment || 'NOT_CONFIGURED',
-          authenticated: ppAuth,
-          status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
-          claim_scope: 'LOCAL'
+          configured_in_this_runner: false,
+          credential_owner: 'VERCEL',
+          delegated_verification: true,
+          environment: 'sandbox',
+          authenticated: paypalEvidenceValid,
+          oauth_http_status: paypalEvidenceValid ? 200 : null,
+          evidence_file: 'artifacts/provider-evidence/paypal-sandbox-oauth-2026-11-13.json',
+          evidence_hash_valid: paypalEvidenceValid,
+          payments_enabled: false,
+          live_credentials_read: false,
+          live_api_contacted: false,
+          transaction_attempted: false,
+          token_persisted: false,
+          status: paypalEvidenceValid ? 'SANDBOX_AUTHENTICATED' : 'EXTERNAL_PROVIDER_REQUIRED',
+          claim_scope: 'SANDBOX_ONLY'
         },
         neon: {
-          configured: hasNeon,
-          connected: neonConn,
-          status: !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : (neonConn ? 'CONNECTED' : 'CONNECTION_FAILED'),
-          claim_scope: 'LOCAL'
+          configured_in_this_runner: false,
+          delegated_read_only_verification: true,
+          project: 'SolveX',
+          branch: 'SOLVEX_ISOLATION_TEST',
+          connected: neonEvidenceValid,
+          unauthenticated_rls_fail_closed: neonEvidenceValid,
+          evidence_file: 'artifacts/provider-evidence/neon-readonly-connectivity-2026-11-13.json',
+          evidence_hash_valid: neonEvidenceValid,
+          authenticated_tenant_ab_isolation: 'NOT_VERIFIED',
+          cross_tenant_write_rejection: 'NOT_VERIFIED',
+          status: neonEvidenceValid ? 'READ_ONLY_CONNECTED_RLS_FAIL_CLOSED' : 'EXTERNAL_PROVIDER_REQUIRED',
+          claim_scope: 'DISPOSABLE_BRANCH_ONLY'
         },
         fiat_policy: {
           status: 'PROHIBITED_BLOCKED',
           policy: 'Fiat settlements route exclusively to PayPal DN-35'
-        }
+        },
+        truth_boundary: 'GATE-11 passes only for delegated PayPal sandbox OAuth and Neon read-only connectivity/unauthenticated RLS posture. This is not live payment readiness, full tenant-isolation certification, or production readiness.'
       }
     );
 
