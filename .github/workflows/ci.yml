@@ -56,7 +56,7 @@ jobs:
           AUTH_JWKS_URL: ${{ secrets.AUTH_JWKS_URL }}
           SOLVEX_GATE12_OIDC_TOKEN: ${{ secrets.SOLVEX_GATE12_OIDC_TOKEN }}
           SOLVEX_GATE12_NEON_TENANT_CLAIM: ${{ secrets.SOLVEX_GATE12_NEON_TENANT_CLAIM }}
-          SOLVEX_AUTH_SECRET: ${{ secrets.SOLVEX_AUTH_SECRET }}
+          SOLVEX_GATE12_DATABASE_URL: ${{ secrets.SOLVEX_GATE12_DATABASE_URL }}
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Upload 46-gate evidence
         if: always()
