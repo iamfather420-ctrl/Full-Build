@@ -49,9 +49,45 @@ if [[ -z "$claim" || "$claim" != *.* ]]; then
   exit 4
 fi
 echo "::add-mask::$claim"
+
+# Independently prove tenant RLS under the runtime role in the same isolated branch.
+other_tenant_id="${tenant_id}-other"
+other_user_id="${user_id}-other"
+other_role_id="${role_id}-other"
+other_membership_id="${membership_id}-other"
+psql "$url" --no-psqlrc --set=ON_ERROR_STOP=1 \
+  --set=tenant_id="$other_tenant_id" --set=user_id="$other_user_id" \
+  --set=role_id="$other_role_id" --set=membership_id="$other_membership_id" \
+  --set=claim="$claim" --set=now_ms="$now_ms" <<'SQL'
+BEGIN;
+INSERT INTO public.tenants(id,name,tier,isolated_storage_key,status,created_at,updated_at)
+VALUES (:'tenant_id','GATE-12 RLS isolation probe','STANDARD',:'tenant_id','ACTIVE',:now_ms,:now_ms);
+INSERT INTO public.users(id,tenant_id,email,display_name,role,status,created_at,updated_at,oidc_subject)
+VALUES (:'user_id',:'tenant_id',:'user_id' || '@example.invalid','RLS probe','OPERATOR','ACTIVE',:now_ms,:now_ms,:'user_id');
+INSERT INTO public.roles(id,tenant_id,name,permissions_json,created_at,updated_at,status)
+VALUES (:'role_id',:'tenant_id','OWNER','[]',:now_ms,:now_ms,'ACTIVE');
+INSERT INTO public.tenant_memberships(id,tenant_id,user_id,role_id,status,created_at,updated_at)
+VALUES (:'membership_id',:'tenant_id',:'user_id',:'role_id','ACTIVE',:now_ms,:now_ms);
+SELECT set_config('app.auth_token', :'claim', true);
+SET LOCAL ROLE solvex_runtime_login_v2;
+DO $rls$
+DECLARE visible_tenants integer; visible_users integer;
+BEGIN
+  SELECT count(*) INTO visible_tenants FROM public.tenants;
+  SELECT count(*) INTO visible_users FROM public.users;
+  IF visible_tenants <> 1 OR visible_users <> 1 THEN
+    RAISE EXCEPTION 'GATE-12 tenant RLS leaked rows: tenants %, users %', visible_tenants, visible_users;
+  END IF;
+END
+$rls$;
+RESET ROLE;
+ROLLBACK;
+SQL
+
 {
   echo "SOLVEX_GATE12_NEON_TENANT_CLAIM=$claim"
   echo "SOLVEX_GATE12_DATABASE_URL=$url"
+  echo "SOLVEX_GATE12_RLS_VERIFIED=true"
   echo "SOLVEX_GATE12_FIXTURE_TENANT_ID=$tenant_id"
   echo "SOLVEX_GATE12_FIXTURE_USER_ID=$user_id"
   echo "SOLVEX_GATE12_FIXTURE_ROLE_ID=$role_id"
