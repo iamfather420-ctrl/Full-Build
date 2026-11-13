@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   validate:
@@ -61,6 +62,41 @@ jobs:
       - name: Report isolated OIDC integration secret requirement
         if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
         run: echo "OIDC database integration was validated directly on the isolated Neon branch; add SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL (owner connection for a disposable branch) to enable this CI step."
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Authenticate to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish digest-pinned sandbox image
+        id: solvex_sandbox
+        uses: docker/build-push-action@v6
+        with:
+          context: ./sandbox
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/solvex-sandbox:${{ github.sha }}
+          build-args: |
+            NODE_BASE_IMAGE=node:22.23.2-alpine3.24@sha256:b64da1de5a51067ab8e75f0bc8dbd0905d8894baa22261f439a4572f41291e50
+
+      - name: Pull immutable sandbox digest for local no-pull execution
+        env:
+          SANDBOX_DIGEST: ${{ steps.solvex_sandbox.outputs.digest }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/solvex-sandbox@${SANDBOX_DIGEST}"
+          docker pull "$image"
+          echo "SOLVEX_SANDBOX_IMAGE=$image" >> "$GITHUB_ENV"
+
+      - name: Create ephemeral CI-only proof and tenant keys
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts/solvex-proofs"
+          echo "SOLVEX_PROOF_DIR=$GITHUB_WORKSPACE/artifacts/solvex-proofs" >> "$GITHUB_ENV"
+          echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
       - name: Prepare isolated Neon identity for authoritative GATE-12
         if: always()
         env:
