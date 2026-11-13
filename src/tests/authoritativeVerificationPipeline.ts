@@ -18,6 +18,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
+import { AuthService } from '../auth/AuthService';
 
 export interface GateResult {
   gate_index: number;
@@ -559,11 +560,27 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
-    for (const targetState of plannedTransitions) {
-      const result = await orderMgr.transitionOrder(testOrderId, targetState);
-      transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
-      // Stop immediately at the first failed authorization or state transition.
-      if (!result.success) break;
+
+    // GATE-12 must consume a real, provider-signed OIDC JWT. Never synthesize a
+    // UserContext or reuse the SQL integration test's rolled-back fixture token.
+    const lifecycleToken = process.env.SOLVEX_GATE12_OIDC_TOKEN;
+    const identity = lifecycleToken
+      ? await AuthService.getInstance().verifyToken(lifecycleToken)
+      : { valid: false, error: 'SOLVEX_GATE12_OIDC_TOKEN is not configured.' };
+    const verifiedUser = identity.valid ? identity.user : undefined;
+    if (!verifiedUser || verifiedUser.tenant_id !== 'TENANT_ENTERPRISE_DEMO') {
+      transitionAttempts.push({
+        target_state: plannedTransitions[0],
+        success: false,
+        error: identity.error || 'BLOCKED: verified OIDC identity for TENANT_ENTERPRISE_DEMO is required.'
+      });
+    } else {
+      for (const targetState of plannedTransitions) {
+        const result = await orderMgr.transitionOrder(testOrderId, targetState, verifiedUser);
+        transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
+        // Stop immediately at the first failed authorization or state transition.
+        if (!result.success) break;
+      }
     }
 
     const finalOrderRow = sqliteInst.getRawDb().get('SELECT status FROM orders WHERE id = ?', [testOrderId]);
