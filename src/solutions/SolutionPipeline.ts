@@ -271,7 +271,7 @@ export class SolutionPipeline {
           return block('Disposable Neon isolation URL and two distinct tenant fixtures are required; environment flags alone are not accepted as RLS evidence.', evidence);
         }
 
-        const output = execFileSync('bash', ['scripts/verify_neon_tenant_isolation.sh'], {
+        const output = execFileSync('bash', ['-c', 'bash scripts/verify_neon_tenant_isolation.sh 2>&1'], {
           encoding: 'utf8',
           timeout: 120_000,
           env: {
