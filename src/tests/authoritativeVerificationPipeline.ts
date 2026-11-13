@@ -549,9 +549,9 @@ export class AuthoritativeVerificationPipeline {
     let lifecycleIdentityResolution = 'NOT_CONFIGURED';
     // Only CI's disposable Neon validation branch may supply the test identity.
     // Never read a browser session or mint an application-side tenant token here.
-    if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL) {
+    if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) {
       try {
-        const { resolveUniqueActiveOidcIdentity } = await import('@workspace/db');
+        const { resolveUniqueActiveOidcOwnerIdentity } = await import('@workspace/db');
         const identity = await resolveUniqueActiveOidcIdentity(
           process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL
         );
