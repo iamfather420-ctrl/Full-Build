@@ -24,7 +24,11 @@ subject="550895be-a27e-4e75-9bd7-ee8b5d3cd0f0"
 email="i.am.father.420@gmail.com"
 now_ms="$(date +%s%3N)"
 
-psql "$url" --no-psqlrc --set=ON_ERROR_STOP=1 -f packages/db/migrations/0001_oidc_signed_tenant_sessions.sql
+preflight="$(psql "$url" --no-psqlrc --set=ON_ERROR_STOP=1 --tuples-only --no-align -c "SELECT to_regprocedure('solvex_private.issue_oidc_session_claim(text,text)') IS NOT NULL AND solvex_private.auth_context_ready()")"
+if [[ "$preflight" != "t" ]]; then
+  echo "GATE-12 isolated Neon branch is missing the signed-tenant-session migration or signing context." >&2
+  exit 4
+fi
 claim="$(psql "$url" --no-psqlrc --set=ON_ERROR_STOP=1 --tuples-only --no-align \
   --set=tenant_id="$tenant_id" --set=user_id="$user_id" --set=role_id="$role_id" \
   --set=membership_id="$membership_id" --set=subject="$subject" --set=email="$email" --set=now_ms="$now_ms" <<'SQL'
