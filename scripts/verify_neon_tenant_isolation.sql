@@ -90,6 +90,7 @@ BEGIN
   RAISE NOTICE 'TENANT_RLS_FAIL_CLOSED_RESULT=PASS tables=% role=%', tested, current_user;
 END
 $do$;
+\\echo TENANT_RLS_FAIL_CLOSED_RESULT=PASS
 
 
 -- Authenticated A/B read and cross-tenant UPDATE checks.
@@ -176,7 +177,14 @@ BEGIN
   IF solvex_private.current_claims() IS NOT NULL THEN
     RAISE EXCEPTION 'Invalid token did not fail closed';
   END IF;
+  IF tested_reads <> cardinality(tables) * 2 THEN
+    RAISE EXCEPTION 'Expected % authenticated read checks, got %', cardinality(tables) * 2, tested_reads;
+  END IF;
+  IF tested_writes < 1 THEN
+    RAISE EXCEPTION 'No populated cross-tenant UPDATE rejection was exercised';
+  END IF;
   RAISE NOTICE 'AUTHENTICATED_TENANT_ISOLATION=PASS read_table_checks=% cross_tenant_write_checks=%',
     tested_reads,tested_writes;
 END
 $authenticated$;
+\\echo AUTHENTICATED_TENANT_ISOLATION=PASS
