@@ -764,13 +764,22 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
-    // A non-closed solution must not advance. Attempt only ORDER_CREATED without
-    // a caller identity so the authorization boundary is explicitly observed and
-    // the order remains OFFER; only a fully closed solution may use the verified
-    // disposable OIDC identity for the complete transition sequence.
+    // Verify the already-issued OIDC claim through the same authorization service
+    // used by OrderLifecycleManager, even when an upstream pipeline gate prevents
+    // state mutation. This proves identity/tenant-claim handoff without bypassing
+    // the 21-stage completion requirement or advancing an incomplete order.
+    const lifecycleAuthorizationPreflight = lifecycleUser
+      ? await AuthService.getInstance().authorize(
+          lifecycleUser,
+          'ORDER_TRANSITION',
+          lifecycleUser.tenant_id
+        )
+      : { authorized: false, reason: 'BLOCKED: verified OIDC identity was not resolved.' };
     const pipelineClosed = pipeRes.overall_success && pipeRes.completed_stages === pipeRes.total_stages;
-    const transitionTargets: readonly string[] = pipelineClosed ? plannedTransitions : ['ORDER_CREATED'];
-    const transitionUser = pipelineClosed ? lifecycleUser : undefined;
+    // Never attempt a state transition unless every pipeline stage is closed.
+    // When closed, pass the exact OIDC-issued signed UserContext to the lifecycle.
+    const transitionTargets: readonly string[] = pipelineClosed ? plannedTransitions : [];
+    const transitionUser = lifecycleUser;
     for (const targetState of transitionTargets) {
       const result = await orderMgr.transitionOrder(testOrderId, targetState, transitionUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
@@ -787,9 +796,8 @@ export class AuthoritativeVerificationPipeline {
       transitionAttempts.every(t => t.success) &&
       actualFinalStatus === 'DEPLOYED';
     const pipelineHasFailure = pipeRes.stage_traces.some(trace => trace.status === 'FAILED');
-    const authorizationBlocked = transitionAttempts.some(t =>
-      !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
-    );
+    const authorizationBlocked = !lifecycleAuthorizationPreflight.authorized ||
+      transitionAttempts.some(t => !t.success && /BLOCKED:|tenant mismatch|signed tenant claim/i.test(t.error || ''));
     const lifecycleBlocked = !e2eOk && !pipelineHasFailure &&
       (authorizationBlocked || !pipelineClosed);
     const lifecycleGateStatus: GateResult['status'] = pipelineHasFailure
@@ -817,7 +825,8 @@ export class AuthoritativeVerificationPipeline {
         pipeline_incomplete: !pipelineClosed,
         payment_processing: 'DISABLED',
         claim_scope: 'LOCAL',
-        identity_resolution: lifecycleIdentityResolution
+        identity_resolution: lifecycleIdentityResolution,
+        identity_authorization_preflight: lifecycleAuthorizationPreflight
       }
     );
 
@@ -840,6 +849,7 @@ export class AuthoritativeVerificationPipeline {
           stage_traces: pipeRes.stage_traces
         },
         identity_resolution: lifecycleIdentityResolution,
+        identity_authorization_preflight: lifecycleAuthorizationPreflight,
         order_lifecycle: {
           order_id: testOrderId,
           planned_transitions: plannedTransitions,
