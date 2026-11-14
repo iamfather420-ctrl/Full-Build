@@ -36,11 +36,18 @@ async function main() {
     const attestation = { ...oracleFields, signature: sign(null, Buffer.from(oracleCanonical), privateKey).toString('base64') };
     assert.equal(IndependentModelOracle.verifyAttestation(attestation, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), true);
     assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, verdict: 'REJECT' }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);
+    assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, signature: Buffer.from('short').toString('base64') }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);
+    assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, inputSha256: createHash('sha256').update('different-input').digest('hex') }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);
 
     const snapshot = await MemorySafetyInstrumentation.snapshot(512 * 1024 * 1024);
     assert.equal(typeof snapshot.rssBytes, 'number');
     assert.equal(typeof snapshot.withinLimit, 'boolean');
     assert.equal(typeof snapshot.instrumentationAvailable, 'boolean');
+    assert.equal(snapshot.instrumentationAvailable, true, 'process memory metrics must be available even when the host has no finite cgroup cap');
+    assert.ok(snapshot.rssBytes > 0);
+    assert.ok(snapshot.heapUsedBytes >= 0 && snapshot.heapUsedBytes <= snapshot.heapLimitBytes);
+    assert.ok(snapshot.maxRssBytes > 0);
+    assert.equal(typeof snapshot.cgroupInstrumentationAvailable, 'boolean');
 
     await assert.rejects(
       () => IsolatedExecutionSandbox.execute('node:latest', ['/bin/true'], ''),

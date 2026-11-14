@@ -34,7 +34,8 @@ export class SqliteStore {
           const nodeFs = nodeProcess.getBuiltinModule?.('node:fs') ??
             (typeof require === 'function' ? require('node:fs') : null);
           nodeFs?.mkdirSync('./.sovereign_data', { recursive: true });
-          const db = new nodeSqlite.DatabaseSync('./.sovereign_data/sovereign.sqlite');
+          const databasePath = process.env.SOLVEX_SQLITE_PATH || './.sovereign_data/sovereign.sqlite';
+          const db = new nodeSqlite.DatabaseSync(databasePath);
           this.diskBacked = true;
           return {
             exec: (sql: string) => db.exec(sql),

@@ -56,7 +56,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          receipt="$(printf '%s' "process.stdout.write(JSON.stringify({sandbox_smoke_test:'PASS'}))" | docker run --rm --interactive --network=none --read-only --user=65534:65534 --tmpfs /tmp:rw,noexec,nosuid,size=16m --memory=256m --memory-swap=256m --cpus=0.5 --pids-limit=64 --security-opt=no-new-privileges --cap-drop=ALL solvex-sandbox:stage6)"
+          receipt="$(printf '%s' "export function sandboxSmokeTest(value: number): number { return value + 1; } if (sandboxSmokeTest(41) !== 42) process.exit(7);" | docker run --rm --interactive --network=none --read-only --user=65534:65534 --tmpfs /tmp:rw,noexec,nosuid,size=16m --memory=256m --memory-swap=256m --cpus=0.5 --pids-limit=64 --security-opt=no-new-privileges --cap-drop=ALL solvex-sandbox:stage6)"
           echo "SANDBOX_RECEIPT=$receipt"
           node -e 'const r=JSON.parse(process.argv[1]); if(r.accepted!==true || !/^[a-f0-9]{64}$/.test(r.input_sha256) || r.exit_code!==0 || r.timed_out!==false) process.exit(1); console.log("STAGE6_CONTAINER_SMOKE_TEST=PASS")' "$receipt"
 

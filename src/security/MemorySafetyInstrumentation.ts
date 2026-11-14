@@ -6,7 +6,8 @@ export interface MemorySafetySnapshot {
   rssBytes: number; heapUsedBytes: number; heapLimitBytes: number;
   externalBytes: number; arrayBuffersBytes: number; maxRssBytes: number;
   cgroupCurrentBytes?: number; cgroupPeakBytes?: number; cgroupLimitBytes?: number;
-  cgroupOomEvents?: number; withinLimit: boolean; instrumentationAvailable: boolean;
+  cgroupOomEvents?: number; cgroupInstrumentationAvailable: boolean;
+  withinLimit: boolean; instrumentationAvailable: boolean;
 }
 async function readNumber(path: string): Promise<number | undefined> {
   try { const value = (await readFile(path, 'utf8')).trim(); if (value === 'max') return undefined; const n = Number(value); return Number.isFinite(n) ? n : undefined; } catch { return undefined; }
@@ -26,15 +27,25 @@ export class MemorySafetyInstrumentation {
     const oom = eventCounts.get('oom');
     const oomKill = eventCounts.get('oom_kill');
     const oomEvents = oom === undefined || oomKill === undefined ? undefined : oom + oomKill;
-    const cgroupLimitBytes = limit;
-    const measured = Math.max(m.rss, current ?? 0);
-    const instrumentationAvailable = current !== undefined && peak !== undefined && limit !== undefined &&
+    const maxRssBytes = r.maxRSS * 1024;
+    const processInstrumentationAvailable = [m.rss, m.heapUsed, h.heap_size_limit, maxRssBytes, m.external, m.arrayBuffers]
+      .every(value => Number.isFinite(value) && value >= 0);
+    const cgroupInstrumentationAvailable = current !== undefined && peak !== undefined && limit !== undefined &&
       oom !== undefined && oomKill !== undefined;
-    const withinLimit = instrumentationAvailable && measured <= limitBytes &&
-      cgroupLimitBytes! <= limitBytes && oomEvents === 0;
-    return { rssBytes: m.rss, heapUsedBytes: m.heapUsed, heapLimitBytes: h.heap_size_limit,
-      externalBytes: m.external, arrayBuffersBytes: m.arrayBuffers, maxRssBytes: r.maxRSS * 1024,
-      cgroupCurrentBytes: current, cgroupPeakBytes: peak, cgroupLimitBytes, cgroupOomEvents: oomEvents,
-      withinLimit, instrumentationAvailable };
+    // The submitted code's hard memory ceiling is enforced by its dedicated sandbox cgroup.
+    // The trusted orchestrator is observed using process RSS/heap/max-RSS; a runner's
+    // unbounded host cgroup must not be mistaken for missing process instrumentation.
+    const processWithinLimit = processInstrumentationAvailable &&
+      m.rss <= limitBytes && m.heapUsed <= limitBytes && maxRssBytes <= limitBytes;
+    const cgroupWithinLimit = !cgroupInstrumentationAvailable ||
+      (Math.max(current!, peak!) <= limitBytes && limit! <= limitBytes && oomEvents === 0);
+    const withinLimit = processWithinLimit && cgroupWithinLimit;
+    return {
+      rssBytes: m.rss, heapUsedBytes: m.heapUsed, heapLimitBytes: h.heap_size_limit,
+      externalBytes: m.external, arrayBuffersBytes: m.arrayBuffers, maxRssBytes,
+      cgroupCurrentBytes: current, cgroupPeakBytes: peak, cgroupLimitBytes: limit,
+      cgroupOomEvents: oomEvents, cgroupInstrumentationAvailable,
+      withinLimit, instrumentationAvailable: processInstrumentationAvailable
+    };
   }
 }

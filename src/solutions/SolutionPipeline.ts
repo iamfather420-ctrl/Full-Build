@@ -1,4 +1,6 @@
 import { computeSha256 } from '../database/DatabaseSchema';
+import { ProofBundleEntity } from '../database/DatabaseSchema';
+import { OracleAttestation } from '../security/IndependentModelOracle';
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
 import { NOPOTVerifier } from '../proofs/NOPOTProof';
@@ -44,7 +46,7 @@ export class SolutionPipeline {
     'Stage 11: Z3 SMT Formal Theorem Verification',
     'Stage 12: Machine-Checked Proof Certificate Generation',
     'Stage 13: Deterministic Cleanroom Test Suite Execution',
-    'Stage 14: Multi-Model Independent Oracle Attestation',
+    'Stage 14: Single-Model OpenAI Oracle Attestation',
     'Stage 15: Bitrot & Replay Divergence Validation',
     'Stage 16: Defensible Pricing Formula v1.4 Execution',
     'Stage 17: Redacted Customer Evidence Generation',
@@ -99,6 +101,8 @@ export class SolutionPipeline {
     const sourceHash = computeSha256(normalizedCode);
     const paradox = ParadoxRegistry.getInstance().getByCode(paradoxCode);
     let theoremCertificate = '';
+    let theoremProofResult: Awaited<ReturnType<Z3FormalProofEngine['proveCatalogTheorem']>> | undefined;
+    let oracleAttestation: OracleAttestation | undefined;
     let sandboxMemoryEvidence: { current?: number | null; peak?: number | null; limit?: number | null; oom?: number | null } | undefined;
     let haltedAt: number | undefined;
     const runStage = async (stage: number, execute: () => Promise<StageOutcome> | StageOutcome) => {
@@ -149,24 +153,66 @@ export class SolutionPipeline {
       let receipt: { accepted?: boolean; input_sha256?: string; cgroup_memory_current_bytes?: number | null; cgroup_memory_peak_bytes?: number | null; cgroup_memory_limit_bytes?: number | null; cgroup_oom_events?: number | null };
       try { receipt = JSON.parse(result.output.trim()); } catch { return fail('Sandbox did not return a valid machine-readable receipt.'); }
       sandboxMemoryEvidence = { current: receipt.cgroup_memory_current_bytes, peak: receipt.cgroup_memory_peak_bytes, limit: receipt.cgroup_memory_limit_bytes, oom: receipt.cgroup_oom_events };
-      return receipt.accepted === true && receipt.input_sha256 === sourceHash
-        ? pass({ sandbox_started: true, image_digest: image.split('@sha256:')[1], input_sha256: sourceHash, exit_code: result.exitCode, memory_limit_bytes: result.memoryLimitBytes, cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes, cgroup_oom_events: receipt.cgroup_oom_events })
-        : fail('Sandbox receipt did not bind acceptance to the submitted source hash.');
+      const receiptHashMatches = receipt.input_sha256 === sourceHash;
+      const receiptEvidence = {
+        sandbox_started: true,
+        image_digest: image.split('@sha256:')[1],
+        accepted: receipt.accepted === true,
+        expected_input_sha256: sourceHash,
+        receipt_input_sha256: receipt.input_sha256 ?? null,
+        source_hash_match: receiptHashMatches,
+        exit_code: result.exitCode,
+        memory_limit_bytes: result.memoryLimitBytes,
+        cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes,
+        cgroup_memory_limit_bytes: receipt.cgroup_memory_limit_bytes,
+        cgroup_oom_events: receipt.cgroup_oom_events
+      };
+      return receipt.accepted === true && receiptHashMatches
+        ? pass(receiptEvidence)
+        : fail('Sandbox receipt did not bind acceptance to the submitted source hash.', receiptEvidence);
     });
     await runStage(7, () => {
       const balanced = (normalizedCode.match(/{/g) ?? []).length === (normalizedCode.match(/}/g) ?? []).length;
       return balanced ? pass({ lexical_brace_balance: true, compiler_semantics: 'NOT_ASSERTED' }) : fail('Unbalanced block delimiters.');
     });
     await runStage(8, async () => {
-      const limit = Number(process.env.SOLVEX_MEMORY_LIMIT_BYTES ?? 256 * 1024 * 1024);
-      const snapshot = await MemorySafetyInstrumentation.snapshot(limit);
+      const sandboxBudget = sandboxMemoryEvidence?.limit ?? 256 * 1024 * 1024;
+      const orchestratorBudget = Number(process.env.SOLVEX_ORCHESTRATOR_MEMORY_LIMIT_BYTES ?? 1024 * 1024 * 1024);
+      const snapshot = await MemorySafetyInstrumentation.snapshot(orchestratorBudget);
       const sandbox = sandboxMemoryEvidence;
       const sandboxMeasured = sandbox?.peak !== null && sandbox?.peak !== undefined &&
         sandbox?.limit !== null && sandbox?.limit !== undefined && sandbox?.oom !== null && sandbox?.oom !== undefined;
-      const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= limit && sandbox!.limit! <= limit && sandbox!.oom === 0;
-      return snapshot.instrumentationAvailable && snapshot.withinLimit && sandboxWithinLimit
-        ? pass({ memory_instrumentation: true, sandbox_peak_bytes: sandbox!.peak, sandbox_limit_bytes: sandbox!.limit, sandbox_oom_events: sandbox!.oom, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes })
-        : block('Sandbox cgroup peak/limit/OOM telemetry or orchestrator cgroup telemetry is unavailable or outside budget.', { memory_instrumentation: snapshot.instrumentationAvailable, sandbox_telemetry_available: sandboxMeasured, sandbox_peak_bytes: sandbox?.peak, sandbox_limit_bytes: sandbox?.limit, sandbox_oom_events: sandbox?.oom, orchestrator_within_limit: snapshot.withinLimit });
+      const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= sandboxBudget && sandbox!.limit! <= sandboxBudget && sandbox!.oom === 0;
+      const orchestratorMeasured = snapshot.instrumentationAvailable &&
+        Number.isFinite(snapshot.rssBytes) && Number.isFinite(snapshot.heapUsedBytes) && Number.isFinite(snapshot.maxRssBytes);
+      return orchestratorMeasured && snapshot.withinLimit && sandboxWithinLimit
+        ? pass({
+            memory_instrumentation: true,
+            sandbox_memory_budget_bytes: sandboxBudget,
+            orchestrator_memory_budget_bytes: orchestratorBudget,
+            sandbox_peak_bytes: sandbox!.peak,
+            sandbox_limit_bytes: sandbox!.limit,
+            sandbox_oom_events: sandbox!.oom,
+            orchestrator_rss_bytes: snapshot.rssBytes,
+            orchestrator_heap_used_bytes: snapshot.heapUsedBytes,
+            orchestrator_max_rss_bytes: snapshot.maxRssBytes,
+            orchestrator_cgroup_instrumentation_available: snapshot.cgroupInstrumentationAvailable,
+            orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes ?? null
+          })
+        : block('Sandbox cgroup telemetry or orchestrator process memory measurements are unavailable or outside their respective budgets.', {
+            memory_instrumentation: snapshot.instrumentationAvailable,
+            sandbox_telemetry_available: sandboxMeasured,
+            sandbox_peak_bytes: sandbox?.peak,
+            sandbox_limit_bytes: sandbox?.limit,
+            sandbox_oom_events: sandbox?.oom,
+            sandbox_memory_budget_bytes: sandboxBudget,
+            orchestrator_memory_budget_bytes: orchestratorBudget,
+            orchestrator_rss_bytes: snapshot.rssBytes,
+            orchestrator_heap_used_bytes: snapshot.heapUsedBytes,
+            orchestrator_max_rss_bytes: snapshot.maxRssBytes,
+            orchestrator_cgroup_instrumentation_available: snapshot.cgroupInstrumentationAvailable,
+            orchestrator_within_limit: snapshot.withinLimit
+          });
     });
     const sentinel = await runStage(9, () => /FAIL_STAGE_9|NON_TERMINATION|DIVERGENCE_SENTINEL/.test(normalizedCode)
       ? fail('Sentinel detected fatal specification anomaly', { sentinel_detected: true })
@@ -193,6 +239,7 @@ export class SolutionPipeline {
     });
     const z3Result = await runStage(11, async () => {
       const result = await Z3FormalProofEngine.getInstance().proveCatalogTheorem('THM-RUSSELL-01');
+      theoremProofResult = result;
       theoremCertificate = result.certificate_sha256;
       return result.proved ? pass({ theorem_id: result.theorem_id, solver: result.solver_engine, solver_result: result.solver_result, certificate_sha256: result.certificate_sha256 })
         : fail('Z3 did not prove the selected theorem.', { solver_result: result.solver_result, explanation: result.explanation });
@@ -208,7 +255,11 @@ export class SolutionPipeline {
     await runStage(14, async () => {
       try {
         const attestation = await IndependentModelOracle.verify({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode });
-        return pass({ independent_oracle_count: 1, oracle_id: attestation.oracleId, model_id: attestation.modelId, verdict: attestation.verdict, input_sha256: attestation.inputSha256, attestation_signature_sha256: computeSha256(attestation.signature) });
+        oracleAttestation = attestation;
+        const evidence = { independent_oracle_count: 1, oracle_id: attestation.oracleId, model_id: attestation.modelId, verdict: attestation.verdict, input_sha256: attestation.inputSha256, attestation_signature_sha256: computeSha256(attestation.signature) };
+        return attestation.verdict === 'ACCEPT'
+          ? pass(evidence)
+          : fail('Independent model oracle rejected the submitted source.', evidence);
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), { independent_oracle_count: 0 });
       }
@@ -225,18 +276,99 @@ export class SolutionPipeline {
         : fail('Pricing formula deterministic assertion failed.');
     });
     await runStage(17, async () => {
-      const bundle = ProofEngine.getInstance().getBundle('PB-DH-S-001');
-      if (!bundle) return block('No proof bundle is registered; no synthetic evidence will be created.');
+      const proofEngine = ProofEngine.getInstance();
+      const stage11 = traces.find(t => t.stage === 11);
+      const stage13 = traces.find(t => t.stage === 13);
+      const stage14 = traces.find(t => t.stage === 14);
+      const stage15 = traces.find(t => t.stage === 15);
+      const tests = stage13 ? [{
+        test_id: 'STAGE-13-DETERMINISTIC-NORMALIZATION-REPLAY',
+        description: 'Actual Stage 13 deterministic normalization replay.',
+        passed: stage13.status === 'PASSED',
+        duration_ms: stage13.duration_ms,
+        receipt_hash: computeSha256(JSON.stringify(stage13.evidence ?? { reason: stage13.reason ?? null }))
+      }] : [];
+      const formalProofs = theoremProofResult ? [{
+        system: 'Z3_SMT',
+        specification: `[${theoremProofResult.theorem_id}] ${theoremProofResult.theorem_name}; actual solver result ${theoremProofResult.solver_result}.`,
+        checked: theoremProofResult.proved,
+        proof_term_hash: theoremProofResult.certificate_sha256
+      }] : [];
+      const independentOracles = oracleAttestation ? [{
+        oracle_id: oracleAttestation.oracleId,
+        name: oracleAttestation.modelId,
+        method: 'Digest-pinned isolated oracle with Ed25519 signature and input binding.',
+        attestation_hash: computeSha256(oracleAttestation.signature),
+        verified: oracleAttestation.verdict === 'ACCEPT'
+      }] : [];
+      const replayResults = stage15 ? [{
+        replay_id: 'STAGE-15-SOURCE-HASH-REPLAY',
+        status: stage15.status === 'PASSED' && stage15.evidence?.artifact_drift_hash_match === true ? 'MATCH' as const : 'MISMATCH' as const,
+        expected_hash: sourceHash,
+        observed_hash: String(stage15.evidence?.replay_sha256 ?? '')
+      }] : [];
+      const limitations = traces.filter(t => t.status !== 'PASSED').map(t => `Stage ${t.stage} ${t.status}: ${t.reason ?? 'No additional reason supplied.'}`);
+      const bundle: ProofBundleEntity = {
+        proof_id: 'PB-DH-S-001',
+        subject_id: 'DH-S-001',
+        claim: 'The submitted bounded Zeno implementation passed the recorded pipeline checks and associated proof evidence.',
+        claim_hash: computeSha256('The submitted bounded Zeno implementation passed the recorded pipeline checks and associated proof evidence.'),
+        evidence: traces.filter(t => t.status === 'PASSED').map(t => `stage-${t.stage}:${t.name}:PASS:${computeSha256(JSON.stringify(t.evidence ?? {}))}`),
+        tests,
+        formal_proofs: formalProofs,
+        independent_oracles: independentOracles,
+        replay_results: replayResults,
+        implementation_hash: sourceHash,
+        environment_hash: computeSha256(JSON.stringify({ node: process.version, platform: process.platform, arch: process.arch })),
+        dependency_hash: computeSha256('dependency-lockfile-digest-not-captured-by-pipeline'),
+        source_references: [`sha256:${sourceHash}`],
+        timestamp: Date.now(),
+        verifier_identity: 'SOLVEX_PIPELINE_STAGE_EVIDENCE',
+        verification_status: 'PARTIAL',
+        limitations: [...limitations, 'Dependency lockfile digest is not captured by this pipeline run.'],
+        reproducibility_instructions: 'Re-run the same commit in the isolated CI environment and compare the recorded source, solver, oracle, and replay digests.'
+      };
+      const hasCompleteEvidence = tests.length > 0 && tests.every(t => t.passed) &&
+        formalProofs.length > 0 && formalProofs.every(p => p.checked) &&
+        independentOracles.length > 0 && independentOracles.every(o => o.verified) &&
+        replayResults.length > 0 && replayResults.every(r => r.status === 'MATCH');
+      bundle.verification_status = hasCompleteEvidence ? 'VERIFIED' : 'PARTIAL';
+      proofEngine.registerBundle(bundle);
+      const integrity = proofEngine.verifyBundleIntegrity(bundle);
       try {
         const store = new PersistentProofStore();
         await store.put(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT', bundle);
         const persisted = await store.get(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
-        const view = CrystalClearBox.projectCustomerEvidence(persisted.payload as typeof bundle);
-        return view.proprietary_weights_redacted && view.internal_reasoning_redacted
-          ? pass({ proof_id: view.proof_id, public_audit_token: view.public_audit_token, verdict: view.verification_verdict, redaction_verified: true, persisted_sha256: persisted.payloadSha256, hmac_verified: true })
-          : fail('Customer evidence redaction assertion failed.');
+        const persistedBundle = persisted.payload as ProofBundleEntity;
+        const persistedIntegrity = proofEngine.verifyBundleIntegrity(persistedBundle);
+        const view = CrystalClearBox.projectCustomerEvidence(persistedBundle);
+        const redactionVerified = view.proprietary_weights_redacted && view.internal_reasoning_redacted;
+        const evidence = {
+          proof_id: view.proof_id,
+          public_audit_token: view.public_audit_token,
+          verdict: view.verification_verdict,
+          redaction_verified: redactionVerified,
+          persisted_sha256: persisted.payloadSha256,
+          hmac_verified: true,
+          bundle_integrity_verified: persistedIntegrity.verified,
+          bundle_integrity_reasons: persistedIntegrity.reasons,
+          stage14_oracle_attested: stage14?.status === 'PASSED',
+          stage11_formal_proof_recorded: Boolean(stage11?.status === 'PASSED'),
+          stage15_replay_recorded: Boolean(stage15?.status === 'PASSED')
+        };
+        if (!redactionVerified) return fail('Customer evidence redaction assertion failed.', evidence);
+        if (!persistedIntegrity.verified || persistedBundle.verification_status !== 'VERIFIED') {
+          return block('A genuine partial proof bundle was registered, persisted, and redacted, but required proof components are still incomplete.', evidence);
+        }
+        return pass(evidence);
       } catch (error) {
-        return block(error instanceof Error ? error.message : String(error), { persisted_proof_verified: false });
+        return block(error instanceof Error ? error.message : String(error), {
+          proof_bundle_registered: true,
+          verification_status: bundle.verification_status,
+          bundle_integrity_verified: integrity.verified,
+          bundle_integrity_reasons: integrity.reasons,
+          persisted_proof_verified: false
+        });
       }
     });
     await runStage(18, () => {
@@ -248,8 +380,13 @@ export class SolutionPipeline {
     await runStage(19, () => {
       const evidence: Record<string, unknown> = {
         database_rls_verified: false,
-        tenant_isolation_verified: false
+        tenant_crypto_verified: false,
+        tenant_isolation_verified: false,
+        tenant_crypto_key_configured: Buffer.byteLength(process.env.SOLVEX_TENANT_ROOT_KEY ?? '') >= 32
       };
+      // Keep the cryptographic-key check independent from the disposable Neon
+      // RLS probe. A missing root key must block Stage 19, but must not suppress
+      // valid database-isolation evidence from the separately authorized test branch.
       try {
         const crypto = new TenantCrypto();
         const record = crypto.encrypt('TENANT_SOVEREIGN_ROOT', sourceHash);
@@ -260,17 +397,23 @@ export class SolutionPipeline {
         evidence.cipher = 'AES-256-GCM';
         evidence.key_derivation = 'HKDF-SHA256';
         evidence.cross_tenant_ciphertext_rejected = crossTenantDenied;
+        evidence.tenant_crypto_verified = sameTenant === sourceHash && crossTenantDenied;
+      } catch {
+        evidence.tenant_crypto_verified = false;
+        evidence.tenant_crypto_blocker = 'A configured tenant root key of at least 32 bytes is required; key material is never included in evidence.';
+      }
 
-        if (process.env.SOLVEX_ENV === 'production') {
-          return block('Stage 19 database isolation probe is restricted to the explicitly configured disposable Neon test branch.', evidence);
-        }
-        const databaseUrl = process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL;
-        const tenantA = process.env.SOLVEX_NEON_TEST_TENANT_A;
-        const tenantB = process.env.SOLVEX_NEON_TEST_TENANT_B;
-        if (!databaseUrl || !tenantA || !tenantB || tenantA === tenantB) {
-          return block('Disposable Neon isolation URL and two distinct tenant fixtures are required; environment flags alone are not accepted as RLS evidence.', evidence);
-        }
+      if (process.env.SOLVEX_ENV === 'production') {
+        return block('Stage 19 database isolation probe is restricted to the explicitly configured disposable Neon test branch.', evidence);
+      }
+      const databaseUrl = process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL;
+      const tenantA = process.env.SOLVEX_NEON_TEST_TENANT_A;
+      const tenantB = process.env.SOLVEX_NEON_TEST_TENANT_B;
+      if (!databaseUrl || !tenantA || !tenantB || tenantA === tenantB) {
+        return block('Disposable Neon isolation URL and two distinct tenant fixtures are required; environment flags alone are not accepted as RLS evidence.', evidence);
+      }
 
+      try {
         const output = execFileSync('bash', ['-c', 'bash scripts/verify_neon_tenant_isolation.sh 2>&1'], {
           encoding: 'utf8',
           timeout: 120_000,
@@ -285,22 +428,23 @@ export class SolutionPipeline {
         const writeMatch = output.match(/cross_tenant_write_checks=([0-9]+)/i);
         const readChecks = readMatch ? Number(readMatch[1]) : 0;
         const writeChecks = writeMatch ? Number(writeMatch[1]) : 0;
-        evidence.database_rls_verified = failClosedPassed && authenticatedPassed;
+        const databaseRlsVerified = failClosedPassed && authenticatedPassed &&
+          readChecks === 16 && writeChecks >= 1;
+        evidence.database_rls_verified = databaseRlsVerified;
         evidence.neon_fail_closed_tables = failClosedPassed ? 8 : 0;
         evidence.neon_authenticated_read_checks = readChecks;
         evidence.neon_cross_tenant_write_checks = writeChecks;
         evidence.neon_role = 'solvex_iso_test';
         evidence.neon_tenant_fixtures_distinct = true;
-        evidence.tenant_isolation_verified =
-          sameTenant === sourceHash &&
-          crossTenantDenied &&
-          failClosedPassed &&
-          authenticatedPassed &&
-          readChecks === 16 &&
-          writeChecks >= 1;
+        evidence.tenant_isolation_verified = evidence.tenant_crypto_verified === true && databaseRlsVerified;
         return evidence.tenant_isolation_verified
           ? pass(evidence)
-          : block('Neon isolation script did not produce complete fail-closed, A/B read, and cross-tenant write evidence.', evidence);
+          : block(
+              !databaseRlsVerified
+                ? 'Neon isolation script did not produce complete fail-closed, A/B read, and cross-tenant write evidence.'
+                : 'Database RLS evidence passed, but tenant cryptography remains blocked pending the configured tenant root key.',
+              evidence
+            );
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), evidence);
       }

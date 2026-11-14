@@ -60,12 +60,16 @@ if (gate09?.status !== 'PASSED' || (gate09.details?.unsatisfied_node_ids?.length
   fail('Fresh authoritative gate artifact must show all 54 nodes executed with no unsatisfied nodes.');
 }
 const gate12 = authoritative.gates?.find((g: any) => g.gate_id === 'GATE-12');
+const lifecycle = gate12?.details?.order_lifecycle;
+const identityAuthorization = gate12?.details?.identity_authorization_preflight;
 if (gate12?.status !== 'BLOCKED' ||
-    gate12.details?.order_lifecycle?.final_status !== 'OFFER' ||
-    gate12.details?.order_lifecycle?.transitions_executed?.length !== 0 ||
-    gate12.details?.order_lifecycle?.authorization_blocked !== true ||
-    gate12.details?.order_lifecycle?.payment_processing !== 'DISABLED') {
-  fail('Lifecycle evidence must report blocked authorization and the unchanged OFFER state; it must not claim escrow funding or deployment.');
+    lifecycle?.final_status !== 'OFFER' ||
+    lifecycle?.transitions_executed?.length !== 0 ||
+    lifecycle?.authorization_blocked !== false ||
+    lifecycle?.pipeline_incomplete !== true ||
+    identityAuthorization?.authorized !== true ||
+    lifecycle?.payment_processing !== 'DISABLED') {
+  fail('Lifecycle evidence must prove the signed OIDC identity is authorized while pipeline-incomplete transitions remain blocked and the order stays OFFER; it must not claim escrow funding or deployment.');
 }
 const masterGate = gates.gates.find((g: any) => g.gate_id === 'GATE-46');
 if (!masterGate) fail('Master GATE-46 is missing.');
