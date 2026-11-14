@@ -17,21 +17,20 @@ Set `SOLVEX_MEMORY_LIMIT_BYTES` to the same or lower value than the sandbox memo
 
 ## Single-model OpenAI Stage 14 evaluator
 
-Stage 14 uses exactly one OpenAI model through the Responses API. The model evaluates the submitted evidence and returns a strict JSON `ACCEPT` or `REJECT` verdict with a rationale. Deterministic application checks bind the request hash, configured model identifier, verdict, and rationale hash. No Claude/Gemini consensus or second model is used.
+Stage 14 uses exactly one OpenAI model through the Responses API. The model evaluates the submitted evidence and returns strict JSON `ACCEPT` or `REJECT` plus a rationale. Deterministic application checks bind the request hash, configured model identifier, verdict, and rationale hash. No Claude/Gemini consensus or second model is used.
 
-Configure these runtime values in the deployment secret manager (never commit secret values):
+Configure these runtime values in the SolveX application secret manager (never commit secret values):
 
 - `OPENAI_API_KEY`: OpenAI API key with available API credits and access to the selected model
 - `SOLVEX_OPENAI_MODEL`: optional model identifier; defaults to `gpt-4o-mini`
-
-The model evaluator is not itself a cryptographic signer. After the model returns its verdict, Stage 14 sends a compact attestation payload to a separately operated, digest-pinned signer image implementing `/opt/solvex-oracle/attest`. That service must hold its Ed25519 private signing key outside the SolveX application runtime and return one JSON `OracleAttestation`. Configure:
-
-- `SOLVEX_ORACLE_IMAGE`: immutable digest-qualified signer image reference
+- `SOLVEX_ORACLE_SIGNER_URL`: HTTPS origin of the separately deployed signer
+- `SOLVEX_ORACLE_SIGNER_TOKEN`: high-entropy bearer token shared with the signer
 - `SOLVEX_ORACLE_ID`: stable signer identity
-- `SOLVEX_ORACLE_ED25519_PUBLIC_KEY`: PEM public key used by SolveX to verify Ed25519 attestations
+- `SOLVEX_ORACLE_ED25519_PUBLIC_KEY`: PEM public key used to verify signer attestations
 
-The signer image/operator and its public-key configuration are not provisioned by this repository. Stage 14 remains BLOCKED until the OpenAI evaluation succeeds and a matching Ed25519 attestation is received and verified. A model verdict alone is not a Stage 14 PASS.
+Deploy the signer from `oracle-signer/` as a separate service. Its private Ed25519 key must be mounted as a read-only runtime secret at `SOLVEX_ORACLE_ED25519_PRIVATE_KEY_FILE` (default `/run/secrets/solvex-oracle-ed25519.pem`). The signer also requires `SOLVEX_ORACLE_SIGNER_TOKEN` (at least 32 characters) and `SOLVEX_ORACLE_ID`. Build its image from an approved Node base image pinned by immutable SHA-256 digest. Expose it only over HTTPS and restrict ingress to the SolveX application. See `oracle-signer/README.md`.
 
+The signer is a separate signing boundary, not a second evaluator: it signs the single OpenAI model's verdict envelope. The signature proves the signer accepted the supplied envelope, not that a separate reviewer independently validated the model's reasoning. Stage 14 remains BLOCKED until the OpenAI evaluation succeeds and a matching Ed25519 signature is received and verified.
 ## Persistent proof evidence
 
 Configure:
