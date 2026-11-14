@@ -92,7 +92,7 @@ export class SolutionPipeline {
     return SolutionPipeline.instance;
   }
 
-  public async runPipeline(paradoxCode: string, codeSolution: string): Promise<PipelineExecutionResult> {
+  public async runPipeline(paradoxCode: string, codeSolution: string, options: { continueAfterFailure?: boolean } = {}): Promise<PipelineExecutionResult> {
     const traces: PipelineExecutionResult['stage_traces'] = [];
     const started = Date.now();
     const normalizedCode = typeof codeSolution === 'string' ? codeSolution.replace(/\r\n/g, '\n').trim() : '';
@@ -106,7 +106,7 @@ export class SolutionPipeline {
       let outcome: StageOutcome;
       // Stage 9 is an independent mandatory sentinel check. It still runs after
       // an earlier blocker so fatal input is detected, but no downstream work runs.
-      if (haltedAt !== undefined && stage !== 9) {
+      if (haltedAt !== undefined && stage !== 9 && options.continueAfterFailure !== true) {
         outcome = {
           status: 'BLOCKED',
           reason: `Not executed: pipeline halted after stage ${haltedAt} did not pass.`
@@ -116,7 +116,7 @@ export class SolutionPipeline {
         catch (error) { outcome = { status: 'FAILED', reason: error instanceof Error ? error.message : String(error) }; }
       }
       traces.push({ stage, name: this.STAGES[stage - 1], status: outcome.status, duration_ms: Math.max(0, Date.now() - t), evidence: outcome.evidence, reason: outcome.reason });
-      if (outcome.status !== 'PASSED' && haltedAt === undefined) haltedAt = stage;
+      if (outcome.status !== 'PASSED' && haltedAt === undefined && options.continueAfterFailure !== true) haltedAt = stage;
       return outcome;
     };
     const pass = (evidence: Record<string, unknown>): StageOutcome => ({ status: 'PASSED', evidence });
