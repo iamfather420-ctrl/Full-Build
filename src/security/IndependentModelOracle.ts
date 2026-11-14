@@ -61,6 +61,9 @@ export class IndependentModelOracle {
     const oracleIdEnv = process.env.SOLVEX_ORACLE_ID ?? '';
     const publicKeyEnv = process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY ?? '';
 
+    let parsedGatewayUrl: URL;
+    try { parsedGatewayUrl = new URL(gatewayUrl); } catch { throw new Error('Stage 14 requires a valid Fly evaluator gateway URL.'); }
+    if (parsedGatewayUrl.protocol !== 'https:') throw new Error('Stage 14 evaluator gateway must use HTTPS.');
     let parsedSignerUrl: URL;
     try { parsedSignerUrl = new URL(signerUrl); } catch { throw new Error('Stage 14 requires a valid external signer URL.'); }
     if (parsedSignerUrl.protocol !== 'https:') throw new Error('Stage 14 signer must use HTTPS.');
@@ -93,21 +96,6 @@ export class IndependentModelOracle {
 
     const payload = JSON.stringify({ protocol: 'solvex-single-openai-evaluator-v1', input });
     const inputSha256 = createHash('sha256').update(payload).digest('hex');
-    const oidcUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL ?? '';
-    const oidcRequestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN ?? '';
-    if (!oidcUrl || !oidcRequestToken) {
-      throw new Error('Stage 14 requires GitHub Actions OIDC permission; no long-lived OpenAI key is used in CI.');
-    }
-    const tokenUrl = new URL(oidcUrl);
-    tokenUrl.searchParams.set('audience', 'solvex-stage14-evaluator');
-    const oidcResponse = await fetch(tokenUrl, {
-      headers: { Authorization: `Bearer ${oidcRequestToken}`, Accept: 'application/json' },
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!oidcResponse.ok) throw new Error(`GitHub Actions OIDC token request failed (HTTP ${oidcResponse.status}).`);
-    const oidcBody = await oidcResponse.json() as { value?: string };
-    if (typeof oidcBody.value !== 'string' || !oidcBody.value) throw new Error('GitHub Actions returned no OIDC identity token.');
-
     const gatewayController = new AbortController();
     const gatewayTimeout = setTimeout(() => gatewayController.abort(), 55_000);
     let evaluation: OpenAIEvaluation;
