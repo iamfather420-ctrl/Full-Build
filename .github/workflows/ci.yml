@@ -44,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           key="$(openssl rand -hex 32)"
-          printf 'SOLVEX_PROOF_HMAC_KEY=%s\\n' "$key" >> "$GITHUB_ENV"
+          printf 'SOLVEX_PROOF_HMAC_KEY=%s\n' "$key" >> "$GITHUB_ENV"
           unset key
       - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
         env:
