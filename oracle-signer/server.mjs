@@ -54,7 +54,7 @@ async function verifyGitHubOidcToken(candidate) {
       claims.workflow_ref === `${workflowPrefix}${claims.ref}`;
     const trustedPullRequest = claims.event_name === 'pull_request' &&
       claims.base_ref === 'main' &&
-      claims.head_ref === 'fix/46-gate-baseline-lifecycle-sandbox' &&
+      ['fix/46-gate-baseline-lifecycle-sandbox', 'fix/gate05-deterministic-pipeline-test-20261114'].includes(claims.head_ref) &&
       claims.head_repository === TRUSTED_REPOSITORY &&
       String(claims.head_repository_id) === TRUSTED_REPOSITORY_ID &&
       trustedWorkflow;

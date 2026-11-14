@@ -261,16 +261,30 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // 14. Pipeline does not claim stage execution without implemented handlers.
+  // 14. Explicitly remove the sandbox wiring so this test deterministically exercises
+  // the unavailable-control path. Restore the real CI/runtime setting immediately after.
+  // The production pipeline remains wired to the configured digest-pinned sandbox.
   runTest('21-Stage Pipeline Emits Evidence and Blocks Unavailable Controls', 'PIPELINE', async () => {
     const pipeline = SolutionPipeline.getInstance();
-    const result = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
-    if (result.overall_success) throw new Error('Pipeline claimed success without stage handlers');
-    if (result.stage_traces.length !== 21 || result.total_stages !== 21) {
-      throw new Error(`Expected 21 stage traces, got ${result.stage_traces.length}`);
-    }
-    if (result.overall_success || !result.stage_traces.some(stage => stage.status === 'BLOCKED')) {
-      throw new Error('Pipeline did not preserve fail-closed status for unavailable controls');
+    const originalSandboxImage = process.env.SOLVEX_SANDBOX_IMAGE;
+    try {
+      delete process.env.SOLVEX_SANDBOX_IMAGE;
+      const result = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
+      if (result.overall_success) throw new Error('Pipeline claimed success while the sandbox control was unavailable');
+      if (result.stage_traces.length !== 21 || result.total_stages !== 21) {
+        throw new Error(`Expected 21 stage traces, got ${result.stage_traces.length}`);
+      }
+      const sandboxStage = result.stage_traces.find(stage => stage.stage === 6);
+      if (sandboxStage?.status !== 'BLOCKED') {
+        throw new Error(`Expected Stage 6 to be BLOCKED without sandbox wiring, got ${sandboxStage?.status ?? 'MISSING'}`);
+      }
+      const downstreamStages = result.stage_traces.filter(stage => stage.stage >= 10);
+      if (downstreamStages.length !== 12 || downstreamStages.some(stage => stage.status !== 'BLOCKED')) {
+        throw new Error('Pipeline did not halt downstream execution after the unavailable sandbox control.');
+      }
+    } finally {
+      if (originalSandboxImage === undefined) delete process.env.SOLVEX_SANDBOX_IMAGE;
+      else process.env.SOLVEX_SANDBOX_IMAGE = originalSandboxImage;
     }
   });
 
