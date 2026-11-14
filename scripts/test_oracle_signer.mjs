@@ -44,7 +44,7 @@ try {
   assert.equal(response.status, 200);
   const attestation = await response.json();
   const canonical = [attestation.oracleId, attestation.modelId, attestation.inputSha256,
-    attestation.verdict, attestation.rationaleSha256].join('\\n');
+    attestation.verdict, attestation.rationaleSha256].join('\n');
   assert.equal(verify(null, Buffer.from(canonical), publicKey, Buffer.from(attestation.signature, 'base64')), true);
   assert.equal(attestation.inputSha256, payload.inputSha256);
   console.log('Stage 14 signer tests passed: startup, bearer auth, payload validation, Ed25519 signature and input binding.');
