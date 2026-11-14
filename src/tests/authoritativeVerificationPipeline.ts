@@ -20,12 +20,85 @@ import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 import type { UserContext } from '../auth/AuthService';
 
+const PAYPAL_SANDBOX_EVIDENCE_SHA256 = '08744c0d5b299d4aa008b608bad7da72524ad1f7fc0f0e6e884c9f7f0734ce81';
+
+function sortEvidenceKeys(value: any): any {
+  if (Array.isArray(value)) return value.map(sortEvidenceKeys);
+  if (value && typeof value === 'object') {
+    return Object.keys(value).sort().reduce((result, key) => {
+      result[key] = sortEvidenceKeys(value[key]);
+      return result;
+    }, {} as Record<string, any>);
+  }
+  return value;
+}
+
+/** Validates the approved PayPal sandbox receipt's integrity and narrow claim scope only. */
+export function verifyPayPalSandboxEvidence(evidence: unknown): boolean {
+  try {
+    if (!evidence || typeof evidence !== 'object' || Array.isArray(evidence)) return false;
+    const artifact = evidence as Record<string, any>;
+    if (
+      artifact.artifact_type !== 'EXTERNAL_PROVIDER_SANDBOX_AUTHENTICATION_EVIDENCE' ||
+      artifact.provider !== 'PayPal' ||
+      artifact.claim_scope !== 'SANDBOX_ONLY' ||
+      typeof artifact.evidence_sha256 !== 'string' ||
+      !/^[a-f0-9]{64}$/i.test(artifact.evidence_sha256) ||
+      artifact.result?.ok !== true ||
+      artifact.result?.status !== 'PASS' ||
+      artifact.result?.environment !== 'sandbox' ||
+      artifact.result?.sandbox_oauth_authenticated !== true ||
+      artifact.result?.payments_enabled !== false ||
+      artifact.result?.live_credentials_read !== false ||
+      artifact.result?.live_api_contacted !== false ||
+      artifact.result?.transaction_attempted !== false ||
+      artifact.result?.token_persisted !== false ||
+      artifact.security_boundary?.secrets_included !== false ||
+      artifact.security_boundary?.access_token_included !== false ||
+      artifact.security_boundary?.live_environment_tested !== false ||
+      artifact.security_boundary?.payments_enabled !== false
+    ) return false;
+
+    const payload = { ...artifact };
+    delete payload.evidence_sha256;
+    const canonical = JSON.stringify(sortEvidenceKeys(payload));
+    const digest = computeSha256(canonical);
+    return digest === artifact.evidence_sha256.toLowerCase() &&
+      digest === PAYPAL_SANDBOX_EVIDENCE_SHA256;
+  } catch {
+    return false;
+  }
+}
+
+function getExternalNeonCredentialMetadata(): {
+  configured: boolean;
+  providers: string[];
+  variable_names: string[];
+} {
+  if (typeof process === 'undefined' || !process.env) {
+    return { configured: false, providers: [], variable_names: [] };
+  }
+  // Inspect variable names only. Never read, copy, log, or transmit secret values.
+  const envNames = Object.keys(process.env);
+  const credentialNames = [
+    'DATABASE_URL',
+    'NEON_DATABASE_URL',
+    'SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL',
+    'SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL'
+  ];
+  const variable_names = credentialNames.filter(name => envNames.includes(name));
+  const providers: string[] = [];
+  if (envNames.includes('VERCEL')) providers.push('vercel');
+  if (envNames.includes('GITHUB_ACTIONS')) providers.push('github');
+  return { configured: variable_names.length > 0 && providers.length > 0, providers, variable_names };
+}
+
 export interface GateResult {
   gate_index: number;
   gate_id: string;
   name: string;
   claim_scope: 'MODEL' | 'LOCAL' | 'SANDBOX' | 'PRODUCTION';
-  status: 'PASSED' | 'FAILED' | 'BLOCKED' | 'CONFIGURED' | 'EXTERNAL_PROVIDER_REQUIRED';
+  status: 'PASSED' | 'FAILED' | 'BLOCKED' | 'CONFIGURED' | 'CONFIGURED_EXTERNAL' | 'EXTERNAL_PROVIDER_REQUIRED';
   duration_ms: number;
   details: Record<string, any>;
   error?: string;
@@ -496,6 +569,22 @@ export class AuthoritativeVerificationPipeline {
     const pp = PayPalAdapter.getInstance();
     const hasPayPal = pp.hasActiveCredentials();
     const ppCreds = pp.getEffectiveCredentials();
+    let sandboxEvidenceDigestValid = false;
+    try {
+      if (platform.fs && platform.path && platform.fs.existsSync && platform.fs.readFileSync) {
+        const evidencePath = platform.path.resolve(
+          rootDir,
+          'artifacts/provider-evidence/paypal-sandbox-oauth-2026-11-13.json'
+        );
+        if (platform.fs.existsSync(evidencePath)) {
+          sandboxEvidenceDigestValid = verifyPayPalSandboxEvidence(
+            JSON.parse(platform.fs.readFileSync(evidencePath, 'utf8'))
+          );
+        }
+      }
+    } catch {
+      sandboxEvidenceDigestValid = false;
+    }
     let ppAuth = false;
     if (hasPayPal && ppCreds) {
       const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
@@ -503,9 +592,13 @@ export class AuthoritativeVerificationPipeline {
     }
 
     const neon = NeonStore.getInstance();
-    const hasNeon = neon.isConfigured();
+    const localNeonConfigured = neon.isConfigured();
+    const externalNeon = getExternalNeonCredentialMetadata();
+    const hasNeon = localNeonConfigured || externalNeon.configured;
     let neonConn = false;
-    if (hasNeon) {
+    let neonConnectionAttempted = false;
+    if (localNeonConfigured) {
+      neonConnectionAttempted = true;
       neonConn = await neon.connect();
     }
 
@@ -533,14 +626,22 @@ export class AuthoritativeVerificationPipeline {
         paypal: {
           configured: hasPayPal,
           environment: ppCreds?.environment || 'NOT_CONFIGURED',
+          sandbox_evidence_digest_valid: sandboxEvidenceDigestValid,
           authenticated: ppAuth,
           status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
           claim_scope: 'LOCAL'
         },
         neon: {
           configured: hasNeon,
+          local_configured: localNeonConfigured,
           connected: neonConn,
-          status: !hasNeon ? 'EXTERNAL_PROVIDER_REQUIRED' : (neonConn ? 'CONNECTED' : 'CONNECTION_FAILED'),
+          status: localNeonConfigured
+            ? (neonConn ? 'CONNECTED' : 'CONNECTION_FAILED')
+            : (externalNeon.configured ? 'CONFIGURED_EXTERNAL' : 'EXTERNAL_PROVIDER_REQUIRED'),
+          providers: externalNeon.providers,
+          credential_variable_names: externalNeon.variable_names,
+          connection_attempted: neonConnectionAttempted,
+          secrets_read: false,
           claim_scope: 'LOCAL'
         },
         fiat_policy: {
