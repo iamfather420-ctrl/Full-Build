@@ -18,6 +18,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
+import type { UserContext } from '../auth/AuthService';
 
 export interface GateResult {
   gate_index: number;
@@ -542,11 +543,39 @@ export class AuthoritativeVerificationPipeline {
     const g12Start = performance.now();
     const pipe = SolutionPipeline.getInstance();
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
-    const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode);
+    const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode, { continueAfterFailure: true });
+
+    let lifecycleUser: UserContext | undefined;
+    let lifecycleIdentityResolution = 'NOT_CONFIGURED';
+    // Only CI's disposable Neon validation branch may supply the test identity.
+    // Never read a browser session or mint an application-side tenant token here.
+    if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) {
+      try {
+        // The DB package initializes its default client from DATABASE_URL at module load.
+        // Bind that default explicitly to the disposable validation branch before importing it;
+        // never fall back to a production/application database for this CI lifecycle proof.
+        process.env.DATABASE_URL = process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL;
+        const { resolveUniqueActiveOidcOwnerIdentity } = await import('@workspace/db');
+        const identity = await resolveUniqueActiveOidcOwnerIdentity(
+          process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
+        );
+        lifecycleUser = {
+          user_id: identity.user_id,
+          tenant_id: identity.tenant_id,
+          email: identity.email,
+          role: identity.role,
+          issued_at: Date.now(),
+          signed_token: identity.signed_token
+        };
+        lifecycleIdentityResolution = 'VERIFIED_DISPOSABLE_NEON_IDENTITY';
+      } catch (error) {
+        lifecycleIdentityResolution = 'BLOCKED: ' + (error instanceof Error ? error.message : 'OIDC identity resolution failed');
+      }
+    }
 
     const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
-    sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
+    sqliteInst.insertTenantRecord('orders', lifecycleUser?.tenant_id ?? 'TENANT_ENTERPRISE_DEMO', {
       id: testOrderId,
       title: 'E2E Verified Delivery Order',
       solution_id: pipeRes.solution_id || 'DH-S-001',
@@ -560,7 +589,7 @@ export class AuthoritativeVerificationPipeline {
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
     for (const targetState of plannedTransitions) {
-      const result = await orderMgr.transitionOrder(testOrderId, targetState);
+      const result = await orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
       if (!result.success) break;
@@ -586,7 +615,7 @@ export class AuthoritativeVerificationPipeline {
 
     const durableInst = DurableStore.getInstance();
     const e2eAudit = durableInst.appendAudit(
-      'TENANT_ENTERPRISE_DEMO',
+      lifecycleUser?.tenant_id ?? 'TENANT_ENTERPRISE_DEMO',
       'E2E_VERIFIER',
       lifecycleAuditAction,
       'ORDER',
@@ -599,7 +628,8 @@ export class AuthoritativeVerificationPipeline {
         final_order_status: actualFinalStatus,
         authorization_blocked: lifecycleBlocked,
         payment_processing: 'DISABLED',
-        claim_scope: 'LOCAL'
+        claim_scope: 'LOCAL',
+        identity_resolution: lifecycleIdentityResolution
       }
     );
 
@@ -617,6 +647,7 @@ export class AuthoritativeVerificationPipeline {
           total_stages: pipeRes.total_stages,
           solution_id: pipeRes.solution_id
         },
+        identity_resolution: lifecycleIdentityResolution,
         order_lifecycle: {
           order_id: testOrderId,
           planned_transitions: plannedTransitions,

@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   validate:
@@ -18,6 +19,7 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:6063b88f12f74d018cba3b4d362355d1cd6e663c042fe7e781276cf7675b12a6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +29,12 @@ jobs:
           bun-version: latest
       - name: Install locked dependencies
         run: bun install
+      - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull "$SOLVEX_SANDBOX_IMAGE"
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
@@ -68,6 +76,10 @@ jobs:
       - name: Proof closure
         run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification
+        env:
+          # Keep the verifier on the same disposable Neon branch used by the OIDC issuer.
+          # Step scope avoids changing the isolation integration test's environment.
+          NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Upload 46-gate evidence
         if: always()
