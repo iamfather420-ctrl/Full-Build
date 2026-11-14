@@ -751,11 +751,14 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
-    for (const targetState of plannedTransitions) {
-      const result = await orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
+    // Never advance an order when its solution pipeline did not close successfully.
+    if (pipeRes.overall_success && pipeRes.completed_stages === pipeRes.total_stages) {
+      for (const targetState of plannedTransitions) {
+        const result = await orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
-      if (!result.success) break;
+        if (!result.success) break;
+      }
     }
 
     const finalOrderRow = sqliteInst.getRawDb().get('SELECT status FROM orders WHERE id = ?', [testOrderId]);
