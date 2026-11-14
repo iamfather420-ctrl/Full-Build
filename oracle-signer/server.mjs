@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createPrivateKey, sign, timingSafeEqual } from 'node:crypto';
+import { createPrivateKey, createPublicKey, sign, verify, createHash, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 const host = process.env.SOLVEX_SIGNER_HOST ?? '0.0.0.0';
@@ -16,6 +16,18 @@ if (token.length < 32 || !oracleId) {
 const privateKeyPem = privateKeyEnv ? privateKeyEnv.replace(/\\n/g, '\n') : await readFile(keyPath, 'utf8');
 const privateKey = createPrivateKey(privateKeyPem);
 if (privateKey.asymmetricKeyType !== 'ed25519') throw new Error('Signer key must be Ed25519.');
+const publicKey = createPublicKey(privateKey);
+const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' });
+const publicKeySha256 = createHash('sha256').update(publicKey.export({ type: 'spki', format: 'der' })).digest('hex');
+
+function runKeySelfTest() {
+  const canonical = [oracleId, 'solvex-signer-self-test', 'a'.repeat(64), 'ACCEPT', 'b'.repeat(64)].join('\\n');
+  const bytes = Buffer.from(canonical);
+  const signature = sign(null, bytes, privateKey);
+  return verify(null, bytes, publicKey, signature);
+}
+const keySelfTestPassed = runKeySelfTest();
+if (!keySelfTestPassed) throw new Error('Ed25519 signer self-test failed.');
 
 function safeTokenEqual(candidate) {
   if (typeof candidate !== 'string') return false;
@@ -39,6 +51,16 @@ const server = createServer(async (req, res) => {
   if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/healthz' || pathname === '/')) {
     res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
     return res.end(req.method === 'HEAD' ? undefined : JSON.stringify({ ok: true, oracleId }));
+  }
+  if (req.method === 'GET' && pathname === '/selftest') {
+    return send(res, 200, {
+      ok: keySelfTestPassed,
+      oracleId,
+      keyType: privateKey.asymmetricKeyType,
+      signatureVerified: keySelfTestPassed,
+      publicKeyPem,
+      publicKeySha256
+    });
   }
   if (req.method !== 'POST' || pathname !== '/attest') return send(res, 404, { error: 'not_found' });
   if (!safeTokenEqual((req.headers.authorization ?? '').replace(/^Bearer\s+/i, ''))) {
