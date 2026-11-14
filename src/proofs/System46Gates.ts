@@ -56,7 +56,7 @@ export class System46Gates {
       const g = authReport.gates[i];
       let gStatus: GateExecutionResult['status'] = 'PASSED';
       if (g.status === 'PASSED') gStatus = 'PASSED';
-      else if (g.status === 'EXTERNAL_PROVIDER_REQUIRED') gStatus = 'EXTERNAL_PROVIDER_REQUIRED';
+      else if (g.status === 'EXTERNAL_PROVIDER_REQUIRED' || g.status === 'CONFIGURED') gStatus = 'EXTERNAL_PROVIDER_REQUIRED';
       else if (g.status === 'BLOCKED') gStatus = 'BLOCKED';
       else gStatus = 'FAIL';
 
