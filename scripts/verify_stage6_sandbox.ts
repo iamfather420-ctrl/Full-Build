@@ -3,7 +3,11 @@ import { IsolatedExecutionSandbox } from '../src/security/IsolatedExecutionSandb
 
 const image = process.env.SOLVEX_SANDBOX_IMAGE ?? '';
 if (!/@sha256:[a-f0-9]{64}$/i.test(image)) throw new Error('SOLVEX_SANDBOX_IMAGE must be an immutable sha256 digest reference.');
-const source = 'export const solvexStage6Probe = true;\n';
+const source = [
+  'export function solvexStage6Probe(value: number): number { return value + 1; }',
+  'if (solvexStage6Probe(1) !== 2) throw new Error("TypeScript sandbox probe failed");',
+  ''
+].join('\n');
 const sourceSha256 = computeSha256(source);
 const memoryLimitBytes = 256 * 1024 * 1024;
 const result = await IsolatedExecutionSandbox.execute(image, ['/opt/solvex-sandbox/verify-source.mjs'], source, {

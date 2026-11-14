@@ -3,11 +3,12 @@ name: Build and Enterprise CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, fix/46-gate-baseline-lifecycle-sandbox]
 
 permissions:
   contents: read
-  packages: read
+  packages: write
+  id-token: write
 
 jobs:
   validate:
@@ -19,7 +20,8 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:6063b88f12f74d018cba3b4d362355d1cd6e663c042fe7e781276cf7675b12a6
+      SOLVEX_MEMORY_LIMIT_BYTES: '1073741824'
+      # Stage 14 uses short-lived GitHub OIDC for Fly evaluation and Railway signing.
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,14 +29,27 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Install locked dependencies
-        run: bun install
-      - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
+      - name: Install dependencies without mutating the npm-format lockfile
+        run: bun install --no-save
+      - name: Build and publish digest-pinned Stage 6 sandbox
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          docker pull "$SOLVEX_SANDBOX_IMAGE"
+          IMAGE="ghcr.io/iamfather420-ctrl/solvex-sandbox:ci-${GITHUB_SHA}"
+          NODE_BASE_IMAGE="node:22.16.0-bookworm-slim@sha256:048ed02c5fd52e86fda6fbd2f6a76cf0d4492fd6c6fee9e2c463ed5108da0e34"
+          docker build --platform linux/amd64 --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t "$IMAGE" sandbox
+          docker push "$IMAGE"
+          DIGEST="$(docker image inspect "$IMAGE" --format '{{range .RepoDigests}}{{println .}}{{end}}' | awk -v prefix="ghcr.io/iamfather420-ctrl/solvex-sandbox@" 'index($0,prefix)==1 { sub(prefix,""); print; exit }')"
+          if ! printf '%s' "$DIGEST" | grep -Eq '^sha256:[a-f0-9]{64}$'; then
+            echo "Could not resolve the pushed sandbox manifest digest." >&2
+            exit 1
+          fi
+          echo "SOLVEX_SANDBOX_IMAGE=ghcr.io/iamfather420-ctrl/solvex-sandbox@${DIGEST}" >> "$GITHUB_ENV"
+          echo "Published current-source sandbox image at immutable digest ${DIGEST}"
+      - name: Stage 14 signer authentication and Ed25519 regression tests
+        run: bun run test:oracle-signer
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
@@ -73,6 +88,14 @@ jobs:
         run: bun run verify:enterprise
       - name: Formal verification corpus
         run: bun run verify:120
+      - name: Prepare ephemeral local proof and tenant crypto keys
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/solvex-proof-store
+          chmod 700 /tmp/solvex-proof-store
+          echo "SOLVEX_PROOF_DIR=/tmp/solvex-proof-store" >> "$GITHUB_ENV"
+          echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
       - name: Proof closure
         run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification

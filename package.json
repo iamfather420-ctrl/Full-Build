@@ -36,7 +36,8 @@
     "test:production-state": "tsx scripts/test_production_state.ts",
     "test:owner-access": "tsx scripts/test_owner_access.ts",
     "test:oidc-tenant-claims": "bash scripts/test_oidc_tenant_claims.sh",
-    "verify:stage6-sandbox": "tsx scripts/verify_stage6_sandbox.ts"
+    "verify:stage6-sandbox": "tsx scripts/verify_stage6_sandbox.ts",
+    "test:oracle-signer": "node scripts/test_oracle_signer.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

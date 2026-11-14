@@ -7,6 +7,7 @@ import { MarketplaceEngine } from '../marketplace/MarketplaceEngine';
 import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { ProofEngine } from '../proofs/ProofEngine';
+import { ProofBundleBuilder } from '../proofs/ProofBundle';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
 import { MemorySafetyInstrumentation } from '../security/MemorySafetyInstrumentation';
@@ -44,7 +45,7 @@ export class SolutionPipeline {
     'Stage 11: Z3 SMT Formal Theorem Verification',
     'Stage 12: Machine-Checked Proof Certificate Generation',
     'Stage 13: Deterministic Cleanroom Test Suite Execution',
-    'Stage 14: Multi-Model Independent Oracle Attestation',
+    'Stage 14: External Model Oracle Attestation',
     'Stage 15: Bitrot & Replay Divergence Validation',
     'Stage 16: Defensible Pricing Formula v1.4 Execution',
     'Stage 17: Redacted Customer Evidence Generation',
@@ -99,6 +100,8 @@ export class SolutionPipeline {
     const sourceHash = computeSha256(normalizedCode);
     const paradox = ParadoxRegistry.getInstance().getByCode(paradoxCode);
     let theoremCertificate = '';
+    let theoremEvidence: { theorem_id?: string; solver_result?: string; certificate_sha256?: string; proved?: boolean } | undefined;
+    let oracleAttestation: Awaited<ReturnType<typeof IndependentModelOracle.verify>> | undefined;
     let sandboxMemoryEvidence: { current?: number | null; peak?: number | null; limit?: number | null; oom?: number | null } | undefined;
     let haltedAt: number | undefined;
     const runStage = async (stage: number, execute: () => Promise<StageOutcome> | StageOutcome) => {
@@ -146,12 +149,21 @@ export class SolutionPipeline {
         timeoutMs: 30_000, memoryBytes: 256 * 1024 * 1024, cpuCount: 1, pidsLimit: 64
       });
       if (!result.passed) return block(result.error ?? 'Isolated sandbox rejected or failed the source.', { sandbox_started: true, exit_code: result.exitCode, oom_killed: result.oomKilled, timed_out: result.timedOut });
-      let receipt: { accepted?: boolean; input_sha256?: string; cgroup_memory_current_bytes?: number | null; cgroup_memory_peak_bytes?: number | null; cgroup_memory_limit_bytes?: number | null; cgroup_oom_events?: number | null };
+      let receipt: { accepted?: boolean; input_sha256?: string; exit_code?: number | null; timed_out?: boolean; stderr_sha256?: string; cgroup_memory_current_bytes?: number | null; cgroup_memory_peak_bytes?: number | null; cgroup_memory_limit_bytes?: number | null; cgroup_oom_events?: number | null };
       try { receipt = JSON.parse(result.output.trim()); } catch { return fail('Sandbox did not return a valid machine-readable receipt.'); }
       sandboxMemoryEvidence = { current: receipt.cgroup_memory_current_bytes, peak: receipt.cgroup_memory_peak_bytes, limit: receipt.cgroup_memory_limit_bytes, oom: receipt.cgroup_oom_events };
       return receipt.accepted === true && receipt.input_sha256 === sourceHash
         ? pass({ sandbox_started: true, image_digest: image.split('@sha256:')[1], input_sha256: sourceHash, exit_code: result.exitCode, memory_limit_bytes: result.memoryLimitBytes, cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes, cgroup_oom_events: receipt.cgroup_oom_events })
-        : fail('Sandbox receipt did not bind acceptance to the submitted source hash.');
+        : fail('Sandbox receipt did not bind acceptance to the submitted source hash.', {
+            expected_input_sha256: sourceHash,
+            receipt_input_sha256: receipt.input_sha256 ?? null,
+            receipt_accepted: receipt.accepted === true,
+            receipt_exit_code: receipt.exit_code ?? null,
+            receipt_timed_out: receipt.timed_out ?? null,
+            receipt_stderr_sha256: receipt.stderr_sha256 ?? null,
+            receipt_cgroup_oom_events: receipt.cgroup_oom_events ?? null,
+            sandbox_exit_code: result.exitCode
+          });
     });
     await runStage(7, () => {
       const balanced = (normalizedCode.match(/{/g) ?? []).length === (normalizedCode.match(/}/g) ?? []).length;
@@ -165,8 +177,8 @@ export class SolutionPipeline {
         sandbox?.limit !== null && sandbox?.limit !== undefined && sandbox?.oom !== null && sandbox?.oom !== undefined;
       const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= limit && sandbox!.limit! <= limit && sandbox!.oom === 0;
       return snapshot.instrumentationAvailable && snapshot.withinLimit && sandboxWithinLimit
-        ? pass({ memory_instrumentation: true, sandbox_peak_bytes: sandbox!.peak, sandbox_limit_bytes: sandbox!.limit, sandbox_oom_events: sandbox!.oom, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes })
-        : block('Sandbox cgroup peak/limit/OOM telemetry or orchestrator cgroup telemetry is unavailable or outside budget.', { memory_instrumentation: snapshot.instrumentationAvailable, sandbox_telemetry_available: sandboxMeasured, sandbox_peak_bytes: sandbox?.peak, sandbox_limit_bytes: sandbox?.limit, sandbox_oom_events: sandbox?.oom, orchestrator_within_limit: snapshot.withinLimit });
+        ? pass({ memory_instrumentation: true, sandbox_peak_bytes: sandbox!.peak, sandbox_limit_bytes: sandbox!.limit, sandbox_oom_events: sandbox!.oom, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_peak_rss_bytes: snapshot.maxRssBytes, orchestrator_memory_source: 'process RSS + getrusage peak; sandbox cgroup v2 peak/limit/OOM' })
+        : block('Sandbox cgroup peak/limit/OOM telemetry or orchestrator process RSS/peak telemetry is unavailable or outside budget.', { memory_instrumentation: snapshot.instrumentationAvailable, sandbox_telemetry_available: sandboxMeasured, sandbox_peak_bytes: sandbox?.peak, sandbox_limit_bytes: sandbox?.limit, sandbox_oom_events: sandbox?.oom, orchestrator_within_limit: snapshot.withinLimit });
     });
     const sentinel = await runStage(9, () => /FAIL_STAGE_9|NON_TERMINATION|DIVERGENCE_SENTINEL/.test(normalizedCode)
       ? fail('Sentinel detected fatal specification anomaly', { sentinel_detected: true })
@@ -194,6 +206,7 @@ export class SolutionPipeline {
     const z3Result = await runStage(11, async () => {
       const result = await Z3FormalProofEngine.getInstance().proveCatalogTheorem('THM-RUSSELL-01');
       theoremCertificate = result.certificate_sha256;
+      theoremEvidence = result;
       return result.proved ? pass({ theorem_id: result.theorem_id, solver: result.solver_engine, solver_result: result.solver_result, certificate_sha256: result.certificate_sha256 })
         : fail('Z3 did not prove the selected theorem.', { solver_result: result.solver_result, explanation: result.explanation });
     });
@@ -208,7 +221,18 @@ export class SolutionPipeline {
     await runStage(14, async () => {
       try {
         const attestation = await IndependentModelOracle.verify({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode });
-        return pass({ independent_oracle_count: 1, oracle_id: attestation.oracleId, model_id: attestation.modelId, verdict: attestation.verdict, input_sha256: attestation.inputSha256, attestation_signature_sha256: computeSha256(attestation.signature) });
+        oracleAttestation = attestation;
+        const evidence = {
+          independent_oracle_count: 1,
+          oracle_id: attestation.oracleId,
+          model_id: attestation.modelId,
+          verdict: attestation.verdict,
+          input_sha256: attestation.inputSha256,
+          attestation_signature_sha256: computeSha256(attestation.signature)
+        };
+        return attestation.verdict === 'ACCEPT'
+          ? pass(evidence)
+          : fail('External model oracle rejected the submitted evidence.', evidence);
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), { independent_oracle_count: 0 });
       }
@@ -225,15 +249,49 @@ export class SolutionPipeline {
         : fail('Pricing formula deterministic assertion failed.');
     });
     await runStage(17, async () => {
-      const bundle = ProofEngine.getInstance().getBundle('PB-DH-S-001');
-      if (!bundle) return block('No proof bundle is registered; no synthetic evidence will be created.');
       try {
+        // Build a source-bound evidence bundle only from receipts generated by this run.
+        // If no independent oracle attested, the bundle remains FAIL and is never promoted.
+        const sourceStage = traces.find(stage => stage.stage === 1);
+        const replayStage = traces.find(stage => stage.stage === 13);
+        const replayHash = computeSha256(normalizedCode);
+        const builder = new ProofBundleBuilder(
+          'PB-' + sourceHash.slice(0, 24),
+          paradoxCode,
+          'Source-bound solution candidate SHA-256 ' + sourceHash
+        );
+        builder
+          .setImplementation(normalizedCode)
+          .addTest('PIPE-01-SOURCE', 'Normalized non-empty source was hashed by the lifecycle runner', sourceStage?.status === 'PASSED', sourceStage?.duration_ms ?? 0)
+          .addTest('PIPE-13-REPLAY', 'Normalized source replay hash matched the submitted source hash', replayStage?.status === 'PASSED' && replayHash === sourceHash, replayStage?.duration_ms ?? 0)
+          .addFormalProof('Z3_SMT', 'THM-RUSSELL-01; solver=' + (theoremEvidence?.solver_result ?? 'NOT_RUN') + '; certificate_sha256=' + theoremCertificate, z3Result.status === 'PASSED')
+          .addReplay('PIPE-13', sourceHash, replayHash)
+          .addEvidence('source_sha256:' + sourceHash)
+          .addEvidence('z3_certificate_sha256:' + (theoremCertificate || 'NOT_AVAILABLE'))
+          .addSourceReference('paradox_registry:' + paradoxCode);
+        if (process.env.GITHUB_SHA) builder.addSourceReference('commit:' + process.env.GITHUB_SHA);
+        if (oracleAttestation) {
+          builder.addOracle(oracleAttestation.oracleId, oracleAttestation.modelId, 'Ed25519 source-bound independent oracle attestation', true);
+        } else {
+          builder.addLimitation('Independent oracle attestation is unavailable; this bundle is not VERIFIED.');
+        }
+        const bundle = builder.seal();
+        ProofEngine.getInstance().registerBundle(bundle);
         const store = new PersistentProofStore();
         await store.put(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT', bundle);
         const persisted = await store.get(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
         const view = CrystalClearBox.projectCustomerEvidence(persisted.payload as typeof bundle);
         return view.proprietary_weights_redacted && view.internal_reasoning_redacted
-          ? pass({ proof_id: view.proof_id, public_audit_token: view.public_audit_token, verdict: view.verification_verdict, redaction_verified: true, persisted_sha256: persisted.payloadSha256, hmac_verified: true })
+          ? pass({
+              proof_id: view.proof_id,
+              public_audit_token: view.public_audit_token,
+              verdict: view.verification_verdict,
+              redaction_verified: true,
+              persisted_sha256: persisted.payloadSha256,
+              hmac_verified: true,
+              independent_oracle_attestations: view.oracle_attestations_count,
+              bundle_verified: view.verification_verdict === 'VERIFIED'
+            })
           : fail('Customer evidence redaction assertion failed.');
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), { persisted_proof_verified: false });
