@@ -32,7 +32,7 @@ export class IsolatedExecutionSandbox {
     const pidsLimit = Math.min(Math.max(Math.floor(limits.pidsLimit ?? 64), 8), 256);
     const maxOutputBytes = Math.min(Math.max(limits.maxOutputBytes ?? 256 * 1024, 1024), 2 * 1024 * 1024);
     const name = 'solvex-sandbox-' + randomUUID();
-    const args = ['run', '--name', name, '--network=none', '--read-only', '--memory', String(memoryBytes),
+    const args = ['run', '--interactive', '--name', name, '--network=none', '--read-only', '--memory', String(memoryBytes),
       '--memory-swap', String(memoryBytes), '--cpus', String(cpuCount), '--pids-limit', String(pidsLimit),
       '--user', '65534:65534', '--cap-drop=ALL', '--security-opt=no-new-privileges',
       '--tmpfs', '/tmp:rw,noexec,nosuid,nodev,size=16m', '--pull=never', image, ...argv];
