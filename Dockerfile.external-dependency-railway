@@ -1,0 +1,19 @@
+# Dedicated Railway image for the External Dependency service.
+# Runs the API entrypoint with /healthz; does not start the outreach crawler.
+ARG BUN_VERSION=1.3.14
+FROM oven/bun:${BUN_VERSION}-slim
+
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=8080
+
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3 && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY . .
+# The checked-in bun.lock is npm-format and unsupported by this Bun version.
+RUN rm -f bun.lock && bun install && bun run build
+
+EXPOSE 8080
+CMD ["bun", "server.ts"]
