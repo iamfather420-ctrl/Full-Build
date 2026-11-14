@@ -585,11 +585,9 @@ export class AuthoritativeVerificationPipeline {
     } catch {
       sandboxEvidenceDigestValid = false;
     }
-    let ppAuth = false;
-    if (hasPayPal && ppCreds) {
-      const testPP = await pp.testLiveCredentials(ppCreds.clientId, ppCreds.clientSecret, ppCreds.environment);
-      ppAuth = testPP.valid;
-    }
+    // GATE-11 consumes the approved sandbox receipt as integrity evidence only.
+    // Never repeat OAuth or provider authentication as part of this authoritative run.
+    const ppAuth = false;
 
     const neon = NeonStore.getInstance();
     const localNeonConfigured = neon.isConfigured();
@@ -630,8 +628,12 @@ export class AuthoritativeVerificationPipeline {
           environment: ppCreds?.environment || 'NOT_CONFIGURED',
           sandbox_evidence_digest_valid: sandboxEvidenceDigestValid,
           authenticated: ppAuth,
-          status: !hasPayPal ? 'EXTERNAL_PROVIDER_REQUIRED' : (ppAuth ? 'AUTHENTICATED' : 'AUTHENTICATION_FAILED'),
-          claim_scope: 'LOCAL'
+          status: ppAuth
+            ? 'AUTHENTICATED'
+            : (sandboxEvidenceDigestValid
+              ? 'SANDBOX_EVIDENCE_VALID_UNCLAIMED'
+              : (hasPayPal ? 'CREDENTIALS_PRESENT_UNVERIFIED' : 'EXTERNAL_PROVIDER_REQUIRED')),
+          claim_scope: sandboxEvidenceDigestValid ? 'SANDBOX' : 'LOCAL'
         },
         neon: {
           configured: hasNeon,
