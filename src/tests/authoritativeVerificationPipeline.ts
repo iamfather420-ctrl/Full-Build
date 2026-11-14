@@ -308,9 +308,12 @@ export class AuthoritativeVerificationPipeline {
       {
         total_tests: entRes.totalTests,
         passed_tests: entRes.passedTests,
-        pass_rate: `${entRes.totalTests > 0 ? Math.round((entRes.passedTests / entRes.totalTests) * 100) : 0}%`
+        pass_rate: `${entRes.totalTests > 0 ? Math.round((entRes.passedTests / entRes.totalTests) * 100) : 0}%`,
+        failed_tests: entRes.results
+          .filter(test => !test.passed)
+          .map(test => ({ test_number: test.test_number, name: test.name, duration_ms: test.duration_ms }))
       },
-      entRes.allPassed ? undefined : 'Enterprise invariant failure'
+      entRes.allPassed ? undefined : `Enterprise invariant failure: ${entRes.results.filter(test => !test.passed).map(test => `#${test.test_number} ${test.name}`).join('; ')}`
     );
 
     writeArtifact('enterprise-verification.json', JSON.stringify(entRes, null, 2));
