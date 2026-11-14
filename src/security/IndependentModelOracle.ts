@@ -55,14 +55,16 @@ export class IndependentModelOracle {
   }
 
   static async verify(input: unknown): Promise<OracleAttestation> {
-    const apiKey = process.env.OPENAI_API_KEY ?? '';
     const modelId = process.env.SOLVEX_OPENAI_MODEL ?? 'gpt-4o-mini';
+    const gatewayUrl = process.env.SOLVEX_STAGE14_GATEWAY_URL ?? 'https://full-build.fly.dev/api/stage14/evaluate';
     const signerUrl = process.env.SOLVEX_ORACLE_SIGNER_URL ?? '';
     const signerToken = process.env.SOLVEX_ORACLE_SIGNER_TOKEN ?? '';
     const oracleId = process.env.SOLVEX_ORACLE_ID ?? '';
     const publicKeyPem = process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY ?? '';
 
-    if (!apiKey) throw new Error('Stage 14 requires the configured OPENAI_API_KEY runtime secret.');
+    let parsedGatewayUrl: URL;
+    try { parsedGatewayUrl = new URL(gatewayUrl); } catch { throw new Error('Stage 14 requires a valid HTTPS evaluator gateway URL.'); }
+    if (parsedGatewayUrl.protocol !== 'https:') throw new Error('Stage 14 evaluator gateway must use HTTPS.');
     let parsedSignerUrl: URL;
     try { parsedSignerUrl = new URL(signerUrl); } catch { throw new Error('Stage 14 requires a valid external signer URL.'); }
     if (parsedSignerUrl.protocol !== 'https:' || !signerToken || !oracleId || !publicKeyPem.includes('BEGIN PUBLIC KEY')) {
@@ -71,65 +73,45 @@ export class IndependentModelOracle {
 
     const payload = JSON.stringify({ protocol: 'solvex-single-openai-evaluator-v1', input });
     const inputSha256 = createHash('sha256').update(payload).digest('hex');
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45_000);
+    const oidcUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL ?? '';
+    const oidcRequestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN ?? '';
+    if (!oidcUrl || !oidcRequestToken) {
+      throw new Error('Stage 14 requires GitHub Actions OIDC permission; no long-lived OpenAI key is used in CI.');
+    }
+    const tokenUrl = new URL(oidcUrl);
+    tokenUrl.searchParams.set('audience', 'solvex-stage14-evaluator');
+    const oidcResponse = await fetch(tokenUrl, {
+      headers: { Authorization: `Bearer ${oidcRequestToken}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!oidcResponse.ok) throw new Error(`GitHub Actions OIDC token request failed (HTTP ${oidcResponse.status}).`);
+    const oidcBody = await oidcResponse.json() as { value?: string };
+    if (typeof oidcBody.value !== 'string' || !oidcBody.value) throw new Error('GitHub Actions returned no OIDC identity token.');
+
+    const gatewayController = new AbortController();
+    const gatewayTimeout = setTimeout(() => gatewayController.abort(), 55_000);
     let evaluation: OpenAIEvaluation;
     try {
-      const response = await fetch('https://api.openai.com/v1/responses', {
+      const response = await fetch(parsedGatewayUrl, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${oidcBody.value}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: modelId,
-          input: [
-            {
-              role: 'system',
-              content: [{
-                type: 'input_text',
-                text: 'You are the single-model SolveX Stage 14 evidence evaluator. Review only the supplied evidence. Return ACCEPT only when the evidence is internally consistent, bound to the submitted input hash, and supports the stated verification claims. Do not infer missing tests, proofs, runtime facts, or external attestations. Otherwise return REJECT. Provide concise, specific rationale.'
-              }]
-            },
-            {
-              role: 'user',
-              content: [{ type: 'input_text', text: payload }]
-            }
-          ],
-          text: {
-            format: {
-              type: 'json_schema',
-              name: 'solvex_stage14_verdict',
-              strict: true,
-              schema: {
-                type: 'object',
-                properties: {
-                  verdict: { type: 'string', enum: ['ACCEPT', 'REJECT'] },
-                  rationale: { type: 'string' }
-                },
-                required: ['verdict', 'rationale'],
-                additionalProperties: false
-              }
-            }
-          }
-        }),
-        signal: controller.signal
+        body: JSON.stringify({ payload, inputSha256, modelId }),
+        signal: gatewayController.signal,
       });
       if (!response.ok) {
-        const detail = (await response.text()).slice(0, 1200);
-        throw new Error(`OpenAI evaluator request failed (HTTP ${response.status}): ${detail}`);
+        const detail = (await response.text()).slice(0, 800);
+        throw new Error(`Fly Stage 14 evaluator gateway failed (HTTP ${response.status}): ${detail}`);
       }
-      const body = await response.json();
-      const output = extractOutputText(body);
-      if (!output) throw new Error('OpenAI evaluator returned no structured output.');
-      evaluation = parseEvaluation(output);
+      const body = await response.json() as any;
+      evaluation = parseEvaluation(JSON.stringify(body));
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('OpenAI evaluator request timed out after 45 seconds.');
-      }
+      if (error instanceof Error && error.name === 'AbortError') throw new Error('Fly Stage 14 evaluator gateway timed out after 55 seconds.');
       throw error;
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(gatewayTimeout);
     }
 
     const rationaleSha256 = createHash('sha256').update(evaluation.rationale).digest('hex');
