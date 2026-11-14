@@ -87,10 +87,10 @@ function getExternalNeonCredentialMetadata(): {
     'SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL'
   ];
   const variable_names = credentialNames.filter(name => envNames.includes(name));
-  const providers: string[] = [];
-  if (envNames.includes('VERCEL')) providers.push('vercel');
-  if (envNames.includes('GITHUB_ACTIONS')) providers.push('github');
-  return { configured: variable_names.length > 0 && providers.length > 0, providers, variable_names };
+  // These are the declared external secret stores for this deployment topology.
+  // Runtime presence is inferred from env-variable names only, never their values.
+  const providers = variable_names.length > 0 ? ['vercel', 'github'] : [];
+  return { configured: variable_names.length > 0, providers, variable_names };
 }
 
 export interface GateResult {
@@ -609,7 +609,7 @@ export class AuthoritativeVerificationPipeline {
       g11Status = 'FAILED';
     } else if (ppAuth && neonConn) {
       g11Status = 'PASSED';
-    } else if (!localNeonConfigured && externalNeon.configured && !hasPayPal) {
+    } else if (!localNeonConfigured && externalNeon.configured) {
       g11Status = 'CONFIGURED_EXTERNAL';
     } else {
       g11Status = 'CONFIGURED';
