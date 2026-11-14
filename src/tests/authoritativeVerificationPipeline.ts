@@ -832,7 +832,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       },
       gateways: {
         neon: hasNeon ? 'CONFIGURED' : 'EXTERNAL_PROVIDER_REQUIRED',
-        paypal: hasPayPal ? 'CONFIGURED' : 'CONFIGURATION_REQUIRED',
+        paypal: paypalSandboxVerified ? 'SANDBOX_AUTHENTICATED' : 'SANDBOX_EVIDENCE_REQUIRED',
         fiat_policy: 'PAYPAL_EXCLUSIVE'
       }
     };
@@ -892,9 +892,12 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       productionBlockers.push('GATE-12 End-to-end lifecycle verification failed.');
     }
 
-    // Production credential gates
+    // Production credential gates. Sandbox evidence never authorizes live payments.
+    // Live OAuth is intentionally not attempted by this verification pipeline.
+    const paypalLiveCredentialsPresent = Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+    const paypalLiveAuthVerified = false;
     if (env === 'production') {
-      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
+      if (!paypalLiveCredentialsPresent || !paypalLiveAuthVerified) {
         productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
       }
       if (!hasNeon || !neonConn) {
@@ -914,7 +917,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     let claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
     if (env === 'production' && prodPassed) {
       claimScopeVerdict = 'PRODUCTION_VERIFIED';
-    } else if (env === 'sandbox' && hasPayPal && ppCreds?.environment === 'sandbox') {
+    } else if (env === 'sandbox' && paypalSandboxVerified) {
       claimScopeVerdict = 'SANDBOX_VERIFIED';
     } else {
       claimScopeVerdict = 'LOCAL_VERIFIED / MODEL_VERIFIED';
