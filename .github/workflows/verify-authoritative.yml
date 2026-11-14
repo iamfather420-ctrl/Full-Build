@@ -27,10 +27,10 @@ jobs:
     env:
       SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
-      # GATE-12 worker and OIDC lifecycle proof share the CI environment's disposable Neon validation branch.
-      # Expose the same scoped credential under both names consumed by the worker/database package.
-      DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
-      NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
+      # GATE-12 worker uses the CI environment's configured disposable Neon validation URL.
+      # The OIDC isolation test retains its separately scoped owner/migration credential.
+      DATABASE_URL: ${{ secrets.NEON_VALIDATION_URL }}
+      NEON_DATABASE_URL: ${{ secrets.NEON_VALIDATION_URL }}
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       SOLVEX_SQLITE_PATH: /tmp/solvex-verify-${{ github.run_id }}.sqlite
