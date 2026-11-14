@@ -9,6 +9,7 @@ async function main() {
   for (const t of res.results) {
     const mark = t.passed ? '✓' : '✗';
     console.log(`[${String(t.test_number).padStart(2, '0')}] ${mark} ${t.name.padEnd(65)} (${t.duration_ms}ms)`);
+    if (!t.passed) console.error(`    FAILURE DETAIL: ${t.error ?? 'No error detail was recorded.'}`);
   }
 
   console.log('\n===========================================================');
