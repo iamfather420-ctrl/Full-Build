@@ -141,6 +141,7 @@ export class AuthoritativeVerificationPipeline {
     let modCount = 0;
     let workingTreeClean = false;
     let modifiedFiles: string[] = [];
+    let generatedReportFiles: string[] = [];
     if (platform.execSync) {
       try {
         const gitStatus = platform.execSync('git status --porcelain --untracked-files=no', { encoding: 'utf8' });
@@ -161,12 +162,11 @@ export class AuthoritativeVerificationPipeline {
           'production-gate-evaluation.md',
           'solvex-manifest.json'
         ]);
-        const generatedChanges: string[] = [];
         const sourceChanges: string[] = [];
         for (const line of statusLines) {
           const changedPath = line.slice(3).replace(/^.* -> /, '');
           if (changedPath.startsWith('artifacts/') || changedPath.startsWith('public/') || generatedRootReports.has(changedPath)) {
-            generatedChanges.push(changedPath);
+            generatedReportFiles.push(changedPath);
           } else {
             sourceChanges.push(changedPath);
           }
@@ -189,7 +189,7 @@ export class AuthoritativeVerificationPipeline {
         commit_sha_resolved: commitShaResolved,
         modified_files_count: modCount,
         modified_files: modifiedFiles,
-        generated_report_files_excluded: generatedChanges,
+        generated_report_files_excluded: generatedReportFiles,
         working_tree_clean: workingTreeClean,
         runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME'
       }
