@@ -20,7 +20,7 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:6063b88f12f74d018cba3b4d362355d1cd6e663c042fe7e781276cf7675b12a6
+      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:b9106b6ec8f5fd3c8a445ef65f0e50513de3c63b650454f83aa503df7570678d
       # Optional independently operated oracle and tenant-root key; values stay in GitHub Secrets.
       SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
       SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
