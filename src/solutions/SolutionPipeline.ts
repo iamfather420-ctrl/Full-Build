@@ -172,18 +172,20 @@ export class SolutionPipeline {
       return balanced ? pass({ lexical_brace_balance: true, compiler_semantics: 'NOT_ASSERTED' }) : fail('Unbalanced block delimiters.');
     });
     await runStage(8, async () => {
-      const limit = Number(process.env.SOLVEX_MEMORY_LIMIT_BYTES ?? 256 * 1024 * 1024);
-      const snapshot = await MemorySafetyInstrumentation.snapshot(limit);
+      const sandboxBudget = sandboxMemoryEvidence?.limit ?? 256 * 1024 * 1024;
+      const orchestratorBudget = Number(process.env.SOLVEX_ORCHESTRATOR_MEMORY_LIMIT_BYTES ?? 1024 * 1024 * 1024);
+      const snapshot = await MemorySafetyInstrumentation.snapshot(orchestratorBudget);
       const sandbox = sandboxMemoryEvidence;
       const sandboxMeasured = sandbox?.peak !== null && sandbox?.peak !== undefined &&
         sandbox?.limit !== null && sandbox?.limit !== undefined && sandbox?.oom !== null && sandbox?.oom !== undefined;
-      const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= limit && sandbox!.limit! <= limit && sandbox!.oom === 0;
+      const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= sandboxBudget && sandbox!.limit! <= sandboxBudget && sandbox!.oom === 0;
       const orchestratorMeasured = snapshot.instrumentationAvailable &&
         Number.isFinite(snapshot.rssBytes) && Number.isFinite(snapshot.heapUsedBytes) && Number.isFinite(snapshot.maxRssBytes);
       return orchestratorMeasured && snapshot.withinLimit && sandboxWithinLimit
         ? pass({
             memory_instrumentation: true,
-            memory_budget_bytes: limit,
+            sandbox_memory_budget_bytes: sandboxBudget,
+            orchestrator_memory_budget_bytes: orchestratorBudget,
             sandbox_peak_bytes: sandbox!.peak,
             sandbox_limit_bytes: sandbox!.limit,
             sandbox_oom_events: sandbox!.oom,
@@ -193,12 +195,14 @@ export class SolutionPipeline {
             orchestrator_cgroup_instrumentation_available: snapshot.cgroupInstrumentationAvailable,
             orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes ?? null
           })
-        : block('Sandbox cgroup telemetry or orchestrator process memory measurements are unavailable or outside budget.', {
+        : block('Sandbox cgroup telemetry or orchestrator process memory measurements are unavailable or outside their respective budgets.', {
             memory_instrumentation: snapshot.instrumentationAvailable,
             sandbox_telemetry_available: sandboxMeasured,
             sandbox_peak_bytes: sandbox?.peak,
             sandbox_limit_bytes: sandbox?.limit,
             sandbox_oom_events: sandbox?.oom,
+            sandbox_memory_budget_bytes: sandboxBudget,
+            orchestrator_memory_budget_bytes: orchestratorBudget,
             orchestrator_rss_bytes: snapshot.rssBytes,
             orchestrator_heap_used_bytes: snapshot.heapUsedBytes,
             orchestrator_max_rss_bytes: snapshot.maxRssBytes,
