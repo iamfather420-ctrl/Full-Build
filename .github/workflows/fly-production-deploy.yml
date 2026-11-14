@@ -39,7 +39,7 @@ jobs:
             echo "::error::Production readiness status is not explicitly PRODUCTION-READY. No deployment performed."
             exit 1
           fi
-          if grep -Eq '^[[:space:]]*-[[:space:]]\\[ \\]' docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md; then
+          if grep -Eq '^[[:space:]]*-[[:space:]]\[ \]' docs/deployment/PRODUCTION_RELEASE_CHECKLIST.md; then
             echo "::error::Production release checklist still contains unchecked items. No deployment performed."
             exit 1
           fi
