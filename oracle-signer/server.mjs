@@ -30,8 +30,14 @@ function send(res, status, value) {
 function validHash(value) { return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value); }
 
 const server = createServer(async (req, res) => {
-  if (req.method === 'GET' && req.url === '/healthz') return send(res, 200, { ok: true, oracleId });
-  if (req.method !== 'POST' || req.url !== '/attest') return send(res, 404, { error: 'not_found' });
+  let pathname;
+  try { pathname = new URL(req.url ?? '/', 'http://localhost').pathname.replace(/\\/+$/, '') || '/'; }
+  catch { return send(res, 400, { error: 'invalid_url' }); }
+  if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/healthz' || pathname === '/')) {
+    res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+    return res.end(req.method === 'HEAD' ? undefined : JSON.stringify({ ok: true, oracleId }));
+  }
+  if (req.method !== 'POST' || pathname !== '/attest') return send(res, 404, { error: 'not_found' });
   if (!safeTokenEqual((req.headers.authorization ?? '').replace(/^Bearer\s+/i, ''))) {
     return send(res, 401, { error: 'unauthorized' });
   }
