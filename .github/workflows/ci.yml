@@ -20,13 +20,7 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       SOLVEX_MEMORY_LIMIT_BYTES: '1073741824'
-      # Stage 14 uses a separately deployed HTTPS Ed25519 signer and OpenAI evaluator.
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      SOLVEX_ORACLE_SIGNER_URL: ${{ secrets.SOLVEX_ORACLE_SIGNER_URL }}
-      SOLVEX_ORACLE_SIGNER_TOKEN: ${{ secrets.SOLVEX_ORACLE_SIGNER_TOKEN }}
-      SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
-      SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
-    steps:
+      # Stage 14 uses short-lived GitHub OIDC for Fly evaluation and Railway signing.\n    steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Bun
