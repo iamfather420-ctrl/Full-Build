@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile, unlink } from 'node:fs/promises';
 
 let source = '';
 for await (const chunk of process.stdin) {
@@ -11,14 +11,16 @@ for await (const chunk of process.stdin) {
   }
 }
 const inputSha = createHash('sha256').update(source).digest('hex');
-const run = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module'], {
-  input: source,
+const sourcePath = `/tmp/solvex-source-${process.pid}.mts`;
+await writeFile(sourcePath, source, { encoding: 'utf8', mode: 0o600 });
+const run = spawnSync(process.execPath, ['--experimental-strip-types', sourcePath], {
   encoding: 'utf8',
   timeout: 15_000,
   maxBuffer: 128 * 1024,
   env: { PATH: process.env.PATH ?? '/usr/local/bin:/usr/bin:/bin', NODE_OPTIONS: '--max-old-space-size=128' },
   cwd: '/tmp'
 });
+await unlink(sourcePath).catch(() => undefined);
 const accepted = run.status === 0 && !run.error;
 const readMetric = async path => { try { const value = (await readFile(path, 'utf8')).trim(); return value === 'max' ? null : Number(value); } catch { return null; } };
 const [memoryCurrent, memoryPeak, memoryLimit, memoryEvents] = await Promise.all([
