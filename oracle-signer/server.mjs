@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createHash, createPrivateKey, sign, timingSafeEqual } from 'node:crypto';
+import { createPrivateKey, sign, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 const host = process.env.SOLVEX_SIGNER_HOST ?? '0.0.0.0';
