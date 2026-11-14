@@ -26,6 +26,19 @@ assert.doesNotMatch(runtime, /runMigrations\s*\(/,
   'production readiness verification must not mutate the schema');
 assert.match(workflow, /PAYMENTS_ENABLED:\s*'false'/,
   'authoritative workflow must keep payments disabled');
+assert.match(workflow, /uses:\s*oven-sh\/setup-bun@v2/,
+  'authoritative workflow must install Bun');
+assert.match(workflow, /bun install --frozen-lockfile/,
+  'authoritative workflow must install from the committed frozen Bun lockfile');
+assert.doesNotMatch(workflow, /npm (?:install|ci|run)\b/,
+  'authoritative workflow must not use npm against the stale npm lockfile');
+
+const workflowScripts = [...workflow.matchAll(/^\s*run:\s*bun run ([\w:-]+)\s*$/gm)]
+  .map((match) => match[1]);
+const missingWorkflowScripts = workflowScripts.filter((name) => !packageJson.scripts[name]);
+assert.deepEqual(missingWorkflowScripts, [],
+  'every bun run command in the authoritative workflow must exist in package.json');
+
 assert.ok(packageJson.scripts['verify:release-safety'], 'release safety command must be declared');
 assert.ok(packageJson.scripts['verify:payments-disabled'], 'payments-disabled command must be declared');
 
@@ -37,4 +50,4 @@ assert.match(migrationMethod, /BLOCKED: generic Neon migrations are disabled/);
 assert.match(genericWriteMethod, /BLOCKED: generic Neon writes are disabled/);
 assert.doesNotMatch(neon, /CREATE TABLE IF NOT EXISTS|ALTER TABLE|INSERT INTO/,
   'legacy generic Neon persistence must not mutate or write to the incompatible schema');
-console.log('PASS: authentication and authorization fail closed; public API is read-only; readiness is blocked; payments stay disabled.');
+console.log('PASS: fail-closed security and payments; frozen Bun install; workflow commands match package scripts.');
