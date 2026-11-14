@@ -1,5 +1,6 @@
 # Dedicated Railway image for the External Dependency service.
 # Runs the API entrypoint with /healthz; does not start the outreach crawler.
+# Railway healthcheck should target /healthz on port 8080.
 ARG BUN_VERSION=1.3.14
 FROM oven/bun:${BUN_VERSION}-slim
 
