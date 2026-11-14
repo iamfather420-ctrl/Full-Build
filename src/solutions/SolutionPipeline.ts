@@ -380,8 +380,13 @@ export class SolutionPipeline {
     await runStage(19, () => {
       const evidence: Record<string, unknown> = {
         database_rls_verified: false,
-        tenant_isolation_verified: false
+        tenant_crypto_verified: false,
+        tenant_isolation_verified: false,
+        tenant_crypto_key_configured: Buffer.byteLength(process.env.SOLVEX_TENANT_ROOT_KEY ?? '') >= 32
       };
+      // Keep the cryptographic-key check independent from the disposable Neon
+      // RLS probe. A missing root key must block Stage 19, but must not suppress
+      // valid database-isolation evidence from the separately authorized test branch.
       try {
         const crypto = new TenantCrypto();
         const record = crypto.encrypt('TENANT_SOVEREIGN_ROOT', sourceHash);
@@ -392,17 +397,23 @@ export class SolutionPipeline {
         evidence.cipher = 'AES-256-GCM';
         evidence.key_derivation = 'HKDF-SHA256';
         evidence.cross_tenant_ciphertext_rejected = crossTenantDenied;
+        evidence.tenant_crypto_verified = sameTenant === sourceHash && crossTenantDenied;
+      } catch {
+        evidence.tenant_crypto_verified = false;
+        evidence.tenant_crypto_blocker = 'A configured tenant root key of at least 32 bytes is required; key material is never included in evidence.';
+      }
 
-        if (process.env.SOLVEX_ENV === 'production') {
-          return block('Stage 19 database isolation probe is restricted to the explicitly configured disposable Neon test branch.', evidence);
-        }
-        const databaseUrl = process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL;
-        const tenantA = process.env.SOLVEX_NEON_TEST_TENANT_A;
-        const tenantB = process.env.SOLVEX_NEON_TEST_TENANT_B;
-        if (!databaseUrl || !tenantA || !tenantB || tenantA === tenantB) {
-          return block('Disposable Neon isolation URL and two distinct tenant fixtures are required; environment flags alone are not accepted as RLS evidence.', evidence);
-        }
+      if (process.env.SOLVEX_ENV === 'production') {
+        return block('Stage 19 database isolation probe is restricted to the explicitly configured disposable Neon test branch.', evidence);
+      }
+      const databaseUrl = process.env.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL;
+      const tenantA = process.env.SOLVEX_NEON_TEST_TENANT_A;
+      const tenantB = process.env.SOLVEX_NEON_TEST_TENANT_B;
+      if (!databaseUrl || !tenantA || !tenantB || tenantA === tenantB) {
+        return block('Disposable Neon isolation URL and two distinct tenant fixtures are required; environment flags alone are not accepted as RLS evidence.', evidence);
+      }
 
+      try {
         const output = execFileSync('bash', ['-c', 'bash scripts/verify_neon_tenant_isolation.sh 2>&1'], {
           encoding: 'utf8',
           timeout: 120_000,
@@ -417,22 +428,23 @@ export class SolutionPipeline {
         const writeMatch = output.match(/cross_tenant_write_checks=([0-9]+)/i);
         const readChecks = readMatch ? Number(readMatch[1]) : 0;
         const writeChecks = writeMatch ? Number(writeMatch[1]) : 0;
-        evidence.database_rls_verified = failClosedPassed && authenticatedPassed;
+        const databaseRlsVerified = failClosedPassed && authenticatedPassed &&
+          readChecks === 16 && writeChecks >= 1;
+        evidence.database_rls_verified = databaseRlsVerified;
         evidence.neon_fail_closed_tables = failClosedPassed ? 8 : 0;
         evidence.neon_authenticated_read_checks = readChecks;
         evidence.neon_cross_tenant_write_checks = writeChecks;
         evidence.neon_role = 'solvex_iso_test';
         evidence.neon_tenant_fixtures_distinct = true;
-        evidence.tenant_isolation_verified =
-          sameTenant === sourceHash &&
-          crossTenantDenied &&
-          failClosedPassed &&
-          authenticatedPassed &&
-          readChecks === 16 &&
-          writeChecks >= 1;
+        evidence.tenant_isolation_verified = evidence.tenant_crypto_verified === true && databaseRlsVerified;
         return evidence.tenant_isolation_verified
           ? pass(evidence)
-          : block('Neon isolation script did not produce complete fail-closed, A/B read, and cross-tenant write evidence.', evidence);
+          : block(
+              !databaseRlsVerified
+                ? 'Neon isolation script did not produce complete fail-closed, A/B read, and cross-tenant write evidence.'
+                : 'Database RLS evidence passed, but tenant cryptography remains blocked pending the configured tenant root key.',
+              evidence
+            );
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), evidence);
       }
