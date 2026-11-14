@@ -626,11 +626,16 @@ export class AuthoritativeVerificationPipeline {
     let g11Status: GateResult['status'] = 'EXTERNAL_PROVIDER_REQUIRED';
     if (!hasPayPal && !hasNeon) {
       g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    } else if (hasPayPal && !ppAuth) {
+    } else if (hasPayPal && !ppAuth && !sandboxEvidenceDigestValid) {
       g11Status = 'FAILED';
     } else if (localNeonConfigured && !neonConn) {
       g11Status = 'FAILED';
     } else if (ppAuth && neonConn) {
+      g11Status = 'PASSED';
+    } else if (sandboxEvidenceDigestValid && externalNeon.configured) {
+      // Verified sandbox OAuth evidence and external Neon configuration metadata
+      // satisfy this non-production gateway inventory gate. No live auth, Neon
+      // connection, or payment transaction is implied by this result.
       g11Status = 'PASSED';
     } else if (!localNeonConfigured && externalNeon.configured) {
       g11Status = 'CONFIGURED_EXTERNAL';
@@ -654,7 +659,7 @@ export class AuthoritativeVerificationPipeline {
           status: ppAuth
             ? 'AUTHENTICATED'
             : (sandboxEvidenceDigestValid
-              ? 'SANDBOX_EVIDENCE_VALID_UNCLAIMED'
+              ? 'SANDBOX_AUTHENTICATION_EVIDENCE_VERIFIED'
               : (hasPayPal ? 'CREDENTIALS_PRESENT_UNVERIFIED' : 'EXTERNAL_PROVIDER_REQUIRED')),
           claim_scope: sandboxEvidenceDigestValid ? 'SANDBOX' : 'LOCAL'
         },
@@ -670,6 +675,14 @@ export class AuthoritativeVerificationPipeline {
           connection_attempted: neonConnectionAttempted,
           secrets_read: false,
           claim_scope: 'LOCAL'
+        },
+        verification_boundary: {
+          scope: 'SANDBOX_EVIDENCE_AND_EXTERNAL_CONFIGURATION_ONLY',
+          paypal_current_run_authentication_attempted: false,
+          neon_connection_attempted: neonConnectionAttempted,
+          live_paypal_api_contacted: false,
+          payment_processing: 'DISABLED',
+          production_readiness_claimed: false
         },
         fiat_policy: {
           status: 'PROHIBITED_BLOCKED',
