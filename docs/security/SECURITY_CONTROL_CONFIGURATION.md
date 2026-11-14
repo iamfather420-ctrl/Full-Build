@@ -15,15 +15,22 @@ The sandbox image and Docker daemon are not provisioned by this repository commi
 
 Set `SOLVEX_MEMORY_LIMIT_BYTES` to the same or lower value than the sandbox memory cap. Stage 8 requires sandbox cgroup current/peak/limit/OOM telemetry plus orchestrator cgroup telemetry. Missing cgroup metrics or any OOM event blocks the stage.
 
-## Independent model oracle
+## Single-model OpenAI Stage 14 evaluator
 
-Deploy a separately operated oracle image that implements `/opt/solvex-oracle/verify`, reads the protocol JSON from stdin, and emits one JSON `OracleAttestation`. The oracle must hold its Ed25519 private signing key outside the SolveX application runtime. Configure:
+Stage 14 uses exactly one OpenAI model through the Responses API. The model evaluates the submitted evidence and returns a strict JSON `ACCEPT` or `REJECT` verdict with a rationale. Deterministic application checks bind the request hash, configured model identifier, verdict, and rationale hash. No Claude/Gemini consensus or second model is used.
 
-- `SOLVEX_ORACLE_IMAGE`: immutable digest-qualified image reference
-- `SOLVEX_ORACLE_ID`: stable oracle identity
+Configure these runtime values in the deployment secret manager (never commit secret values):
+
+- `OPENAI_API_KEY`: OpenAI API key with available API credits and access to the selected model
+- `SOLVEX_OPENAI_MODEL`: optional model identifier; defaults to `gpt-4o-mini`
+
+The model evaluator is not itself a cryptographic signer. After the model returns its verdict, Stage 14 sends a compact attestation payload to a separately operated, digest-pinned signer image implementing `/opt/solvex-oracle/attest`. That service must hold its Ed25519 private signing key outside the SolveX application runtime and return one JSON `OracleAttestation`. Configure:
+
+- `SOLVEX_ORACLE_IMAGE`: immutable digest-qualified signer image reference
+- `SOLVEX_ORACLE_ID`: stable signer identity
 - `SOLVEX_ORACLE_ED25519_PUBLIC_KEY`: PEM public key used by SolveX to verify Ed25519 attestations
 
-The oracle image/model and independent operator are not provisioned here. Stage 14 remains BLOCKED until an independent attestation is received and verified.
+The signer image/operator and its public-key configuration are not provisioned by this repository. Stage 14 remains BLOCKED until the OpenAI evaluation succeeds and a matching Ed25519 attestation is received and verified. A model verdict alone is not a Stage 14 PASS.
 
 ## Persistent proof evidence
 
