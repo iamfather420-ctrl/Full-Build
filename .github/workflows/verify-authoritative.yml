@@ -28,6 +28,8 @@ jobs:
       SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
       NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
+      # GATE-12 OIDC lifecycle proof must use the same disposable validation branch.
+      SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.NEON_VALIDATION_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       SOLVEX_SQLITE_PATH: /tmp/solvex-verify-${{ github.run_id }}.sqlite
       SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:0bc2e81bdf48b6c1738cbdc11467f1732937ad3a0fce2e96312e8dcccb6e2e91
