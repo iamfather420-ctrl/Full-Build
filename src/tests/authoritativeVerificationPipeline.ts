@@ -217,17 +217,31 @@ export class AuthoritativeVerificationPipeline {
     let workingTreeClean = false;
     if (platform.execSync) {
       try {
-        const gitStatus = platform.execSync('git status --porcelain --untracked-files=no', { encoding: 'utf8' });
+        const gitStatus = platform.execSync('git status --porcelain --untracked-files=all', { encoding: 'utf8' });
         const statusLines = gitStatus.split(/\r?\n/).filter(Boolean);
+        const generatedRootFiles = new Set([
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.json',
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.md',
+          'dfrl_complete_88_proof_dossier.json',
+          'enterprise-verification-report.json',
+          'enterprise-verification-report.md',
+          'solvex-manifest.json',
+          'preflight-report.json',
+          'preflight-report.md',
+          'execution-gates.json',
+          'execution-gates.md',
+          'production-gate-evaluation.json',
+          'production-gate-evaluation.md',
+          'system-46-gates.json',
+          'GATE-12-stage-evidence.json'
+        ]);
         const isGeneratedVerificationPath = (rawPath: string): boolean => {
           const changedPath = rawPath.trim().replace(/^"(.*)"$/, '$1').replace(/\\/g, '/');
           const normalized = changedPath.replace(/^\.\//, '');
-          const basename = normalized.split('/').pop() || normalized;
           return normalized.startsWith('artifacts/') ||
             normalized.startsWith('public/') ||
             normalized.startsWith('proof-receipts/') ||
-            basename.endsWith('.evidence.json') ||
-            basename.endsWith('.stage-trace.json');
+            generatedRootFiles.has(normalized);
         };
         const sourceChanges = statusLines.filter(line => {
           // A rename is generated-only only when both its old and new paths are generated.
@@ -590,8 +604,11 @@ export class AuthoritativeVerificationPipeline {
     const ppAuth = false;
 
     const neon = NeonStore.getInstance();
-    const localNeonConfigured = neon.isConfigured();
     const externalNeon = getExternalNeonCredentialMetadata();
+    // GATE-11 is a provider-inventory check, not a database connectivity probe.
+    // A connection is permitted only through an explicit local-verification opt-in.
+    const localNeonConfigured =
+      process.env.SOLVEX_NEON_GATE11_LOCAL_CONNECT === 'true' && neon.isConfigured();
     const hasNeon = localNeonConfigured || externalNeon.configured;
     let neonConn = false;
     let neonConnectionAttempted = false;
@@ -661,7 +678,7 @@ export class AuthoritativeVerificationPipeline {
     const g12Start = performance.now();
     const pipe = SolutionPipeline.getInstance();
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
-    const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode, { continueAfterFailure: true });
+    const pipeRes = await pipe.runPipeline('DH-P-001', zenoCode, { continueAfterFailure: true });
     const stageStatusCounts = pipeRes.stage_traces.reduce((counts, trace) => {
       counts[trace.status] = (counts[trace.status] || 0) + 1;
       return counts;
