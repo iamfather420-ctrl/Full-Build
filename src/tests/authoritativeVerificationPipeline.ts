@@ -603,19 +603,22 @@ export class AuthoritativeVerificationPipeline {
     // Never repeat OAuth or provider authentication as part of this authoritative run.
     const ppAuth = false;
 
-    const neon = NeonStore.getInstance();
     const externalNeon = getExternalNeonCredentialMetadata();
     // GATE-11 is a provider-inventory check, not a database connectivity probe.
-    // A connection is permitted only through an explicit local-verification opt-in.
-    const localNeonConfigured =
-      process.env.SOLVEX_NEON_GATE11_LOCAL_CONNECT === 'true' && neon.isConfigured();
-    const hasNeon = localNeonConfigured || externalNeon.configured;
+    // Do not even instantiate NeonStore on the external-only path: its constructor
+    // copies DATABASE_URL/NEON_DATABASE_URL into memory.
+    let localNeonConfigured = false;
     let neonConn = false;
     let neonConnectionAttempted = false;
-    if (localNeonConfigured) {
-      neonConnectionAttempted = true;
-      neonConn = await neon.connect();
+    if (process.env.SOLVEX_NEON_GATE11_LOCAL_CONNECT === 'true') {
+      const neon = NeonStore.getInstance();
+      localNeonConfigured = neon.isConfigured();
+      if (localNeonConfigured) {
+        neonConnectionAttempted = true;
+        neonConn = await neon.connect();
+      }
     }
+    const hasNeon = localNeonConfigured || externalNeon.configured;
 
     let g11Status: GateResult['status'] = 'EXTERNAL_PROVIDER_REQUIRED';
     if (!hasPayPal && !hasNeon) {
