@@ -19,6 +19,7 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      SOLVEX_MEMORY_LIMIT_BYTES: '1073741824'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,6 +86,14 @@ jobs:
         run: bun run verify:120
       - name: Proof closure
         run: bun run verify:proof-closure
+      - name: Prepare ephemeral local proof and tenant crypto keys
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/solvex-proof-store
+          chmod 700 /tmp/solvex-proof-store
+          echo "SOLVEX_PROOF_DIR=/tmp/solvex-proof-store" >> "$GITHUB_ENV"
+          echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
       - name: Authoritative 46-gate verification
         env:
           # Keep the verifier on the same disposable Neon branch used by the OIDC issuer.
