@@ -85,13 +85,15 @@ export class AuthoritativeVerificationPipeline {
       }
     }
 
-    const writeArtifact = (filename: string, content: string, rootAlso = false, publicAlso = false) => {
-      if (platform.fs && platform.path) {
-        try {
-          platform.fs.writeFileSync(platform.path.join(artifactsDir, filename), content, 'utf8');
-          if (rootAlso) platform.fs.writeFileSync(platform.path.join(rootDir, filename), content, 'utf8');
-          if (publicAlso) platform.fs.writeFileSync(platform.path.join(publicDir, filename), content, 'utf8');
-        } catch {}
+    const writeArtifact = (filename: string, content: string, rootAlso = false, publicAlso = false): boolean => {
+      if (!platform.fs || !platform.path) return false;
+      try {
+        platform.fs.writeFileSync(platform.path.join(artifactsDir, filename), content, 'utf8');
+        if (rootAlso) platform.fs.writeFileSync(platform.path.join(rootDir, filename), content, 'utf8');
+        if (publicAlso) platform.fs.writeFileSync(platform.path.join(publicDir, filename), content, 'utf8');
+        return true;
+      } catch {
+        return false;
       }
     };
 
@@ -144,9 +146,20 @@ export class AuthoritativeVerificationPipeline {
       try {
         const gitStatus = platform.execSync('git status --porcelain --untracked-files=no', { encoding: 'utf8' });
         const statusLines = gitStatus.split(/\r?\n/).filter(Boolean);
+        const isGeneratedVerificationPath = (rawPath: string): boolean => {
+          const changedPath = rawPath.trim().replace(/^"(.*)"$/, '$1').replace(/\\/g, '/');
+          const normalized = changedPath.replace(/^\.\//, '');
+          const basename = normalized.split('/').pop() || normalized;
+          return normalized.startsWith('artifacts/') ||
+            normalized.startsWith('public/') ||
+            normalized.startsWith('proof-receipts/') ||
+            basename.endsWith('.evidence.json') ||
+            basename.endsWith('.stage-trace.json');
+        };
         const sourceChanges = statusLines.filter(line => {
-          const changedPath = line.slice(3).replace(/^.* -> /, '');
-          return !changedPath.startsWith('artifacts/') && !changedPath.startsWith('public/');
+          // A rename is generated-only only when both its old and new paths are generated.
+          const changedPaths = line.slice(3).split(' -> ');
+          return !changedPaths.every(isGeneratedVerificationPath);
         });
         modCount = sourceChanges.length;
         workingTreeClean = sourceChanges.length === 0;
@@ -544,6 +557,28 @@ export class AuthoritativeVerificationPipeline {
     const pipe = SolutionPipeline.getInstance();
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
     const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode, { continueAfterFailure: true });
+    const stageStatusCounts = pipeRes.stage_traces.reduce((counts, trace) => {
+      counts[trace.status] = (counts[trace.status] || 0) + 1;
+      return counts;
+    }, {} as Record<string, number>);
+    const stageEvidenceArtifact = {
+      artifact_type: 'SOLVEX_GATE_12_INDIVIDUAL_STAGE_EVIDENCE',
+      artifact_version: '1.0',
+      execution_id: executionId,
+      timestamp: new Date().toISOString(),
+      commit_sha: commitSha,
+      claim_scope: 'LOCAL',
+      continue_after_failure: true,
+      overall_success: pipeRes.overall_success,
+      completed_stages: pipeRes.completed_stages,
+      total_stages: pipeRes.total_stages,
+      stage_status_counts: stageStatusCounts,
+      stage_traces: pipeRes.stage_traces
+    };
+    const stageEvidenceArtifactWritten = writeArtifact(
+      'GATE-12-stage-evidence.json',
+      JSON.stringify(stageEvidenceArtifact, null, 2)
+    );
 
     let lifecycleUser: UserContext | undefined;
     let lifecycleIdentityResolution = 'NOT_CONFIGURED';
@@ -645,7 +680,11 @@ export class AuthoritativeVerificationPipeline {
           success: pipeRes.overall_success,
           completed_stages: pipeRes.completed_stages,
           total_stages: pipeRes.total_stages,
-          solution_id: pipeRes.solution_id
+          solution_id: pipeRes.solution_id,
+          stage_status_counts: stageStatusCounts,
+          stage_evidence_artifact: 'artifacts/GATE-12-stage-evidence.json',
+          stage_evidence_artifact_written: stageEvidenceArtifactWritten,
+          stage_traces: pipeRes.stage_traces
         },
         identity_resolution: lifecycleIdentityResolution,
         order_lifecycle: {
