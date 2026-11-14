@@ -45,7 +45,7 @@ export class SolutionPipeline {
     'Stage 11: Z3 SMT Formal Theorem Verification',
     'Stage 12: Machine-Checked Proof Certificate Generation',
     'Stage 13: Deterministic Cleanroom Test Suite Execution',
-    'Stage 14: Multi-Model Independent Oracle Attestation',
+    'Stage 14: External Model Oracle Attestation',
     'Stage 15: Bitrot & Replay Divergence Validation',
     'Stage 16: Defensible Pricing Formula v1.4 Execution',
     'Stage 17: Redacted Customer Evidence Generation',
@@ -222,7 +222,17 @@ export class SolutionPipeline {
       try {
         const attestation = await IndependentModelOracle.verify({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode });
         oracleAttestation = attestation;
-        return pass({ independent_oracle_count: 1, oracle_id: attestation.oracleId, model_id: attestation.modelId, verdict: attestation.verdict, input_sha256: attestation.inputSha256, attestation_signature_sha256: computeSha256(attestation.signature) });
+        const evidence = {
+          independent_oracle_count: 1,
+          oracle_id: attestation.oracleId,
+          model_id: attestation.modelId,
+          verdict: attestation.verdict,
+          input_sha256: attestation.inputSha256,
+          attestation_signature_sha256: computeSha256(attestation.signature)
+        };
+        return attestation.verdict === 'ACCEPT'
+          ? pass(evidence)
+          : fail('External model oracle rejected the submitted evidence.', evidence);
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), { independent_oracle_count: 0 });
       }

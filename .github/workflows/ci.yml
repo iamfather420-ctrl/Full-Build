@@ -20,6 +20,13 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       SOLVEX_MEMORY_LIMIT_BYTES: '1073741824'
+      # Stage 14 uses a separately deployed HTTPS Ed25519 signer and OpenAI evaluator.
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      SOLVEX_ORACLE_SIGNER_URL: ${{ secrets.SOLVEX_ORACLE_SIGNER_URL }}
+      SOLVEX_ORACLE_SIGNER_TOKEN: ${{ secrets.SOLVEX_ORACLE_SIGNER_TOKEN }}
+      SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
+      SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
+      SOLVEX_OPENAI_MODEL: ${{ secrets.SOLVEX_OPENAI_MODEL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,6 +53,8 @@ jobs:
           fi
           echo "SOLVEX_SANDBOX_IMAGE=ghcr.io/iamfather420-ctrl/solvex-sandbox@${DIGEST}" >> "$GITHUB_ENV"
           echo "Published current-source sandbox image at immutable digest ${DIGEST}"
+      - name: Stage 14 signer authentication and Ed25519 regression tests
+        run: bun run test:oracle-signer
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
