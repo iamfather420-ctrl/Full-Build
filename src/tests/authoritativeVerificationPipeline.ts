@@ -214,6 +214,7 @@ export class AuthoritativeVerificationPipeline {
     // ==========================================
     const g0Start = performance.now();
     let modCount = 0;
+    let modifiedSourcePaths: string[] = [];
     let workingTreeClean = false;
     if (platform.execSync) {
       try {
@@ -249,6 +250,7 @@ export class AuthoritativeVerificationPipeline {
           return !changedPaths.every(isGeneratedVerificationPath);
         });
         modCount = sourceChanges.length;
+        modifiedSourcePaths = sourceChanges.map(line => line.slice(3));
         workingTreeClean = sourceChanges.length === 0;
       } catch {}
     }
@@ -264,6 +266,7 @@ export class AuthoritativeVerificationPipeline {
         commit_sha: commitSha,
         commit_sha_resolved: commitShaResolved,
         modified_files_count: modCount,
+        modified_source_paths: modifiedSourcePaths,
         working_tree_clean: workingTreeClean,
         runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME'
       }
