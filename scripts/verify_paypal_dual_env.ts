@@ -119,7 +119,6 @@ export async function runPayPalDualEnvForensicTest(): Promise<{
   const evidenceHash = crypto.createHash('sha256').update(artifactStr).digest('hex');
   const artifactPath = path.join(artifactsDir, 'paypal-dual-environment-test.json');
   fs.writeFileSync(artifactPath, artifactStr, 'utf8');
-  fs.writeFileSync(path.resolve('paypal-dual-environment-test.json'), artifactStr, 'utf8');
   return { result, formattedReport, evidenceHash, artifactPath };
 }
 
