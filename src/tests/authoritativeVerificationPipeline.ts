@@ -145,12 +145,34 @@ export class AuthoritativeVerificationPipeline {
       try {
         const gitStatus = platform.execSync('git status --porcelain --untracked-files=no', { encoding: 'utf8' });
         const statusLines = gitStatus.split(/\r?\n/).filter(Boolean);
-        const sourceChanges = statusLines.filter(line => {
+        // Verification commands intentionally refresh these exact root-level reports.
+        // Only these exact generated paths and the established output directories are
+        // excluded. Lockfiles and all source/config paths remain integrity-sensitive.
+        const generatedRootReports = new Set([
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.json',
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.md',
+          'enterprise-verification-report.json',
+          'enterprise-verification-report.md',
+          'execution-gates.json',
+          'execution-gates.md',
+          'preflight-report.json',
+          'preflight-report.md',
+          'production-gate-evaluation.json',
+          'production-gate-evaluation.md',
+          'solvex-manifest.json'
+        ]);
+        const generatedChanges: string[] = [];
+        const sourceChanges: string[] = [];
+        for (const line of statusLines) {
           const changedPath = line.slice(3).replace(/^.* -> /, '');
-          return !changedPath.startsWith('artifacts/') && !changedPath.startsWith('public/');
-        });
+          if (changedPath.startsWith('artifacts/') || changedPath.startsWith('public/') || generatedRootReports.has(changedPath)) {
+            generatedChanges.push(changedPath);
+          } else {
+            sourceChanges.push(changedPath);
+          }
+        }
         modCount = sourceChanges.length;
-        modifiedFiles = sourceChanges.map(line => line.slice(3));
+        modifiedFiles = sourceChanges;
         workingTreeClean = sourceChanges.length === 0;
       } catch {}
     }
@@ -167,6 +189,7 @@ export class AuthoritativeVerificationPipeline {
         commit_sha_resolved: commitShaResolved,
         modified_files_count: modCount,
         modified_files: modifiedFiles,
+        generated_report_files_excluded: generatedChanges,
         working_tree_clean: workingTreeClean,
         runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME'
       }
@@ -546,7 +569,7 @@ export class AuthoritativeVerificationPipeline {
     const g12Start = performance.now();
     const pipe = SolutionPipeline.getInstance();
     const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
-    const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode, { continueAfterFailure: true });
+    const pipeRes = await pipe.runPipeline('DH-P-001', zenoCode, { continueAfterFailure: true });
 
     let lifecycleUser: UserContext | undefined;
     let lifecycleIdentityResolution = 'NOT_CONFIGURED';

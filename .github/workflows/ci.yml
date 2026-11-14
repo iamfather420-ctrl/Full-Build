@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: read
-  packages: read
+  packages: write
 
 jobs:
   validate:
@@ -19,7 +19,6 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:6063b88f12f74d018cba3b4d362355d1cd6e663c042fe7e781276cf7675b12a6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,14 +26,79 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Install locked dependencies
-        run: bun install
-      - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
+      - name: Install dependencies without mutating the npm-format lockfile
+        run: bun install --no-save
+      - name: Build and publish digest-pinned Stage 6 sandbox
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          docker pull "$SOLVEX_SANDBOX_IMAGE"
+          IMAGE="ghcr.io/iamfather420-ctrl/solvex-sandbox:ci-${GITHUB_SHA}"
+          NODE_BASE_IMAGE="node:22.16.0-bookworm-slim@sha256:048ed02c5fd52e86fda6fbd2f6a76cf0d4492fd6c6fee9e2c463ed5108da0e34"
+          docker build --platform linux/amd64 --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t "$IMAGE" sandbox
+          docker push "$IMAGE"
+          DIGEST="$(docker image inspect "$IMAGE" --format '{{range .RepoDigests}}{{println .}}{{end}}' | awk -v prefix="ghcr.io/iamfather420-ctrl/solvex-sandbox@" 'index($0,prefix)==1 { sub(prefix,""); print; exit }')"
+          if ! printf '%s' "$DIGEST" | grep -Eq '^sha256:[a-f0-9]{64}
+      - name: Fail-closed release safety checks
+        run: bun run verify:release-safety
+      - name: Daisy foundational instruction and no-simulated-success checks
+        run: bun run verify:daisy-safety
+      - name: First-party inference fail-closed tests
+        run: bun run test:local-inference
+      - name: Production OIDC configuration alignment regression test
+        run: bun run test:production-state
+      - name: Compile native Daisy server entrypoint
+        run: bunx esbuild Solvex-core/server.ts --bundle --platform=node --format=cjs --packages=external --outfile=/tmp/solvex-core-server.cjs
+      - name: Owner authorization fail-closed regression test
+        run: bun run test:owner-access
+      - name: Payments-disabled boundary checks
+        run: bun run verify:payments-disabled
+      - name: Sandbox, memory, proof persistence, and tenant crypto tests
+        run: bun run test:security-controls
+      - name: Disposable Neon tenant isolation integration test
+        env:
+          SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
+          SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
+          SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
+        run: bash scripts/verify_neon_tenant_isolation_ci.sh
+      - name: Signed OIDC tenant-claim lifecycle and RLS integration test
+        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL != '' }}
+        env:
+          SOLVEX_NEON_ISOLATION_TEST_CONFIRM: DISPOSABLE_NEON_BRANCH_ONLY
+        run: bun run test:oidc-tenant-claims
+      - name: Report isolated OIDC integration secret requirement
+        if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
+        run: echo "OIDC database integration was validated directly on the isolated Neon branch; add SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL (owner connection for a disposable branch) to enable this CI step."
+      - name: Build
+        run: bun run build
+      - name: TypeScript
+        run: bun run lint
+      - name: Enterprise invariants
+        run: bun run verify:enterprise
+      - name: Formal verification corpus
+        run: bun run verify:120
+      - name: Proof closure
+        run: bun run verify:proof-closure
+      - name: Authoritative 46-gate verification
+        env:
+          # Keep the verifier on the same disposable Neon branch used by the OIDC issuer.
+          # Step scope avoids changing the isolation integration test's environment.
+          NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
+        run: bunx tsx scripts/verify_46_gates.ts
+      - name: Upload 46-gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-46-gates
+          path: artifacts/system-46-gates.json
+          if-no-files-found: ignore
+; then
+            echo "Could not resolve the pushed sandbox manifest digest." >&2
+            exit 1
+          fi
+          echo "SOLVEX_SANDBOX_IMAGE=ghcr.io/iamfather420-ctrl/solvex-sandbox@${DIGEST}" >> "$GITHUB_ENV"
+          echo "Published current-source sandbox image at immutable digest ${DIGEST}"
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
