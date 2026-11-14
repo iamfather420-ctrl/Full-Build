@@ -178,9 +178,33 @@ export class SolutionPipeline {
       const sandboxMeasured = sandbox?.peak !== null && sandbox?.peak !== undefined &&
         sandbox?.limit !== null && sandbox?.limit !== undefined && sandbox?.oom !== null && sandbox?.oom !== undefined;
       const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= limit && sandbox!.limit! <= limit && sandbox!.oom === 0;
-      return snapshot.instrumentationAvailable && snapshot.withinLimit && sandboxWithinLimit
-        ? pass({ memory_instrumentation: true, sandbox_peak_bytes: sandbox!.peak, sandbox_limit_bytes: sandbox!.limit, sandbox_oom_events: sandbox!.oom, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes })
-        : block('Sandbox cgroup peak/limit/OOM telemetry or orchestrator cgroup telemetry is unavailable or outside budget.', { memory_instrumentation: snapshot.instrumentationAvailable, sandbox_telemetry_available: sandboxMeasured, sandbox_peak_bytes: sandbox?.peak, sandbox_limit_bytes: sandbox?.limit, sandbox_oom_events: sandbox?.oom, orchestrator_within_limit: snapshot.withinLimit });
+      const orchestratorMeasured = snapshot.instrumentationAvailable &&
+        Number.isFinite(snapshot.rssBytes) && Number.isFinite(snapshot.heapUsedBytes) && Number.isFinite(snapshot.maxRssBytes);
+      return orchestratorMeasured && snapshot.withinLimit && sandboxWithinLimit
+        ? pass({
+            memory_instrumentation: true,
+            memory_budget_bytes: limit,
+            sandbox_peak_bytes: sandbox!.peak,
+            sandbox_limit_bytes: sandbox!.limit,
+            sandbox_oom_events: sandbox!.oom,
+            orchestrator_rss_bytes: snapshot.rssBytes,
+            orchestrator_heap_used_bytes: snapshot.heapUsedBytes,
+            orchestrator_max_rss_bytes: snapshot.maxRssBytes,
+            orchestrator_cgroup_instrumentation_available: snapshot.cgroupInstrumentationAvailable,
+            orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes ?? null
+          })
+        : block('Sandbox cgroup telemetry or orchestrator process memory measurements are unavailable or outside budget.', {
+            memory_instrumentation: snapshot.instrumentationAvailable,
+            sandbox_telemetry_available: sandboxMeasured,
+            sandbox_peak_bytes: sandbox?.peak,
+            sandbox_limit_bytes: sandbox?.limit,
+            sandbox_oom_events: sandbox?.oom,
+            orchestrator_rss_bytes: snapshot.rssBytes,
+            orchestrator_heap_used_bytes: snapshot.heapUsedBytes,
+            orchestrator_max_rss_bytes: snapshot.maxRssBytes,
+            orchestrator_cgroup_instrumentation_available: snapshot.cgroupInstrumentationAvailable,
+            orchestrator_within_limit: snapshot.withinLimit
+          });
     });
     const sentinel = await runStage(9, () => /FAIL_STAGE_9|NON_TERMINATION|DIVERGENCE_SENTINEL/.test(normalizedCode)
       ? fail('Sentinel detected fatal specification anomaly', { sentinel_detected: true })
