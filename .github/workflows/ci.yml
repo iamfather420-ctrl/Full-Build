@@ -3,11 +3,12 @@ name: Build and Enterprise CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, fix/46-gate-baseline-lifecycle-sandbox]
 
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
   validate:
@@ -20,7 +21,8 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
       SOLVEX_MEMORY_LIMIT_BYTES: '1073741824'
-      # Stage 14 uses short-lived GitHub OIDC for Fly evaluation and Railway signing.\n    steps:
+      # Stage 14 uses short-lived GitHub OIDC for Fly evaluation and Railway signing.
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Bun
