@@ -764,14 +764,18 @@ export class AuthoritativeVerificationPipeline {
     const orderMgr = OrderLifecycleManager.getInstance();
     const plannedTransitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'REPLAY_VERIFIED', 'DEPLOYED'] as const;
     const transitionAttempts: Array<{ target_state: string; success: boolean; error?: string }> = [];
-    // Never advance an order when its solution pipeline did not close successfully.
-    if (pipeRes.overall_success && pipeRes.completed_stages === pipeRes.total_stages) {
-      for (const targetState of plannedTransitions) {
-        const result = await orderMgr.transitionOrder(testOrderId, targetState, lifecycleUser);
+    // A non-closed solution must not advance. Attempt only ORDER_CREATED without
+    // a caller identity so the authorization boundary is explicitly observed and
+    // the order remains OFFER; only a fully closed solution may use the verified
+    // disposable OIDC identity for the complete transition sequence.
+    const pipelineClosed = pipeRes.overall_success && pipeRes.completed_stages === pipeRes.total_stages;
+    const transitionTargets: readonly string[] = pipelineClosed ? plannedTransitions : ['ORDER_CREATED'];
+    const transitionUser = pipelineClosed ? lifecycleUser : undefined;
+    for (const targetState of transitionTargets) {
+      const result = await orderMgr.transitionOrder(testOrderId, targetState, transitionUser);
       transitionAttempts.push({ target_state: targetState, success: result.success, error: result.error });
       // Stop immediately at the first failed authorization or state transition.
-        if (!result.success) break;
-      }
+      if (!result.success) break;
     }
 
     const finalOrderRow = sqliteInst.getRawDb().get('SELECT status FROM orders WHERE id = ?', [testOrderId]);
@@ -782,11 +786,15 @@ export class AuthoritativeVerificationPipeline {
       transitionAttempts.length === plannedTransitions.length &&
       transitionAttempts.every(t => t.success) &&
       actualFinalStatus === 'DEPLOYED';
-    const lifecycleBlocked = !e2eOk && transitionAttempts.some(t =>
+    const pipelineHasFailure = pipeRes.stage_traces.some(trace => trace.status === 'FAILED');
+    const authorizationBlocked = transitionAttempts.some(t =>
       !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
     );
-    const lifecycleGateStatus: GateResult['status'] = e2eOk
-      ? 'PASSED'
+    const lifecycleBlocked = !e2eOk && !pipelineHasFailure &&
+      (authorizationBlocked || !pipelineClosed);
+    const lifecycleGateStatus: GateResult['status'] = pipelineHasFailure
+      ? 'FAILED'
+      : e2eOk ? 'PASSED'
       : lifecycleBlocked ? 'BLOCKED' : 'FAILED';
     const lifecycleAuditAction = e2eOk
       ? 'LIFECYCLE_COMPLETED'
@@ -805,7 +813,8 @@ export class AuthoritativeVerificationPipeline {
         transition_attempts: transitionAttempts,
         successful_transitions: successfulTransitions,
         final_order_status: actualFinalStatus,
-        authorization_blocked: lifecycleBlocked,
+        authorization_blocked: authorizationBlocked,
+        pipeline_incomplete: !pipelineClosed,
         payment_processing: 'DISABLED',
         claim_scope: 'LOCAL',
         identity_resolution: lifecycleIdentityResolution
@@ -837,7 +846,8 @@ export class AuthoritativeVerificationPipeline {
           transition_attempts: transitionAttempts,
           transitions_executed: successfulTransitions,
           final_status: actualFinalStatus,
-          authorization_blocked: lifecycleBlocked,
+          authorization_blocked: authorizationBlocked,
+          pipeline_incomplete: !pipelineClosed,
           payment_processing: 'DISABLED'
         },
         merkle_audit_append: {
