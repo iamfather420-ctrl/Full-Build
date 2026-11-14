@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
+      SOLVEX_SQLITE_PATH: /tmp/solvex-ci-${{ github.run_id }}.sqlite
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
@@ -33,7 +34,7 @@ jobs:
         with:
           bun-version: latest
       - name: Install locked dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
       - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
