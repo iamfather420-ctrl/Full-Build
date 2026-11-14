@@ -49,6 +49,15 @@ jobs:
           key="$(openssl rand -hex 32)"
           printf 'SOLVEX_PROOF_HMAC_KEY=%s\n' "$key" >> "$GITHUB_ENV"
           unset key
+      # CI-only key for the disposable Stage 19 encrypt/decrypt isolation check.
+      # Never reuse this ephemeral value for production tenant data.
+      - name: Configure ephemeral CI tenant root key
+        shell: bash
+        run: |
+          set -euo pipefail
+          key="$(openssl rand -hex 32)"
+          printf 'SOLVEX_TENANT_ROOT_KEY=%s\n' "$key" >> "$GITHUB_ENV"
+          unset key
       - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
