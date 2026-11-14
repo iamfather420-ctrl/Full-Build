@@ -625,7 +625,7 @@ export class AuthoritativeVerificationPipeline {
     // ==========================================
     const g12Start = performance.now();
     const pipe = SolutionPipeline.getInstance();
-    const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
+    const zenoCode = "/**\n * One bounded geometric contraction step for a non-negative distance.\n * For finite dist >= 0 and finite eps > 0, repeated calls halve dist while\n * dist >= eps. Therefore N = ceil(log2(dist / eps)) steps suffice when dist > eps;\n * zero distance and already-in-tolerance inputs terminate immediately.\n */\nexport function zenoStep(dist: number, eps: number): number {\n  if (!Number.isFinite(dist) || dist < 0) {\n    throw new RangeError('dist must be a finite non-negative number');\n  }\n  if (!Number.isFinite(eps) || eps <= 0) {\n    throw new RangeError('eps must be a finite positive number');\n  }\n  return dist < eps ? dist : dist / 2;\n}";
     const pipeRes = await pipe.runPipeline('DH-P-001', zenoCode, { continueAfterFailure: true });
 
     let lifecycleUser: UserContext | undefined;
