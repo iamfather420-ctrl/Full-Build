@@ -84,8 +84,6 @@ jobs:
         run: bun run verify:enterprise
       - name: Formal verification corpus
         run: bun run verify:120
-      - name: Proof closure
-        run: bun run verify:proof-closure
       - name: Prepare ephemeral local proof and tenant crypto keys
         run: |
           set -euo pipefail
@@ -94,6 +92,8 @@ jobs:
           echo "SOLVEX_PROOF_DIR=/tmp/solvex-proof-store" >> "$GITHUB_ENV"
           echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
           echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+      - name: Proof closure
+        run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification
         env:
           # Keep the verifier on the same disposable Neon branch used by the OIDC issuer.
