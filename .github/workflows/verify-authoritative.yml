@@ -13,6 +13,10 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -25,6 +29,8 @@ jobs:
       PAYMENTS_ENABLED: 'false'
       NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SOLVEX_SQLITE_PATH: /tmp/solvex-verify-${{ github.run_id }}.sqlite
+      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:b9106b6ec8f5fd3c8a445ef65f0e50513de3c63b650454f83aa503df7570678d
     timeout-minutes: 30
 
     steps:
@@ -40,10 +46,17 @@ jobs:
 
       - name: Install dependencies (clean, reproducible)
         run: |
-          npm install --legacy-peer-deps --no-audit --no-fund
+          npm ci --legacy-peer-deps --no-audit --no-fund
           # Ensure critical binaries are present
           npx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
+
+      - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull "$SOLVEX_SANDBOX_IMAGE"
 
       - name: Verify fail-closed release safety
         run: npm run verify:release-safety
