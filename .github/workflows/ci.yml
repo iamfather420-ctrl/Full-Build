@@ -40,6 +40,8 @@ jobs:
         run: |
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           docker pull "$SOLVEX_SANDBOX_IMAGE"
+      - name: Verify digest-pinned sandbox input and receipt binding
+        run: bunx tsx scripts/verify_stage6_sandbox.ts
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
