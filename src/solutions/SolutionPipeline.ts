@@ -230,8 +230,8 @@ export class SolutionPipeline {
           input_sha256: attestation.inputSha256,
           rationale_sha256: attestation.rationaleSha256,
           rationale_redacted: attestation.rationale
-            .replace(/Bearer\\s+\\S+/gi, '[REDACTED_BEARER]')
-            .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]')
+            .replace(/Bearer\s+\S+/gi, '[REDACTED_BEARER]')
+            .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]')
             .replace(/https?:\/\/\S+/gi, '[REDACTED_URL]')
             .slice(0, 1200),
           rationale_truncated: attestation.rationale.length > 1200,
