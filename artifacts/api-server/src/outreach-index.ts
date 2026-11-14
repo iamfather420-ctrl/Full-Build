@@ -53,14 +53,25 @@ async function verifyStage14GitHubToken(token: string): Promise<boolean> {
     if (header.alg !== "RS256" || typeof header.kid !== "string") return false;
     const now = Math.floor(Date.now() / 1000);
     const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
+    const trustedWorkflow = typeof claims.workflow_ref === "string" &&
+      claims.workflow_ref.startsWith(`${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@`);
+    const trustedPush = claims.event_name === "push" &&
+      typeof claims.ref === "string" && TRUSTED_WORKFLOWS.has(claims.ref) &&
+      claims.workflow_ref === `${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@${claims.ref}`;
+    // For pull_request, GitHub executes the base-branch workflow. Only accept
+    // same-repository PRs targeting main from the single protected work branch.
+    const trustedPullRequest = claims.event_name === "pull_request" &&
+      claims.base_ref === "main" &&
+      claims.head_ref === "fix/46-gate-baseline-lifecycle-sandbox" &&
+      claims.head_repository === TRUSTED_REPOSITORY &&
+      String(claims.head_repository_id) === TRUSTED_REPOSITORY_ID &&
+      trustedWorkflow;
     if (claims.iss !== "https://token.actions.githubusercontent.com" ||
         !audience.includes(STAGE14_AUDIENCE) || !Number.isFinite(claims.exp) ||
         claims.exp <= now || (Number.isFinite(claims.nbf) && claims.nbf > now) ||
         claims.repository !== TRUSTED_REPOSITORY ||
         String(claims.repository_id) !== TRUSTED_REPOSITORY_ID ||
-        claims.event_name !== "push" ||
-        typeof claims.ref !== "string" || !TRUSTED_WORKFLOWS.has(claims.ref) ||
-        claims.workflow_ref !== `${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@${claims.ref}`) return false;
+        !(trustedPush || trustedPullRequest)) return false;
 
     if (!githubJwksCache || githubJwksCache.expiresAt <= Date.now()) {
       const response = await fetch("https://token.actions.githubusercontent.com/.well-known/jwks", {
