@@ -183,6 +183,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref }}
           persist-credentials: true
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
