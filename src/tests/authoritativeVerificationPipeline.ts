@@ -18,7 +18,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
-import type { UserContext } from '../auth/AuthService';
+import { AuthService, type UserContext } from '../auth/AuthService';
 
 const PAYPAL_SANDBOX_EVIDENCE_SHA256 = '08744c0d5b299d4aa008b608bad7da72524ad1f7fc0f0e6e884c9f7f0734ce81';
 
