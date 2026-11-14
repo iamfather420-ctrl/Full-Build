@@ -109,7 +109,7 @@ function parseStage14Evaluation(raw: string): { verdict: "ACCEPT" | "REJECT"; ra
 
 app.post("/api/stage14/evaluate", express.json({ limit: "64kb" }), async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
-  const bearer = String(req.headers.authorization ?? "").replace(/^Bearer\\s+/i, "");
+  const bearer = String(req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
   if (!bearer || !(await verifyStage14GitHubToken(bearer))) {
     return res.status(401).json({ error: "trusted_github_oidc_identity_required" });
   }
