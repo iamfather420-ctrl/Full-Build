@@ -140,6 +140,7 @@ export class AuthoritativeVerificationPipeline {
     const g0Start = performance.now();
     let modCount = 0;
     let workingTreeClean = false;
+    let modifiedFiles: string[] = [];
     if (platform.execSync) {
       try {
         const gitStatus = platform.execSync('git status --porcelain --untracked-files=no', { encoding: 'utf8' });
@@ -149,6 +150,7 @@ export class AuthoritativeVerificationPipeline {
           return !changedPath.startsWith('artifacts/') && !changedPath.startsWith('public/');
         });
         modCount = sourceChanges.length;
+        modifiedFiles = sourceChanges.map(line => line.slice(3));
         workingTreeClean = sourceChanges.length === 0;
       } catch {}
     }
@@ -164,7 +166,7 @@ export class AuthoritativeVerificationPipeline {
         commit_sha: commitSha,
         commit_sha_resolved: commitShaResolved,
         modified_files_count: modCount,
-        modified_files: sourceChanges.map(line => line.slice(3)),
+        modified_files: modifiedFiles,
         working_tree_clean: workingTreeClean,
         runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME'
       }
