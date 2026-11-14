@@ -232,7 +232,7 @@ export class SolutionPipeline {
           rationale_redacted: attestation.rationale
             .replace(/Bearer\\s+\\S+/gi, '[REDACTED_BEARER]')
             .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]')
-            .replace(/https?:\\/\\/\\S+/gi, '[REDACTED_URL]')
+            .replace(/https?:\/\/\S+/gi, '[REDACTED_URL]')
             .slice(0, 1200),
           rationale_truncated: attestation.rationale.length > 1200,
           attestation_signature_sha256: computeSha256(attestation.signature)
