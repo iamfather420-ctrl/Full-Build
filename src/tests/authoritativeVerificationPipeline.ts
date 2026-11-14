@@ -164,6 +164,7 @@ export class AuthoritativeVerificationPipeline {
         commit_sha: commitSha,
         commit_sha_resolved: commitShaResolved,
         modified_files_count: modCount,
+        modified_files: sourceChanges.map(line => line.slice(3)),
         working_tree_clean: workingTreeClean,
         runtime_mode: platform.execSync ? 'NODE_RUNTIME' : 'BROWSER_RUNTIME'
       }
@@ -645,6 +646,8 @@ export class AuthoritativeVerificationPipeline {
           success: pipeRes.overall_success,
           completed_stages: pipeRes.completed_stages,
           total_stages: pipeRes.total_stages,
+          rejection_reason: pipeRes.rejection_reason,
+          stage_traces: pipeRes.stage_traces.map(stage => ({ stage: stage.stage, name: stage.name, status: stage.status, reason: stage.reason, evidence: stage.evidence })),
           solution_id: pipeRes.solution_id
         },
         identity_resolution: lifecycleIdentityResolution,
