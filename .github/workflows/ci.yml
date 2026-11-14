@@ -26,7 +26,6 @@ jobs:
       SOLVEX_ORACLE_SIGNER_TOKEN: ${{ secrets.SOLVEX_ORACLE_SIGNER_TOKEN }}
       SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
       SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
-      SOLVEX_OPENAI_MODEL: ${{ secrets.SOLVEX_OPENAI_MODEL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
