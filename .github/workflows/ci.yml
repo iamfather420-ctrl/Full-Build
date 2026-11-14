@@ -66,6 +66,8 @@ jobs:
         run: bun run verify:payments-disabled
       - name: Sandbox, memory, proof persistence, and tenant crypto tests
         run: bun run test:security-controls
+      - name: 21-stage solution pipeline execution trace
+        run: bun run test:solution-pipeline
       - name: Disposable Neon tenant isolation integration test
         env:
           SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
