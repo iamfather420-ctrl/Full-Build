@@ -158,7 +158,7 @@ export class SolutionPipeline {
         expected_input_sha256: sourceHash,
         receipt_input_sha256: receipt.input_sha256 ?? null,
         source_hash_match: receiptHashMatches,
-        exit_code: receipt.exit_code ?? result.exitCode,
+        exit_code: result.exitCode,
         memory_limit_bytes: result.memoryLimitBytes,
         cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes,
         cgroup_memory_limit_bytes: receipt.cgroup_memory_limit_bytes,
