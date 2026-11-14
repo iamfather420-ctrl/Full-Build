@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
@@ -96,7 +97,7 @@ export class SolutionPipeline {
     const traces: PipelineExecutionResult['stage_traces'] = [];
     const started = Date.now();
     const normalizedCode = typeof codeSolution === 'string' ? codeSolution.replace(/\r\n/g, '\n').trim() : '';
-    const sourceHash = computeSha256(normalizedCode);
+    const sourceHash = createHash('sha256').update(normalizedCode, 'utf8').digest('hex');
     const paradox = ParadoxRegistry.getInstance().getByCode(paradoxCode);
     let theoremCertificate = '';
     let sandboxMemoryEvidence: { current?: number | null; peak?: number | null; limit?: number | null; oom?: number | null } | undefined;
@@ -149,9 +150,23 @@ export class SolutionPipeline {
       let receipt: { accepted?: boolean; input_sha256?: string; cgroup_memory_current_bytes?: number | null; cgroup_memory_peak_bytes?: number | null; cgroup_memory_limit_bytes?: number | null; cgroup_oom_events?: number | null };
       try { receipt = JSON.parse(result.output.trim()); } catch { return fail('Sandbox did not return a valid machine-readable receipt.'); }
       sandboxMemoryEvidence = { current: receipt.cgroup_memory_current_bytes, peak: receipt.cgroup_memory_peak_bytes, limit: receipt.cgroup_memory_limit_bytes, oom: receipt.cgroup_oom_events };
-      return receipt.accepted === true && receipt.input_sha256 === sourceHash
-        ? pass({ sandbox_started: true, image_digest: image.split('@sha256:')[1], input_sha256: sourceHash, exit_code: result.exitCode, memory_limit_bytes: result.memoryLimitBytes, cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes, cgroup_oom_events: receipt.cgroup_oom_events })
-        : fail('Sandbox receipt did not bind acceptance to the submitted source hash.');
+      const receiptHashMatches = receipt.input_sha256 === sourceHash;
+      const receiptEvidence = {
+        sandbox_started: true,
+        image_digest: image.split('@sha256:')[1],
+        accepted: receipt.accepted === true,
+        expected_input_sha256: sourceHash,
+        receipt_input_sha256: receipt.input_sha256 ?? null,
+        source_hash_match: receiptHashMatches,
+        exit_code: receipt.exit_code ?? result.exitCode,
+        memory_limit_bytes: result.memoryLimitBytes,
+        cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes,
+        cgroup_memory_limit_bytes: receipt.cgroup_memory_limit_bytes,
+        cgroup_oom_events: receipt.cgroup_oom_events
+      };
+      return receipt.accepted === true && receiptHashMatches
+        ? pass(receiptEvidence)
+        : fail('Sandbox receipt did not bind acceptance to the submitted source hash.', receiptEvidence);
     });
     await runStage(7, () => {
       const balanced = (normalizedCode.match(/{/g) ?? []).length === (normalizedCode.match(/}/g) ?? []).length;
