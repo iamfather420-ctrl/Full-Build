@@ -14,12 +14,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
+      SOLVEX_SQLITE_PATH: /tmp/solvex-ci-${{ github.run_id }}.sqlite
+      # CI-only proof storage is isolated to this ephemeral runner; its HMAC key is generated per run.
+      SOLVEX_PROOF_DIR: /tmp/solvex-proof-bundles-${{ github.run_id }}
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
-      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:6063b88f12f74d018cba3b4d362355d1cd6e663c042fe7e781276cf7675b12a6
+      # CI uses the disposable isolation-test database; production NEON_DATABASE_URL stays in the production Environment.
+      DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
+      NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
+      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:0bc2e81bdf48b6c1738cbdc11467f1732937ad3a0fce2e96312e8dcccb6e2e91
+      # Optional independently operated oracle and tenant-root key; values stay in GitHub Secrets.
+      SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
+      SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
+      SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
+      SOLVEX_TENANT_ROOT_KEY: ${{ secrets.SOLVEX_TENANT_ROOT_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,14 +37,23 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: Install locked dependencies
-        run: bun install
+      - name: Install dependencies without rewriting the repository lockfile
+        run: bun install --no-save
+      - name: Configure ephemeral authenticated proof storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          key="$(openssl rand -hex 32)"
+          printf 'SOLVEX_PROOF_HMAC_KEY=%s\n' "$key" >> "$GITHUB_ENV"
+          unset key
       - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           docker pull "$SOLVEX_SANDBOX_IMAGE"
+      - name: Verify digest-pinned sandbox input and receipt binding
+        run: bunx tsx scripts/verify_stage6_sandbox.ts
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks

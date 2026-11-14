@@ -41,6 +41,11 @@ async function main() {
     assert.equal(typeof snapshot.rssBytes, 'number');
     assert.equal(typeof snapshot.withinLimit, 'boolean');
     assert.equal(typeof snapshot.instrumentationAvailable, 'boolean');
+    assert.equal(snapshot.instrumentationAvailable, true, 'process memory metrics must be available even when the host has no finite cgroup cap');
+    assert.ok(snapshot.rssBytes > 0);
+    assert.ok(snapshot.heapUsedBytes >= 0 && snapshot.heapUsedBytes <= snapshot.heapLimitBytes);
+    assert.ok(snapshot.maxRssBytes > 0);
+    assert.equal(typeof snapshot.cgroupInstrumentationAvailable, 'boolean');
 
     await assert.rejects(
       () => IsolatedExecutionSandbox.execute('node:latest', ['/bin/true'], ''),

@@ -65,7 +65,7 @@ export async function runPersistenceVerification(): Promise<PersistenceVerificat
   // ==========================================
   // 1. LOCAL SQLITE VERIFICATION
   // ==========================================
-  const dbPath = './.sovereign_data/sovereign.sqlite';
+  const dbPath = process.env.SOLVEX_SQLITE_PATH || './.sovereign_data/sovereign.sqlite';
   const sqlite = SqliteStore.getInstance();
   const db = sqlite.getRawDb();
   const diskDbExists = await checkDiskDbExists(dbPath);

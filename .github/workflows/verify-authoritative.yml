@@ -13,6 +13,10 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -23,8 +27,14 @@ jobs:
     env:
       SOLVEX_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && 'production' || 'ci' }}
       PAYMENTS_ENABLED: 'false'
-      NEON_DATABASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.production_release && secrets.NEON_DATABASE_URL || secrets.NEON_VALIDATION_URL }}
+      # GATE-12 worker uses the CI environment's configured disposable Neon validation URL.
+      # The OIDC isolation test retains its separately scoped owner/migration credential.
+      DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
+      NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
+      SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SOLVEX_SQLITE_PATH: /tmp/solvex-verify-${{ github.run_id }}.sqlite
+      SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:0bc2e81bdf48b6c1738cbdc11467f1732937ad3a0fce2e96312e8dcccb6e2e91
     timeout-minutes: 30
 
     steps:
@@ -38,12 +48,24 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install dependencies (clean, reproducible)
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies without rewriting lockfiles
         run: |
-          npm install --legacy-peer-deps --no-audit --no-fund
+          bun install --no-save
           # Ensure critical binaries are present
-          npx tsx --version
+          bunx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
+
+      - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull "$SOLVEX_SANDBOX_IMAGE"
 
       - name: Verify fail-closed release safety
         run: npm run verify:release-safety
