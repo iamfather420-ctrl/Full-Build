@@ -25,7 +25,10 @@ jobs:
       DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
       NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
       SOLVEX_SANDBOX_IMAGE: ghcr.io/iamfather420-ctrl/solvex-sandbox@sha256:0bc2e81bdf48b6c1738cbdc11467f1732937ad3a0fce2e96312e8dcccb6e2e91
-      # Optional independently operated oracle and tenant-root key; values stay in GitHub Secrets.
+      # Live Stage 14 evaluator and external signer configuration; values stay in GitHub Secrets.
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      SOLVEX_ORACLE_SIGNER_URL: ${{ secrets.SOLVEX_ORACLE_SIGNER_URL }}
+      SOLVEX_ORACLE_SIGNER_TOKEN: ${{ secrets.SOLVEX_ORACLE_SIGNER_TOKEN }}
       SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
       SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
       SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
