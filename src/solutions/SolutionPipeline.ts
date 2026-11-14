@@ -59,7 +59,7 @@ export class SolutionPipeline {
 
   private bootstrapDHS001(): void {
     const store = DurableStore.getInstance();
-    const code = "/**\n * One bounded geometric contraction step for a non-negative distance.\n * For finite dist >= 0 and finite eps > 0, repeated calls halve dist while\n * dist >= eps. Therefore N = ceil(log2(dist / eps)) steps suffice when dist > eps;\n * zero distance and already-in-tolerance inputs terminate immediately.\n */\nexport function zenoStep(dist: number, eps: number): number {\n  if (!Number.isFinite(dist) || dist < 0) {\n    throw new RangeError('dist must be a finite non-negative number');\n  }\n  if (!Number.isFinite(eps) || eps <= 0) {\n    throw new RangeError('eps must be a finite positive number');\n  }\n  return dist < eps ? dist : dist / 2;\n}";
+    const code = "/**\n * One bounded geometric contraction step for a non-negative distance.\n * For finite dist >= 0 and finite eps > 0, repeated calls halve dist while\n * dist >= eps. Therefore N = ceil(log2(dist / eps)) steps suffice when dist > eps;\n * zero distance and already-in-tolerance inputs terminate immediately.\n */\nexport function zenoStep(dist: number, eps: number): number {\n  if (!Number.isFinite(dist) || dist < 0) {\n    throw new RangeError('dist must be a finite non-negative number');\n  }\n  if (!Number.isFinite(eps) || eps <= 0) {\n    throw new RangeError('eps must be a finite positive number');\n  }\n  return dist < eps ? 0 : dist / 2;\n}";
     const solution = {
       id: 'DH-S-001',
       code: 'DH-S-001',
