@@ -1,5 +1,4 @@
 import { createHash, createPublicKey, verify } from 'node:crypto';
-import { IsolatedExecutionSandbox } from './IsolatedExecutionSandbox';
 
 export interface OracleAttestation {
   oracleId: string;
@@ -58,13 +57,16 @@ export class IndependentModelOracle {
   static async verify(input: unknown): Promise<OracleAttestation> {
     const apiKey = process.env.OPENAI_API_KEY ?? '';
     const modelId = process.env.SOLVEX_OPENAI_MODEL ?? 'gpt-4o-mini';
-    const image = process.env.SOLVEX_ORACLE_IMAGE ?? '';
+    const signerUrl = process.env.SOLVEX_ORACLE_SIGNER_URL ?? '';
+    const signerToken = process.env.SOLVEX_ORACLE_SIGNER_TOKEN ?? '';
     const oracleId = process.env.SOLVEX_ORACLE_ID ?? '';
     const publicKeyPem = process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY ?? '';
 
     if (!apiKey) throw new Error('Stage 14 requires the configured OPENAI_API_KEY runtime secret.');
-    if (!/@sha256:[a-f0-9]{64}$/i.test(image) || !oracleId || !publicKeyPem.includes('BEGIN PUBLIC KEY')) {
-      throw new Error('Stage 14 requires a digest-pinned external attestation image, oracle identity, and Ed25519 public key.');
+    let parsedSignerUrl: URL;
+    try { parsedSignerUrl = new URL(signerUrl); } catch { throw new Error('Stage 14 requires a valid external signer URL.'); }
+    if (parsedSignerUrl.protocol !== 'https:' || !signerToken || !oracleId || !publicKeyPem.includes('BEGIN PUBLIC KEY')) {
+      throw new Error('Stage 14 requires an HTTPS external signer, signer authentication token, oracle identity, and Ed25519 public key.');
     }
 
     const payload = JSON.stringify({ protocol: 'solvex-single-openai-evaluator-v1', input });
@@ -139,20 +141,29 @@ export class IndependentModelOracle {
       verdict: evaluation.verdict,
       rationaleSha256
     });
-    const signed = await IsolatedExecutionSandbox.execute(
-      image,
-      ['/opt/solvex-oracle/attest'],
-      signerPayload,
-      { timeoutMs: 30_000, memoryBytes: 512 * 1024 * 1024, cpuCount: 1, pidsLimit: 64 }
-    );
-    if (!signed.passed) {
-      throw new Error('External attestation signer failed: ' + (signed.error ?? 'unknown error'));
-    }
+    const signerController = new AbortController();
+    const signerTimeout = setTimeout(() => signerController.abort(), 15_000);
     let attestation: OracleAttestation;
     try {
-      attestation = JSON.parse(signed.output.trim()) as OracleAttestation;
-    } catch {
-      throw new Error('External attestation signer did not return valid JSON.');
+      const signerResponse = await fetch(new URL('/attest', parsedSignerUrl), {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${signerToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: signerPayload,
+        signal: signerController.signal
+      });
+      if (!signerResponse.ok) {
+        const detail = (await signerResponse.text()).slice(0, 1000);
+        throw new Error(`External attestation signer failed (HTTP ${signerResponse.status}): ${detail}`);
+      }
+      attestation = await signerResponse.json() as OracleAttestation;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') throw new Error('External attestation signer timed out after 15 seconds.');
+      throw error;
+    } finally {
+      clearTimeout(signerTimeout);
     }
     if (!this.verifyAttestation(attestation, oracleId, inputSha256, publicKeyPem) ||
         attestation.modelId !== modelId || attestation.verdict !== evaluation.verdict ||
