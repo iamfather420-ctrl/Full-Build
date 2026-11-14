@@ -1,4 +1,6 @@
 import { computeSha256 } from '../database/DatabaseSchema';
+import { ProofBundleEntity } from '../database/DatabaseSchema';
+import { OracleAttestation } from '../security/IndependentModelOracle';
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
 import { NOPOTVerifier } from '../proofs/NOPOTProof';
@@ -99,6 +101,8 @@ export class SolutionPipeline {
     const sourceHash = computeSha256(normalizedCode);
     const paradox = ParadoxRegistry.getInstance().getByCode(paradoxCode);
     let theoremCertificate = '';
+    let theoremProofResult: Awaited<ReturnType<Z3FormalProofEngine['proveCatalogTheorem']>> | undefined;
+    let oracleAttestation: OracleAttestation | undefined;
     let sandboxMemoryEvidence: { current?: number | null; peak?: number | null; limit?: number | null; oom?: number | null } | undefined;
     let haltedAt: number | undefined;
     const runStage = async (stage: number, execute: () => Promise<StageOutcome> | StageOutcome) => {
@@ -235,6 +239,7 @@ export class SolutionPipeline {
     });
     const z3Result = await runStage(11, async () => {
       const result = await Z3FormalProofEngine.getInstance().proveCatalogTheorem('THM-RUSSELL-01');
+      theoremProofResult = result;
       theoremCertificate = result.certificate_sha256;
       return result.proved ? pass({ theorem_id: result.theorem_id, solver: result.solver_engine, solver_result: result.solver_result, certificate_sha256: result.certificate_sha256 })
         : fail('Z3 did not prove the selected theorem.', { solver_result: result.solver_result, explanation: result.explanation });
@@ -250,7 +255,11 @@ export class SolutionPipeline {
     await runStage(14, async () => {
       try {
         const attestation = await IndependentModelOracle.verify({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode });
-        return pass({ independent_oracle_count: 1, oracle_id: attestation.oracleId, model_id: attestation.modelId, verdict: attestation.verdict, input_sha256: attestation.inputSha256, attestation_signature_sha256: computeSha256(attestation.signature) });
+        oracleAttestation = attestation;
+        const evidence = { independent_oracle_count: 1, oracle_id: attestation.oracleId, model_id: attestation.modelId, verdict: attestation.verdict, input_sha256: attestation.inputSha256, attestation_signature_sha256: computeSha256(attestation.signature) };
+        return attestation.verdict === 'ACCEPT'
+          ? pass(evidence)
+          : fail('Independent model oracle rejected the submitted source.', evidence);
       } catch (error) {
         return block(error instanceof Error ? error.message : String(error), { independent_oracle_count: 0 });
       }
@@ -267,18 +276,99 @@ export class SolutionPipeline {
         : fail('Pricing formula deterministic assertion failed.');
     });
     await runStage(17, async () => {
-      const bundle = ProofEngine.getInstance().getBundle('PB-DH-S-001');
-      if (!bundle) return block('No proof bundle is registered; no synthetic evidence will be created.');
+      const proofEngine = ProofEngine.getInstance();
+      const stage11 = traces.find(t => t.stage === 11);
+      const stage13 = traces.find(t => t.stage === 13);
+      const stage14 = traces.find(t => t.stage === 14);
+      const stage15 = traces.find(t => t.stage === 15);
+      const tests = stage13 ? [{
+        test_id: 'STAGE-13-DETERMINISTIC-NORMALIZATION-REPLAY',
+        description: 'Actual Stage 13 deterministic normalization replay.',
+        passed: stage13.status === 'PASSED',
+        duration_ms: stage13.duration_ms,
+        receipt_hash: computeSha256(JSON.stringify(stage13.evidence ?? { reason: stage13.reason ?? null }))
+      }] : [];
+      const formalProofs = theoremProofResult ? [{
+        system: 'Z3_SMT',
+        specification: `[${theoremProofResult.theorem_id}] ${theoremProofResult.theorem_name}; actual solver result ${theoremProofResult.solver_result}.`,
+        checked: theoremProofResult.proved,
+        proof_term_hash: theoremProofResult.certificate_sha256
+      }] : [];
+      const independentOracles = oracleAttestation ? [{
+        oracle_id: oracleAttestation.oracleId,
+        name: oracleAttestation.modelId,
+        method: 'Digest-pinned isolated oracle with Ed25519 signature and input binding.',
+        attestation_hash: computeSha256(oracleAttestation.signature),
+        verified: oracleAttestation.verdict === 'ACCEPT'
+      }] : [];
+      const replayResults = stage15 ? [{
+        replay_id: 'STAGE-15-SOURCE-HASH-REPLAY',
+        status: stage15.status === 'PASSED' && stage15.evidence?.artifact_drift_hash_match === true ? 'MATCH' as const : 'MISMATCH' as const,
+        expected_hash: sourceHash,
+        observed_hash: String(stage15.evidence?.replay_sha256 ?? '')
+      }] : [];
+      const limitations = traces.filter(t => t.status !== 'PASSED').map(t => `Stage ${t.stage} ${t.status}: ${t.reason ?? 'No additional reason supplied.'}`);
+      const bundle: ProofBundleEntity = {
+        proof_id: 'PB-DH-S-001',
+        subject_id: 'DH-S-001',
+        claim: 'The submitted bounded Zeno implementation passed the recorded pipeline checks and associated proof evidence.',
+        claim_hash: computeSha256('The submitted bounded Zeno implementation passed the recorded pipeline checks and associated proof evidence.'),
+        evidence: traces.filter(t => t.status === 'PASSED').map(t => `stage-${t.stage}:${t.name}:PASS:${computeSha256(JSON.stringify(t.evidence ?? {}))}`),
+        tests,
+        formal_proofs: formalProofs,
+        independent_oracles: independentOracles,
+        replay_results: replayResults,
+        implementation_hash: sourceHash,
+        environment_hash: computeSha256(JSON.stringify({ node: process.version, platform: process.platform, arch: process.arch })),
+        dependency_hash: computeSha256('dependency-lockfile-digest-not-captured-by-pipeline'),
+        source_references: [`sha256:${sourceHash}`],
+        timestamp: Date.now(),
+        verifier_identity: 'SOLVEX_PIPELINE_STAGE_EVIDENCE',
+        verification_status: 'PARTIAL',
+        limitations: [...limitations, 'Dependency lockfile digest is not captured by this pipeline run.'],
+        reproducibility_instructions: 'Re-run the same commit in the isolated CI environment and compare the recorded source, solver, oracle, and replay digests.'
+      };
+      const hasCompleteEvidence = tests.length > 0 && tests.every(t => t.passed) &&
+        formalProofs.length > 0 && formalProofs.every(p => p.checked) &&
+        independentOracles.length > 0 && independentOracles.every(o => o.verified) &&
+        replayResults.length > 0 && replayResults.every(r => r.status === 'MATCH');
+      bundle.verification_status = hasCompleteEvidence ? 'VERIFIED' : 'PARTIAL';
+      proofEngine.registerBundle(bundle);
+      const integrity = proofEngine.verifyBundleIntegrity(bundle);
       try {
         const store = new PersistentProofStore();
         await store.put(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT', bundle);
         const persisted = await store.get(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
-        const view = CrystalClearBox.projectCustomerEvidence(persisted.payload as typeof bundle);
-        return view.proprietary_weights_redacted && view.internal_reasoning_redacted
-          ? pass({ proof_id: view.proof_id, public_audit_token: view.public_audit_token, verdict: view.verification_verdict, redaction_verified: true, persisted_sha256: persisted.payloadSha256, hmac_verified: true })
-          : fail('Customer evidence redaction assertion failed.');
+        const persistedBundle = persisted.payload as ProofBundleEntity;
+        const persistedIntegrity = proofEngine.verifyBundleIntegrity(persistedBundle);
+        const view = CrystalClearBox.projectCustomerEvidence(persistedBundle);
+        const redactionVerified = view.proprietary_weights_redacted && view.internal_reasoning_redacted;
+        const evidence = {
+          proof_id: view.proof_id,
+          public_audit_token: view.public_audit_token,
+          verdict: view.verification_verdict,
+          redaction_verified: redactionVerified,
+          persisted_sha256: persisted.payloadSha256,
+          hmac_verified: true,
+          bundle_integrity_verified: persistedIntegrity.verified,
+          bundle_integrity_reasons: persistedIntegrity.reasons,
+          stage14_oracle_attested: stage14?.status === 'PASSED',
+          stage11_formal_proof_recorded: Boolean(stage11?.status === 'PASSED'),
+          stage15_replay_recorded: Boolean(stage15?.status === 'PASSED')
+        };
+        if (!redactionVerified) return fail('Customer evidence redaction assertion failed.', evidence);
+        if (!persistedIntegrity.verified || persistedBundle.verification_status !== 'VERIFIED') {
+          return block('A genuine partial proof bundle was registered, persisted, and redacted, but required proof components are still incomplete.', evidence);
+        }
+        return pass(evidence);
       } catch (error) {
-        return block(error instanceof Error ? error.message : String(error), { persisted_proof_verified: false });
+        return block(error instanceof Error ? error.message : String(error), {
+          proof_bundle_registered: true,
+          verification_status: bundle.verification_status,
+          bundle_integrity_verified: integrity.verified,
+          bundle_integrity_reasons: integrity.reasons,
+          persisted_proof_verified: false
+        });
       }
     });
     await runStage(18, () => {
