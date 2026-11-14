@@ -46,7 +46,7 @@ export class SolutionPipeline {
     'Stage 11: Z3 SMT Formal Theorem Verification',
     'Stage 12: Machine-Checked Proof Certificate Generation',
     'Stage 13: Deterministic Cleanroom Test Suite Execution',
-    'Stage 14: Multi-Model Independent Oracle Attestation',
+    'Stage 14: Single-Model OpenAI Oracle Attestation',
     'Stage 15: Bitrot & Replay Divergence Validation',
     'Stage 16: Defensible Pricing Formula v1.4 Execution',
     'Stage 17: Redacted Customer Evidence Generation',
