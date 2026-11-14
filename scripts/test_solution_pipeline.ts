@@ -14,7 +14,18 @@ async function main() {
   assert.ok(sentinel.stage_traces.slice(9).every(stage => stage.status === 'BLOCKED'),
     'circuit breaker must block all stages after stage 9');
 
-  const normal = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
+  // Explicitly simulate an unavailable sandbox even when CI has built and pinned
+  // the image for the Stage 6 integration probe. Restore the caller's environment
+  // immediately after the fail-closed assertion run.
+  const configuredSandboxImage = process.env.SOLVEX_SANDBOX_IMAGE;
+  let normal;
+  try {
+    delete process.env.SOLVEX_SANDBOX_IMAGE;
+    normal = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
+  } finally {
+    if (configuredSandboxImage === undefined) delete process.env.SOLVEX_SANDBOX_IMAGE;
+    else process.env.SOLVEX_SANDBOX_IMAGE = configuredSandboxImage;
+  }
   assert.equal(normal.total_stages, 21);
   assert.equal(normal.stage_traces.length, 21);
   assert.equal(normal.stage_traces[0].status, 'PASSED');
