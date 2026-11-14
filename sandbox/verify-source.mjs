@@ -11,7 +11,7 @@ for await (const chunk of process.stdin) {
   }
 }
 const inputSha = createHash('sha256').update(source).digest('hex');
-const run = spawnSync(process.execPath, ['--input-type=module'], {
+const run = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module'], {
   input: source,
   encoding: 'utf8',
   timeout: 15_000,
