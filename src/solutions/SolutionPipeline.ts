@@ -149,7 +149,7 @@ export class SolutionPipeline {
         timeoutMs: 30_000, memoryBytes: 256 * 1024 * 1024, cpuCount: 1, pidsLimit: 64
       });
       if (!result.passed) return block(result.error ?? 'Isolated sandbox rejected or failed the source.', { sandbox_started: true, exit_code: result.exitCode, oom_killed: result.oomKilled, timed_out: result.timedOut });
-      let receipt: { accepted?: boolean; input_sha256?: string; cgroup_memory_current_bytes?: number | null; cgroup_memory_peak_bytes?: number | null; cgroup_memory_limit_bytes?: number | null; cgroup_oom_events?: number | null };
+      let receipt: { accepted?: boolean; input_sha256?: string; exit_code?: number | null; timed_out?: boolean; stderr_sha256?: string; cgroup_memory_current_bytes?: number | null; cgroup_memory_peak_bytes?: number | null; cgroup_memory_limit_bytes?: number | null; cgroup_oom_events?: number | null };
       try { receipt = JSON.parse(result.output.trim()); } catch { return fail('Sandbox did not return a valid machine-readable receipt.'); }
       sandboxMemoryEvidence = { current: receipt.cgroup_memory_current_bytes, peak: receipt.cgroup_memory_peak_bytes, limit: receipt.cgroup_memory_limit_bytes, oom: receipt.cgroup_oom_events };
       return receipt.accepted === true && receipt.input_sha256 === sourceHash
@@ -158,6 +158,10 @@ export class SolutionPipeline {
             expected_input_sha256: sourceHash,
             receipt_input_sha256: receipt.input_sha256 ?? null,
             receipt_accepted: receipt.accepted === true,
+            receipt_exit_code: receipt.exit_code ?? null,
+            receipt_timed_out: receipt.timed_out ?? null,
+            receipt_stderr_sha256: receipt.stderr_sha256 ?? null,
+            receipt_cgroup_oom_events: receipt.cgroup_oom_events ?? null,
             sandbox_exit_code: result.exitCode
           });
     });
