@@ -57,18 +57,38 @@ export class IndependentModelOracle {
   static async verify(input: unknown): Promise<OracleAttestation> {
     const modelId = process.env.SOLVEX_OPENAI_MODEL ?? 'gpt-4o-mini';
     const gatewayUrl = process.env.SOLVEX_STAGE14_GATEWAY_URL ?? 'https://full-build.fly.dev/api/stage14/evaluate';
-    const signerUrl = process.env.SOLVEX_ORACLE_SIGNER_URL ?? '';
-    const signerToken = process.env.SOLVEX_ORACLE_SIGNER_TOKEN ?? '';
-    const oracleId = process.env.SOLVEX_ORACLE_ID ?? '';
-    const publicKeyPem = process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY ?? '';
+    const signerUrl = process.env.SOLVEX_ORACLE_SIGNER_URL ?? 'https://solvex-oracle-signer-isolated.up.railway.app';
+    const oracleIdEnv = process.env.SOLVEX_ORACLE_ID ?? '';
+    const publicKeyEnv = process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY ?? '';
 
-    let parsedGatewayUrl: URL;
-    try { parsedGatewayUrl = new URL(gatewayUrl); } catch { throw new Error('Stage 14 requires a valid HTTPS evaluator gateway URL.'); }
-    if (parsedGatewayUrl.protocol !== 'https:') throw new Error('Stage 14 evaluator gateway must use HTTPS.');
     let parsedSignerUrl: URL;
     try { parsedSignerUrl = new URL(signerUrl); } catch { throw new Error('Stage 14 requires a valid external signer URL.'); }
-    if (parsedSignerUrl.protocol !== 'https:' || !signerToken || !oracleId || !publicKeyPem.includes('BEGIN PUBLIC KEY')) {
-      throw new Error('Stage 14 requires an HTTPS external signer, signer authentication token, oracle identity, and Ed25519 public key.');
+    if (parsedSignerUrl.protocol !== 'https:') throw new Error('Stage 14 signer must use HTTPS.');
+
+    const oidcUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL ?? '';
+    const oidcRequestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN ?? '';
+    if (!oidcUrl || !oidcRequestToken) {
+      throw new Error('Stage 14 requires GitHub Actions OIDC permission; no long-lived API or signer keys are used in CI.');
+    }
+    const tokenUrl = new URL(oidcUrl);
+    tokenUrl.searchParams.set('audience', 'solvex-stage14-evaluator');
+    const oidcResponse = await fetch(tokenUrl, {
+      headers: { Authorization: `Bearer ${oidcRequestToken}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!oidcResponse.ok) throw new Error(`GitHub Actions OIDC token request failed (HTTP ${oidcResponse.status}).`);
+    const oidcBody = await oidcResponse.json() as { value?: string };
+    if (typeof oidcBody.value !== 'string' || !oidcBody.value) throw new Error('GitHub Actions returned no OIDC identity token.');
+
+    const selftestResponse = await fetch(new URL('/selftest', parsedSignerUrl), {
+      headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10_000),
+    });
+    if (!selftestResponse.ok) throw new Error(`External signer self-test endpoint failed (HTTP ${selftestResponse.status}).`);
+    const selftest = await selftestResponse.json() as { ok?: boolean; oracleId?: string; publicKeyPem?: string };
+    const oracleId = oracleIdEnv || selftest.oracleId || '';
+    const publicKeyPem = publicKeyEnv || selftest.publicKeyPem || '';
+    if (!selftest.ok || !oracleId || !publicKeyPem.includes('BEGIN PUBLIC KEY')) {
+      throw new Error('External signer did not publish a valid Ed25519 identity and public key.');
     }
 
     const payload = JSON.stringify({ protocol: 'solvex-single-openai-evaluator-v1', input });
@@ -130,7 +150,7 @@ export class IndependentModelOracle {
       const signerResponse = await fetch(new URL('/attest', parsedSignerUrl), {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${signerToken}`,
+          Authorization: `Bearer ${oidcBody.value}`,
           'Content-Type': 'application/json'
         },
         body: signerPayload,
