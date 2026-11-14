@@ -6,7 +6,7 @@ if (!/@sha256:[a-f0-9]{64}$/i.test(image)) throw new Error('SOLVEX_SANDBOX_IMAGE
 const source = 'export const solvexStage6Probe = true;\n';
 const sourceSha256 = computeSha256(source);
 const memoryLimitBytes = 256 * 1024 * 1024;
-const result = await IsolatedExecutionSandbox.execute(image, ['/opt/solvex-sandbox/verify-source'], source, {
+const result = await IsolatedExecutionSandbox.execute(image, ['/opt/solvex-sandbox/verify-source.mjs'], source, {
   timeoutMs: 30_000, memoryBytes: memoryLimitBytes, cpuCount: 1, pidsLimit: 64
 });
 if (!result.passed) {
