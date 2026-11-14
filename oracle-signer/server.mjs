@@ -31,7 +31,10 @@ function validHash(value) { return typeof value === 'string' && /^[a-f0-9]{64}$/
 
 const server = createServer(async (req, res) => {
   let pathname;
-  try { pathname = new URL(req.url ?? '/', 'http://localhost').pathname.replace(/\\/+$/, '') || '/'; }
+  try {
+    pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
+    while (pathname.length > 1 && pathname.endsWith('/')) pathname = pathname.slice(0, -1);
+  }
   catch { return send(res, 400, { error: 'invalid_url' }); }
   if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/healthz' || pathname === '/')) {
     res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
