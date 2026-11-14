@@ -21,7 +21,7 @@ const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' });
 const publicKeySha256 = createHash('sha256').update(publicKey.export({ type: 'spki', format: 'der' })).digest('hex');
 
 function runKeySelfTest() {
-  const canonical = [oracleId, 'solvex-signer-self-test', 'a'.repeat(64), 'ACCEPT', 'b'.repeat(64)].join('\\n');
+  const canonical = [oracleId, 'solvex-signer-self-test', 'a'.repeat(64), 'ACCEPT', 'b'.repeat(64)].join('\n');
   const bytes = Buffer.from(canonical);
   const signature = sign(null, bytes, privateKey);
   return verify(null, bytes, publicKey, signature);
