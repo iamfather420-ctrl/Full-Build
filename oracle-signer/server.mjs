@@ -6,13 +6,14 @@ const host = process.env.SOLVEX_SIGNER_HOST ?? '0.0.0.0';
 const port = Number(process.env.PORT ?? 8080);
 const token = process.env.SOLVEX_ORACLE_SIGNER_TOKEN ?? '';
 const keyPath = process.env.SOLVEX_ORACLE_ED25519_PRIVATE_KEY_FILE ?? '/run/secrets/solvex-oracle-ed25519.pem';
+const privateKeyEnv = process.env.SOLVEX_ORACLE_ED25519_PRIVATE_KEY ?? '';
 const oracleId = process.env.SOLVEX_ORACLE_ID ?? '';
 const maxBodyBytes = 64 * 1024;
 
 if (token.length < 32 || !oracleId) {
   throw new Error('Signer requires SOLVEX_ORACLE_SIGNER_TOKEN (at least 32 chars) and SOLVEX_ORACLE_ID.');
 }
-const privateKeyPem = await readFile(keyPath, 'utf8');
+const privateKeyPem = privateKeyEnv ? privateKeyEnv.replace(/\\n/g, '\n') : await readFile(keyPath, 'utf8');
 const privateKey = createPrivateKey(privateKeyPem);
 if (privateKey.asymmetricKeyType !== 'ed25519') throw new Error('Signer key must be Ed25519.');
 
