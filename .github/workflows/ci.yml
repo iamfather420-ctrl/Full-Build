@@ -39,7 +39,12 @@ jobs:
           docker build --platform linux/amd64 --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t "$IMAGE" sandbox
           docker push "$IMAGE"
           DIGEST="$(docker image inspect "$IMAGE" --format '{{range .RepoDigests}}{{println .}}{{end}}' | awk -v prefix="ghcr.io/iamfather420-ctrl/solvex-sandbox@" 'index($0,prefix)==1 { sub(prefix,""); print; exit }')"
-          if ! printf '%s' "$DIGEST" | grep -Eq '^sha256:[a-f0-9]{64}
+          if ! printf '%s' "$DIGEST" | grep -Eq '^sha256:[a-f0-9]{64}$'; then
+            echo "Could not resolve the pushed sandbox manifest digest." >&2
+            exit 1
+          fi
+          echo "SOLVEX_SANDBOX_IMAGE=ghcr.io/iamfather420-ctrl/solvex-sandbox@${DIGEST}" >> "$GITHUB_ENV"
+          echo "Published current-source sandbox image at immutable digest ${DIGEST}"
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
