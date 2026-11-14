@@ -14,7 +14,18 @@ async function main() {
   assert.ok(sentinel.stage_traces.slice(9).every(stage => stage.status === 'BLOCKED'),
     'circuit breaker must block all stages after stage 9');
 
-  const normal = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
+  // Keep this regression case isolated from the configured CI sandbox. The dedicated
+  // Stage 6 smoke test exercises the real digest-pinned image; this case verifies that
+  // the pipeline halts safely when that external execution dependency is unavailable.
+  const configuredSandboxImage = process.env.SOLVEX_SANDBOX_IMAGE;
+  delete process.env.SOLVEX_SANDBOX_IMAGE;
+  let normal;
+  try {
+    normal = await pipeline.runPipeline('DH-P-001', 'export function solve() { return true; }');
+  } finally {
+    if (configuredSandboxImage === undefined) delete process.env.SOLVEX_SANDBOX_IMAGE;
+    else process.env.SOLVEX_SANDBOX_IMAGE = configuredSandboxImage;
+  }
   assert.equal(normal.total_stages, 21);
   assert.equal(normal.stage_traces.length, 21);
   assert.equal(normal.stage_traces[0].status, 'PASSED');
