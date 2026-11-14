@@ -50,7 +50,7 @@ export class System46Gates {
     // PART 1: EVALUATE 15 AUTHORITATIVE PIPELINE GATES (GATES 01 - 15)
     // -------------------------------------------------------------
     const authPipeline = AuthoritativeVerificationPipeline.getInstance();
-    const authReport = await authPipeline.runFullPipeline();
+    const authReport = await authPipeline.runFullPipeline({ gate12EvidenceMode: 'reuse' });
 
     for (let i = 0; i < authReport.gates.length; i++) {
       const g = authReport.gates[i];

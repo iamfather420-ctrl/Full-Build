@@ -16,7 +16,7 @@ import { NeonStore } from '../database/NeonPersistence';
 import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
-import { SolutionPipeline } from '../solutions/SolutionPipeline';
+import type { PipelineExecutionResult } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 
 export interface GateResult {
@@ -48,6 +48,11 @@ export interface PipelineExecutionReport {
   gates: GateResult[];
 }
 
+export interface AuthoritativeVerificationOptions {
+  /** Consume previously completed 21-stage evidence rather than executing SolutionPipeline. */
+  gate12EvidenceMode?: 'execute' | 'reuse';
+}
+
 export class AuthoritativeVerificationPipeline {
   private static instance: AuthoritativeVerificationPipeline | null = null;
 
@@ -66,7 +71,7 @@ export class AuthoritativeVerificationPipeline {
     return AuthoritativeVerificationPipeline.instance;
   }
 
-  public async runFullPipeline(): Promise<PipelineExecutionReport> {
+  public async runFullPipeline(options: AuthoritativeVerificationOptions = {}): Promise<PipelineExecutionReport> {
     const startOverall = performance.now();
     const executionId = `exec_pipeline_${Date.now()}`;
     const gates: GateResult[] = [];
@@ -540,9 +545,75 @@ export class AuthoritativeVerificationPipeline {
     // GATE 12: End-to-End Lifecycle
     // ==========================================
     const g12Start = performance.now();
-    const pipe = SolutionPipeline.getInstance();
-    const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
-    const pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode);
+    // The 46-gate audit must not restart the separately completed 21-stage
+    // SolutionPipeline. In reuse mode it consumes a commit-bound evidence file
+    // produced by the original pipeline run. The normal authoritative workflow
+    // retains its existing execute behavior.
+    let pipeRes: PipelineExecutionResult;
+    let gate12EvidenceStatus: {
+      mode: 'EXECUTED' | 'REUSED';
+      available: boolean;
+      valid: boolean;
+      path: string | null;
+      error?: string;
+    };
+    if (options.gate12EvidenceMode === 'reuse') {
+      const configuredEvidencePath = process.env.SOLVEX_GATE12_STAGE_EVIDENCE_PATH;
+      const evidencePath = configuredEvidencePath
+        ? (platform.path?.isAbsolute(configuredEvidencePath)
+          ? configuredEvidencePath
+          : platform.path?.resolve(rootDir, configuredEvidencePath))
+        : (platform.path?.resolve(artifactsDir, 'GATE-12-stage-evidence.json') || './artifacts/GATE-12-stage-evidence.json');
+      let evidence: any = null;
+      let evidenceError: string | undefined;
+      try {
+        if (!platform.fs?.readFileSync) throw new Error('Node filesystem is unavailable for evidence reuse.');
+        evidence = JSON.parse(platform.fs.readFileSync(evidencePath, 'utf8'));
+      } catch (error: any) {
+        evidenceError = error?.message || 'Stage evidence could not be read.';
+      }
+      const traces = Array.isArray(evidence?.stage_traces) ? evidence.stage_traces : [];
+      const stageNumbers = traces.map((trace: any) => trace?.stage).sort((a: number, b: number) => a - b);
+      const exactStageSet = stageNumbers.length === 21 && stageNumbers.every((stage: number, index: number) => stage === index + 1);
+      const allStagesPassed = exactStageSet && traces.every((trace: any) => trace?.status === 'PASSED');
+      const commitBound = typeof evidence?.commit_sha === 'string' && evidence.commit_sha === commitSha;
+      const validEvidence = !evidenceError &&
+        evidence?.total_stages === 21 &&
+        evidence?.completed_stages === 21 &&
+        evidence?.overall_success === true &&
+        exactStageSet &&
+        allStagesPassed &&
+        commitBound;
+      gate12EvidenceStatus = {
+        mode: 'REUSED',
+        available: Boolean(evidence),
+        valid: validEvidence,
+        path: evidence ? evidencePath : null,
+        error: validEvidence ? undefined : (evidenceError ||
+          (!commitBound ? 'Evidence commit SHA does not match the audited source commit.' :
+            'Evidence must prove all 21 unique stages PASSED with overall_success=true.'))
+      };
+      pipeRes = {
+        overall_success: validEvidence,
+        completed_stages: validEvidence ? 21 : 0,
+        total_stages: 21,
+        paradox_code: 'GATE-12-PERSISTED-EVIDENCE',
+        stage_traces: validEvidence ? traces : [],
+        solution_id: evidence?.solution_id,
+        rejection_reason: validEvidence ? undefined : gate12EvidenceStatus.error
+      };
+    } else {
+      const { SolutionPipeline } = await import('../solutions/SolutionPipeline');
+      const pipe = SolutionPipeline.getInstance();
+      const zenoCode = 'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }';
+      pipeRes = await pipe.runPipeline('DFRL-P-024', zenoCode);
+      gate12EvidenceStatus = {
+        mode: 'EXECUTED',
+        available: true,
+        valid: pipeRes.overall_success && pipeRes.completed_stages === 21,
+        path: null
+      };
+    }
 
     const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
@@ -613,9 +684,15 @@ export class AuthoritativeVerificationPipeline {
       {
         solution_pipeline: {
           success: pipeRes.overall_success,
-          completed_stages: pipeRes.completed_stages,
-          total_stages: pipeRes.total_stages,
-          solution_id: pipeRes.solution_id
+          completed_stages: gate12EvidenceStatus.valid ? pipeRes.completed_stages : null,
+          total_stages: 21,
+          solution_id: pipeRes.solution_id,
+          evidence_mode: gate12EvidenceStatus.mode,
+          evidence_available: gate12EvidenceStatus.available,
+          evidence_valid: gate12EvidenceStatus.valid,
+          evidence_path: gate12EvidenceStatus.path,
+          evidence_error: gate12EvidenceStatus.error,
+          stage_traces: gate12EvidenceStatus.valid ? pipeRes.stage_traces : []
         },
         order_lifecycle: {
           order_id: testOrderId,
@@ -802,7 +879,9 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     if (!nodeCoverage.all_passed) productionBlockers.push('GATE-09 Daisy 54-node CUJ coverage failed.');
     if (!persistRep.all_local_passed) productionBlockers.push('GATE-10 Relational persistence or Merkle chain failed.');
     if (lifecycleBlocked) {
-      productionBlockers.push('GATE-12 lifecycle blocked: trusted identity and signed tenant claims are unavailable; no order transition or deployment occurred.');
+      productionBlockers.push(gate12EvidenceStatus.mode === 'REUSED' && !gate12EvidenceStatus.valid
+        ? 'GATE-12 lifecycle blocked: the 46-gate audit did not rerun the 21-stage pipeline, but a valid commit-bound 21-stage evidence artifact was unavailable; no order transition or deployment occurred.'
+        : 'GATE-12 lifecycle blocked: trusted identity and signed tenant claims are unavailable; no order transition or deployment occurred.');
     } else if (!e2eOk) {
       productionBlockers.push('GATE-12 End-to-end lifecycle verification failed.');
     }
