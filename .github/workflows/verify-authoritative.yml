@@ -44,11 +44,16 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install dependencies (clean, reproducible)
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies without rewriting lockfiles
         run: |
-          npm ci --legacy-peer-deps --no-audit --no-fund
+          bun install --no-save
           # Ensure critical binaries are present
-          npx tsx --version
+          bunx tsx --version
           node -e "require('z3-solver')" || echo "z3-solver will be resolved at runtime"
 
       - name: Authenticate to GHCR for digest-pinned Stage 6 sandbox
