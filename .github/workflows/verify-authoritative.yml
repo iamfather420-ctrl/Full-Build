@@ -81,8 +81,8 @@ jobs:
         run: |
           echo "## Authoritative Verification Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** `$(git rev-parse HEAD)`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Command:** `bun run verify:120`" >> $GITHUB_STEP_SUMMARY
+          printf '- **Commit:** `%s`\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          printf '- **Command:** `bun run verify:120`\n' >> "$GITHUB_STEP_SUMMARY"
           if [ -f artifacts/dfrl-88-verification.json ]; then
             node -e '
               const r = require("./artifacts/dfrl-88-verification.json");
