@@ -142,7 +142,7 @@ export class SolutionPipeline {
     await runStage(6, async () => {
       const image = process.env.SOLVEX_SANDBOX_IMAGE ?? '';
       if (!/@sha256:[a-f0-9]{64}$/i.test(image)) return block('A digest-pinned sandbox image is not configured.', { sandbox_started: false });
-      const result = await IsolatedExecutionSandbox.execute(image, ['/opt/solvex-sandbox/verify-source'], normalizedCode, {
+      const result = await IsolatedExecutionSandbox.execute(image, ['/opt/solvex-sandbox/verify-source.mjs'], normalizedCode, {
         timeoutMs: 30_000, memoryBytes: 256 * 1024 * 1024, cpuCount: 1, pidsLimit: 64
       });
       if (!result.passed) return block(result.error ?? 'Isolated sandbox rejected or failed the source.', { sandbox_started: true, exit_code: result.exitCode, oom_killed: result.oomKilled, timed_out: result.timedOut });
