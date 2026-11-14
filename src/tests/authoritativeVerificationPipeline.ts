@@ -607,10 +607,12 @@ export class AuthoritativeVerificationPipeline {
       g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
     } else if (hasPayPal && !ppAuth) {
       g11Status = 'FAILED';
-    } else if (hasNeon && !neonConn) {
+    } else if (localNeonConfigured && !neonConn) {
       g11Status = 'FAILED';
     } else if (ppAuth && neonConn) {
       g11Status = 'PASSED';
+    } else if (!localNeonConfigured && externalNeon.configured && !hasPayPal) {
+      g11Status = 'CONFIGURED_EXTERNAL';
     } else {
       g11Status = 'CONFIGURED';
     }
