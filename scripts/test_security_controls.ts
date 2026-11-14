@@ -35,7 +35,8 @@ async function main() {
     const oracleCanonical = [oracleFields.oracleId, oracleFields.modelId, oracleFields.inputSha256, oracleFields.verdict, oracleFields.rationaleSha256].join('\n');
     const attestation = { ...oracleFields, signature: sign(null, Buffer.from(oracleCanonical), privateKey).toString('base64') };
     assert.equal(IndependentModelOracle.verifyAttestation(attestation, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), true);
-    assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, verdict: 'REJECT' }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);\n    assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, rationale: 'tampered rationale' }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);
+    assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, verdict: 'REJECT' }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);
+    assert.equal(IndependentModelOracle.verifyAttestation({ ...attestation, rationale: 'tampered rationale' }, 'test-oracle', oraclePayloadHash, publicKey.export({ type: 'spki', format: 'pem' }).toString()), false);
 
     const snapshot = await MemorySafetyInstrumentation.snapshot(512 * 1024 * 1024);
     assert.equal(typeof snapshot.rssBytes, 'number');
