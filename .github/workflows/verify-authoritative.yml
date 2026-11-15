@@ -45,17 +45,9 @@ jobs:
 
       - name: Install dependencies from committed Bun lockfile
         run: |
-          bun install --lockfile-only
           bun install --frozen-lockfile
           bun --version
           bun -e "import('z3-solver').then(() => console.log('z3-solver resolved'))"
-
-      - name: Export regenerated Bun lockfile for commit
-        uses: actions/upload-artifact@v7
-        with:
-          name: regenerated-bun-lockfile
-          path: bun.lock
-          retention-days: 1
 
       - name: Verify fail-closed release safety
         run: bun run verify:release-safety
