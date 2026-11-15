@@ -16,12 +16,15 @@ function hostOf(url) {
 
 export async function readLiveRegistry() {
   const url = databaseUrl();
-  const paypalPresent = Boolean(process.env.PAYPAL_SANDBOX_CLIENT_ID && process.env.PAYPAL_SANDBOX_CLIENT_SECRET);
+  const paypalEnvironment = (process.env.PAYPAL_ENVIRONMENT || 'sandbox').trim().toLowerCase();
+  const paypalClientId = process.env.PAYPAL_CLIENT_ID || (paypalEnvironment === 'live' ? process.env.PAYPAL_LIVE_CLIENT_ID : process.env.PAYPAL_SANDBOX_CLIENT_ID);
+  const paypalClientSecret = process.env.PAYPAL_CLIENT_SECRET || (paypalEnvironment === 'live' ? process.env.PAYPAL_LIVE_CLIENT_SECRET : process.env.PAYPAL_SANDBOX_CLIENT_SECRET);
+  const paypalPresent = Boolean(paypalClientId?.trim() && paypalClientSecret?.trim() && ['live', 'sandbox'].includes(paypalEnvironment));
   const base = {
     payments_enabled: false,
     authentication_enabled: false,
     paypal: {
-      environment: process.env.PAYPAL_ENVIRONMENT || 'sandbox',
+      environment: paypalEnvironment,
       credentials_present: paypalPresent,
       capture: 'BLOCKED',
     },
