@@ -6,6 +6,8 @@ export interface OracleAttestation {
   inputSha256: string;
   verdict: 'ACCEPT' | 'REJECT';
   rationaleSha256: string;
+  /** Original evaluator rationale; its exact bytes are bound by rationaleSha256 and the Ed25519 signature. */
+  rationale: string;
   signature: string;
 }
 
@@ -49,6 +51,8 @@ export class IndependentModelOracle {
       return attestation.oracleId === expectedOracleId && Boolean(attestation.modelId) &&
         attestation.inputSha256 === expectedInputSha && ['ACCEPT', 'REJECT'].includes(attestation.verdict) &&
         /^[a-f0-9]{64}$/.test(attestation.rationaleSha256) &&
+        typeof attestation.rationale === 'string' && attestation.rationale.length > 0 &&
+        createHash('sha256').update(attestation.rationale).digest('hex') === attestation.rationaleSha256 &&
         signature.length === 64 &&
         verify(null, Buffer.from(canonical), createPublicKey(publicKeyPem), signature);
     } catch { return false; }
@@ -148,7 +152,9 @@ export class IndependentModelOracle {
         const detail = (await signerResponse.text()).slice(0, 1000);
         throw new Error(`External attestation signer failed (HTTP ${signerResponse.status}): ${detail}`);
       }
-      attestation = await signerResponse.json() as OracleAttestation;
+      const signed = await signerResponse.json() as Omit<OracleAttestation, 'rationale'>;
+      // The signer signs rationaleSha256; retain the exact rationale that produced that digest.
+      attestation = { ...signed, rationale: evaluation.rationale };
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') throw new Error('External attestation signer timed out after 15 seconds.');
       throw error;
