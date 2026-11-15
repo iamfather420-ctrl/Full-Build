@@ -115,4 +115,3 @@ jobs:
           name: system-46-gates
           path: artifacts/system-46-gates.json
           if-no-files-found: ignore
-
