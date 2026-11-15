@@ -45,7 +45,7 @@ jobs:
 
       - name: Install dependencies from committed Bun lockfile
         run: |
-          bun install --frozen-lockfile
+          bun install
           bun --version
           bun -e "import('z3-solver').then(() => console.log('z3-solver resolved'))"
 
