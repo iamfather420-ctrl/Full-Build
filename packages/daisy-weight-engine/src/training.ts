@@ -20,7 +20,7 @@ export function applySgd(m:ModelWeights,data:Sample[],learningRate=.03,epochs=1)
  for(let epoch=0;epoch<epochs;epoch++)for(const sample of data){
   const acts=forward(m,sample.input),deltas:number[][]=Array(layers);
   const out=acts[layers];deltas[layers-1]=out.map((v,i)=>2*(v-sample.target[i])/out.length);
-  for(let l=layers-2;l>=0;l--){const w=m.tensors.find(t=>t.name===`layers.${l+1}.weights`)!;deltas[l]=acts[l+1].map((v,j)=>{let g=0;for(let k=0;k<deltas[l+1].length;k++)g+=w.data[k*v.length+j]*deltas[l+1][k];return g*(1-v*v);});}
+  for(let l=layers-2;l>=0;l--){const w=m.tensors.find(t=>t.name===`layers.${l+1}.weights`)!;const width=acts[l+1].length;deltas[l]=acts[l+1].map((v,j)=>{let g=0;for(let k=0;k<deltas[l+1].length;k++)g+=w.data[k*width+j]*deltas[l+1][k];return g*(1-v*v);});}
   for(let l=0;l<layers;l++){const w=m.tensors.find(t=>t.name===`layers.${l}.weights`)!,b=m.tensors.find(t=>t.name===`layers.${l}.bias`)!;for(let j=0;j<deltas[l].length;j++){b.data[j]-=learningRate*deltas[l][j];for(let k=0;k<acts[l].length;k++)w.data[j*acts[l].length+k]-=learningRate*deltas[l][j]*acts[l][k];}}
  }
  return {...m,metadata:{...m.metadata,trainedSteps:m.metadata.trainedSteps+epochs*data.length,loss:evaluate(m,data)}};
