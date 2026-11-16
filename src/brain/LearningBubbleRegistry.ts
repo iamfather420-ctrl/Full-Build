@@ -6,7 +6,7 @@ export type BubbleLicenseStatus = 'UNKNOWN' | 'AUTHORIZED' | 'RESTRICTED' | 'PRO
 
 export interface LearningBubbleInput {
   content: string;
-  source: { source_id: string; source_type: string; uri?: string; captured_at: string; content_sha256: string };
+  source: { source_id: string; source_type: string; uri?: string; captured_at: string; source_sha256: string; captured_content_sha256: string };
   evidence_refs: string[];
   verification: BubbleVerification;
   license_status: BubbleLicenseStatus;
@@ -45,7 +45,7 @@ function deriveEligibility(input: LearningBubbleInput): BubbleTrainingEligibilit
   return input.verification === 'VERIFIED'
     && input.license_status === 'AUTHORIZED'
     && input.evidence_refs.length > 0
-    && input.source.content_sha256 === createHash('sha256').update(input.content).digest('hex')
+    && input.source.captured_content_sha256 === createHash('sha256').update(input.content).digest('hex')
     && input.contradiction_refs?.length === 0
     ? 'ELIGIBLE'
     : 'INELIGIBLE';
@@ -94,12 +94,13 @@ export class LearningBubbleRegistry {
   private validate(input: LearningBubbleInput): void {
     if (!input.content?.trim()) throw new Error('Learning Bubble content is required.');
     if (!input.source?.source_id?.trim() || !input.source.source_type?.trim()) throw new Error('Source identity and type are required.');
-    if (!/^[a-f0-9]{64}$/i.test(input.source.content_sha256 ?? '')) throw new Error('Source content SHA-256 is required.');
+    if (!/^[a-f0-9]{64}$/i.test(input.source.source_sha256 ?? '')) throw new Error('Original source SHA-256 is required.');
+    if (!/^[a-f0-9]{64}$/i.test(input.source.captured_content_sha256 ?? '')) throw new Error('Captured content SHA-256 is required.');
     if (!Number.isFinite(Date.parse(input.source.captured_at))) throw new Error('Source capture timestamp must be valid.');
     if (!Array.isArray(input.evidence_refs) || !Array.isArray(input.paradox_ids) || !Array.isArray(input.node_ids) || !Array.isArray(input.synapse_ids)) {
       throw new Error('Evidence, paradox, node, and synapse references must be arrays.');
     }
-    if (input.source.content_sha256 !== createHash('sha256').update(input.content).digest('hex') && input.verification === 'VERIFIED') {
+    if (input.source.captured_content_sha256 !== createHash('sha256').update(input.content).digest('hex') && input.verification === 'VERIFIED') {
       throw new Error('Verified Bubble content must match the source content hash.');
     }
   }
