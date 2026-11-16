@@ -154,3 +154,17 @@ These are useful foundations, but the inspected `TetherBubble` entity does not y
 Production remains closed. Payments remain disabled. Do not merge PRs, apply live Neon migrations, deploy Fly, enable payment capture, bypass OIDC, weaken RLS, fabricate model artifacts, invent synapse edges, or manually mark gates passed.
 
 This audit is a source-tree and GitHub inspection report, not a production certification.
+
+## Work completed during this ChatGPT session
+
+The following files were committed directly to the existing PR #127 branch after the source audit:
+
+- `docs/audits/DAISY_COMPLETE_MODEL_BRAIN_WIRING_AUDIT.md` — this audit.
+- `src/brain/DaisyBrainGraph.ts` — typed 54-node/120-synapse manifest contract and fail-closed validator. It refuses missing, duplicate, malformed, unreferenced, or non-source-backed edges; it does not invent topology.
+- `src/brain/LearningBubbleRegistry.ts` — provenance-aware Learning Bubble lifecycle, revision/version tracking, evidence and paradox/node/synapse references, licensing and verification state, contradiction tracking, and strict training eligibility.
+- `src/brain/LearningBubbleRegistry.test.ts` — tests for training eligibility, source/captured-content hash mismatch, revisions, and missing 120-edge topology.
+- `package.json` — includes the new brain/Learning Bubble tests in `test:ecosystem`.
+
+The Learning Bubble implementation currently uses an injectable store interface with an in-memory implementation for tests. It is not yet durable across restarts; a reviewed Neon/SQLite adapter remains future work. The graph validator is implemented, but no authoritative 120-synapse manifest has been found or loaded, so the graph cannot yet be instantiated as Daisy's canonical topology.
+
+The latest observed PR head after these commits is `7485d2439937d2a8cfcf10437dadd8ec8fef27dc`. At the time of the final check, the Vercel status for this head was pending and no GitHub Actions workflow run had yet appeared for this exact head. The newly added tests have therefore **not** been claimed as passing in CI.
