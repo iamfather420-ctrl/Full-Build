@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
-import { InMemoryLearningBubbleStore, LearningBubbleRegistry } from './LearningBubbleRegistry';
+import { InMemoryLearningBubbleStore, LearningBubbleRegistry, type LearningBubbleInput } from './LearningBubbleRegistry';
 import { DaisyBrainGraph, type SynapseManifest } from './DaisyBrainGraph';
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 
-function bubbleInput(overrides: Record<string, unknown> = {}) {
+function bubbleInput(overrides: Partial<LearningBubbleInput> = {}): LearningBubbleInput {
   const content = 'Evidence-backed learning example';
   return {
     content,
