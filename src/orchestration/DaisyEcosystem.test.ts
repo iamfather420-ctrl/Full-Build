@@ -61,9 +61,12 @@ test('Daisy calls Discover-Engine, blocks the language model, and trains only th
       },
     });
     assert.equal(result.discovery?.publishable, false);
-    assert.equal(result.discovery?.reviewStatus, 'human_review_required');
+    assert.equal(result.discovery?.reviewStatus, 'HUMAN_REVIEW_REQUIRED');
     assert.equal(result.languageModelReady, false);
     assert.equal(result.steps.find((step) => step.step === 'language-model-plan')?.status, 'BLOCKED');
+    assert.equal(result.steps.find((step) => step.step === 'synapse-graph')?.status, 'BLOCKED');
+    assert.equal(result.steps.find((step) => step.step === 'node-dn-01')?.status, 'COMPLETED');
+    assert.equal(result.steps.find((step) => step.step === 'learning-bubble')?.status, 'WITHHELD');
     assert.equal(result.steps.find((step) => step.step === 'gpu-worker')?.status, 'BLOCKED');
     assert.equal(result.parameterCount, 33);
     assert.match(result.artifactSha256 ?? '', /^[a-f0-9]{64}$/);

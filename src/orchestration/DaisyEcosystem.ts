@@ -1,10 +1,14 @@
 import { createHash } from 'node:crypto';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { DaisyBrainGraph, type SynapseManifest } from '../brain/DaisyBrainGraph.ts';
+import { FileLearningBubbleStore } from '../brain/FileLearningBubbleStore.ts';
+import { LearningBubbleRegistry } from '../brain/LearningBubbleRegistry.ts';
 import { submitAssertion, type DiscoveryReview } from '../discovery/DiscoverEngineClient.ts';
 import { BuildLedger } from '../dipstick/BuildLedger.ts';
 import { LocalInferenceRuntime } from '../inference/LocalInferenceRuntime.ts';
+import { DaisySubsystemExecutors } from '../nodes/DaisySubsystemExecutors.ts';
 import { SwarmForge } from '../swarm/SwarmForge.ts';
 import { applySgd, assembleTensors, evaluate, generateDataset, loadKernel, planBuild, splitParts, validateWeights } from '../../packages/daisy-weight-engine/src/index.ts';
 
@@ -33,6 +37,47 @@ export async function runUnifiedScenario(objective: string, discovery?: { baseUr
     detail: info.ready
       ? `Model ${info.modelId ?? 'unlabeled'} returned a plan.`
       : 'GGUF model or inference engine is not configured. No simulated plan was generated.',
+  });
+
+  const manifestPath = process.env.DAISY_SYNAPSE_MANIFEST;
+  if (!manifestPath) {
+    steps.push({ step: 'synapse-graph', status: 'BLOCKED', detail: 'No authoritative 120-synapse manifest was recovered. No edges were invented.' });
+  } else {
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as SynapseManifest;
+    const graph = DaisyBrainGraph.validate(manifest);
+    steps.push({ step: 'synapse-graph', status: graph.valid ? 'COMPLETED' : 'BLOCKED', detail: graph.valid ? `Loaded ${graph.synapse_count} source-backed synapses.` : graph.errors.join(' ') });
+  }
+
+  const genesis = await new DaisySubsystemExecutors().executeNode('DN-01');
+  steps.push({
+    step: 'node-dn-01',
+    status: genesis.status === 'SUCCESS' ? 'COMPLETED' : 'BLOCKED',
+    detail: `DN-01 ${genesis.status}, scope ${genesis.claim_scope}. This does not make all 54 nodes operational.`,
+  });
+
+  const bubbleDir = await mkdtemp(path.join(tmpdir(), 'daisy-bubbles-'));
+  const observation = 'Unreviewed observation from the reference scenario.';
+  const bubble = new LearningBubbleRegistry(new FileLearningBubbleStore(bubbleDir)).create({
+    content: observation,
+    source: {
+      source_id: 'scenario',
+      source_type: 'local-run',
+      captured_at: new Date().toISOString(),
+      source_sha256: createHash('sha256').update(objective).digest('hex'),
+      captured_content_sha256: createHash('sha256').update(observation).digest('hex'),
+    },
+    evidence_refs: [],
+    verification: 'UNREVIEWED',
+    license_status: 'UNKNOWN',
+    paradox_ids: [],
+    node_ids: ['DN-01'],
+    synapse_ids: [],
+    contradiction_refs: [],
+  });
+  steps.push({
+    step: 'learning-bubble',
+    status: bubble.training_eligibility === 'INELIGIBLE' ? 'WITHHELD' : 'BLOCKED',
+    detail: `Bubble ${bubble.bubble_id} reloaded from disk as ${bubble.training_eligibility}. It was not sent to training.`,
   });
 
   let discoveryReview: DiscoveryReview | null = null;

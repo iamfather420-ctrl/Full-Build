@@ -168,3 +168,14 @@ The following files were committed directly to the existing PR #127 branch after
 The Learning Bubble implementation currently uses an injectable store interface with an in-memory implementation for tests. It is not yet durable across restarts; a reviewed Neon/SQLite adapter remains future work. The graph validator is implemented, but no authoritative 120-synapse manifest has been found or loaded, so the graph cannot yet be instantiated as Daisy's canonical topology.
 
 The latest observed PR head after these commits is `7485d2439937d2a8cfcf10437dadd8ec8fef27dc`. At the time of the final check, the Vercel status for this head was pending and no GitHub Actions workflow run had yet appeared for this exact head. The newly added tests have therefore **not** been claimed as passing in CI.
+
+## Follow-up on 2026-11-16 after `fcc7a1f`
+
+A second source search of Full-Build and `Solvex-Paradox-Box/daisy-haminja-120-evidence` still found no 120-edge synapse manifest. The graph validator continues to reject a missing manifest, and no edges were generated.
+
+`FileLearningBubbleStore` persists bubbles as local JSON files and was tested across a new store instance. That store is not the live Neon database. An unreviewed bubble remained ineligible for training.
+
+The ecosystem scenario now executes node DN-01 through `DaisySubsystemExecutors` and records that this one local result does not make the other 53 nodes operational. The language-model probe remains blocked because no GGUF artifact or inference executable is configured. The CPU MLP remains a reference model only.
+
+Discover-Engine now returns `HUMAN_REVIEW_REQUIRED` or `INSUFFICIENT_EVIDENCE`, always with `WITHHELD` and `publishable: false`. It still cannot emit `VERIFIED` for an abstract.
+
