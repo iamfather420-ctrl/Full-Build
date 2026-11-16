@@ -10,11 +10,18 @@ export interface BuildTask {
   state: TaskState;
 }
 
+export interface LedgerEvent {
+  kind: string;
+  detail: string;
+  at: string;
+}
+
 export interface BuildRecord {
   buildId: string;
   objectiveSha256: string;
   active: boolean;
   tasks: BuildTask[];
+  events: LedgerEvent[];
 }
 
 /**
@@ -35,6 +42,7 @@ export class BuildLedger {
       objectiveSha256: createHash('sha256').update(objective).digest('hex'),
       active: true,
       tasks: [],
+      events: [],
     };
     return this.active;
   }
@@ -60,6 +68,13 @@ export class BuildLedger {
     if (task.state === 'completed') throw new Error(`Completed task ${taskId} cannot be failed.`);
     task.state = 'failed';
     return task;
+  }
+
+  static record(buildId: string, kind: string, detail: string): LedgerEvent {
+    const build = this.require(buildId);
+    const event = { kind, detail, at: new Date().toISOString() };
+    build.events.push(event);
+    return event;
   }
 
   static close(buildId: string): BuildRecord {

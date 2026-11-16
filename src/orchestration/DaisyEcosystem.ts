@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto';
-import { classifyAssertion, type Assertion, type Classification } from '../discovery/EvidenceGate.ts';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { submitAssertion, type DiscoveryReview } from '../discovery/DiscoverEngineClient.ts';
 import { BuildLedger } from '../dipstick/BuildLedger.ts';
+import { LocalInferenceRuntime } from '../inference/LocalInferenceRuntime.ts';
+import { SwarmForge } from '../swarm/SwarmForge.ts';
 import { applySgd, assembleTensors, evaluate, generateDataset, loadKernel, planBuild, splitParts, validateWeights } from '../../packages/daisy-weight-engine/src/index.ts';
 
 export interface EcosystemStep {
@@ -11,67 +16,76 @@ export interface EcosystemStep {
 
 const ARCHITECTURE = { name: 'daisy-seed', family: 'mlp-classifier' as const, inputSize: 2, hiddenSizes: [8], outputSize: 1, seed: 42 };
 
-function solversFor(assertion: Assertion, verdict: 'support' | 'withhold'): Assertion['solvers'] {
-  const inputSha256 = createHash('sha256').update(JSON.stringify({ id: assertion.id, text: assertion.text.trim() })).digest('hex');
-  return [
-    { solverId: 'discovery-engine', verdict, inputSha256 },
-    { solverId: 'replay-checker', verdict, inputSha256 },
-  ];
-}
-
-export function runUnifiedScenario(objective: string): { steps: EcosystemStep[]; verified: Classification; withheld: Classification; parameterCount: number; holdoutLoss: number } {
+export async function runUnifiedScenario(objective: string, discovery?: { baseUrl: string; token: string; body: unknown }): Promise<{
+  steps: EcosystemStep[];
+  discovery: DiscoveryReview | null;
+  languageModelReady: boolean;
+  parameterCount: number;
+  artifactSha256: string | null;
+}> {
   const steps: EcosystemStep[] = [];
-  steps.push({ step: 'plan', status: 'COMPLETED', detail: 'CPU reference plan: discover, train one MLP, shard it, and replay the loss.' });
-
-  const missing = 'Full-scale GPU training completed.';
-  const withheld = classifyAssertion({
-    id: 'gpu-completion',
-    text: missing,
-    sources: [{ id: 'narrative', text: missing, sha256: createHash('sha256').update(missing).digest('hex') }],
-    solvers: [],
+  const runtime = new LocalInferenceRuntime();
+  const info = await runtime.probe();
+  const generation = await runtime.generate({ messages: [{ role: 'user', content: objective }] });
+  steps.push({
+    step: 'language-model-plan',
+    status: generation.status === 'COMPLETED' ? 'COMPLETED' : 'BLOCKED',
+    detail: info.ready
+      ? `Model ${info.modelId ?? 'unlabeled'} returned a plan.`
+      : 'GGUF model or inference engine is not configured. No simulated plan was generated.',
   });
-  steps.push({ step: 'discovery-unverified', status: 'WITHHELD', detail: withheld.reason });
 
-  const measured = 'Reference MLP holdout loss is independently recomputed from the artifact.';
-  const verifiedAssertion: Assertion = {
-    id: 'reference-mlp-loss',
-    text: measured,
-    sources: [{ id: 'measurement-note', text: measured, sha256: createHash('sha256').update(measured).digest('hex') }],
-    solvers: [],
-  };
-  verifiedAssertion.solvers = solversFor(verifiedAssertion, 'support');
-  const verified = classifyAssertion(verifiedAssertion);
-  steps.push({ step: 'discovery-verified-scope', status: verified.publishable ? 'COMPLETED' : 'WITHHELD', detail: verified.reason });
+  let discoveryReview: DiscoveryReview | null = null;
+  if (!discovery) {
+    steps.push({ step: 'discover-engine', status: 'BLOCKED', detail: 'No Discover-Engine URL was configured.' });
+  } else {
+    const response = await submitAssertion(discovery.baseUrl, discovery.token, discovery.body);
+    discoveryReview = response.review;
+    steps.push({
+      step: 'discover-engine',
+      status: response.review?.withheld ? 'WITHHELD' : 'BLOCKED',
+      detail: response.review
+        ? `${response.review.service} returned ${response.review.reviewStatus}; publishable=${response.review.publishable}.`
+        : `Discover-Engine HTTP ${response.status}.`,
+    });
+  }
 
   const build = BuildLedger.open(objective);
+  BuildLedger.record(build.buildId, 'objective', objective);
   const model = loadKernel(ARCHITECTURE);
   const plan = planBuild(ARCHITECTURE, 2);
   const data = generateDataset(128, 2, 1, 12);
-  const holdout = data.slice(96);
   const trained = applySgd(model, data.slice(0, 96), 0.03, 40);
   const validation = validateWeights(trained);
   if (!validation.valid) throw new Error(validation.errors.join('; '));
-  const shards = splitParts(trained, plan.tensors.length > 0 ? 2 : 1);
-  shards.forEach((shard, index) => {
-    const taskId = `shard-${index}`;
-    BuildLedger.assign(build.buildId, taskId, 'weight-shard');
-    BuildLedger.complete(build.buildId, taskId, JSON.stringify(shard));
-  });
+  const shards = splitParts(trained, 2);
+  const swarm = new SwarmForge();
+  swarm.register({ id: 'cpu-1', kind: 'cpu', available: true });
+  swarm.register({ id: 'gpu-1', kind: 'gpu', available: false });
+  const gpu = await swarm.runShard(build.buildId, 'gpu-shard', 'gpu-1', '', () => undefined);
+  steps.push({ step: 'gpu-worker', status: gpu, detail: 'No GPU provider is configured.' });
+  for (const [index, shard] of shards.entries()) {
+    const artifact = JSON.stringify(shard);
+    await swarm.runShard(build.buildId, `cpu-shard-${index}`, 'cpu-1', artifact, () => undefined);
+  }
   const assembled = assembleTensors(shards, trained);
-  const recordedLoss = evaluate(assembled, holdout);
-  const replayLoss = evaluate(assembled, holdout);
-  if (recordedLoss !== replayLoss || !Number.isFinite(recordedLoss)) throw new Error('Discovery replay did not reproduce the recorded loss.');
+  const directory = await mkdtemp(path.join(tmpdir(), 'daisy-weights-'));
+  const artifactPath = path.join(directory, 'reference-mlp.json');
+  const bytes = JSON.stringify(assembled);
+  await writeFile(artifactPath, bytes);
+  const artifactSha256 = createHash('sha256').update(bytes).digest('hex');
+  BuildLedger.record(build.buildId, 'artifact', `${artifactPath} ${artifactSha256}`);
+  const loss = evaluate(assembled, data.slice(96));
   steps.push({
-    step: 'weight-swarm-dipstick-inference',
+    step: 'cpu-weight-engine',
     status: 'COMPLETED',
-    detail: `Assembled ${plan.totalParameters} parameters across ${shards.length} checksummed shards. Holdout loss ${recordedLoss}.`,
+    detail: `Reference MLP only, ${plan.totalParameters} parameters, holdout loss ${loss}. This is not the language model.`,
   });
   steps.push({
-    step: 'full-build-record',
-    status: 'COMPLETED',
-    detail: `Build ${build.buildId} recorded ${BuildLedger.current()?.tasks.length ?? 0} tasks. Payments and production release were not authorized.`,
+    step: 'production',
+    status: 'BLOCKED',
+    detail: 'Production deployment, payment capture, and live Neon migration were not authorized.',
   });
   BuildLedger.close(build.buildId);
-  steps.push({ step: 'production', status: 'BLOCKED', detail: 'Production deployment and payment capture remain closed.' });
-  return { steps, verified, withheld, parameterCount: plan.totalParameters, holdoutLoss: recordedLoss };
+  return { steps, discovery: discoveryReview, languageModelReady: info.ready, parameterCount: plan.totalParameters, artifactSha256 };
 }

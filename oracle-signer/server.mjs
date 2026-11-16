@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { createPrivateKey, createPublicKey, sign, verify, createHash, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { stage14ClaimsTrusted } from './trust-policy.mjs';
 
 const host = process.env.SOLVEX_SIGNER_HOST ?? '0.0.0.0';
 const port = Number(process.env.PORT ?? 8080);
@@ -30,13 +31,6 @@ const keySelfTestPassed = runKeySelfTest();
 if (!keySelfTestPassed) throw new Error('Ed25519 signer self-test failed.');
 
 
-const STAGE14_AUDIENCE = 'solvex-stage14-evaluator';
-const TRUSTED_REPOSITORY = 'iamfather420-ctrl/Full-Build';
-const TRUSTED_REPOSITORY_ID = '1388681071';
-const TRUSTED_PUSH_REFS = new Set([
-  'refs/heads/main',
-  'refs/heads/fix/46-gate-baseline-lifecycle-sandbox',
-]);
 let githubJwksCache;
 
 async function verifyGitHubOidcToken(candidate) {
@@ -45,27 +39,7 @@ async function verifyGitHubOidcToken(candidate) {
     if (parts.length !== 3) return false;
     const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
     const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-    const now = Math.floor(Date.now() / 1000);
-    const audiences = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
-    const workflowPrefix = `${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@`;
-    const trustedWorkflow = typeof claims.workflow_ref === 'string' && claims.workflow_ref.startsWith(workflowPrefix);
-    const trustedPush = claims.event_name === 'push' &&
-      TRUSTED_PUSH_REFS.has(claims.ref) &&
-      claims.workflow_ref === `${workflowPrefix}${claims.ref}`;
-    const trustedPullRequest = claims.event_name === 'pull_request' &&
-      claims.base_ref === 'main' &&
-      ['fix/46-gate-baseline-lifecycle-sandbox', 'fix/gate05-deterministic-pipeline-test-20261114', 'fix/stage14-rationale-and-zeno-evidence-20261114', 'feat/daisy-ecosystem-link-20261116'].includes(claims.head_ref) &&
-      claims.head_repository === TRUSTED_REPOSITORY &&
-      String(claims.head_repository_id) === TRUSTED_REPOSITORY_ID &&
-      trustedWorkflow;
-    if (header.alg !== 'RS256' || typeof header.kid !== 'string' ||
-        claims.iss !== 'https://token.actions.githubusercontent.com' ||
-        !audiences.includes(STAGE14_AUDIENCE) ||
-        !Number.isFinite(claims.exp) || claims.exp <= now ||
-        (Number.isFinite(claims.nbf) && claims.nbf > now) ||
-        claims.repository !== TRUSTED_REPOSITORY ||
-        String(claims.repository_id) !== TRUSTED_REPOSITORY_ID ||
-        !(trustedPush || trustedPullRequest)) return false;
+    if (header.alg !== 'RS256' || typeof header.kid !== 'string' || !stage14ClaimsTrusted(claims)) return false;
 
     if (!githubJwksCache || githubJwksCache.expiresAt <= Date.now()) {
       const response = await fetch('https://token.actions.githubusercontent.com/.well-known/jwks', {
