@@ -7,8 +7,10 @@ import { runUnifiedScenario } from './DaisyEcosystem.ts';
 const token = 'discovery-test-token-32-characters-min';
 
 function startDiscoverEngine(): Promise<{ url: string; stop: () => void }> {
+  const root = process.env.DISCOVER_ENGINE_DIR;
+  if (!root) throw new Error('DISCOVER_ENGINE_DIR must point at a checkout of iamfather420-ctrl/Discover-Engine.');
   const child = spawn('npx', ['tsx', 'main.ts'], {
-    cwd: '/tmp/discover/invention-service',
+    cwd: `${root}/invention-service`,
     env: { ...process.env, PORT: '0', DISCOVERY_API_TOKEN: token, MONGO_URL: '' },
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: true,
