@@ -10,7 +10,7 @@ function bubbleInput(overrides: Partial<LearningBubbleInput> = {}): LearningBubb
   const content = 'Evidence-backed learning example';
   return {
     content,
-    source: { source_id: 'src-1', source_type: 'research', captured_at: new Date().toISOString(), content_sha256: hash(content) },
+    source: { source_id: 'src-1', source_type: 'research', captured_at: new Date().toISOString(), source_sha256: hash('original source document'), captured_content_sha256: hash(content) },
     evidence_refs: ['evidence-1'],
     verification: 'VERIFIED' as const,
     license_status: 'AUTHORIZED' as const,
@@ -38,13 +38,13 @@ test('Learning Bubble becomes training eligible only with verified, licensed, ha
 
 test('verified Bubble rejects source/content hash mismatch', () => {
   const registry = new LearningBubbleRegistry(new InMemoryLearningBubbleStore());
-  assert.throws(() => registry.create(bubbleInput({ source: { ...bubbleInput().source, content_sha256: hash('different') } })), /content hash/);
+  assert.throws(() => registry.create(bubbleInput({ source: { ...bubbleInput().source, captured_content_sha256: hash('different') } })), /content hash/);
 });
 
 test('Learning Bubble revisions preserve identity and increment version', () => {
   const registry = new LearningBubbleRegistry(new InMemoryLearningBubbleStore());
   const first = registry.create(bubbleInput());
-  const second = registry.revise(first.bubble_id, bubbleInput({ content: 'Revised content', source: { source_id: 'src-2', source_type: 'research', captured_at: new Date().toISOString(), content_sha256: hash('Revised content') } }));
+  const second = registry.revise(first.bubble_id, bubbleInput({ content: 'Revised content', source: { source_id: 'src-2', source_type: 'research', captured_at: new Date().toISOString(), source_sha256: hash('revised original source'), captured_content_sha256: hash('Revised content') } }));
   assert.equal(second.bubble_id, first.bubble_id);
   assert.equal(second.version, 2);
 });
