@@ -271,6 +271,9 @@ export class DaisySubsystemExecutors {
 
       // 11. DN-11: 21-Stage Problem Pipeline
       case 'DN-11': {
+        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
+          return { node_id: 'DN-11', name: '21-Stage Problem Pipeline', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'Full pipeline execution is reserved for the authoritative external-provider verification step.' } };
+        }
         const pipe = SolutionPipeline.getInstance();
         const durable = DurableStore.getInstance();
         const solution = durable.getState().solutions['DH-S-001'];
@@ -695,6 +698,9 @@ export class DaisySubsystemExecutors {
 
       // 30. DN-30: Independent Oracle Attestor
       case 'DN-30': {
+        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
+          return { node_id: 'DN-30', name: 'Independent Oracle Attestor', category: 'AUDIT', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'External oracle attestation is reserved for the authoritative provider verification step.' } };
+        }
         const input = {
           paradox_code: 'DH-P-001',
           purpose: 'Independent verification of the canonical DH-S-001 bounded Zeno solution.',
