@@ -223,14 +223,37 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // 11. A seeded solution is not verified without execution evidence.
-  runTest('Preserved Solution DH-S-001 Remains Partial Without Proof Evidence', 'SOLUTIONS', () => {
+  // 11. DH-S-001 may be promoted only when a verified, intact proof bundle
+  // is bound to the exact preserved implementation. The lifecycle pipeline can
+  // legitimately create that evidence before this invariant runs.
+  runTest('Preserved Solution DH-S-001 Verification Integrity', 'SOLUTIONS', () => {
     SolutionPipeline.getInstance();
     const store = DurableStore.getInstance();
     const sol = store.getState().solutions['DH-S-001'];
     if (!sol) throw new Error('Preserved solution DH-S-001 missing from store');
-    if (sol.verification_status !== 'PARTIAL') throw new Error('DH-S-001 must remain PARTIAL without proof evidence');
     if (!sol.reversibility_guaranteed) throw new Error('DH-S-001 must guarantee reversibility');
+
+    const engine = ProofEngine.getInstance();
+    const bundle = sol.proof_bundle_id ? engine.getBundle(sol.proof_bundle_id) : undefined;
+    const integrity = bundle
+      ? engine.verifyBundleIntegrity(bundle)
+      : { verified: false, reasons: ['No proof bundle is attached to DH-S-001.'] };
+    const sourceBoundVerifiedBundle = Boolean(
+      bundle &&
+      bundle.verification_status === 'VERIFIED' &&
+      bundle.implementation_hash === sol.implementation_hash &&
+      integrity.verified
+    );
+
+    if (sol.verification_status === 'VERIFIED' && !sourceBoundVerifiedBundle) {
+      throw new Error('DH-S-001 was promoted without an intact VERIFIED proof bundle bound to its implementation hash');
+    }
+    if (sol.verification_status === 'PARTIAL' && sourceBoundVerifiedBundle) {
+      throw new Error('DH-S-001 has a valid source-bound VERIFIED proof bundle but remains PARTIAL');
+    }
+    if (!['PARTIAL', 'VERIFIED'].includes(sol.verification_status)) {
+      throw new Error(`DH-S-001 has an unsupported verification status: ${sol.verification_status}`);
+    }
   });
 
   // 12. Proof Bundle Builder & Attestation Sealing
