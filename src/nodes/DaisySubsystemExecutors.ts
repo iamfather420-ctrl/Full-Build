@@ -808,27 +808,56 @@ export class DaisySubsystemExecutors {
       // 35. DN-35: PayPal Enterprise Payment Gateway (Gateway)
       case 'DN-35': {
         const pp = PayPalAdapter.getInstance();
-        const creds = pp.getEffectiveCredentials();
-        const info = pp.getMaskedCredentialsInfo();
-        let authTest: any = { valid: false };
-        if (creds) {
-          authTest = await pp.testLiveCredentials(creds.clientId, creds.clientSecret, creds.environment);
+        let evidence: any = null;
+        let digestValid = false;
+        let fresh = false;
+        try {
+          const evidencePath = path.resolve(process.cwd(), 'artifacts/provider-evidence/paypal-sandbox-oauth.json');
+          evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
+          const { evidence_sha256: suppliedDigest, ...payload } = evidence;
+          digestValid = suppliedDigest === computeSha256(JSON.stringify(payload));
+          const verifiedAt = Date.parse(evidence?.source?.timestamp ?? '');
+          const age = Date.now() - verifiedAt;
+          fresh = Number.isFinite(verifiedAt) && age >= -5 * 60 * 1000 && age <= 48 * 60 * 60 * 1000;
+        } catch {
+          evidence = null;
         }
-        const isAuth = Boolean(authTest.valid || authTest.authenticated);
+        const sandboxAuthenticated = Boolean(
+          evidence && digestValid && fresh &&
+          evidence.artifact_type === 'EXTERNAL_PROVIDER_SANDBOX_AUTHENTICATION_EVIDENCE' &&
+          evidence.provider === 'PayPal' && evidence.claim_scope === 'SANDBOX_ONLY' &&
+          evidence.result?.ok === true && evidence.result?.oauth_http_status === 200 &&
+          evidence.result?.environment === 'sandbox' &&
+          evidence.result?.sandbox_credentials_present === true &&
+          evidence.result?.sandbox_oauth_authenticated === true &&
+          evidence.result?.payments_enabled === false &&
+          evidence.result?.live_credentials_read === false &&
+          evidence.result?.live_api_contacted === false &&
+          evidence.result?.transaction_attempted === false &&
+          evidence.result?.token_persisted === false
+        );
+        const paymentAdapterRemainsDisabled = pp.publicStatus() === 'EXTERNAL_PROVIDER_REQUIRED';
+        const passed = sandboxAuthenticated && paymentAdapterRemainsDisabled;
         return {
           node_id: 'DN-35',
           name: 'PayPal Enterprise Payment Gateway',
           category: 'PAYMENTS',
           executed: true,
-          claim_scope: creds ? (creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX') : 'LOCAL',
-          status: creds ? (isAuth ? 'SUCCESS' : 'FAIL_CLOSED') : 'PROVIDER_REQUIRED',
+          claim_scope: 'SANDBOX',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
-            configured: pp.hasActiveCredentials(),
-            environment: info.environment,
-            client_id_prefix: info.masked_client_id,
-            authenticated: isAuth,
-            fail_closed_enforced: true
+            configured: Boolean(evidence?.result?.sandbox_credentials_present),
+            environment: 'sandbox',
+            sandbox_oauth_authenticated: sandboxAuthenticated,
+            evidence_digest_verified: digestValid,
+            evidence_fresh: fresh,
+            payment_adapter_remains_disabled: paymentAdapterRemainsDisabled,
+            payments_enabled: false,
+            live_credentials_read: false,
+            live_api_contacted: false,
+            transactions_attempted: false,
+            evidence_sha256: evidence?.evidence_sha256 ?? null
           }
         };
       }
