@@ -931,12 +931,14 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     if (!dfrlOk) productionBlockers.push('GATE-06 DFRL SMT formal proofs failed.');
     if (!replayOk) productionBlockers.push('GATE-07 Deterministic replay divergence detected.');
     if (!g8Passed) productionBlockers.push('GATE-08 Mutation, failure injection, or tamper alarm failed.');
-    if (!nodeCoverage.all_passed) productionBlockers.push('GATE-09 Daisy 54-node CUJ coverage failed.');
+    if (!nodeCoverage.all_passed) productionBlockers.push('GATE-09 Daisy 54-node execution is complete, but functional verification remains incomplete; see per-node verdicts.');
     if (!persistRep.all_local_passed) productionBlockers.push('GATE-10 Relational persistence or Merkle chain failed.');
     if (lifecycleBlocked) {
       productionBlockers.push('GATE-12 lifecycle blocked: trusted identity and signed tenant claims are unavailable; no order transition or deployment occurred.');
+    } else if (stage14ExternalBlocked) {
+      productionBlockers.push('GATE-12 pipeline is blocked by the external Stage 14 GitHub OIDC trust policy; no production release or payment action occurred.');
     } else if (!e2eOk) {
-      productionBlockers.push('GATE-12 End-to-end lifecycle verification failed.');
+      productionBlockers.push('GATE-12 end-to-end lifecycle verification is incomplete.');
     }
 
     // Production credential gates. Sandbox evidence never authorizes live payments.
