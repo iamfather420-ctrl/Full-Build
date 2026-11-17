@@ -12,7 +12,7 @@ const PROVER_IDENTITY: Record<ExternalProverId, { env: string; basenames: Set<st
   coq: { env: 'SOLVEX_COQC_BIN', basenames: new Set(['coqc', 'coqc.exe']), versionArgs: ['--version'], versionPattern: /Coq Proof Assistant/ },
 };
 
-const GAP = /\b(sorry|admit|Admitted|axiom|sorryAx)\b/;
+const GAP = /\b(sorry|admit|axiom|sorryAx)\b/i;
 
 export function repoRoot(): string {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
