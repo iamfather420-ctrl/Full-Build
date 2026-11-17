@@ -104,6 +104,11 @@ export class ProofBundleBuilder {
     return this;
   }
 
+  public buildPartial(): ProofBundleEntity {
+    this.bundle.verification_status = 'PARTIAL';
+    return this.bundle;
+  }
+
   public seal(): ProofBundleEntity {
     const allTestsPassed = this.bundle.tests.length > 0 && this.bundle.tests.every(t => t.passed);
     const formalChecked = this.bundle.formal_proofs.length > 0 && this.bundle.formal_proofs.every(f => f.checked);
