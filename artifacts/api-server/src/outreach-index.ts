@@ -60,9 +60,10 @@ async function verifyStage14GitHubToken(token: string): Promise<boolean> {
       claims.workflow_ref === `${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@${claims.ref}`;
     // GitHub's standard OIDC token does not guarantee head_ref/base_ref/head_repository.
     // Bind this temporary repair run to its exact same-repository PR ref.
+    const TRUSTED_PULL_REQUEST_REFS = new Set(["refs/pull/130/merge", "refs/pull/132/merge"]);
     const trustedPullRequest = claims.event_name === "pull_request" &&
       claims.sub === `repo:${TRUSTED_REPOSITORY}:pull_request` &&
-      claims.ref === "refs/pull/130/merge" &&
+      typeof claims.ref === "string" && TRUSTED_PULL_REQUEST_REFS.has(claims.ref) &&
       trustedWorkflow;
     if (claims.iss !== "https://token.actions.githubusercontent.com" ||
         !audience.includes(STAGE14_AUDIENCE) || !Number.isFinite(claims.exp) ||
