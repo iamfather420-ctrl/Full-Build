@@ -18,6 +18,18 @@ test('a fabricated success flag or the wrong binary cannot pass', () => {
     sourceClosed: true,
   });
   assert.equal(fabricated.verified, false);
+  const forgedCorrectIdentity = assessProverRun({
+    basename: 'lean',
+    expectedBasenames: new Set(['lean']),
+    versionText: 'Lean (version 4.24.0)',
+    versionPattern: /Lean \\(version \\d+/,
+    exitCode: 0,
+    stdout: '',
+    stderr: '',
+    sourceClosed: true,
+    executionReceipt: Object.freeze({}),
+  });
+  assert.equal(forgedCorrectIdentity.verified, false);
   const failedLean = assessProverRun({
     basename: 'lean',
     expectedBasenames: new Set(['lean']),
