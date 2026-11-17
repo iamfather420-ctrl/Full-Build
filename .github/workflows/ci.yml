@@ -93,12 +93,8 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y coq
-          docker pull makarius/isabelle:Isabelle2026
-          IMAGE_REF="$(docker image inspect --format '{{index .RepoDigests 0}}' makarius/isabelle:Isabelle2026)"
-          if ! printf '%s' "$IMAGE_REF" | grep -q '@sha256:'; then
-            echo "Could not resolve the Isabelle image to an immutable digest." >&2
-            exit 1
-          fi
+          IMAGE_REF="makarius/isabelle@sha256:9bd33b183c399327c5d554fc8cde27c29b5d2b20cdc6fe7a604caa3f951018fc"
+          docker pull "$IMAGE_REF"
           printf '%s\n' '#!/usr/bin/env bash' 'set -euo pipefail' 'exec docker run --rm -v "$PWD:/workspace" -w /workspace "$SOLVEX_ISABELLE_IMAGE" "$@"' > "$RUNNER_TEMP/isabelle"
           chmod 755 "$RUNNER_TEMP/isabelle"
           export SOLVEX_ISABELLE_IMAGE="$IMAGE_REF"
