@@ -16,7 +16,7 @@ The machine-readable source of truth is config/verification/phase-wiring.json.
 - Stage 45: STAGE-45, the final pre-production readiness decision after all 44 checks.
 - Post-production: the live portions of GATE-11, GATE-12, and GATE-14; INV-30 failure diversion/rollback; deployment health; failure/recovery; and whole-product checks. The local adapter contracts, local pipeline, and fail-closed identity behavior are checked before deployment. Live provider connectivity and deployed lifecycle completion are not.
 
-The 54 Daisy nodes remain part of the architecture under test. Their registration, execution, output assertions, and evidence generation are verified before deployment; deployed whole-product handoffs are exercised again after deployment.
+The pre-production memory gate requires measured process RSS/heap telemetry and sandbox-container cgroup peak/limit/OOM telemetry. If the CI host does not expose cgroup v2, the orchestrator measurement is explicitly labeled PROCESS rather than being misrepresented as cgroup evidence; production cgroup enforcement is checked after deployment. The 54 Daisy nodes remain part of the architecture under test. Their registration, execution, output assertions, and evidence generation are verified before deployment; deployed whole-product handoffs are exercised again after deployment.
 
 ## Runtime and evidence rules
 
