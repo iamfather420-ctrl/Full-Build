@@ -27,6 +27,7 @@ import { TenantCrypto } from '../security/TenantCrypto';
 import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
 import { planGoal } from './goalPlanner';
+import { simulateChandyLamportSnapshot, simulateRaftConsensus } from './distributedProtocolModels';
 
 export interface RawNodeExecutionResult {
   node_id: string;
@@ -1021,29 +1022,49 @@ export class DaisySubsystemExecutors {
 
       // 46. DN-46: Chandy-Lamport Distributed Snapshot
       case 'DN-46': {
+        const snapshot = simulateChandyLamportSnapshot();
         return {
           node_id: 'DN-46',
           name: 'Chandy-Lamport Distributed Snapshot',
           category: 'PERSISTENCE',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'MODEL',
+          status: snapshot.passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { distributed_snapshot_executed: false, reason: 'No distributed process state or channel markers are available.' }
+          evidence: {
+            model_execution_verified: snapshot.passed,
+            snapshot_id: snapshot.snapshot_id,
+            process_states_recorded: snapshot.process_states_recorded,
+            channel_states: snapshot.channel_states,
+            markers_received: snapshot.markers_received,
+            in_transit_message_recorded: snapshot.in_transit_message_recorded,
+            scope: 'deterministic three-process algorithm model; not a live distributed cluster'
+          }
         };
       }
 
       // 47. DN-47: Raft Consensus State Machine
       case 'DN-47': {
+        const raft = simulateRaftConsensus();
         return {
           node_id: 'DN-47',
           name: 'Raft Consensus State Machine',
           category: 'CORE_KERNEL',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'MODEL',
+          status: raft.passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { raft_consensus_executed: false, reason: 'No Raft peers, election, or replicated log are configured.' }
+          evidence: {
+            raft_model_execution_verified: raft.passed,
+            term: raft.term,
+            leader_id: raft.leader_id,
+            votes_received: raft.votes_received,
+            cluster_size: raft.cluster_size,
+            log_indexes: raft.log_indexes,
+            commit_indexes: raft.commit_indexes,
+            stale_term_rejected: raft.stale_term_rejected,
+            scope: 'deterministic three-node Raft model; not a live distributed cluster'
+          }
         };
       }
 
