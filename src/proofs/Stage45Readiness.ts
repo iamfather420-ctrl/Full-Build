@@ -105,7 +105,7 @@ export class Stage45Readiness {
     const passedPrior = evaluatedGates.filter(g => g.status === 'PASSED').length;
     const nonPassedPrior = evaluatedGates.filter(g => g.status !== 'PASSED').length;
     const failClosedChecks = enterpriseResults.filter(inv => /fail.closed|unauthorized|unverified.*blocked/i.test(inv.name));
-    const externalBoundaryChecks = enterpriseReport.results.filter(inv => /external adapter inventory|paypal dn-35 server.authoritative fail.closed/i.test(inv.name));
+    const externalBoundaryChecks = enterpriseResults.filter(inv => /external adapter inventory|paypal dn-35 server.authoritative fail.closed/i.test(inv.name));
     const failClosedActive = failClosedChecks.length > 0 && failClosedChecks.every(inv => inv.passed);
     const externalBoundariesPreserved = externalBoundaryChecks.length > 0 && externalBoundaryChecks.every(inv => inv.passed);
     const structuralIntegrityOk = evaluatedGates.length === 44 && failClosedActive && externalBoundariesPreserved;
