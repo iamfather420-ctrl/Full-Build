@@ -141,16 +141,17 @@ export function simulateEscrowQuorum(): EscrowModelResult {
   // A second release and a refund after release must be rejected as invalid transitions.
   const replayReleaseRejected = !transition('RELEASED', validSignatures);
   const unauthorizedRefundRejected = !transition('REFUNDED', 1);
+  const finalState = String(state) as 'FUNDED' | 'RELEASED' | 'REFUNDED';
 
   return {
-    passed: insufficientQuorumRejected && releaseAuthorized && replayReleaseRejected && unauthorizedRefundRejected && state === 'RELEASED',
+    passed: insufficientQuorumRejected && releaseAuthorized && replayReleaseRejected && unauthorizedRefundRejected && finalState === 'RELEASED',
     quorum_required: quorumRequired,
     valid_signatures: validSignatures,
     release_authorized: releaseAuthorized,
     insufficient_quorum_rejected: insufficientQuorumRejected,
     replay_release_rejected: replayReleaseRejected,
     unauthorized_refund_rejected: unauthorizedRefundRejected,
-    final_state: state,
+    final_state: finalState,
     live_funds_moved: false,
     contract_deployed: false
   };
