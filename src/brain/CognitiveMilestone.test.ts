@@ -91,6 +91,11 @@ test('tether runs the resolution node and the five catalog paradox solvers', asy
   assert.equal(buraliForti.status, 'SUCCESS');
   assert.equal(buraliForti.evidence.paradox_id, 'DH-P-009');
   assert.equal(buraliForti.evidence.solver_result, 'unsat');
+  const twoGenerals = await executors.executeNode('DN-45');
+  assert.equal(twoGenerals.status, 'SUCCESS');
+  assert.equal(twoGenerals.evidence.paradox_id, 'DH-P-015');
+  assert.equal(twoGenerals.evidence.solver_result, 'unsat');
+  assert.equal(twoGenerals.evidence.distributed_network_executed, false);
   const settlement = await executors.executeNode('DN-36');
   assert.equal(settlement.status, 'PROHIBITED_BLOCKED');
   const lean = await executors.executeNode('DN-40');

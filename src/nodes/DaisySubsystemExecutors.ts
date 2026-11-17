@@ -12,6 +12,7 @@ import { NeonStore } from '../database/NeonPersistence';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { Z3FormalProofEngine } from '../proofs/Z3FormalProofEngine';
 import { AUTHORITATIVE_32_DH_CONTRACTS } from '../formal/dhAuthoritativeFormalContracts';
+import { REAL_32_DH_FORMAL_REGISTRY } from '../data/dhParadoxFormalRegistry';
 import { AuthService } from '../auth/AuthService';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
@@ -884,15 +885,44 @@ export class DaisySubsystemExecutors {
 
       // 45. DN-45: Two Generals Consensus Barrier Node
       case 'DN-45': {
+        const contract = REAL_32_DH_FORMAL_REGISTRY.find((item) => item.case_id === 'DH-P-015' && item.name === 'Two Generals Problem');
+        if (!contract) {
+          return {
+            node_id: 'DN-45',
+            name: 'Two Generals Consensus Barrier Node',
+            category: 'LOGIC_SOLVER',
+            executed: true,
+            claim_scope: 'MODEL',
+            status: 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: { formal_model_executed: false, reason: 'The DH-P-015 Two Generals contract is not in the formal registry.' }
+          };
+        }
+        const proof = await Z3FormalProofEngine.getInstance().executeSmtVerification(
+          contract.case_id,
+          contract.name,
+          contract.domain,
+          contract.formal_proposition,
+          contract.z3_smt_assertion,
+          contract.expected_result,
+          'Z3 checked the DH-P-015 lossy-channel attack formula. This is not a live network execution.'
+        );
         return {
           node_id: 'DN-45',
           name: 'Two Generals Consensus Barrier Node',
           category: 'LOGIC_SOLVER',
           executed: true,
           claim_scope: 'MODEL',
-          status: 'FAIL_CLOSED',
+          status: proof.proved ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { formal_model_executed: false, reason: 'No distributed-protocol model or solver execution is wired to this node.' }
+          evidence: {
+            paradox_id: contract.case_id,
+            contract_hash: contract.contract_hash,
+            expected_solver_result: contract.expected_result,
+            solver_result: proof.solver_result,
+            formal_model_executed: proof.proved,
+            distributed_network_executed: false
+          }
         };
       }
 
