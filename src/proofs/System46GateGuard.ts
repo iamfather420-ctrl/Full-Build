@@ -16,13 +16,19 @@ export async function requireSystem46Pass(stage: System46Stage, evaluate: System
   }
   const gates = report?.gates;
   const validStatuses = new Set(['PASSED', 'EXTERNAL_PROVIDER_REQUIRED', 'BLOCKED', 'FAIL']);
+  const expectedId = (index: number) => index < 15
+    ? `GATE-${String(index + 1).padStart(2, '0')}`
+    : index < 45 ? `INV-${String(index - 14).padStart(2, '0')}` : 'GATE-46';
+  const expectedCategory = (index: number) => index < 15
+    ? 'AUTHORITATIVE_PIPELINE'
+    : index < 45 ? 'ENTERPRISE_INVARIANT' : 'MASTER_PROOF_CLOSURE';
   const structurallyValid =
     report?.total_gates === 46 && report.authoritative_gates_count === 15 &&
     report.enterprise_gates_count === 30 && report.master_closure_gate_count === 1 &&
     typeof report.execution_id === 'string' && report.execution_id.length > 0 &&
     Number.isFinite(Date.parse(report.timestamp)) && Array.isArray(gates) && gates.length === 46 &&
     gates.every((gate, index) => gate != null && gate.gate_number === index + 1 &&
-      typeof gate.gate_id === 'string' && gate.gate_id.trim().length > 0 &&
+      gate.gate_id === expectedId(index) && gate.category === expectedCategory(index) &&
       typeof gate.name === 'string' && gate.name.trim().length > 0 &&
       validStatuses.has(gate.status) &&
       ['LOCAL', 'MODEL', 'SANDBOX', 'PRODUCTION'].includes(gate.claim_scope) &&
