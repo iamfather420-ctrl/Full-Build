@@ -62,7 +62,7 @@ async function verifyStage14GitHubToken(token: string): Promise<boolean> {
     // same-repository PRs targeting main from the single protected work branch.
     const trustedPullRequest = claims.event_name === "pull_request" &&
       claims.base_ref === "main" &&
-      ["fix/46-gate-baseline-lifecycle-sandbox", "fix/gate05-deterministic-pipeline-test-20261114", "fix/stage14-rationale-and-zeno-evidence-20261114", "feat/daisy-ecosystem-link-20261116", "repair/remaining-17-nodes"].includes(claims.head_ref) &&
+      ["fix/46-gate-baseline-lifecycle-sandbox", "fix/gate05-deterministic-pipeline-test-20261114", "fix/stage14-rationale-and-zeno-evidence-20261114", "feat/daisy-ecosystem-link-20261116", "repair/remaining-17-nodes", "fix/proof-closure-disposable-lifecycle"].includes(claims.head_ref) &&
       claims.head_repository === TRUSTED_REPOSITORY &&
       String(claims.head_repository_id) === TRUSTED_REPOSITORY_ID &&
       trustedWorkflow;
