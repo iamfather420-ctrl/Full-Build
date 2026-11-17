@@ -59,8 +59,10 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/solvex-proof-evidence"
           proof_key="$(openssl rand -hex 32)"
+          tenant_root_key="$(openssl rand -hex 32)"
           echo "SOLVEX_PROOF_DIR=$RUNNER_TEMP/solvex-proof-evidence" >> "$GITHUB_ENV"
           echo "SOLVEX_PROOF_HMAC_KEY=$proof_key" >> "$GITHUB_ENV"
+          echo "SOLVEX_TENANT_ROOT_KEY=$tenant_root_key" >> "$GITHUB_ENV"
       - name: Proof closure
         env:
           SOLVEX_SANDBOX_IMAGE: ${{ steps.sandbox.outputs.image_id }}
