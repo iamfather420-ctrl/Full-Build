@@ -48,6 +48,16 @@ export interface SubsystemExecutionResult extends RawNodeExecutionResult {
   evidence_hash: string;
 }
 
+function hasMeaningfulEvidence(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value === 'boolean') return true;
+  if (Array.isArray(value)) return value.some(hasMeaningfulEvidence);
+  if (typeof value === 'object') return Object.values(value as Record<string, unknown>).some(hasMeaningfulEvidence);
+  return false;
+}
+
 export class DaisySubsystemExecutors {
   private static instance: DaisySubsystemExecutors | null = null;
 
@@ -1103,7 +1113,7 @@ export class DaisySubsystemExecutors {
 
       try {
         const rawRes = await this.executeNode(id);
-        const hasEvidence = rawRes.evidence && Object.keys(rawRes.evidence).length > 0;
+        const hasEvidence = hasMeaningfulEvidence(rawRes.evidence);
         const evHash = computeSha256(JSON.stringify(rawRes.evidence || {}));
 
         results.push({
