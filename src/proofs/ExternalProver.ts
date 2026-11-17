@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -169,5 +170,7 @@ export function verifyIsabelleProof(): ProverEvidence {
 }
 
 export function verifyCoqProof(): ProverEvidence {
-  return runExternalProver('coq', ['formal/coq/BoundedZeno.v'], ['-q', 'formal/coq/BoundedZeno.v']);
+  const outputDirectory = path.join(tmpdir(), 'solvex-coq-proof');
+  mkdirSync(outputDirectory, { recursive: true });
+  return runExternalProver('coq', ['formal/coq/BoundedZeno.v'], ['-q', '-output-directory', outputDirectory, 'formal/coq/BoundedZeno.v']);
 }
