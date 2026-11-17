@@ -23,8 +23,8 @@ const commands = [
   'verify:paypal',
   'verify:nodes',
   'verify:enterprise',
-  'verify:authoritative',
   'verify:120',
+  'verify:authoritative',
   'verify:ci',
   'verify:67-gates',
   'test:solution-pipeline'
