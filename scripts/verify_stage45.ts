@@ -25,7 +25,7 @@ async function main() {
     expectedIds.every(id => observedIds.includes(id)) &&
     observedIds.every(id => expectedIds.includes(id));
   const commitMatched = report.commit_sha === sourceCommitSha;
-  const evidenceComplete = report.gates.every(g => /^[a-f0-9]{64}$/i.test(g.evidence_hash));
+  const evidenceComplete = [...report.gates, report.stage_45].every(g => /^[a-f0-9]{64}$/i.test(g.evidence_hash));
   const allChecksPassed = report.gates.every(g => g.status === 'PASSED');
   const stage45Passed = exactInventory && commitMatched && evidenceComplete &&
     allChecksPassed && report.stage_45.status === 'PASSED' && report.all_pre_production_passed;
