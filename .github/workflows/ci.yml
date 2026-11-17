@@ -70,6 +70,8 @@ jobs:
           SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
           SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
           SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
+          SOLVEX_DEPLOYMENT_TARGET: ${{ vars.SOLVEX_DEPLOYMENT_TARGET }}
+          SOLVEX_DEPLOYMENT_TARGET_VERIFIED: ${{ vars.SOLVEX_DEPLOYMENT_TARGET_VERIFIED }}
         run: bun run verify:proof-closure
       - name: Upload Stage 45 readiness evidence
         if: always()
