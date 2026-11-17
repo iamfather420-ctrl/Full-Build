@@ -59,6 +59,8 @@ jobs:
         run: bun run verify:daisy-safety
       - name: First-party inference fail-closed tests
         run: bun run test:local-inference
+      - name: System 46 release-guard regression tests
+        run: bun run test:system46-guard
       - name: Production OIDC configuration alignment regression test
         run: bun run test:production-state
       - name: Compile native Daisy server entrypoint

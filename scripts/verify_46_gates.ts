@@ -2,6 +2,7 @@ import cp from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { System46Gates } from '../src/proofs/System46Gates';
+import { requireSystem46Pass } from '../src/proofs/System46GateGuard';
 import { AuthoritativeVerificationPipeline } from '../src/tests/authoritativeVerificationPipeline';
 import { setDiskDbChecker } from '../src/tests/persistenceVerification';
 
@@ -26,6 +27,8 @@ async function main() {
 
   const output = path.join(artifactsDir, 'system-46-gates.json');
   fs.writeFileSync(output, JSON.stringify(artifact, null, 2), 'utf8');
+  // Preserve diagnostics before enforcing release authorization.
+  if (process.argv.includes('--require-pass')) await requireSystem46Pass('OUTPUT', async () => artifact);
 
   console.log('[46-GATE-DIAGNOSTICS]', JSON.stringify({
     total: artifact.total_gates,

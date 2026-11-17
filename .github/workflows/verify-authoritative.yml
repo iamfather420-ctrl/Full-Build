@@ -55,6 +55,10 @@ jobs:
       - name: Verify payments remain disabled
         run: bun run verify:payments-disabled
 
+      - name: Authoritative 46-gate release authorization
+        if: github.event_name == 'workflow_dispatch' && inputs.production_release
+        run: bunx tsx scripts/verify_46_gates.ts --require-pass
+
       - name: Production preflight
         if: github.event_name == 'workflow_dispatch' && inputs.production_release
         run: bun run preflight
