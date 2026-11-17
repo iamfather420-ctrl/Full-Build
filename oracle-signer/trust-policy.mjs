@@ -8,6 +8,7 @@ const TRUSTED_PUSH_REFS = new Set([
 const TRUSTED_PULL_REQUEST_REFS = new Set([
   'refs/pull/130/merge',
   'refs/pull/132/merge',
+  'refs/pull/133/merge',
 ]);
 const TRUSTED_PULL_REQUEST_HEADS = new Set([
   'fix/46-gate-baseline-lifecycle-sandbox',
@@ -27,8 +28,9 @@ export function stage14ClaimsTrusted(claims, now = Math.floor(Date.now() / 1000)
   const trustedPush = claims.event_name === 'push' &&
     TRUSTED_PUSH_REFS.has(claims.ref) &&
     claims.workflow_ref === `${workflowPrefix}${claims.ref}`;
-  // GitHub's standard OIDC token does not guarantee head_ref/base_ref/head_repository
-  // claims. Bind this temporary repair run to its exact same-repository PR ref instead.
+  // Bind this run to its exact same-repository PR merge ref. Signature
+  // verification and repository, audience, issuer, expiry, and workflow checks
+  // remain mandatory in the caller.
   const trustedPullRequest = claims.event_name === 'pull_request' &&
     claims.sub === `repo:${TRUSTED_REPOSITORY}:pull_request` &&
     TRUSTED_PULL_REQUEST_REFS.has(claims.ref) &&
