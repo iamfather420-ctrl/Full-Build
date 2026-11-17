@@ -21,7 +21,10 @@ assert.match(api, /path !== '\/api\/system\/health'[\s\S]*path !== '\/api\/syste
   'the current API router must expose only the documented read-only system endpoints');
 assert.match(api, /authentication_enabled: false/);
 assert.match(api, /payments_enabled: false/);
-assert.match(api, /readiness: 'BLOCKED'/);
+assert.match(api, /readiness: production\.readiness/,
+  'the API must report the actual readiness state rather than hard-code a production claim');
+assert.match(api, /const ready = runtimeHealthy && production\.readiness === 'READY'/,
+  'the readiness endpoint must remain blocked unless runtime and production gates are ready');
 assert.doesNotMatch(runtime, /runMigrations\s*\(/,
   'production readiness verification must not mutate the schema');
 assert.match(workflow, /PAYMENTS_ENABLED:\s*'false'/,
