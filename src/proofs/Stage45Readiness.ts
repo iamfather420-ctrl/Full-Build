@@ -17,6 +17,8 @@ export interface GateExecutionResult {
 export interface Stage45ReadinessReport {
   execution_id: string;
   timestamp: string;
+  commit_sha: string;
+  environment: 'local' | 'sandbox' | 'production';
   total_checks: 44;
   authoritative_checks_count: 15;
   enterprise_checks_count: 29;
@@ -145,6 +147,8 @@ export class Stage45Readiness {
     return {
       execution_id: executionId,
       timestamp,
+      commit_sha: authReport.commit_sha,
+      environment: authReport.environment,
       total_checks: 44,
       authoritative_checks_count: 15,
       enterprise_checks_count: 29,
