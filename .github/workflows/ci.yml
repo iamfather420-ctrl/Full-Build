@@ -104,6 +104,7 @@ jobs:
         run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification
         env:
+          SOLVEX_NODE_EXTERNAL_PROBES: 'true'
           # Keep the verifier on the same disposable Neon branch used by the OIDC issuer.
           # Step scope avoids changing the isolation integration test's environment.
           NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
