@@ -26,19 +26,20 @@ export interface EnterpriseTestResult {
   error?: string;
 }
 
-export async function runEnterpriseVerification() {
+export async function runEnterpriseVerification(options: { phase?: 'all' | 'pre-production' | 'post-production' } = {}) {
   const testResults: EnterpriseTestResult[] = [];
-  const testQueue: Array<() => Promise<void>> = [];
+  const testQueue: Array<{ test_number: number; run: () => Promise<void> }> = [];
   let testCounter = 1;
 
   function runTest(name: string, category: string, fn: () => void | Promise<void>) {
-    testQueue.push(async () => {
+    const testNumber = testCounter++;
+    testQueue.push({ test_number: testNumber, run: async () => {
       const start = Date.now();
       try {
         await fn();
         const dur = Date.now() - start;
         testResults.push({
-          test_number: testCounter++,
+          test_number: testNumber,
           name,
           category,
           passed: true,
@@ -48,7 +49,7 @@ export async function runEnterpriseVerification() {
       } catch (e: any) {
         const dur = Date.now() - start;
         testResults.push({
-          test_number: testCounter++,
+          test_number: testNumber,
           name,
           category,
           passed: false,
@@ -57,7 +58,7 @@ export async function runEnterpriseVerification() {
           error: e.message || String(e)
         });
       }
-    });
+    }});
   }
 
   // 1. Authentication & RBAC Test
@@ -499,10 +500,15 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // Execute all queued tests sequentially
-  for (const testFn of testQueue) {
-    await testFn();
-  }
+  // Pre-production executes INV-01..INV-29. INV-30 is deliberately isolated
+  // for the deployed-environment closure phase. The all option is retained for
+  // diagnostic runs only; it is never used by the Stage 45 runner.
+  const phase = options.phase ?? 'all';
+  const selectedTests = testQueue.filter(test =>
+    phase === 'pre-production' ? test.test_number <= 29 :
+    phase === 'post-production' ? test.test_number === 30 : true
+  );
+  for (const test of selectedTests) await test.run();
 
   const totalTests = testResults.length;
   const passedTests = testResults.filter(t => t.passed).length;
@@ -512,6 +518,7 @@ export async function runEnterpriseVerification() {
     allPassed,
     totalTests,
     passedTests,
+    phase: phase,
     results: testResults
   };
 }
