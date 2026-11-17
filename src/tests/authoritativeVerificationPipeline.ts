@@ -820,6 +820,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       preProductionBlockers.push('GATE-12 pre-production lifecycle authorization-boundary contract failed.');
     }
     productionBlockers.push('GATE-12-PRODUCTION lifecycle execution requires verified identity and signed tenant claims on the deployed target.');
+    if (oracleStage?.status === 'EXTERNAL_PROVIDER_REQUIRED') productionBlockers.push('PIPE-14-PRODUCTION independent model oracle image, identity, and Ed25519 attestation must be verified after deployment.');
 
     // Production credential gates
     if (env === 'production') {
