@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { stage14ClaimsTrusted } from './trust-policy.mjs';
 
 const now = 1_700_000_000;
-const workflow = 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/127/merge';
+const workflow = 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/130/merge';
 
 function claims(overrides = {}) {
   return {
