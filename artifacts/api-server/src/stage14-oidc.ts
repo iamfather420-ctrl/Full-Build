@@ -2,7 +2,7 @@ export const STAGE14_AUDIENCE = 'solvex-stage14-evaluator';
 export const STAGE14_TRUSTED_REPOSITORY = 'iamfather420-ctrl/Full-Build';
 const REPOSITORY_ID = '1388681071';
 const TRUSTED_PUSH_REFS = new Set(['refs/heads/main', 'refs/heads/fix/46-gate-baseline-lifecycle-sandbox']);
-const TRUSTED_PULL_REQUEST_REFS = new Set(['refs/pull/130/merge', 'refs/pull/132/merge', 'refs/pull/133/merge', 'refs/pull/136/merge']);
+const TRUSTED_PULL_REQUEST_REFS = new Set(['refs/pull/130/merge', 'refs/pull/132/merge', 'refs/pull/133/merge', 'refs/pull/136/merge', 'refs/pull/137/merge']);
 
 export function stage14ClaimsTrusted(claims: any, now = Math.floor(Date.now() / 1000)): boolean {
   if (!claims || typeof claims !== 'object') return false;

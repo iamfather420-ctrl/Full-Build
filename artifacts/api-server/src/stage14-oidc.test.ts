@@ -4,7 +4,7 @@ import { stage14ClaimsTrusted } from './stage14-oidc.ts';
 
 const now = 1_700_000_000;
 function claims(overrides: Record<string, unknown> = {}) {
-  const ref = 'refs/pull/136/merge';
+  const ref = 'refs/pull/137/merge';
   return {
     iss: 'https://token.actions.githubusercontent.com',
     aud: 'solvex-stage14-evaluator',
@@ -19,7 +19,7 @@ function claims(overrides: Record<string, unknown> = {}) {
   };
 }
 
-test('accepts the exact active same-repository PR 136 OIDC identity', () => {
+test('accepts the exact active same-repository PR 137 OIDC identity', () => {
   assert.equal(stage14ClaimsTrusted(claims(), now), true);
 });
 
