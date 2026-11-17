@@ -27,7 +27,7 @@ import { TenantCrypto } from '../security/TenantCrypto';
 import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
 import { planGoal } from './goalPlanner';
-import { simulateChandyLamportSnapshot, simulateRaftConsensus } from './distributedProtocolModels';
+import { simulateChandyLamportSnapshot, simulateRaftConsensus, simulateEscrowQuorum } from './distributedProtocolModels';
 
 export interface RawNodeExecutionResult {
   node_id: string;
@@ -872,15 +872,27 @@ export class DaisySubsystemExecutors {
 
       // 38. DN-38: Sovereign Settlement Escrow Program
       case 'DN-38': {
+        const escrow = simulateEscrowQuorum();
         return {
           node_id: 'DN-38',
           name: 'Sovereign Settlement Escrow Program',
           category: 'SETTLEMENT',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'MODEL',
+          status: escrow.passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { escrow_execution_verified: false, reason: 'No escrow contract, signer quorum, or settlement provider was executed.' }
+          evidence: {
+            escrow_state_machine_model_verified: escrow.passed,
+            quorum_required: escrow.quorum_required,
+            valid_signatures: escrow.valid_signatures,
+            release_authorized: escrow.release_authorized,
+            replay_release_rejected: escrow.replay_release_rejected,
+            unauthorized_refund_rejected: escrow.unauthorized_refund_rejected,
+            final_state: escrow.final_state,
+            live_funds_moved: escrow.live_funds_moved,
+            contract_deployed: escrow.contract_deployed,
+            scope: 'Ed25519 two-of-three escrow state-machine model; no live contract or settlement provider'
+          }
         };
       }
 
