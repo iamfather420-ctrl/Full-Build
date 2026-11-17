@@ -83,7 +83,18 @@ test('DN-52 stays fail-closed without a production key and DN-36 stays prohibite
   const prohibited = await executors.executeNode('DN-36');
   assert.equal(prohibited.status, 'PROHIBITED_BLOCKED');
   const lean = await executors.executeNode('DN-40');
-  assert.equal(lean.status, 'FAIL_CLOSED');
+  if (lean.evidence.prover_execution_verified === true) {
+    assert.equal(lean.status, 'SUCCESS');
+    assert.equal(lean.evidence.exit_code, 0);
+  } else {
+    assert.equal(lean.status, 'FAIL_CLOSED');
+    assert.equal(lean.evidence.prover_execution_verified, false);
+  }
+  const range = await executors.executeNode('DN-53');
+  assert.equal(range.status, 'SUCCESS');
+  assert.equal(range.evidence.zero_knowledge_proof_verified, true);
+  assert.equal(range.evidence.altered_proof_rejected, true);
+  assert.equal(range.evidence.production_hsm, false);
 });
 
 test('only a real in-process Z3 execution receipt can mark a formal proof checked', async () => {
