@@ -17,6 +17,12 @@ export interface Z3ProofResult {
   timestamp: number;
 }
 
+const authenticExecutionReceipts = new WeakSet<object>();
+
+export function isAuthenticZ3ExecutionReceipt(result: Z3ProofResult): boolean {
+  return Boolean(result && authenticExecutionReceipts.has(result as object) && Object.isFrozen(result));
+}
+
 export interface TheoremCatalogItem {
   id: string;
   name: string;
@@ -294,7 +300,7 @@ export class Z3FormalProofEngine {
       timestamp
     };
 
-    return {
+    const receipt: Z3ProofResult = {
       theorem_id: theoremId,
       theorem_name: theoremName,
       domain,
@@ -303,13 +309,18 @@ export class Z3FormalProofEngine {
       solver_result: solverResult,
       proved,
       explanation,
-      counterexample_model: counterexample,
+      counterexample_model: counterexample ? Object.freeze({ ...counterexample }) : undefined,
       solver_engine: solverEngine,
       solver_version: solverVersion,
       execution_time_ms: durationMs,
       certificate_sha256: computeSha256(JSON.stringify(certPayload)),
       timestamp
     };
+    Object.freeze(receipt);
+    if (proved && solverResult === expectedResult && /^[a-f0-9]{64}$/.test(receipt.certificate_sha256)) {
+      authenticExecutionReceipts.add(receipt);
+    }
+    return receipt;
   }
 
   public async verifyCustomSmtScript(

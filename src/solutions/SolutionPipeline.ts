@@ -2,7 +2,7 @@ import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
 import { NOPOTVerifier } from '../proofs/NOPOTProof';
-import { Z3FormalProofEngine } from '../proofs/Z3FormalProofEngine';
+import { Z3FormalProofEngine, type Z3ProofResult } from '../proofs/Z3FormalProofEngine';
 import { MarketplaceEngine } from '../marketplace/MarketplaceEngine';
 import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
@@ -100,7 +100,7 @@ export class SolutionPipeline {
     const sourceHash = computeSha256(normalizedCode);
     const paradox = ParadoxRegistry.getInstance().getByCode(paradoxCode);
     let theoremCertificate = '';
-    let theoremEvidence: { theorem_id?: string; solver_result?: string; certificate_sha256?: string; proved?: boolean } | undefined;
+    let theoremEvidence: Z3ProofResult | undefined;
     let oracleAttestation: Awaited<ReturnType<typeof IndependentModelOracle.verify>> | undefined;
     let sandboxMemoryEvidence: { current?: number | null; peak?: number | null; limit?: number | null; oom?: number | null } | undefined;
     let haltedAt: number | undefined;
@@ -271,14 +271,16 @@ export class SolutionPipeline {
           .setImplementation(normalizedCode)
           .addTest('PIPE-01-SOURCE', 'Normalized non-empty source was hashed by the lifecycle runner', sourceStage?.status === 'PASSED', sourceStage?.duration_ms ?? 0)
           .addTest('PIPE-13-REPLAY', 'Normalized source replay hash matched the submitted source hash', replayStage?.status === 'PASSED' && replayHash === sourceHash, replayStage?.duration_ms ?? 0)
-          .addFormalProof('Z3_SMT', 'THM-RUSSELL-01; solver=' + (theoremEvidence?.solver_result ?? 'NOT_RUN') + '; certificate_sha256=' + theoremCertificate, z3Result.status === 'PASSED')
+          .addZ3Proof(theoremEvidence!)
           .addReplay('PIPE-13', sourceHash, replayHash)
           .addEvidence('source_sha256:' + sourceHash)
           .addEvidence('z3_certificate_sha256:' + (theoremCertificate || 'NOT_AVAILABLE'))
           .addSourceReference('paradox_registry:' + paradoxCode);
         if (process.env.GITHUB_SHA) builder.addSourceReference('commit:' + process.env.GITHUB_SHA);
         if (oracleAttestation) {
-          builder.addOracle(oracleAttestation.oracleId, oracleAttestation.modelId, 'Ed25519 source-bound independent oracle attestation', true);
+          builder
+            .setOracleInput({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode })
+            .addSignedOracleAttestation(oracleAttestation);
         } else {
           builder.addLimitation('Independent oracle attestation is unavailable; this bundle is not VERIFIED.');
         }
