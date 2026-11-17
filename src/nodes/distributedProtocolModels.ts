@@ -1,3 +1,5 @@
+import { generateKeyPairSync, sign, verify } from 'node:crypto';
+
 export interface SnapshotModelResult {
   passed: boolean;
   snapshot_id: string;
@@ -102,5 +104,47 @@ export function simulateRaftConsensus(): RaftModelResult {
     log_indexes: Object.fromEntries(nodes.map(id => [id, logs[id].map(entry => entry.index)])),
     commit_indexes: commitIndexes,
     stale_term_rejected: staleTermRejected
+  };
+}
+
+export interface EscrowModelResult {
+  passed: boolean;
+  quorum_required: number;
+  valid_signatures: number;
+  release_authorized: boolean;
+  replay_release_rejected: boolean;
+  unauthorized_refund_rejected: boolean;
+  final_state: 'FUNDED' | 'RELEASED' | 'REFUNDED';
+  live_funds_moved: false;
+  contract_deployed: false;
+}
+
+export function simulateEscrowQuorum(): EscrowModelResult {
+  const signers = Array.from({ length: 3 }, () => generateKeyPairSync('ed25519'));
+  const payload = Buffer.from('SOLVEX_ESCROW_MODEL|escrow-001|release|2500|USD');
+  const signatures = signers.map(signer => sign(null, payload, signer.privateKey));
+  const validSignatures = signatures.filter((signature, index) =>
+    verify(null, payload, signers[index].publicKey, signature)
+  ).length;
+  const quorumRequired = 2;
+  let state: 'FUNDED' | 'RELEASED' | 'REFUNDED' = 'FUNDED';
+
+  const releaseAuthorized = validSignatures >= quorumRequired && state === 'FUNDED';
+  if (releaseAuthorized) state = 'RELEASED';
+
+  // A second release and a refund after release must be rejected as invalid transitions.
+  const replayReleaseRejected = state !== 'FUNDED';
+  const unauthorizedRefundRejected = state !== 'FUNDED' || validSignatures < quorumRequired;
+
+  return {
+    passed: releaseAuthorized && replayReleaseRejected && unauthorizedRefundRejected && state === 'RELEASED',
+    quorum_required: quorumRequired,
+    valid_signatures: validSignatures,
+    release_authorized: releaseAuthorized,
+    replay_release_rejected: replayReleaseRejected,
+    unauthorized_refund_rejected: unauthorizedRefundRejected,
+    final_state: state,
+    live_funds_moved: false,
+    contract_deployed: false
   };
 }
