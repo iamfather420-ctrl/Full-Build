@@ -118,7 +118,7 @@
       },
       {
         "id": "POST-DEPLOY-HEALTH",
-        "name": "Deployment health, readiness, telemetry, and monitoring",
+        "name": "Deployment health, readiness, telemetry, cgroup memory enforcement, and monitoring",
         "verification_scope": "PRODUCTION"
       },
       {
