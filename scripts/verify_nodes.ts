@@ -32,10 +32,12 @@ async function main() {
   console.log(`PROVIDER REQUIRED:          ${rep.verdict_counts.PROVIDER_REQUIRED}`);
   console.log(`NOT VERIFIED:               ${rep.verdict_counts.NOT_VERIFIED}`);
   console.log(`ALL 54 VERIFIED:            ${rep.all_passed ? 'YES' : 'NO'}`);
+  console.log(`VERIFICATION BLOCKERS:       ${rep.results.filter(n => !['FUNCTIONALLY_PASSED', 'SAFETY_PASSED', 'PROHIBITED_BY_POLICY'].includes(n.status === 'SUCCESS' ? 'FUNCTIONALLY_PASSED' : n.status === 'PROHIBITED_BLOCKED' ? 'PROHIBITED_BY_POLICY' : n.status === 'PROVIDER_REQUIRED' ? 'PROVIDER_REQUIRED' : 'NOT_VERIFIED')).map(n => n.node_id).join(', ') || 'NONE'}`);
   console.log('===========================================================');
 
-  if (!rep.execution_complete) {
-    process.exit(1);
+  if (!rep.execution_complete || !rep.all_passed) {
+    console.error('[BLOCKED] Node execution coverage is not equivalent to functional verification. Resolve every PROVIDER_REQUIRED and NOT_VERIFIED result before claiming 54/54.');
+    process.exitCode = 1;
   }
 }
 
