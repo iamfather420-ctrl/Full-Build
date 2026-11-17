@@ -13,7 +13,8 @@ const PROVER_IDENTITY: Record<ExternalProverId, { env: string; basenames: Set<st
   coq: { env: 'SOLVEX_COQC_BIN', basenames: new Set(['coqc', 'coqc.exe']), versionArgs: ['--version'], versionPattern: /Coq Proof Assistant/ },
 };
 
-const GAP = /\b(sorry|admit|axiom|sorryAx)\b/i;
+const GAP = /\b(sorry|admit(?:ted)?|axiom|sorryAx)\b/i;
+const authenticExecutionReceipts = new WeakSet<object>();
 
 export function repoRoot(): string {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -34,7 +35,9 @@ export function assessProverRun(input: {
   stdout: string;
   stderr: string;
   sourceClosed: boolean;
+  executionReceipt?: object;
 }): { verified: boolean; reason: string } {
+  if (!input.executionReceipt || !authenticExecutionReceipts.has(input.executionReceipt)) return { verified: false, reason: 'missing authentic prover execution receipt' };
   if (!input.sourceClosed) return { verified: false, reason: 'proof source is not closed' };
   if (!input.expectedBasenames.has(input.basename)) return { verified: false, reason: `prover identity rejected (${input.basename || 'missing'})` };
   if (!input.versionPattern.test(input.versionText)) return { verified: false, reason: 'prover version probe did not identify the expected prover' };
@@ -138,6 +141,8 @@ export function runExternalProver(id: ExternalProverId, relativeSources: string[
   if (proof.error) {
     return { ...base, executed: false, exit_code: proof.status, binary_basename: basename, binary_sha256: binaryHash, stdout_sha256: sha256(stdout), stderr_sha256: sha256(stderr), version_sha256: sha256(versionText), reason: `${id} execution could not be completed: ${proof.error.message}` };
   }
+  const executionReceipt = Object.freeze({});
+  authenticExecutionReceipts.add(executionReceipt);
   const assessment = assessProverRun({
     basename,
     expectedBasenames: spec.basenames,
@@ -147,6 +152,7 @@ export function runExternalProver(id: ExternalProverId, relativeSources: string[
     stdout,
     stderr,
     sourceClosed: true,
+    executionReceipt,
   });
   return {
     ...base,
