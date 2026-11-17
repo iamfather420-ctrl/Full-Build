@@ -4,7 +4,7 @@ import { assessProverRun, runExternalProver, sourceIsClosed } from './ExternalPr
 
 test('a fabricated success flag or the wrong binary cannot pass', () => {
   assert.equal(sourceIsClosed('theorem t : True := by sorry').ok, false);
-  assert.equal(sourceIsClosed('Theorem t : True. Proof. Admitted.').ok, false);
+  assert.equal(sourceIsClosed('Theorem t : True. Proof. Admitted.').ok, false);\n  assert.equal(sourceIsClosed('Axiom unsafe : True.').ok, false);\n  assert.equal(sourceIsClosed('Theorem t : True. Proof. ADMITTED.').ok, false);
   const fabricated = assessProverRun({
     basename: 'true',
     expectedBasenames: new Set(['lean']),
