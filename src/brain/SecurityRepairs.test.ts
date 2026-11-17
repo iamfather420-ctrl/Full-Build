@@ -58,7 +58,7 @@ test('a caller-generated Ed25519 key cannot establish trusted oracle identity or
   builder
     .addTest('T', 'runs', true, 1)
     .addFormalProof('Z3_SMT', 'caller-asserted theorem', true)
-    .addSignedOracleAttestation(attestation, publicKeyPem)
+    .addSignedOracleAttestation(attestation)
     .addReplay('R', 'a', 'a');
   const sealed = builder.seal();
   assert.equal(sealed.verification_status, 'FAIL');
