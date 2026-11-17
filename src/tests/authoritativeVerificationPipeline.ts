@@ -651,22 +651,21 @@ export class AuthoritativeVerificationPipeline {
     // Only the explicitly opted-in GitHub Actions disposable Neon validation
     // branch may supply this real signed identity. Never use an application DB,
     // production URL, browser session, or locally minted tenant token.
+    const disposableDatabaseUrl = process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL;
     const disposableNeonOptIn =
       process.env.GITHUB_ACTIONS === 'true' &&
       process.env.SOLVEX_E2E_USE_DISPOSABLE_NEON === 'true' &&
-      Boolean(process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) &&
-      process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL !== process.env.NEON_DATABASE_URL &&
-      process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL !== process.env.DATABASE_URL;
-    if (disposableNeonOptIn) {
+      Boolean(disposableDatabaseUrl) &&
+      disposableDatabaseUrl !== process.env.NEON_DATABASE_URL &&
+      disposableDatabaseUrl !== process.env.DATABASE_URL;
+    if (disposableNeonOptIn && disposableDatabaseUrl) {
       try {
         // The DB package initializes its default client from DATABASE_URL at module load.
         // Bind that default explicitly to the disposable validation branch before importing it;
         // never fall back to a production/application database for this CI lifecycle proof.
-        process.env.DATABASE_URL = process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL;
+        process.env.DATABASE_URL = disposableDatabaseUrl;
         const { resolveUniqueActiveOidcOwnerIdentity } = await import('@workspace/db');
-        const identity = await resolveUniqueActiveOidcOwnerIdentity(
-          process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
-        );
+        const identity = await resolveUniqueActiveOidcOwnerIdentity(disposableDatabaseUrl);
         lifecycleUser = {
           user_id: identity.user_id,
           tenant_id: identity.tenant_id,
