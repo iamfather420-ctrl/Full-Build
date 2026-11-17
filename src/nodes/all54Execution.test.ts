@@ -10,4 +10,5 @@ test('every canonical node is executed and fiat settlement stays prohibited', as
   assert.equal(report.success + report.fail_closed + report.provider_required + report.prohibited_blocked, 54);
   assert.equal(report.results.find((node) => node.node_id === 'DN-36')?.status, 'PROHIBITED_BLOCKED');
   assert.equal(report.results.find((node) => node.node_id === 'DN-01')?.status, 'SUCCESS');
+  assert.equal(report.results.find((node) => node.node_id === 'DN-54')?.status, 'SUCCESS');
 });
