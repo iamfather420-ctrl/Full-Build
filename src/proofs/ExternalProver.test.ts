@@ -22,7 +22,7 @@ test('a fabricated success flag or the wrong binary cannot pass', () => {
     basename: 'lean',
     expectedBasenames: new Set(['lean']),
     versionText: 'Lean (version 4.24.0)',
-    versionPattern: /Lean \\(version \\d+/,
+    versionPattern: /Lean \(version \d+/,
     exitCode: 0,
     stdout: '',
     stderr: '',
