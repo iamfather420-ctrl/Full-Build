@@ -50,6 +50,8 @@ jobs:
           echo "Published current-source sandbox image at immutable digest ${DIGEST}"
       - name: Stage 14 signer authentication and Ed25519 regression tests
         run: bun run test:oracle-signer
+      - name: Stage 14 Fly gateway OIDC trust regression tests
+        run: bunx tsx --test artifacts/api-server/src/stage14-oidc.test.ts
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
