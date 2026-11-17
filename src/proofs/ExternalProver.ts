@@ -109,6 +109,7 @@ export function runExternalProver(id: ExternalProverId, relativeSources: string[
   };
   if (!sources.closed) return base;
   const resolved = resolveBinary(id);
+  const timeoutMs = id === 'isabelle' ? 600_000 : 180_000;
   if (!resolved.binary || !existsSync(resolved.binary)) {
     return { ...base, reason: resolved.reason ?? `${id} is not installed` };
   }
@@ -123,7 +124,7 @@ export function runExternalProver(id: ExternalProverId, relativeSources: string[
     return { ...base, reason: `${id} is not installed` };
   }
   const spec = PROVER_IDENTITY[id];
-  const version = spawnSync(resolved.binary, spec.versionArgs, { encoding: 'utf8', timeout: 180_000, cwd: repoRoot() });
+  const version = spawnSync(resolved.binary, spec.versionArgs, { encoding: 'utf8', timeout: timeoutMs, cwd: repoRoot() });
   if (version.error && (version.error as NodeJS.ErrnoException).code === 'ENOENT') {
     return { ...base, binary_basename: basename, binary_sha256: binaryHash, reason: `${id} is not installed` };
   }
@@ -131,7 +132,7 @@ export function runExternalProver(id: ExternalProverId, relativeSources: string[
   if (version.error || version.status !== 0) {
     return { ...base, binary_basename: basename, binary_sha256: binaryHash, exit_code: version.status, reason: `${id} version probe failed` };
   }
-  const proof = spawnSync(resolved.binary, args, { encoding: 'utf8', timeout: 180_000, cwd: repoRoot(), maxBuffer: 8 * 1024 * 1024 });
+  const proof = spawnSync(resolved.binary, args, { encoding: 'utf8', timeout: timeoutMs, cwd: repoRoot(), maxBuffer: 8 * 1024 * 1024 });
   const stdout = proof.stdout ?? '';
   const stderr = proof.stderr ?? '';
   if (proof.error) {
