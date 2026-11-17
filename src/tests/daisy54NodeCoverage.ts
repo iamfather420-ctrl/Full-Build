@@ -1,4 +1,5 @@
 import { DaisySubsystemExecutors, SubsystemExecutionResult } from '../nodes/DaisySubsystemExecutors';
+import { classifyNodeResult, type NodeVerdict } from '../nodes/nodeVerdict';
 
 export interface NodeCoverageReport {
   total_nodes: number;
@@ -13,7 +14,9 @@ export interface NodeCoverageReport {
   internal_newly_covered: number;
   external_gateways: number;
   policy_interlocks: number;
+  execution_complete: boolean;
   all_passed: boolean;
+  verdict_counts: Record<NodeVerdict, number>;
   results: SubsystemExecutionResult[];
   breakdown: {
     baseline_internal_18: SubsystemExecutionResult[];
@@ -47,6 +50,16 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
   );
 
   const allExecuted = rawResults.results.every(r => r.executed === true);
+  const verdictCounts = rawResults.results.reduce<Record<NodeVerdict, number>>((counts, result) => {
+    counts[classifyNodeResult(result)] += 1;
+    return counts;
+  }, { FUNCTIONALLY_PASSED: 0, SAFETY_PASSED: 0, PROVIDER_REQUIRED: 0, PROHIBITED_BY_POLICY: 0, NOT_VERIFIED: 0 });
+  const executionComplete = rawResults.total === 54 &&
+    rawResults.registered === 54 &&
+    rawResults.instantiated === 54 &&
+    rawResults.reachable === 54 &&
+    rawResults.executed === 54 &&
+    rawResults.output_asserted === 54;
   const noUnexpectedFailures = rawResults.results.every(r =>
     r.status === 'SUCCESS' ||
     r.status === 'PROVIDER_REQUIRED' ||
@@ -67,7 +80,9 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     internal_newly_covered: expandedResults.length,
     external_gateways: gatewayResults.length,
     policy_interlocks: rawResults.results.filter(r => r.status === 'PROHIBITED_BLOCKED').length,
-    all_passed: allExecuted && noUnexpectedFailures && unsatisfied.length === 0,
+    execution_complete: executionComplete,
+    all_passed: verdictCounts.FUNCTIONALLY_PASSED + verdictCounts.SAFETY_PASSED + verdictCounts.PROHIBITED_BY_POLICY === 54,
+    verdict_counts: verdictCounts,
     results: rawResults.results,
     breakdown: {
       baseline_internal_18: baselineResults,
