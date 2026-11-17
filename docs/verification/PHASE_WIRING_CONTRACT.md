@@ -17,7 +17,7 @@ The phase manifest in `config/verification/phase-wiring.json` is the machine-rea
 
 - Pre-production 1–44: existing `GATE-00` through `GATE-14` (15 checks) plus `INV-01` through `INV-29` (29 checks).
 - Stage 45: new phase-level readiness evaluator, `STAGE-45`, after all 44 pre-production checks.
-- Post-production: `INV-30` (central failure diversion/rollback) plus live provider, production lifecycle, health, failure/recovery, and whole-product checks. Local adapter and fail-closed contract checks remain pre-production; live production connectivity is post-production.
+- Post-production: the live production portions of `GATE-11`, `GATE-12`, and `GATE-14`; `INV-30` (central failure diversion/rollback); plus deployment health, failure/recovery, and whole-product checks. Their local contract and sandbox-safe portions remain among the 44 pre-production checks. Local adapter and fail-closed contract checks remain pre-production; live production connectivity is post-production.
 - Stage 46: existing `GATE-46` final proof closure, now dependent on Stage 45 and all required post-production evidence.
 
 The Daisy 54-node system is architecture under test, not a count of release gates. Its registry, node behavior, and local/sandbox handoffs belong in pre-production; deployed whole-product operation is checked again post-production.
