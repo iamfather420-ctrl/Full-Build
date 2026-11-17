@@ -55,9 +55,21 @@ jobs:
           docker build --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t solvex-sandbox:ci sandbox
           image_id="$(docker image inspect --format '{{.Id}}' solvex-sandbox:ci)"
           echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
+      - name: Load digest-pinned independent oracle image
+        env:
+          ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
+        run: |
+          if [[ -n "$ORACLE_IMAGE" && "$ORACLE_IMAGE" == *@sha256:* ]]; then
+            docker pull "$ORACLE_IMAGE" || echo "::warning::Independent oracle image could not be loaded; Stage 45 will remain blocked at oracle attestation."
+          else
+            echo "::warning::SOLVEX_ORACLE_IMAGE is not configured with an immutable digest; Stage 45 will remain blocked at oracle attestation."
+          fi
       - name: Proof closure
         env:
           SOLVEX_SANDBOX_IMAGE: ${{ steps.sandbox.outputs.image_id }}
+          SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
+          SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
+          SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
         run: bun run verify:proof-closure
       - name: Upload Stage 45 readiness evidence
         if: always()
