@@ -288,6 +288,21 @@ export class SolutionPipeline {
         await store.put(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT', bundle);
         const persisted = await store.get(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
         const view = CrystalClearBox.projectCustomerEvidence(persisted.payload as typeof bundle);
+        const bundleVerified = view.verification_verdict === 'VERIFIED' &&
+          view.proprietary_weights_redacted && view.internal_reasoning_redacted &&
+          view.oracle_attestations_count > 0;
+        // Promote only the exact stored solution whose source hash is bound to this independently attested bundle.
+        if (bundleVerified) {
+          const durable = DurableStore.getInstance();
+          const canonical = durable.getState().solutions['DH-S-001'];
+          if (canonical && canonical.implementation_hash === sourceHash) {
+            canonical.verification_status = 'VERIFIED';
+            canonical.status = 'VERIFIED';
+            canonical.proof_bundle_id = bundle.proof_id;
+            durable.getState().solutions['DH-S-001'] = canonical;
+            durable.persist();
+          }
+        }
         return view.proprietary_weights_redacted && view.internal_reasoning_redacted
           ? pass({
               proof_id: view.proof_id,
