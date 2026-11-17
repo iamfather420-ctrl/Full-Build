@@ -12,6 +12,8 @@ test('54-node coverage can pass while functional success stays below 54', async 
   }, { FUNCTIONALLY_PASSED: 0, SAFETY_PASSED: 0, PROVIDER_REQUIRED: 0, PROHIBITED_BY_POLICY: 0, NOT_VERIFIED: 0 });
   assert.equal(coverage.results.length, 54);
   assert.equal(coverage.execution_complete, true);
+  assert.deepEqual(coverage.unsatisfied_node_ids, []);
+  assert.ok(coverage.evidence_missing_node_ids.length > 0);
   assert.equal(coverage.all_passed, false);
   assert.equal(coverage.verdict_counts.FUNCTIONALLY_PASSED + coverage.verdict_counts.SAFETY_PASSED + coverage.verdict_counts.PROHIBITED_BY_POLICY + coverage.verdict_counts.PROVIDER_REQUIRED + coverage.verdict_counts.NOT_VERIFIED, 54);
   assert.equal(counts.FUNCTIONALLY_PASSED, coverage.results.filter((result) => result.status === 'SUCCESS').length);
