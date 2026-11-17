@@ -55,6 +55,12 @@ jobs:
           docker build --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t solvex-sandbox:ci sandbox
           image_id="$(docker image inspect --format '{{.Id}}' solvex-sandbox:ci)"
           echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
+      - name: Prepare ephemeral proof evidence store
+        run: |
+          mkdir -p "$RUNNER_TEMP/solvex-proof-evidence"
+          proof_key="$(openssl rand -hex 32)"
+          echo "SOLVEX_PROOF_DIR=$RUNNER_TEMP/solvex-proof-evidence" >> "$GITHUB_ENV"
+          echo "SOLVEX_PROOF_HMAC_KEY=$proof_key" >> "$GITHUB_ENV"
       - name: Proof closure
         env:
           SOLVEX_SANDBOX_IMAGE: ${{ steps.sandbox.outputs.image_id }}
