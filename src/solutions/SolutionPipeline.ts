@@ -281,9 +281,6 @@ export class SolutionPipeline {
           builder
             .setOracleInput({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode })
             .addSignedOracleAttestation(oracleAttestation);
-        } else if (oracleAttestation) {
-          builder.addLimitation('Oracle response was not bound to a configured public key; this bundle is not VERIFIED.');
-          builder.addOracle(oracleAttestation.oracleId, oracleAttestation.modelId, 'unsigned oracle response', false);
         } else {
           builder.addLimitation('Independent oracle attestation is unavailable; this bundle is not VERIFIED.');
         }
