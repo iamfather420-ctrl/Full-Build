@@ -70,7 +70,7 @@ export class Stage45Readiness {
         status: gStatus,
         claim_scope: g.claim_scope,
         duration_ms: g.duration_ms,
-        evidence_hash: computeSha256(JSON.stringify({ gate_id: g.gate_id, status: g.status, duration_ms: g.duration_ms, claim_scope: g.claim_scope, details: g.details })),
+        evidence_hash: computeSha256(JSON.stringify({ gate_id: g.gate_id, status: g.status, duration_ms: g.duration_ms, claim_scope: g.claim_scope, commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, details: g.details })),
         details: g.details
       });
     }
@@ -93,7 +93,7 @@ export class Stage45Readiness {
         status: inv.passed ? 'PASSED' : 'FAIL',
         claim_scope: 'LOCAL',
         duration_ms: inv.duration_ms,
-        evidence_hash: computeSha256(JSON.stringify({ gate_id: gateId, name: inv.name, passed: inv.passed, duration_ms: inv.duration_ms, details: inv.details })),
+        evidence_hash: computeSha256(JSON.stringify({ gate_id: gateId, name: inv.name, passed: inv.passed, duration_ms: inv.duration_ms, commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, details: inv.details })),
         details: inv.details
       });
     }
@@ -123,9 +123,12 @@ export class Stage45Readiness {
       status: masterStatus,
       claim_scope: 'LOCAL',
       duration_ms: Date.now() - startedAt,
-      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'STAGE-45', master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
+      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'STAGE-45', commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, evidence: evaluatedGates.map(g => ({ gate_id: g.gate_id, evidence_hash: g.evidence_hash, status: g.status })), master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
       details: {
         total_preceding_checks: 44,
+        commit_sha: authReport.commit_sha,
+        source_execution_id: authReport.execution_id,
+        environment: authReport.environment,
         preceding_passed: passedPrior,
         preceding_failed: failedPrior,
         preceding_non_passed: nonPassedPrior,
