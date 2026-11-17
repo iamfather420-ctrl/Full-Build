@@ -49,7 +49,6 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     r => !r.registered || !r.instantiated || !r.reachable || !r.executed || !r.output_asserted || !r.evidence_generated
   );
 
-  const allExecuted = rawResults.results.every(r => r.executed === true);
   const verdictCounts = rawResults.results.reduce<Record<NodeVerdict, number>>((counts, result) => {
     counts[classifyNodeResult(result)] += 1;
     return counts;
@@ -60,13 +59,6 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     rawResults.reachable === 54 &&
     rawResults.executed === 54 &&
     rawResults.output_asserted === 54;
-  const noUnexpectedFailures = rawResults.results.every(r =>
-    r.status === 'SUCCESS' ||
-    r.status === 'PROVIDER_REQUIRED' ||
-    r.status === 'PROHIBITED_BLOCKED' ||
-    r.status === 'FAIL_CLOSED'
-  );
-
   return {
     total_nodes: rawResults.total,
     registered_count: rawResults.registered,
