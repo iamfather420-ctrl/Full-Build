@@ -87,6 +87,10 @@ test('tether runs the resolution node and the five catalog paradox solvers', asy
     assert.equal(result.status, 'SUCCESS', nodeId);
     assert.equal(result.evidence.solver_result ?? result.evidence.result, 'unsat');
   }
+  const buraliForti = await executors.executeNode('DN-25');
+  assert.equal(buraliForti.status, 'SUCCESS');
+  assert.equal(buraliForti.evidence.paradox_id, 'DH-P-009');
+  assert.equal(buraliForti.evidence.solver_result, 'unsat');
   const settlement = await executors.executeNode('DN-36');
   assert.equal(settlement.status, 'PROHIBITED_BLOCKED');
   const lean = await executors.executeNode('DN-40');
