@@ -1,11 +1,12 @@
 /**
  * Canonical SolveX verification gate catalog.
  *
- * This file defines 46 system-wide gates plus 21 distinct SolutionPipeline
- * stage gates. Definitions are not execution evidence: runtime results must
- * be produced by real handlers and recorded separately.
+ * This catalog defines the 45-stage release sequence, a separate
+ * post-production operational check, and 21 SolutionPipeline stages.
+ * Definitions are not execution evidence: runtime results must be produced
+ * by real handlers and recorded separately.
  */
-export type VerificationGateLayer = 'SYSTEM' | 'PIPELINE';
+export type VerificationGateLayer = 'SYSTEM' | 'POST_PRODUCTION' | 'PIPELINE';
 export interface VerificationGateDefinition {
   readonly id: string;
   readonly name: string;
@@ -234,14 +235,16 @@ const SYSTEM_GATES: readonly VerificationGateDefinition[] = [
     "layer": "SYSTEM"
   },
   {
+    "id": "STAGE-45",
+    "name": "Final Pre-Production Production-Readiness Verification",
+    "layer": "SYSTEM"
+  }
+] as const;
+const POST_PRODUCTION_GATES: readonly VerificationGateDefinition[] = [
+  {
     "id": "INV-30",
     "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
-    "layer": "SYSTEM"
-  },
-  {
-    "id": "GATE-46",
-    "name": "Master Truth-Boundary & Proof Closure Gate",
-    "layer": "SYSTEM"
+    "layer": "POST_PRODUCTION"
   }
 ] as const;
 const PIPELINE_GATES: readonly VerificationGateDefinition[] = [
@@ -422,14 +425,16 @@ const PIPELINE_GATES: readonly VerificationGateDefinition[] = [
     ]
   }
 ] as const;
-export const SYSTEM_GATE_COUNT = 46;
+export const SYSTEM_GATE_COUNT = 45;
+export const POST_PRODUCTION_GATE_COUNT = 1;
 export const PIPELINE_STAGE_GATE_COUNT = 21;
-export const TOTAL_VERIFICATION_GATE_COUNT = SYSTEM_GATE_COUNT + PIPELINE_STAGE_GATE_COUNT;
+export const TOTAL_VERIFICATION_GATE_COUNT = SYSTEM_GATE_COUNT + POST_PRODUCTION_GATE_COUNT + PIPELINE_STAGE_GATE_COUNT;
 export const SOLVEX_VERIFICATION_GATES: readonly VerificationGateDefinition[] = [
   ...SYSTEM_GATES,
+  ...POST_PRODUCTION_GATES,
   ...PIPELINE_GATES
 ];
-export function validateVerificationGateCatalog(): { valid: boolean; total: number; system: number; pipeline: number; duplicateIds: string[]; unresolvedReferences: string[] } {
+export function validateVerificationGateCatalog(): { valid: boolean; total: number; system: number; postProduction: number; pipeline: number; duplicateIds: string[]; unresolvedReferences: string[] } {
   const ids = SOLVEX_VERIFICATION_GATES.map(g => g.id);
   const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
   const known = new Set(ids);
@@ -443,6 +448,7 @@ export function validateVerificationGateCatalog(): { valid: boolean; total: numb
       duplicateIds.length === 0 && unresolvedReferences.length === 0,
     total: SOLVEX_VERIFICATION_GATES.length,
     system: SYSTEM_GATES.length,
+    postProduction: POST_PRODUCTION_GATES.length,
     pipeline: PIPELINE_GATES.length,
     duplicateIds,
     unresolvedReferences
