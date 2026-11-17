@@ -76,7 +76,13 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     external_gateways: gatewayResults.length,
     policy_interlocks: rawResults.results.filter(r => r.status === 'PROHIBITED_BLOCKED').length,
     execution_complete: executionComplete,
-    all_passed: verdictCounts.FUNCTIONALLY_PASSED + verdictCounts.SAFETY_PASSED + verdictCounts.PROHIBITED_BY_POLICY === 54,
+    // A complete execution trace is not a successful verification. Require every node to have
+    // a passing functional, safety, or explicit policy verdict, plus asserted output and evidence.
+    all_passed: executionComplete &&
+      evidenceMissing.length === 0 &&
+      verdictCounts.FUNCTIONALLY_PASSED + verdictCounts.SAFETY_PASSED + verdictCounts.PROHIBITED_BY_POLICY === 54 &&
+      verdictCounts.PROVIDER_REQUIRED === 0 &&
+      verdictCounts.NOT_VERIFIED === 0,
     verdict_counts: verdictCounts,
     results: rawResults.results,
     breakdown: {
