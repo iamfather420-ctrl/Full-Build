@@ -21,23 +21,49 @@ export class SovereignApiRouter {
     const store = DurableStore.getInstance();
     const chain = store.verifyChain();
     const nodeCount = NodeRegistry.getInstance().getAllNodes().length;
-    const healthy = chain.valid && nodeCount > 0 && production.readiness === 'READY';
+    const runtimeHealthy = chain.valid && nodeCount === 54;
 
-    const data = {
-      status: healthy ? 'healthy' : 'blocked',
-      registered_nodes: nodeCount,
-      chain_valid: chain.valid,
-      audit_records: store.getState().audit_chain.length,
-      authentication_enabled: false,
-      payments_enabled: false,
-      readiness: 'BLOCKED',
-      environment: 'local',
-      blockers: production.blockers,
-      reason: healthy
-        ? 'Runtime and production gates are satisfied.'
-        : 'Production OIDC, signed tenant isolation, and required readiness gates have not been verified.'
+    // Liveness reports whether this process and its local integrity controls work.
+    // It deliberately does not imply that production dependencies are ready.
+    if (path === '/api/system/health') {
+      return {
+        status: runtimeHealthy ? 200 : 503,
+        data: {
+          status: runtimeHealthy ? 'healthy' : 'unhealthy',
+          registered_nodes: nodeCount,
+          chain_valid: chain.valid,
+          audit_records: store.getState().audit_chain.length,
+          readiness: production.readiness,
+          production_status: production.status,
+          authentication_enabled: production.authentication_enabled,
+          payments_enabled: false,
+          environment: production.environment,
+          blockers: production.blockers,
+          reason: runtimeHealthy
+            ? 'Runtime liveness and local integrity checks passed; production readiness is reported separately.'
+            : 'Runtime liveness or local integrity checks failed.'
+        }
+      };
+    }
+
+    // Readiness remains strict: no production claim while any release gate is blocked.
+    const ready = runtimeHealthy && production.readiness === 'READY';
+    return {
+      status: ready ? 200 : 503,
+      data: {
+        status: ready ? 'ready' : 'blocked',
+        registered_nodes: nodeCount,
+        chain_valid: chain.valid,
+        audit_records: store.getState().audit_chain.length,
+        authentication_enabled: production.authentication_enabled,
+        payments_enabled: false,
+        readiness: production.readiness,
+        environment: production.environment,
+        blockers: production.blockers,
+        reason: ready
+          ? 'Runtime and production readiness gates are satisfied.'
+          : 'Production OIDC, signed tenant isolation, and required readiness gates have not been verified.'
+      }
     };
-
-    return { status: healthy ? 200 : 503, data };
   }
 }
