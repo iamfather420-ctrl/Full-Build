@@ -11,6 +11,7 @@ import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { NeonStore } from '../database/NeonPersistence';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { Z3FormalProofEngine } from '../proofs/Z3FormalProofEngine';
+import { AUTHORITATIVE_32_DH_CONTRACTS } from '../formal/dhAuthoritativeFormalContracts';
 import { AuthService } from '../auth/AuthService';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
@@ -500,17 +501,39 @@ export class DaisySubsystemExecutors {
 
       // 25. DN-25: Burali-Forti Ordinal Hierarchy Checker
       case 'DN-25': {
-        const ordinals = [0, 1, 2, 3, 4];
-        const isStrictlyWellOrdered = ordinals.every((val, idx) => idx === 0 || val > ordinals[idx - 1]);
+        // Use the authoritative DH-P-009 formal contract and execute its SMT
+        // assertion with the existing Z3 runtime. A finite ascending sample is
+        // not evidence for the Burali-Forti contradiction.
+        const contract = AUTHORITATIVE_32_DH_CONTRACTS.find((item) => item.case_id === 'DH-P-009');
+        if (!contract) throw new Error('Authoritative DH-P-009 Burali-Forti contract is unavailable.');
+        const proof = await Z3FormalProofEngine.getInstance().executeSmtVerification(
+          contract.case_id,
+          contract.name,
+          contract.domain,
+          contract.formal_proposition,
+          contract.z3_smt_assertion,
+          contract.expected_result,
+          'Z3 verified the DH-P-009 irreflexivity contradiction under the contract’s stated ordinal-order assumptions.'
+        );
         return {
           node_id: 'DN-25',
           name: 'Burali-Forti Ordinal Hierarchy Checker',
           category: 'LOGIC_SOLVER',
           executed: true,
           claim_scope: 'MODEL',
-          status: 'FAIL_CLOSED',
+          status: proof.proved ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { finite_sample_strictly_increasing: isStrictlyWellOrdered, ordinal_hierarchy_verified: false }
+          evidence: {
+            paradox_id: contract.case_id,
+            contract_hash: contract.contract_hash,
+            source_file: contract.source_file,
+            formalization_method: contract.formalization_method,
+            expected_solver_result: contract.expected_result,
+            solver_result: proof.solver_result,
+            certificate_sha256: proof.certificate_sha256,
+            proof_scope: contract.scope,
+            ordinal_hierarchy_verified: proof.proved
+          }
         };
       }
 
