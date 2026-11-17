@@ -17,6 +17,7 @@ import { PayPalAdapter } from '../payments/PayPalAdapter';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
+import { SolutionPipeline } from '../solutions/SolutionPipeline';
 
 export interface GateResult {
   gate_index: number;
@@ -548,6 +549,16 @@ export class AuthoritativeVerificationPipeline {
     // payments. A successful production lifecycle requires deployed identity
     // and signed tenant claims; it is recorded separately as GATE-12-PRODUCTION.
     const g12Start = performance.now();
+    const solutionPipeline = SolutionPipeline.getInstance();
+    const pipelineResult = await solutionPipeline.runPipeline(
+      'DH-P-001',
+      'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }'
+    );
+    const solutionPipelinePassed = pipelineResult.overall_success &&
+      pipelineResult.completed_stages === 21 &&
+      pipelineResult.total_stages === 21 &&
+      pipelineResult.stage_traces.length === 21 &&
+      pipelineResult.stage_traces.every(stage => stage.status === 'PASSED');
     const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
     sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
@@ -592,7 +603,7 @@ export class AuthoritativeVerificationPipeline {
     );
     const auditEvidenceValid = /^[a-f0-9]{64}$/i.test(e2eAudit.record_hash);
     const lifecycleGateStatus: GateResult['status'] =
-      lifecycleContractPassed && auditEvidenceValid ? 'PASSED' : 'FAILED';
+      solutionPipelinePassed && lifecycleContractPassed && auditEvidenceValid ? 'PASSED' : 'FAILED';
 
     recordGate(
       12,
@@ -604,6 +615,10 @@ export class AuthoritativeVerificationPipeline {
       {
         phase_split: {
           pre_production_contract_verified: lifecycleContractPassed && auditEvidenceValid,
+          solution_pipeline_pre_production_passed: solutionPipelinePassed,
+          solution_pipeline_completed_stages: pipelineResult.completed_stages,
+          solution_pipeline_total_stages: pipelineResult.total_stages,
+          solution_pipeline_stage_traces: pipelineResult.stage_traces.map(stage => ({ stage: stage.stage, name: stage.name, status: stage.status, reason: stage.reason })),
           post_production_lifecycle_deferred: true,
           post_production_check_id: 'GATE-12-PRODUCTION',
           production_identity_required_only_after_deployment: true
@@ -625,7 +640,7 @@ export class AuthoritativeVerificationPipeline {
           evidence_hash_valid: auditEvidenceValid
         }
       },
-      lifecycleGateStatus === 'PASSED' ? undefined : 'Pre-production lifecycle contract, fail-closed authorization, unchanged order state, or audit evidence failed.'
+      lifecycleGateStatus === 'PASSED' ? undefined : 'Pre-production 21-stage solution pipeline, fail-closed authorization, unchanged order state, or audit evidence failed.'
     );
 
     // ==========================================
