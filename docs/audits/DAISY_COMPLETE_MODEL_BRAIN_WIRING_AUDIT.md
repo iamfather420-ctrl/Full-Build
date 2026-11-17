@@ -185,4 +185,15 @@ The three Full-Build workflows on `e16830a` failed typecheck because `src/brain/
 
 A local call to `executeAll54Nodes()` attempted all 54 cases. In that run the result counts were 23 `SUCCESS`, 27 `FAIL_CLOSED`, 3 `PROVIDER_REQUIRED`, and 1 `PROHIBITED_BLOCKED` (`DN-36`). `executed: true` means the case ran. It does not mean the node is operational. No GGUF model was loaded. No GPU workload ran. The 120-edge manifest was still absent. A separate CPU attention demo reduced toy loss; it is not transformer language-model training.
 
+## Reconciliation of the 23 SUCCESS count
+
+The saved execution artifact counted 45 `SUCCESS`, 5 `FAIL_CLOSED`, 3 `PROVIDER_REQUIRED`, and 1 `PROHIBITED_BLOCKED`, and set `all_passed` from the coverage contract in `src/tests/daisy54NodeCoverage.ts`. That contract accepts `SUCCESS`, `FAIL_CLOSED`, `PROVIDER_REQUIRED`, and `PROHIBITED_BLOCKED` when every node runs and emits evidence. It does not require 54 functional successes.
+
+On 2026-11-16 a fresh `executeAll54Nodes()` returned 23 `SUCCESS`, 27 `FAIL_CLOSED`, 3 `PROVIDER_REQUIRED`, and 1 `PROHIBITED_BLOCKED`. Twenty-two nodes changed from the artifact's `SUCCESS` to `FAIL_CLOSED` because the executor now refuses placeholder evidence. Those refusals are already on `main` via `d6130ec`. Examples: hashing one literal is not a cleanroom, and Lean, Isabelle, and Coq are not installed.
+
+The fresh coverage contract still passed: 54 executed, no unsatisfied ids, `all_passed: true`. The verdict split was 23 `FUNCTIONALLY_PASSED`, 4 `SAFETY_PASSED` (DN-16, DN-28, DN-35, DN-54), 3 `PROVIDER_REQUIRED`, 1 `PROHIBITED_BY_POLICY` (DN-36), and 23 `NOT_VERIFIED`. The 23 functional passes are not proof that the other 31 cognitive components are operational.
+
+`selectTetherPath` only walks edges the caller supplies. It is not a recovered 120-edge topology.
+
+
 
