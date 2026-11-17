@@ -147,9 +147,12 @@ jobs:
           exec docker run --rm -v "$PWD:/workspace" -w /workspace "$SOLVEX_ISABELLE_IMAGE" "$@"
           SH
           chmod 755 "$RUNNER_TEMP/isabelle"
+          export SOLVEX_ISABELLE_IMAGE="$IMAGE_REF"
+          export SOLVEX_ISABELLE_BIN="$RUNNER_TEMP/isabelle"
+          export SOLVEX_COQC_BIN="$(command -v coqc)"
           echo "SOLVEX_ISABELLE_IMAGE=$IMAGE_REF" >> "$GITHUB_ENV"
           echo "SOLVEX_ISABELLE_BIN=$RUNNER_TEMP/isabelle" >> "$GITHUB_ENV"
-          echo "SOLVEX_COQC_BIN=$(command -v coqc)" >> "$GITHUB_ENV"
+          echo "SOLVEX_COQC_BIN=$SOLVEX_COQC_BIN" >> "$GITHUB_ENV"
           bunx tsx -e 'import { verifyIsabelleProof, verifyCoqProof } from "./src/proofs/ExternalProver.ts"; const results = [verifyIsabelleProof(), verifyCoqProof()]; console.log(JSON.stringify(results)); if (results.some((r) => !r.prover_execution_verified || r.exit_code !== 0)) process.exit(1);'
       - name: Daisy cognitive regression, including DN-25 and DN-45
         run: bunx tsx --test --test-concurrency=1 src/brain/CognitiveMilestone.test.ts src/brain/SecurityRepairs.test.ts src/security/RangeProof.test.ts src/proofs/ExternalProver.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts src/nodes/distributedProtocolModels.test.ts
