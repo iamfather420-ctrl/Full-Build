@@ -270,8 +270,12 @@ export async function runEnterpriseVerification(options: { phase?: 'all' | 'pre-
     if (result.stage_traces.length !== 21 || result.total_stages !== 21) {
       throw new Error(`Expected 21 stage traces, got ${result.stage_traces.length}`);
     }
-    if (result.overall_success || !result.stage_traces.some(stage => stage.status === 'BLOCKED')) {
-      throw new Error('Pipeline did not preserve fail-closed status for unavailable controls');
+    const oracleStage = result.stage_traces.find(stage => stage.stage === 14);
+    const localStages = result.stage_traces.filter(stage => stage.stage !== 14);
+    if (result.overall_success || result.completed_stages !== 20 ||
+        oracleStage?.status !== 'EXTERNAL_PROVIDER_REQUIRED' ||
+        localStages.length !== 20 || !localStages.every(stage => stage.status === 'PASSED')) {
+      throw new Error('Pipeline must complete all 20 local stages, defer only the live oracle provider check, and never claim full production success');
     }
   });
 
