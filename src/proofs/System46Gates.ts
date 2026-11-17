@@ -14,20 +14,20 @@ export interface GateExecutionResult {
   details: Record<string, any>;
 }
 
-export interface System46GatesReport {
+export interface Stage45ReadinessReport {
   execution_id: string;
   timestamp: string;
-  total_gates: 46;
-  authoritative_gates_count: 15;
-  enterprise_gates_count: 30;
-  master_closure_gate_count: 1;
+  total_checks: 44;
+  authoritative_checks_count: 15;
+  enterprise_checks_count: 29;
+  stage_45_count: 1;
   gates_passed: number;
   external_provider_required_count: number;
   blocked_count: number;
   failed_count: number;
-  all_local_and_model_passed: boolean;
+  all_pre_production_passed: boolean;
   gates: GateExecutionResult[];
-  overall_verdict: 'VERIFIED_SOVEREIGN_CLOSURE' | 'BLOCKED';
+  overall_verdict: 'PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED' | 'BLOCKED';
 }
 
 export class System46Gates {
@@ -40,9 +40,9 @@ export class System46Gates {
     return System46Gates.instance;
   }
 
-  public async evaluateAll46Gates(): Promise<System46GatesReport> {
+  public async evaluateStage45(): Promise<Stage45ReadinessReport> {
     const startedAt = Date.now();
-    const executionId = `gate46_exec_${startedAt}`;
+    const executionId = `stage45_exec_${startedAt}`;
     const timestamp = new Date().toISOString();
     const evaluatedGates: GateExecutionResult[] = [];
 
@@ -74,9 +74,9 @@ export class System46Gates {
     }
 
     // -------------------------------------------------------------
-    // PART 2: EVALUATE 30 ENTERPRISE INVARIANT GATES (GATES 16 - 45)
+    // PART 2: EVALUATE 29 PRE-PRODUCTION ENTERPRISE INVARIANTS
     // -------------------------------------------------------------
-    const enterpriseReport = await runEnterpriseVerification();
+    const enterpriseReport = await runEnterpriseVerification({ phase: 'pre-production' });
 
     for (let i = 0; i < enterpriseReport.results.length; i++) {
       const inv = enterpriseReport.results[i];
@@ -97,7 +97,7 @@ export class System46Gates {
     }
 
     // -------------------------------------------------------------
-    // PART 3: EVALUATE MASTER PROOF & TRUTH-BOUNDARY CLOSURE GATE (GATE 46)
+    // PART 3: EVALUATE STAGE 45 READINESS
     // -------------------------------------------------------------
     const failedPrior = evaluatedGates.filter(g => g.status === 'FAIL').length;
     const passedPrior = evaluatedGates.filter(g => g.status === 'PASSED').length;
@@ -106,7 +106,7 @@ export class System46Gates {
     const externalBoundaryChecks = enterpriseReport.results.filter(inv => /external adapter inventory|paypal dn-35 server.authoritative fail.closed/i.test(inv.name));
     const failClosedActive = failClosedChecks.length > 0 && failClosedChecks.every(inv => inv.passed);
     const externalBoundariesPreserved = externalBoundaryChecks.length > 0 && externalBoundaryChecks.every(inv => inv.passed);
-    const structuralIntegrityOk = evaluatedGates.length === 45 && failClosedActive && externalBoundariesPreserved;
+    const structuralIntegrityOk = evaluatedGates.length === 44 && failClosedActive && externalBoundariesPreserved;
     const masterPassed = structuralIntegrityOk && nonPassedPrior === 0 && failedPrior === 0;
     const masterBlocked = !masterPassed && structuralIntegrityOk && failedPrior === 0 && nonPassedPrior > 0;
     const masterStatus: GateExecutionResult['status'] = masterPassed
@@ -114,16 +114,16 @@ export class System46Gates {
       : masterBlocked ? 'BLOCKED' : 'FAIL';
 
     evaluatedGates.push({
-      gate_number: 46,
-      gate_id: 'GATE-46',
-      name: 'Master Truth-Boundary & Proof Closure Gate',
+      gate_number: 45,
+      gate_id: 'STAGE-45',
+      name: 'Final Pre-Production Production-Readiness Verification',
       category: 'MASTER_PROOF_CLOSURE',
       status: masterStatus,
       claim_scope: 'LOCAL',
       duration_ms: Date.now() - startedAt,
-      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'GATE-46', master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
+      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'STAGE-45', master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
       details: {
-        total_preceding_gates: 45,
+        total_preceding_checks: 44,
         preceding_passed: passedPrior,
         preceding_failed: failedPrior,
         preceding_non_passed: nonPassedPrior,
@@ -142,10 +142,10 @@ export class System46Gates {
     return {
       execution_id: executionId,
       timestamp,
-      total_gates: 46,
-      authoritative_gates_count: 15,
-      enterprise_gates_count: 30,
-      master_closure_gate_count: 1,
+      total_checks: 44,
+      authoritative_checks_count: 15,
+      enterprise_checks_count: 29,
+      stage_45_count: 1,
       gates_passed: passedCount,
       external_provider_required_count: extCount,
       blocked_count: blockedCount,
