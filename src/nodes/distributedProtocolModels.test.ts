@@ -18,3 +18,15 @@ test('Raft elects a majority leader, replicates a log entry, and rejects stale t
   assert.equal(result.stale_term_rejected, true);
   assert.deepEqual(result.commit_indexes, { A: 1, B: 1, C: 1 });
 });
+
+test('escrow model enforces a two-of-three signature quorum and rejects replay', async () => {
+  const { simulateEscrowQuorum } = await import('./distributedProtocolModels');
+  const result = simulateEscrowQuorum();
+  assert.equal(result.passed, true);
+  assert.equal(result.valid_signatures, 3);
+  assert.equal(result.release_authorized, true);
+  assert.equal(result.replay_release_rejected, true);
+  assert.equal(result.unauthorized_refund_rejected, true);
+  assert.equal(result.live_funds_moved, false);
+  assert.equal(result.contract_deployed, false);
+});
