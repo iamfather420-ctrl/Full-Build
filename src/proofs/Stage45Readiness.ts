@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { computeSha256 } from '../database/DatabaseSchema';
+const sha256 = (data: string): string => createHash('sha256').update(data, 'utf8').digest('hex');
 import { AuthoritativeVerificationPipeline } from '../tests/authoritativeVerificationPipeline';
 
 export interface GateExecutionResult {
@@ -73,7 +73,7 @@ export class Stage45Readiness {
         status: gStatus,
         claim_scope: g.claim_scope,
         duration_ms: g.duration_ms,
-        evidence_hash: computeSha256(JSON.stringify({ gate_id: g.gate_id, status: g.status, duration_ms: g.duration_ms, claim_scope: g.claim_scope, commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, details: g.details })),
+        evidence_hash: sha256(JSON.stringify({ gate_id: g.gate_id, status: g.status, duration_ms: g.duration_ms, claim_scope: g.claim_scope, commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, details: g.details })),
         details: g.details
       });
     }
@@ -96,7 +96,7 @@ export class Stage45Readiness {
         status: inv.passed ? 'PASSED' : 'FAIL',
         claim_scope: 'LOCAL',
         duration_ms: inv.duration_ms,
-        evidence_hash: computeSha256(JSON.stringify({ gate_id: gateId, name: inv.name, passed: inv.passed, duration_ms: inv.duration_ms, commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, details: inv.details })),
+        evidence_hash: sha256(JSON.stringify({ gate_id: gateId, name: inv.name, passed: inv.passed, duration_ms: inv.duration_ms, commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, details: inv.details })),
         details: inv.details
       });
     }
@@ -132,7 +132,7 @@ export class Stage45Readiness {
       status: masterStatus,
       claim_scope: 'LOCAL',
       duration_ms: Date.now() - startedAt,
-      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'STAGE-45', commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, release_artifact_sha256: releaseArtifactSha256, deployment_target: deploymentTarget, deployment_target_validated: deploymentTargetValidated, evidence: evaluatedGates.map(g => ({ gate_id: g.gate_id, evidence_hash: g.evidence_hash, status: g.status })), master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
+      evidence_hash: sha256(JSON.stringify({ gate_id: 'STAGE-45', commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, release_artifact_sha256: releaseArtifactSha256, deployment_target: deploymentTarget, deployment_target_validated: deploymentTargetValidated, evidence: evaluatedGates.map(g => ({ gate_id: g.gate_id, evidence_hash: g.evidence_hash, status: g.status })), master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
       details: {
         total_preceding_checks: 44,
         commit_sha: authReport.commit_sha,
