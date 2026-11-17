@@ -10,6 +10,7 @@ export interface NodeCoverageReport {
   output_asserted_count: number;
   evidence_generated_count: number;
   unsatisfied_node_ids: string[];
+  evidence_missing_node_ids: string[];
   internal_previously_covered: number;
   internal_newly_covered: number;
   external_gateways: number;
@@ -46,8 +47,9 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
 
   // Determine any unsatisfied nodes
   const unsatisfied = rawResults.results.filter(
-    r => !r.registered || !r.instantiated || !r.reachable || !r.executed || !r.output_asserted || !r.evidence_generated
+    r => !r.registered || !r.instantiated || !r.reachable || !r.executed || !r.output_asserted
   );
+  const evidenceMissing = rawResults.results.filter(r => !r.evidence_generated);
 
   const verdictCounts = rawResults.results.reduce<Record<NodeVerdict, number>>((counts, result) => {
     counts[classifyNodeResult(result)] += 1;
@@ -68,6 +70,7 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     output_asserted_count: rawResults.output_asserted,
     evidence_generated_count: rawResults.evidence_generated,
     unsatisfied_node_ids: unsatisfied.map(u => u.node_id),
+    evidence_missing_node_ids: evidenceMissing.map(u => u.node_id),
     internal_previously_covered: baselineResults.length,
     internal_newly_covered: expandedResults.length,
     external_gateways: gatewayResults.length,
