@@ -575,6 +575,11 @@ export class AuthoritativeVerificationPipeline {
     let neonConn = false;
     if (hasNeon) neonConn = await neon.connect();
 
+    // Payment-provider authentication is not required while payments are
+    // disabled. If evidence is present, however, it must always be valid/fresh.
+    // Enabling payments remains blocked until live authentication is actually
+    // verified by a separate protected release process.
+    const paymentsEnabled = String(process.env.PAYMENTS_ENABLED || 'false').toLowerCase() === 'true';
     let g11Status: GateResult['status'];
     if (paypalEvidence && !paypalEvidenceShapeValid) {
       g11Status = 'FAILED';
@@ -582,10 +587,10 @@ export class AuthoritativeVerificationPipeline {
       g11Status = 'BLOCKED';
     } else if (hasNeon && !neonConn) {
       g11Status = 'FAILED';
-    } else if (paypalSandboxVerified && neonConn) {
+    } else if (paymentsEnabled) {
+      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
+    } else if (hasNeon && neonConn) {
       g11Status = 'PASSED';
-    } else if (paypalSandboxVerified || neonConn || hasNeon) {
-      g11Status = 'CONFIGURED';
     } else {
       g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
     }
@@ -643,9 +648,16 @@ export class AuthoritativeVerificationPipeline {
 
     let lifecycleUser: UserContext | undefined;
     let lifecycleIdentityResolution = 'NOT_CONFIGURED';
-    // Only CI's disposable Neon validation branch may supply the test identity.
-    // Never read a browser session or mint an application-side tenant token here.
-    if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) {
+    // Only the explicitly opted-in GitHub Actions disposable Neon validation
+    // branch may supply this real signed identity. Never use an application DB,
+    // production URL, browser session, or locally minted tenant token.
+    const disposableNeonOptIn =
+      process.env.GITHUB_ACTIONS === 'true' &&
+      process.env.SOLVEX_E2E_USE_DISPOSABLE_NEON === 'true' &&
+      Boolean(process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) &&
+      process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL !== process.env.NEON_DATABASE_URL &&
+      process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL !== process.env.DATABASE_URL;
+    if (disposableNeonOptIn) {
       try {
         // The DB package initializes its default client from DATABASE_URL at module load.
         // Bind that default explicitly to the disposable validation branch before importing it;
@@ -941,19 +953,23 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       productionBlockers.push('GATE-12 end-to-end lifecycle verification is incomplete.');
     }
 
-    // Production credential gates. Sandbox evidence never authorizes live payments.
-    // Live OAuth is intentionally not attempted by this verification pipeline.
-    const paypalLiveCredentialsPresent = Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
-    const paypalLiveAuthVerified = false;
+    // Payment activation is independent from production readiness. Payments
+    // remain disabled; if explicitly enabled, live provider authentication is
+    // mandatory and is never inferred from sandbox evidence.
+    const paypalLiveCredentialsPresent = Boolean(process.env.PAYPAL_LIVE_CLIENT_ID && process.env.PAYPAL_LIVE_CLIENT_SECRET);
+    const paypalLiveAuthVerified = false; // This pipeline deliberately does not perform live OAuth.
     if (env === 'production') {
-      if (!paypalLiveCredentialsPresent || !paypalLiveAuthVerified) {
-        productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
+      if (paymentsEnabled && (!paypalLiveCredentialsPresent || !paypalLiveAuthVerified)) {
+        productionBlockers.push('GATE-11 PayPal live authentication is not verified. Live fiat payments remain disabled.');
       }
       if (!hasNeon || !neonConn) {
-        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
+        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production persistence requires NEON_DATABASE_URL.');
+      }
+      if (paymentsEnabled) {
+        productionBlockers.push('Payments must remain disabled until a separately reviewed live-provider activation flow passes.');
       }
     } else {
-      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
+      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and production prerequisites.`);
     }
 
     const prodPassed = productionBlockers.length === 0;
