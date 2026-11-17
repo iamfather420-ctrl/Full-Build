@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { AuthoritativeVerificationPipeline } from '../tests/authoritativeVerificationPipeline';
 
@@ -109,7 +112,13 @@ export class Stage45Readiness {
     const failClosedActive = failClosedChecks.length > 0 && failClosedChecks.every(inv => inv.passed);
     const externalBoundariesPreserved = externalBoundaryChecks.length > 0 && externalBoundaryChecks.every(inv => inv.passed);
     const structuralIntegrityOk = evaluatedGates.length === 44 && failClosedActive && externalBoundariesPreserved;
-    const masterPassed = structuralIntegrityOk && nonPassedPrior === 0 && failedPrior === 0;
+    const releaseArtifactPath = path.resolve(process.cwd(), 'dist/index.html');
+    const releaseArtifactPresent = fs.existsSync(releaseArtifactPath);
+    const releaseArtifactSha256 = releaseArtifactPresent ? createHash('sha256').update(fs.readFileSync(releaseArtifactPath)).digest('hex') : null;
+    const deploymentTarget = (process.env.SOLVEX_DEPLOYMENT_TARGET ?? '').trim();
+    const deploymentTargetValidated = deploymentTarget.length > 0 && process.env.SOLVEX_DEPLOYMENT_TARGET_VERIFIED === 'true';
+    const stage45ReadinessChecksPassed = releaseArtifactPresent && deploymentTargetValidated;
+    const masterPassed = structuralIntegrityOk && nonPassedPrior === 0 && failedPrior === 0 && stage45ReadinessChecksPassed;
     const masterBlocked = !masterPassed && structuralIntegrityOk && failedPrior === 0 && nonPassedPrior > 0;
     const masterStatus: GateExecutionResult['status'] = masterPassed
       ? 'PASSED'
@@ -123,12 +132,21 @@ export class Stage45Readiness {
       status: masterStatus,
       claim_scope: 'LOCAL',
       duration_ms: Date.now() - startedAt,
-      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'STAGE-45', commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, evidence: evaluatedGates.map(g => ({ gate_id: g.gate_id, evidence_hash: g.evidence_hash, status: g.status })), master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
+      evidence_hash: computeSha256(JSON.stringify({ gate_id: 'STAGE-45', commit_sha: authReport.commit_sha, execution_id: authReport.execution_id, environment: authReport.environment, release_artifact_sha256: releaseArtifactSha256, deployment_target: deploymentTarget, deployment_target_validated: deploymentTargetValidated, evidence: evaluatedGates.map(g => ({ gate_id: g.gate_id, evidence_hash: g.evidence_hash, status: g.status })), master_passed: masterPassed, preceding_passed: passedPrior, preceding_failed: failedPrior, preceding_non_passed: nonPassedPrior, fail_closed_active: failClosedActive, external_boundaries_preserved: externalBoundariesPreserved })),
       details: {
         total_preceding_checks: 44,
         commit_sha: authReport.commit_sha,
         source_execution_id: authReport.execution_id,
         environment: authReport.environment,
+        release_artifact_present: releaseArtifactPresent,
+        release_artifact_path: releaseArtifactPresent ? 'dist/index.html' : null,
+        release_artifact_sha256: releaseArtifactSha256,
+        deployment_target: deploymentTarget || null,
+        deployment_target_validated: deploymentTargetValidated,
+        readiness_blockers: [
+          ...(!releaseArtifactPresent ? ['Release artifact dist/index.html is missing.'] : []),
+          ...(!deploymentTargetValidated ? ['Deployment target is not identified and explicitly verified.'] : [])
+        ],
         preceding_passed: passedPrior,
         preceding_failed: failedPrior,
         preceding_non_passed: nonPassedPrior,
