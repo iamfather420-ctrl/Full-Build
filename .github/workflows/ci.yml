@@ -87,7 +87,7 @@ jobs:
       - name: TypeScript
         run: bun run lint
       - name: Daisy cognitive regression, including DN-25 and DN-45
-        run: bunx tsx --test --test-concurrency=1 src/brain/CognitiveMilestone.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts
+        run: bunx tsx --test --test-concurrency=1 src/brain/CognitiveMilestone.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts src/nodes/distributedProtocolModels.test.ts
       - name: Enterprise invariants
         run: bun run verify:enterprise
       - name: Formal verification corpus
