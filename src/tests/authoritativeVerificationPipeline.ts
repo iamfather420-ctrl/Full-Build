@@ -521,6 +521,8 @@ export class AuthoritativeVerificationPipeline {
     const expectedPayPalEvidenceDigest = 'e21c021eca87bd5796c3a1a2ace992755b33bc430cd8ed1d4072a96e41abae8b';
     let paypalEvidence: any = null;
     let paypalEvidenceError: string | undefined;
+    let paypalEvidenceShapeValid = false;
+    let paypalEvidenceFresh = false;
     let paypalSandboxVerified = false;
     if (paypalEvidencePath) {
       try {
@@ -553,6 +555,8 @@ export class AuthoritativeVerificationPipeline {
           paypalEvidence?.security_boundary?.orders_captures_refunds_or_transactions_attempted === false &&
           paypalEvidence?.security_boundary?.payments_enabled === false &&
           paypalEvidence?.evidence_sha256 === expectedPayPalEvidenceDigest;
+        paypalEvidenceShapeValid = evidenceShapeValid;
+        paypalEvidenceFresh = evidenceFresh;
         paypalSandboxVerified = evidenceShapeValid && evidenceFresh;
         if (!evidenceShapeValid) paypalEvidenceError = 'PayPal sandbox evidence failed pinned provenance, scope, digest, or safety validation.';
         else if (!evidenceFresh) paypalEvidenceError = 'PayPal sandbox evidence is outside the 48-hour freshness window.';
@@ -569,8 +573,10 @@ export class AuthoritativeVerificationPipeline {
     if (hasNeon) neonConn = await neon.connect();
 
     let g11Status: GateResult['status'];
-    if (paypalEvidence && !paypalSandboxVerified) {
+    if (paypalEvidence && !paypalEvidenceShapeValid) {
       g11Status = 'FAILED';
+    } else if (paypalEvidence && !paypalEvidenceFresh) {
+      g11Status = 'BLOCKED';
     } else if (hasNeon && !neonConn) {
       g11Status = 'FAILED';
     } else if (paypalSandboxVerified && neonConn) {
@@ -593,7 +599,7 @@ export class AuthoritativeVerificationPipeline {
           configured: paypalEvidence?.result?.sandbox_credentials_present === true,
           environment: 'sandbox',
           authenticated: paypalSandboxVerified,
-          status: paypalSandboxVerified ? 'SANDBOX_AUTHENTICATED' : (paypalEvidence ? 'EVIDENCE_INVALID' : 'EXTERNAL_PROVIDER_REQUIRED'),
+          status: paypalSandboxVerified ? 'SANDBOX_AUTHENTICATED' : (paypalEvidence && paypalEvidenceShapeValid && !paypalEvidenceFresh ? 'EVIDENCE_STALE' : paypalEvidence ? 'EVIDENCE_INVALID' : 'EXTERNAL_PROVIDER_REQUIRED'),
           claim_scope: 'SANDBOX',
           evidence_file: 'artifacts/provider-evidence/paypal-sandbox-oauth-2026-11-13.json',
           evidence_sha256: paypalEvidence?.evidence_sha256 || null,
@@ -693,12 +699,14 @@ export class AuthoritativeVerificationPipeline {
     const lifecycleBlocked = !e2eOk && transitionAttempts.some(t =>
       !t.success && /BLOCKED: verified identity and signed tenant claims are required/i.test(t.error || '')
     );
+    const stage14ExternalBlocked = pipeRes.stage_traces.some(stage => stage.stage === 14 && stage.status === 'BLOCKED');
     const lifecycleGateStatus: GateResult['status'] = e2eOk
       ? 'PASSED'
-      : lifecycleBlocked ? 'BLOCKED' : 'FAILED';
+      : (lifecycleBlocked || stage14ExternalBlocked) ? 'BLOCKED' : 'FAILED';
     const lifecycleAuditAction = e2eOk
       ? 'LIFECYCLE_COMPLETED'
-      : lifecycleBlocked ? 'LIFECYCLE_BLOCKED' : 'LIFECYCLE_FAILED';
+      : lifecycleBlocked ? 'LIFECYCLE_BLOCKED'
+      : stage14ExternalBlocked ? 'LIFECYCLE_TEST_COMPLETED_PIPELINE_BLOCKED' : 'LIFECYCLE_FAILED';
 
     const durableInst = DurableStore.getInstance();
     const e2eAudit = durableInst.appendAudit(
@@ -739,6 +747,7 @@ export class AuthoritativeVerificationPipeline {
         identity_resolution: lifecycleIdentityResolution,
         order_lifecycle: {
           order_id: testOrderId,
+          test_scope: 'DISPOSABLE_NEON_TEST_ONLY',
           planned_transitions: plannedTransitions,
           transition_attempts: transitionAttempts,
           transitions_executed: successfulTransitions,
