@@ -34,7 +34,7 @@ type Ledger = {
 const labels: Record<string, string> = {
   'daisy-brain-activation-gate.json': 'Daisy activation gate',
   'z3-120-formal-verification-summary.json': '120-case formal summary',
-  'system-46-gates.json': '46 mandatory gates',
+  'stage-45-readiness.json': '45-stage readiness',
   'execution-gates.json': 'Authoritative pipeline',
 };
 const shortHash = (value?: string | null) => !value ? 'Unavailable' : value.length > 18 ? value.slice(0, 12) + '…' + value.slice(-6) : value;
@@ -110,10 +110,10 @@ export default function ParadoxLedger() {
     </section>
 
     <section className="space-y-3">
-      <h3 className="text-xs font-mono uppercase text-neutral-300">Activation and 46-gate closure</h3>
+      <h3 className="text-xs font-mono uppercase text-neutral-300">Activation and Stage 45 readiness</h3>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="border border-neutral-900 rounded p-3 bg-black/30"><p className="text-[10px] text-neutral-500 uppercase">Activation record</p><p className={`text-sm font-mono mt-1 ${active ? 'text-emerald-300' : 'text-amber-300'}`}>{active ? activation?.status || 'MISSING' : 'BLOCKED'}</p></div>
-        <div className="border border-neutral-900 rounded p-3 bg-black/30"><p className="text-[10px] text-neutral-500 uppercase">Gates passed</p><p className="text-sm font-mono text-white mt-1">{gates?.gates_passed ?? '—'} / {gates?.total_gates ?? 46}</p></div>
+        <div className="border border-neutral-900 rounded p-3 bg-black/30"><p className="text-[10px] text-neutral-500 uppercase">Gates passed</p><p className="text-sm font-mono text-white mt-1">{gates?.checks_passed ?? '—'} / {gates?.total_checks ?? 44}</p></div>
         <div className="border border-neutral-900 rounded p-3 bg-black/30"><p className="text-[10px] text-neutral-500 uppercase">Gate verdict</p><p className="text-sm font-mono text-amber-300 mt-1">{active ? gates?.overall_verdict || 'UNKNOWN' : 'BLOCKED'}</p></div>
       </div>
       <p className="text-xs text-neutral-500">{activation?.reason || 'Activation artifact has not been loaded. The UI does not infer activation from the formal corpus alone.'}</p>
