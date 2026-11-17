@@ -245,6 +245,14 @@ const POST_PRODUCTION_GATES: readonly VerificationGateDefinition[] = [
     "id": "INV-30",
     "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
     "layer": "POST_PRODUCTION"
+  },
+  {
+    "id": "PIPE-14",
+    "name": "Multi-Model Independent Oracle Attestation",
+    "layer": "POST_PRODUCTION",
+    "relatedSystemGateIds": [
+      "INV-12"
+    ]
   }
 ] as const;
 const PIPELINE_GATES: readonly VerificationGateDefinition[] = [
@@ -358,14 +366,6 @@ const PIPELINE_GATES: readonly VerificationGateDefinition[] = [
     ]
   },
   {
-    "id": "PIPE-14",
-    "name": "Multi-Model Independent Oracle Attestation",
-    "layer": "PIPELINE",
-    "relatedSystemGateIds": [
-      "INV-12"
-    ]
-  },
-  {
     "id": "PIPE-15",
     "name": "Bitrot & Replay Divergence Validation",
     "layer": "PIPELINE",
@@ -426,8 +426,8 @@ const PIPELINE_GATES: readonly VerificationGateDefinition[] = [
   }
 ] as const;
 export const SYSTEM_GATE_COUNT = 45;
-export const POST_PRODUCTION_GATE_COUNT = 1;
-export const PIPELINE_STAGE_GATE_COUNT = 21;
+export const POST_PRODUCTION_GATE_COUNT = 2;
+export const PIPELINE_STAGE_GATE_COUNT = 20;
 export const TOTAL_VERIFICATION_GATE_COUNT = SYSTEM_GATE_COUNT + POST_PRODUCTION_GATE_COUNT + PIPELINE_STAGE_GATE_COUNT;
 export const SOLVEX_VERIFICATION_GATES: readonly VerificationGateDefinition[] = [
   ...SYSTEM_GATES,
