@@ -1,9 +1,10 @@
 import { ProofBundleEntity, computeSha256 } from '../database/DatabaseSchema';
-import { type OracleAttestation } from '../security/IndependentModelOracle';
-import { Z3ProofResult } from './Z3FormalProofEngine';
+import { computeOracleInputSha256, IndependentModelOracle, type OracleAttestation } from '../security/IndependentModelOracle';
+import { isAuthenticZ3ExecutionReceipt, Z3ProofResult } from './Z3FormalProofEngine';
 
 export class ProofBundleBuilder {
   private bundle: ProofBundleEntity;
+  private oracleInputSha256: string | null = null;
 
   constructor(proofId: string, subjectId: string, claim: string) {
     this.bundle = {
@@ -44,6 +45,11 @@ export class ProofBundleBuilder {
     return this;
   }
 
+  public setOracleInput(input: unknown): this {
+    this.oracleInputSha256 = computeOracleInputSha256(input);
+    return this;
+  }
+
   /**
    * A boolean supplied by the caller is not proof-engine evidence.
    * Keep the record explicitly unchecked until a verifier-produced,
@@ -64,11 +70,12 @@ export class ProofBundleBuilder {
    * It is retained as diagnostic metadata only, never as a verified proof.
    */
   public addZ3Proof(proofResult: Z3ProofResult): this {
+    const verified = isAuthenticZ3ExecutionReceipt(proofResult) && proofResult.proved === true;
     this.bundle.formal_proofs.push({
       system: 'Z3_SMT',
       specification: `[${proofResult.theorem_id}] ${proofResult.theorem_name} (Z3 Engine) - Result: ${proofResult.solver_result.toUpperCase()}`,
-      checked: false,
-      proof_term_hash: computeSha256(`UNVERIFIED_Z3_RESULT:${proofResult.certificate_sha256}`)
+      checked: verified,
+      proof_term_hash: verified ? proofResult.certificate_sha256 : computeSha256(`UNVERIFIED_Z3_RESULT:${proofResult.certificate_sha256}`)
     });
     return this;
   }
@@ -95,15 +102,19 @@ export class ProofBundleBuilder {
    * promote an oracle record. A pinned trust-store and expected-input contract
    * must be added before any attestation can be accepted.
    */
-  public addSignedOracleAttestation(attestation: OracleAttestation, _publicKeyPem: string): this {
+  public addSignedOracleAttestation(attestation: OracleAttestation): this {
+    const expectedOracleId = process.env.SOLVEX_ORACLE_ID ?? '';
+    const publicKeyPem = process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY ?? '';
+    const verified = Boolean(expectedOracleId && publicKeyPem && this.oracleInputSha256) &&
+      IndependentModelOracle.verifyAttestation(attestation, expectedOracleId, this.oracleInputSha256 ?? '', publicKeyPem);
     this.bundle.independent_oracles.push({
       oracle_id: attestation.oracleId,
       name: attestation.modelId,
-      method: 'REJECTED: caller-supplied trust root and self-selected expected values are not authoritative',
+      method: 'Ed25519 attestation checked against deployment-pinned oracle identity/key and independently hashed bundle input',
       attestation_hash: computeSha256(`${attestation.signature}\n${attestation.inputSha256}\n${attestation.rationaleSha256}`),
-      verified: false
+      verified
     });
-    this.bundle.limitations.push('Oracle attestation was not accepted: trusted oracle identity, pinned public key, and independently derived input binding are not yet enforced.');
+    if (!verified) this.bundle.limitations.push('Oracle attestation rejected: pinned oracle ID/key or independently derived input hash is missing or mismatched.');
     return this;
   }
 
