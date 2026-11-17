@@ -139,9 +139,11 @@ jobs:
       - name: Authoritative 46-gate verification
         env:
           SOLVEX_NODE_EXTERNAL_PROBES: 'true'
-          # Keep the verifier on the same disposable Neon branch used by the OIDC issuer.
-          # Step scope avoids changing the isolation integration test's environment.
-          NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
+          # Permit only the explicitly configured disposable Neon branch to issue
+          # the signed test identity used by the lifecycle gate. Keep NEON_DATABASE_URL
+          # bound to the separate isolation-test URL from the job-level environment;
+          # the identity resolver rejects using the migration URL as the default DB URL.
+          SOLVEX_E2E_USE_DISPOSABLE_NEON: 'true'
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Upload 46-gate evidence
         if: always()
