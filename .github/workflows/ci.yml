@@ -3,7 +3,7 @@ name: Build and Enterprise CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, live-person-workflow]
 
 permissions:
   contents: read
