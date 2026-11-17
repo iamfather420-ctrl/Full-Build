@@ -5,6 +5,10 @@ const TRUSTED_PUSH_REFS = new Set([
   'refs/heads/main',
   'refs/heads/fix/46-gate-baseline-lifecycle-sandbox',
 ]);
+const TRUSTED_PULL_REQUEST_REFS = new Set([
+  'refs/pull/130/merge',
+  'refs/pull/132/merge',
+]);
 const TRUSTED_PULL_REQUEST_HEADS = new Set([
   'fix/46-gate-baseline-lifecycle-sandbox',
   'fix/gate05-deterministic-pipeline-test-20261114',
@@ -27,7 +31,7 @@ export function stage14ClaimsTrusted(claims, now = Math.floor(Date.now() / 1000)
   // claims. Bind this temporary repair run to its exact same-repository PR ref instead.
   const trustedPullRequest = claims.event_name === 'pull_request' &&
     claims.sub === `repo:${TRUSTED_REPOSITORY}:pull_request` &&
-    claims.ref === 'refs/pull/130/merge' &&
+    TRUSTED_PULL_REQUEST_REFS.has(claims.ref) &&
     trustedWorkflow;
   return claims.iss === 'https://token.actions.githubusercontent.com' &&
     audiences.includes(STAGE14_AUDIENCE) &&
