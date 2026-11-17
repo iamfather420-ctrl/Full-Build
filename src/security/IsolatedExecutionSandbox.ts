@@ -24,7 +24,7 @@ export interface SandboxResult {
  */
 export class IsolatedExecutionSandbox {
   static async execute(image: string, argv: string[], input: string, limits: SandboxLimits = {}): Promise<SandboxResult> {
-    if (!/@sha256:[a-f0-9]{64}$/i.test(image)) throw new Error('Sandbox image must be pinned by immutable sha256 digest.');
+    if (!/^(?:[^\s@]+@)?sha256:[a-f0-9]{64}$/i.test(image)) throw new Error('Sandbox image must be pinned by immutable sha256 digest or local image ID.');
     if (!Array.isArray(argv) || argv.length === 0 || argv.some(a => typeof a !== 'string' || a.length > 4096)) throw new Error('Sandbox argv is invalid.');
     const timeoutMs = Math.min(Math.max(limits.timeoutMs ?? 15_000, 100), 120_000);
     const memoryBytes = Math.min(Math.max(limits.memoryBytes ?? 256 * 1024 * 1024, 32 * 1024 * 1024), 2 * 1024 * 1024 * 1024);
