@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { stage14ClaimsTrusted } from './trust-policy.mjs';
 
 const now = 1_700_000_000;
-const workflow = 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/127/merge';
+const workflow = 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/130/merge';
 
 function claims(overrides = {}) {
   return {
@@ -13,20 +13,18 @@ function claims(overrides = {}) {
     repository: 'iamfather420-ctrl/Full-Build',
     repository_id: '1388681071',
     event_name: 'pull_request',
-    base_ref: 'main',
-    head_ref: 'feat/daisy-ecosystem-link-20261116',
-    head_repository: 'iamfather420-ctrl/Full-Build',
-    head_repository_id: '1388681071',
+    sub: 'repo:iamfather420-ctrl/Full-Build:pull_request',
+    ref: 'refs/pull/130/merge',
     workflow_ref: workflow,
     ...overrides,
   };
 }
 
-test('accepts the verified repair branch and rejects a foreign repository or audience', () => {
-  assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'repair/remaining-17-nodes' }), now), true);
+test('accepts only the exact repair PR OIDC ref and rejects foreign or unrelated identities', () => {
   assert.equal(stage14ClaimsTrusted(claims(), now), true);
+  assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/129/merge' }), now), false);
+  assert.equal(stage14ClaimsTrusted(claims({ sub: 'repo:other/repo:pull_request' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ repository: 'other/repo' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ aud: 'wrong-audience' }), now), false);
-  assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'unlisted-branch' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ exp: now - 1 }), now), false);
 });

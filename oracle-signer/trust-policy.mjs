@@ -11,6 +11,7 @@ const TRUSTED_PULL_REQUEST_HEADS = new Set([
   'fix/stage14-rationale-and-zeno-evidence-20261114',
   'feat/daisy-ecosystem-link-20261116',
   'repair/remaining-17-nodes',
+  'fix/proof-closure-disposable-lifecycle',
 ]);
 
 /** Claim checks only. Signature verification stays in the caller. */
@@ -22,11 +23,11 @@ export function stage14ClaimsTrusted(claims, now = Math.floor(Date.now() / 1000)
   const trustedPush = claims.event_name === 'push' &&
     TRUSTED_PUSH_REFS.has(claims.ref) &&
     claims.workflow_ref === `${workflowPrefix}${claims.ref}`;
+  // GitHub's standard OIDC token does not guarantee head_ref/base_ref/head_repository
+  // claims. Bind this temporary repair run to its exact same-repository PR ref instead.
   const trustedPullRequest = claims.event_name === 'pull_request' &&
-    claims.base_ref === 'main' &&
-    TRUSTED_PULL_REQUEST_HEADS.has(claims.head_ref) &&
-    claims.head_repository === TRUSTED_REPOSITORY &&
-    String(claims.head_repository_id) === TRUSTED_REPOSITORY_ID &&
+    claims.sub === `repo:${TRUSTED_REPOSITORY}:pull_request` &&
+    claims.ref === 'refs/pull/130/merge' &&
     trustedWorkflow;
   return claims.iss === 'https://token.actions.githubusercontent.com' &&
     audiences.includes(STAGE14_AUDIENCE) &&

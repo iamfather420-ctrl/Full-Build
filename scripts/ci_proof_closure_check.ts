@@ -74,7 +74,13 @@ const disposableLifecycleTestCompleted =
   lifecycle.authorization_blocked === false &&
   lifecycle.payment_processing === 'DISABLED' &&
   gate12?.details?.solution_pipeline?.stage_traces?.some((stage: any) => stage.stage === 14 && stage.status === 'BLOCKED') === true;
-if (gate12?.status !== 'BLOCKED' ||
+// A disposable Neon lifecycle may complete for integration-test coverage while
+// the overall lifecycle gate remains BLOCKED because external Stage 14 attestation
+// is still unavailable. Never promote that test completion to a production pass.
+const lifecycleGateStatusValid =
+  gate12?.status === 'BLOCKED' &&
+  (lifecycleBlockedSafely || disposableLifecycleTestCompleted);
+if (!lifecycleGateStatusValid ||
     (!lifecycleBlockedSafely && !disposableLifecycleTestCompleted) ||
     lifecycle.payment_processing !== 'DISABLED') {
   fail('Lifecycle must either remain safely blocked at OFFER or complete only as an explicitly identified disposable Neon test; payments must remain disabled and Stage 14 external blockers must remain visible.');
