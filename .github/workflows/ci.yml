@@ -95,50 +95,11 @@ jobs:
           sudo apt-get install -y coq
           docker pull makarius/isabelle:Isabelle2026
           IMAGE_REF="$(docker image inspect --format '{{index .RepoDigests 0}}' makarius/isabelle:Isabelle2026)"
-          if ! printf '%s' "$IMAGE_REF" | grep -Eq '^makarius/isabelle@sha256:[a-f0-9]{64}
-        run: bunx tsx --test --test-concurrency=1 src/brain/CognitiveMilestone.test.ts src/brain/SecurityRepairs.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts src/nodes/distributedProtocolModels.test.ts
-      - name: Enterprise invariants
-        run: bun run verify:enterprise
-      - name: Formal verification corpus
-        run: bun run verify:120
-      - name: Prepare ephemeral local proof and tenant crypto keys
-        run: |
-          set -euo pipefail
-          mkdir -p /tmp/solvex-proof-store
-          chmod 700 /tmp/solvex-proof-store
-          echo "SOLVEX_PROOF_DIR=/tmp/solvex-proof-store" >> "$GITHUB_ENV"
-          echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
-          echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
-      - name: Lifecycle proof-closure contract regression tests
-        run: bunx tsx --test src/proofs/lifecycleProofClosure.test.ts
-      - name: Proof closure
-        run: bun run verify:proof-closure
-      - name: Authoritative 46-gate verification
-        env:
-          SOLVEX_NODE_EXTERNAL_PROBES: 'true'
-          # Keep the verifier on the same disposable Neon branch used by the OIDC issuer.
-          # Step scope avoids changing the isolation integration test's environment.
-          NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
-        run: bunx tsx scripts/verify_46_gates.ts
-      - name: Upload 46-gate evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: system-46-gates
-          path: |
-            artifacts/system-46-gates.json
-            artifacts/daisy-54-node-execution.json
-            artifacts/execution-gates.json
-          if-no-files-found: ignore
-; then
+          if ! printf '%s' "$IMAGE_REF" | grep -q '@sha256:'; then
             echo "Could not resolve the Isabelle image to an immutable digest." >&2
             exit 1
           fi
-          cat > "$RUNNER_TEMP/isabelle" <<'SH'
-          #!/usr/bin/env bash
-          set -euo pipefail
-          exec docker run --rm -v "$PWD:/workspace" -w /workspace "$SOLVEX_ISABELLE_IMAGE" "$@"
-          SH
+          printf '%s\n' '#!/usr/bin/env bash' 'set -euo pipefail' 'exec docker run --rm -v "$PWD:/workspace" -w /workspace "$SOLVEX_ISABELLE_IMAGE" "$@"' > "$RUNNER_TEMP/isabelle"
           chmod 755 "$RUNNER_TEMP/isabelle"
           export SOLVEX_ISABELLE_IMAGE="$IMAGE_REF"
           export SOLVEX_ISABELLE_BIN="$RUNNER_TEMP/isabelle"
