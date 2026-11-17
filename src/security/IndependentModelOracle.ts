@@ -37,6 +37,11 @@ function parseEvaluation(raw: string): OpenAIEvaluation {
   return { verdict: parsed.verdict, rationale: parsed.rationale.trim() };
 }
 
+export function computeOracleInputSha256(input: unknown): string {
+  const payload = JSON.stringify({ protocol: 'solvex-single-openai-evaluator-v1', input });
+  return createHash('sha256').update(payload).digest('hex');
+}
+
 export class IndependentModelOracle {
   static verifyAttestation(attestation: OracleAttestation, expectedOracleId: string, expectedInputSha: string, publicKeyPem: string): boolean {
     try {
@@ -54,7 +59,7 @@ export class IndependentModelOracle {
         typeof attestation.rationale === 'string' && attestation.rationale.length > 0 &&
         createHash('sha256').update(attestation.rationale).digest('hex') === attestation.rationaleSha256 &&
         signature.length === 64 &&
-        verify(null, Buffer.from(canonical), createPublicKey(publicKeyPem), signature);
+        (() => { const key = createPublicKey(publicKeyPem); return key.asymmetricKeyType === 'ed25519' && verify(null, Buffer.from(canonical), key, signature); })();
     } catch { return false; }
   }
 
