@@ -23,6 +23,9 @@ import path from 'node:path';
 import { generateKeyPairSync, sign, verify } from 'node:crypto';
 import { compareToCanonical, DRIFT_CANONICAL_SHA256 } from './driftCheck';
 import { happensBefore, receive, tick } from './vectorClock';
+import { TenantCrypto } from '../security/TenantCrypto';
+import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
+import { planGoal } from './goalPlanner';
 
 export interface RawNodeExecutionResult {
   node_id: string;
@@ -313,16 +316,17 @@ export class DaisySubsystemExecutors {
 
       // 15. DN-15: Multi-Tenant Partition Manager
       case 'DN-15': {
-        return {
-          node_id: 'DN-15',
-          name: 'Multi-Tenant Partition Manager',
-          category: 'SECURITY',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { cryptographic_tenant_isolation_verified: false, reason: 'Distinct static hashes do not verify tenant storage isolation or a trusted key boundary.' }
-        };
+        try {
+          const crypto = new TenantCrypto();
+          const encrypted = crypto.encrypt('TENANT_A', 'tenant-isolation-probe');
+          const roundTrip = crypto.decrypt('TENANT_A', encrypted) === 'tenant-isolation-probe';
+          let crossTenantDenied = false;
+          try { crypto.decrypt('TENANT_B', encrypted); } catch { crossTenantDenied = true; }
+          const passed = roundTrip && crossTenantDenied;
+          return { node_id: 'DN-15', name: 'Multi-Tenant Partition Manager', category: 'SECURITY', executed: true, claim_scope: 'LOCAL', status: passed ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { cryptographic_tenant_isolation_verified: passed, authenticated_encryption: 'AES-256-GCM', key_derivation: 'HKDF-SHA256', round_trip: roundTrip, cross_tenant_denied: crossTenantDenied, scope: 'record-level cryptographic separation; not a substitute for database/RLS isolation' } };
+        } catch (error) {
+          return { node_id: 'DN-15', name: 'Multi-Tenant Partition Manager', category: 'SECURITY', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { cryptographic_tenant_isolation_verified: false, reason: error instanceof Error ? error.message : String(error) } };
+        }
       }
 
       // 16. DN-16: RBAC Token Boundary (Fail-Closed Until OIDC)
@@ -377,16 +381,11 @@ export class DaisySubsystemExecutors {
 
       // 18. DN-18: Cleanroom Deterministic Sandbox
       case 'DN-18': {
-        return {
-          node_id: 'DN-18',
-          name: 'Cleanroom Deterministic Sandbox',
-          category: 'CORE_KERNEL',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { isolated_cleanroom_execution_verified: false, reason: 'Hashing the same literal twice does not exercise a cleanroom sandbox.' }
-        };
+        const image = process.env.SOLVEX_SANDBOX_IMAGE ?? '';
+        if (!/@sha256:[a-f0-9]{64}$/i.test(image)) return { node_id: 'DN-18', name: 'Cleanroom Deterministic Sandbox', category: 'CORE_KERNEL', executed: true, claim_scope: 'SANDBOX', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { isolated_cleanroom_execution_verified: false, reason: 'SOLVEX_SANDBOX_IMAGE must reference an immutable sha256 digest.' } };
+        const source = 'const result = 6 * 7; if (result !== 42) throw new Error("sandbox probe failed");';
+        const result = await IsolatedExecutionSandbox.execute(image, ['/opt/solvex-sandbox/verify-source.mjs'], source, { timeoutMs: 15000, memoryBytes: 256 * 1024 * 1024, cpuCount: 1, pidsLimit: 64 });
+        return { node_id: 'DN-18', name: 'Cleanroom Deterministic Sandbox', category: 'CORE_KERNEL', executed: true, claim_scope: 'SANDBOX', status: result.passed ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { isolated_cleanroom_execution_verified: result.passed, image_digest: image.split('@sha256:')[1], exit_code: result.exitCode, timed_out: result.timedOut, oom_killed: result.oomKilled, error: result.error } };
       }
 
       // 19. DN-19: Bitrot & Drift Detection Oracle
@@ -664,16 +663,8 @@ export class DaisySubsystemExecutors {
 
       // 32. DN-32: Durable JSON WAL Sync Engine
       case 'DN-32': {
-        return {
-          node_id: 'DN-32',
-          name: 'Durable JSON WAL Sync Engine',
-          category: 'PERSISTENCE',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { durable_wal_sync_verified: false, reason: 'The current server-side DurableStore has no disk WAL or fsync implementation.' }
-        };
+        const durability = SqliteStore.getInstance().verifyDurableWal();
+        return { node_id: 'DN-32', name: 'Durable JSON WAL Sync Engine', category: 'PERSISTENCE', executed: true, claim_scope: 'LOCAL', status: durability.verified ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { durable_wal_sync_verified: durability.verified, disk_backed: durability.disk_backed, journal_mode: durability.journal_mode, synchronous: durability.synchronous, reason: durability.reason ?? null, note: 'SQLite WAL with synchronous=FULL provides SQLite-managed write-ahead logging and sync semantics; not a separate JSON WAL.' } };
       }
 
       // 33. DN-33: Central Failure Diversion Router
@@ -855,16 +846,21 @@ export class DaisySubsystemExecutors {
 
       // 43. DN-43: Daisy Brain Autonomous Planner
       case 'DN-43': {
-        return {
-          node_id: 'DN-43',
-          name: 'Daisy Brain Autonomous Planner',
-          category: 'CORE_KERNEL',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { goal_decomposition_executed: false, reason: 'No problem-specific planning input or planning engine is wired to this node.' }
-        };
+        try {
+          const goal = typeof testPayload.goal === 'string' ? testPayload.goal : 'Verify release readiness';
+          const tasks = Array.isArray(testPayload.tasks) ? testPayload.tasks : [
+            { id: 'inspect', description: 'Inspect changes' },
+            { id: 'test', description: 'Run regression tests', dependsOn: ['inspect'] },
+            { id: 'review', description: 'Review evidence', dependsOn: ['test'] }
+          ];
+          const plan = planGoal(goal, tasks);
+          const ordered = new Map(plan.orderedTasks.map((task, index) => [task.id, index]));
+          const dependenciesRespectOrder = plan.orderedTasks.every(task => task.dependsOn.every(dep => ordered.get(dep)! < ordered.get(task.id)!));
+          const passed = dependenciesRespectOrder && plan.orderedTasks.length === tasks.length;
+          return { node_id: 'DN-43', name: 'Daisy Brain Autonomous Planner', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: passed ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { goal_decomposition_executed: true, strategy: plan.strategy, task_count: plan.orderedTasks.length, ordered_task_ids: plan.orderedTasks.map(task => task.id), dependencies_respect_order: dependenciesRespectOrder, scope: 'deterministic dependency planner; not autonomous AI reasoning' } };
+        } catch (error) {
+          return { node_id: 'DN-43', name: 'Daisy Brain Autonomous Planner', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { goal_decomposition_executed: false, reason: error instanceof Error ? error.message : String(error) } };
+        }
       }
 
       // 44. DN-44: Pigeonhole Collision SMT Verifier
