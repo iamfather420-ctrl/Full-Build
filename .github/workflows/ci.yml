@@ -21,7 +21,7 @@ jobs:
           bun-version: latest
       - name: Install locked dependencies
         run: bun install --frozen-lockfile
-      - name: Verify 44/45/46 phase wiring and dependency order
+      - name: Verify 44-check and Stage 45 phase wiring
         run: bun run verify:phase-wiring
       - name: Fail-closed release safety checks
         run: bun run verify:release-safety
@@ -51,12 +51,14 @@ jobs:
         run: bun run verify:120
       - name: Proof closure
         run: bun run verify:proof-closure
-      - name: Authoritative 46-gate verification
-        run: bunx tsx scripts/verify_46_gates.ts
-      - name: Upload 46-gate evidence
+      - name: Execute 44 checks and Stage 45 production-readiness decision
+        run: bun run verify:stage45
+      - name: Upload Stage 45 readiness evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: system-46-gates
-          path: artifacts/system-46-gates.json
+          name: stage-45-readiness
+          path: |
+            artifacts/stage-45-readiness.json
+            artifacts/stage-45-readiness.md
           if-no-files-found: ignore
