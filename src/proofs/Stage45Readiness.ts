@@ -27,6 +27,7 @@ export interface Stage45ReadinessReport {
   failed_count: number;
   all_pre_production_passed: boolean;
   gates: GateExecutionResult[];
+  stage_45: GateExecutionResult;
   overall_verdict: 'PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED' | 'BLOCKED';
 }
 
@@ -134,10 +135,12 @@ export class Stage45Readiness {
       }
     });
 
-    const passedCount = evaluatedGates.filter(g => g.status === 'PASSED').length;
-    const extCount = evaluatedGates.filter(g => g.status === 'EXTERNAL_PROVIDER_REQUIRED').length;
-    const blockedCount = evaluatedGates.filter(g => g.status === 'BLOCKED').length;
-    const failCount = evaluatedGates.filter(g => g.status === 'FAIL').length;
+    const preProductionChecks = evaluatedGates.slice(0, 44);
+    const stage45Result = evaluatedGates[44];
+    const passedCount = preProductionChecks.filter(g => g.status === 'PASSED').length;
+    const extCount = preProductionChecks.filter(g => g.status === 'EXTERNAL_PROVIDER_REQUIRED').length;
+    const blockedCount = preProductionChecks.filter(g => g.status === 'BLOCKED').length;
+    const failCount = preProductionChecks.filter(g => g.status === 'FAIL').length;
 
     return {
       execution_id: executionId,
@@ -151,7 +154,8 @@ export class Stage45Readiness {
       blocked_count: blockedCount,
       failed_count: failCount,
       all_pre_production_passed: masterPassed,
-      gates: evaluatedGates,
+      gates: preProductionChecks,
+      stage_45: stage45Result,
       overall_verdict: masterPassed ? 'PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED' : 'BLOCKED'
     };
   }
