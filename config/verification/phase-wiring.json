@@ -20,7 +20,7 @@
     }
   },
   "pre_production": {
-    "description": "Local, model, and sandbox-verifiable checks required before deployment. For provider and lifecycle gates, this phase validates local adapter contracts, authorization boundaries, fail-closed behavior, and sandbox-safe paths only; it does not claim live production connectivity.",
+    "description": "Local, model, and sandbox-verifiable checks required before deployment. For provider and lifecycle gates, this phase validates local adapter contracts, authorization boundaries, fail-closed behavior, and sandbox-safe paths only; it does not claim live production connectivity. For GATE-11, GATE-12, and GATE-14, only the local contract/sandbox-safe portions are pre-production; their live production portions are listed separately below.",
     "system_gate_ids": [
       "GATE-00",
       "GATE-01",
@@ -98,20 +98,27 @@
     "description": "Checks that require a deployed production or production-like target. These checks cannot block Stage 45 because they cannot exist until after deployment.",
     "checks": [
       {
-        "id": "INV-30",
-        "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
-        "verification_scope": "DEPLOYED_ENVIRONMENT"
-      },
-      {
         "id": "GATE-11-PRODUCTION",
         "name": "Live Neon and PayPal provider connectivity/authentication",
         "verification_scope": "PRODUCTION",
-        "payments_remain_disabled_until_separately_authorized": true
+        "source_gate_id": "GATE-11"
       },
       {
         "id": "GATE-12-PRODUCTION",
         "name": "Trusted-identity and signed-tenant-claim lifecycle execution",
-        "verification_scope": "PRODUCTION"
+        "verification_scope": "PRODUCTION",
+        "source_gate_id": "GATE-12"
+      },
+      {
+        "id": "GATE-14-PRODUCTION",
+        "name": "Production truth-boundary audit and live readiness evidence",
+        "verification_scope": "PRODUCTION",
+        "source_gate_id": "GATE-14"
+      },
+      {
+        "id": "INV-30",
+        "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
+        "verification_scope": "DEPLOYED_ENVIRONMENT"
       },
       {
         "id": "POST-DEPLOY-HEALTH",
