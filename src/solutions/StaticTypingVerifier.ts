@@ -40,7 +40,7 @@ export function verifyStaticTyping(source: string): StaticTypingResult {
   try {
     writeFileSync(sourceFile, source, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
     const result = run([
-      '--noEmit', '--strict', '--target', 'ES2022', '--module', 'ESNext',
+      '--ignoreConfig', '--noEmit', '--strict', '--target', 'ES2022', '--module', 'ESNext',
       '--moduleResolution', 'Bundler', '--skipLibCheck', '--pretty', 'false',
       '--exactOptionalPropertyTypes', '--noUncheckedIndexedAccess',
       '--typeRoots', path.resolve(root, 'node_modules/@types'), sourceFile
