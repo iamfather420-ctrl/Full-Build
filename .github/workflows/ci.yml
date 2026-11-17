@@ -58,11 +58,13 @@ jobs:
       - name: Load digest-pinned independent oracle image
         env:
           ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
+          ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
+          ORACLE_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
         run: |
-          if [[ -n "$ORACLE_IMAGE" && "$ORACLE_IMAGE" == *@sha256:* ]]; then
+          if [[ -n "$ORACLE_IMAGE" && "$ORACLE_IMAGE" == *@sha256:* && -n "$ORACLE_ID" && -n "$ORACLE_PUBLIC_KEY" ]]; then
             docker pull "$ORACLE_IMAGE" || echo "::warning::Independent oracle image could not be loaded; Stage 45 will remain blocked at oracle attestation."
           else
-            echo "::warning::SOLVEX_ORACLE_IMAGE is not configured with an immutable digest; Stage 45 will remain blocked at oracle attestation."
+            echo "::warning::Independent oracle image, oracle ID, and Ed25519 public key must all be configured; Stage 45 will remain blocked at oracle attestation."
           fi
       - name: Proof closure
         env:
