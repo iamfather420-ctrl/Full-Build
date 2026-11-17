@@ -886,6 +886,7 @@ export class DaisySubsystemExecutors {
             quorum_required: escrow.quorum_required,
             valid_signatures: escrow.valid_signatures,
             release_authorized: escrow.release_authorized,
+            insufficient_quorum_rejected: escrow.insufficient_quorum_rejected,
             replay_release_rejected: escrow.replay_release_rejected,
             unauthorized_refund_rejected: escrow.unauthorized_refund_rejected,
             final_state: escrow.final_state,
