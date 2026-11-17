@@ -319,7 +319,7 @@ export class DaisySubsystemExecutors {
             proof_bundle_verified: integrity.verified,
             proof_bundle_status: bundle?.verification_status ?? 'MISSING',
             blocked_stage_numbers: res.stage_traces.filter(stage => stage.status !== 'PASSED').map(stage => stage.stage),
-            rejection_reason: res.rejection_reason ?? integrity.reasons.join('; ') || null
+            rejection_reason: res.rejection_reason ?? (integrity.reasons.join('; ') || null)
           }
         };
       }
