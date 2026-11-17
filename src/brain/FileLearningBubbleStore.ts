@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import type { LearningBubble, LearningBubbleStore } from './LearningBubbleRegistry.ts';
+import type { LearningBubble, LearningBubbleStore } from './LearningBubbleRegistry';
 
 /** Local file persistence. This is not the live Neon registry. */
 export class FileLearningBubbleStore implements LearningBubbleStore {

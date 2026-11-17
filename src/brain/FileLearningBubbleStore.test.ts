@@ -4,8 +4,8 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { FileLearningBubbleStore } from './FileLearningBubbleStore.ts';
-import { LearningBubbleRegistry } from './LearningBubbleRegistry.ts';
+import { FileLearningBubbleStore } from './FileLearningBubbleStore';
+import { LearningBubbleRegistry } from './LearningBubbleRegistry';
 
 test('a Learning Bubble survives a new process-level store and stays ineligible when unverified', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'daisy-bubbles-'));

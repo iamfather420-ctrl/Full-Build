@@ -179,3 +179,10 @@ The ecosystem scenario now executes node DN-01 through `DaisySubsystemExecutors`
 
 Discover-Engine now returns `HUMAN_REVIEW_REQUIRED` or `INSUFFICIENT_EVIDENCE`, always with `WITHHELD` and `publishable: false`. It still cannot emit `VERIFIED` for an abstract.
 
+## Local 54-node run after the CI typecheck failure
+
+The three Full-Build workflows on `e16830a` failed typecheck because `src/brain/FileLearningBubbleStore.test.ts` imported `.ts` extensions. That import was removed.
+
+A local call to `executeAll54Nodes()` attempted all 54 cases. In that run the result counts were 23 `SUCCESS`, 27 `FAIL_CLOSED`, 3 `PROVIDER_REQUIRED`, and 1 `PROHIBITED_BLOCKED` (`DN-36`). `executed: true` means the case ran. It does not mean the node is operational. No GGUF model was loaded. No GPU workload ran. The 120-edge manifest was still absent. A separate CPU attention demo reduced toy loss; it is not transformer language-model training.
+
+

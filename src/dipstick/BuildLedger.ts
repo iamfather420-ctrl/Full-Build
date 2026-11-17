@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { readFileSync, renameSync, writeFileSync } from 'node:fs';
 
 export type TaskState = 'assigned' | 'completed' | 'failed';
 
@@ -98,4 +99,14 @@ export class BuildLedger {
     if (!task) throw new Error(`Task ${taskId} is not part of this build.`);
     return task;
   }
+}
+
+export function writeBuildSnapshot(file: string, record: BuildRecord): void {
+  const temporary = `${file}.${process.pid}.tmp`;
+  writeFileSync(temporary, JSON.stringify(record));
+  renameSync(temporary, file);
+}
+
+export function readBuildSnapshot(file: string): BuildRecord {
+  return JSON.parse(readFileSync(file, 'utf8')) as BuildRecord;
 }
