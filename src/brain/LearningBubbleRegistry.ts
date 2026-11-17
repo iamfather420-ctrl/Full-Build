@@ -18,11 +18,19 @@ export interface LearningBubbleInput {
   parent_bubble_ids?: string[];
 }
 
+export interface LearningBubbleRevision {
+  version: number;
+  content_sha256: string;
+  verification: BubbleVerification;
+  evidence_refs: string[];
+}
+
 export interface LearningBubble extends LearningBubbleInput {
   bubble_id: string;
   version: number;
   content_sha256: string;
   training_eligibility: BubbleTrainingEligibility;
+  history: LearningBubbleRevision[];
   created_at: string;
   updated_at: string;
 }
@@ -63,6 +71,7 @@ export class LearningBubbleRegistry {
       version: 1,
       content_sha256: createHash('sha256').update(input.content).digest('hex'),
       training_eligibility: deriveEligibility(input),
+      history: [],
       created_at: now,
       updated_at: now,
     };
@@ -74,12 +83,22 @@ export class LearningBubbleRegistry {
     this.validate(input);
     const previous = this.store.get(id);
     if (!previous) throw new Error(`Learning Bubble ${id} was not found.`);
+    if (previous.content_sha256 === createHash('sha256').update(input.content).digest('hex')
+      && JSON.stringify(previous.evidence_refs) === JSON.stringify(input.evidence_refs)) {
+      throw new Error('Learning Bubble revision has no new experience.');
+    }
     const revised: LearningBubble = {
       ...input,
       bubble_id: id,
       version: previous.version + 1,
       content_sha256: createHash('sha256').update(input.content).digest('hex'),
       training_eligibility: deriveEligibility(input),
+      history: [...(previous.history ?? []), {
+        version: previous.version,
+        content_sha256: previous.content_sha256,
+        verification: previous.verification,
+        evidence_refs: previous.evidence_refs,
+      }],
       created_at: previous.created_at,
       updated_at: new Date().toISOString(),
     };

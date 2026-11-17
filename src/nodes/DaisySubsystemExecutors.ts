@@ -16,6 +16,11 @@ import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
 import { SovereignApiRouter } from '../api/ApiRouter';
 import { NodeRegistry } from './NodeRegistry';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { generateKeyPairSync, sign, verify } from 'node:crypto';
+import { compareToCanonical, DRIFT_CANONICAL_SHA256 } from './driftCheck';
+import { happensBefore, receive, tick } from './vectorClock';
 
 export interface RawNodeExecutionResult {
   node_id: string;
@@ -384,15 +389,24 @@ export class DaisySubsystemExecutors {
 
       // 19. DN-19: Bitrot & Drift Detection Oracle
       case 'DN-19': {
+        const fixture = path.join(process.cwd(), 'src/nodes/fixtures/drift-canonical.txt');
+        let observed: { matches: boolean; observedSha256: string } | null = null;
+        try {
+          observed = compareToCanonical(readFileSync(fixture), DRIFT_CANONICAL_SHA256);
+        } catch {
+          observed = null;
+        }
         return {
           node_id: 'DN-19',
           name: 'Bitrot & Drift Detection Oracle',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          status: observed?.matches ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { artifact_drift_check_performed: false, reason: 'No canonical artifact was read or compared.' }
+          evidence: observed
+            ? { artifact_drift_check_performed: true, artifact: 'src/nodes/fixtures/drift-canonical.txt', matches_canonical: observed.matches, observed_sha256: observed.observedSha256 }
+            : { artifact_drift_check_performed: false, reason: 'The canonical drift fixture could not be read.' }
         };
       }
 
@@ -400,15 +414,23 @@ export class DaisySubsystemExecutors {
       case 'DN-20': {
         const reg = ParadoxRegistry.getInstance();
         const zeno = reg.getByCode('DH-P-001');
+        const z3 = Z3FormalProofEngine.getInstance();
+        const proof = await z3.proveCatalogTheorem('THM-ZENO-ARCHIMEDEAN-06');
         return {
           node_id: 'DN-20',
           name: 'Paradox Resolution Engine',
           category: 'LOGIC_SOLVER',
           executed: true,
           claim_scope: 'MODEL',
-          status: 'FAIL_CLOSED',
+          status: proof.proved ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { registry_entry: zeno?.code, registry_status: zeno?.verification_status, resolution_executed: false }
+          evidence: {
+            registry_entry: zeno?.code ?? null,
+            registry_status: zeno?.verification_status ?? null,
+            theorem: 'THM-ZENO-ARCHIMEDEAN-06',
+            solver_result: proof.solver_result,
+            resolution_executed: proof.proved
+          }
         };
       }
 
@@ -881,17 +903,25 @@ export class DaisySubsystemExecutors {
 
       // 48. DN-48: Lamport Vector Clock Sequencer
       case 'DN-48': {
-        const clock = { N1: 1, N2: 2, N3: 0 };
-        clock.N1 += 1;
+        const sent = tick({}, 'A');
+        const received = receive({}, sent, 'B');
+        const concurrent = tick({}, 'C');
+        const causal = happensBefore(sent, received);
+        const independent = !happensBefore(sent, concurrent) && !happensBefore(concurrent, sent);
         return {
           node_id: 'DN-48',
           name: 'Lamport Vector Clock Sequencer',
           category: 'CORE_KERNEL',
           executed: true,
           claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          status: causal && independent ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { local_clock_incremented: clock.N1 === 2, distributed_causal_order_verified: false }
+          evidence: {
+            local_clock_incremented: true,
+            message_happens_before_receipt: causal,
+            concurrent_events_incomparable: independent,
+            distributed_cluster_verified: false
+          }
         };
       }
 
@@ -940,15 +970,25 @@ export class DaisySubsystemExecutors {
 
       // 52. DN-52: Ed25519 Cryptographic Signer
       case 'DN-52': {
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        const message = Buffer.from('daisy-dn-52-ephemeral-self-test');
+        const signature = sign(null, message, privateKey);
+        const verified = verify(null, message, publicKey, signature);
+        const tamperedAccepted = verify(null, Buffer.from('tampered'), publicKey, signature);
         return {
           node_id: 'DN-52',
           name: 'Ed25519 Cryptographic Signer',
           category: 'SECURITY',
           executed: true,
           claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          status: verified && !tamperedAccepted ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { ed25519_signature_verified: false, reason: 'No Ed25519 private key or signature verifier is configured.' }
+          evidence: {
+            ed25519_signature_verified: verified,
+            tampered_signature_rejected: !tamperedAccepted,
+            ephemeral_process_key: true,
+            production_key_configured: false
+          }
         };
       }
 
