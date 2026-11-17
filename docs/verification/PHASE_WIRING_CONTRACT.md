@@ -20,7 +20,7 @@ The 54 Daisy nodes remain part of the architecture under test. Their registratio
 
 ## Runtime and evidence rules
 
-The Stage 45 runner executes the authoritative pipeline once, consumes its 29 invariant results without rerunning them, and requires exactly 44 unique IDs. Each result includes status, claim scope, duration, details, and a SHA-256 evidence hash. The report is bound to the exact source commit and environment.
+The Stage 45 runner executes the authoritative pipeline once, consumes its 29 invariant results without rerunning them, and requires exactly 44 unique IDs. Each result includes status, claim scope, duration, details, and a SHA-256 evidence hash. The report is bound to the exact source commit and environment. Stage 45 also hashes the built dist/index.html release artifact and requires SOLVEX_DEPLOYMENT_TARGET plus SOLVEX_DEPLOYMENT_TARGET_VERIFIED=true. The target variables must be populated only after the actual deployment project/target has been confirmed. CI builds the isolated sandbox from a digest-pinned Node base image; independent-oracle attestation remains blocked unless its pinned image, oracle ID, and Ed25519 public key are configured.
 
 EXTERNAL_PROVIDER_REQUIRED, PENDING, BLOCKED, and failed results are never promoted to PASSED. Live provider credentials, deployed lifecycle completion, production failure injection, rollback/recovery, and post-deployment monitoring are excluded from Stage 45. They remain separately recorded as post-production evidence.
 
