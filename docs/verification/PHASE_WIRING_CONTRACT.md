@@ -1,39 +1,35 @@
-# SolveX verification phases: 44 → 45 → post-production → 46
+# SolveX verification sequence: 44 checks → Stage 45 → post-production
 
-Status: **phase crosswalk defined; executable manifest validation is being added. Runtime evaluator integration and a fresh full verification run remain outstanding.**
+Status: the 45-stage sequence is the governing release sequence. Pre-production checks 1–44 feed Stage 45. Post-production verification is a separate operational evidence set after deployment; it is not another numbered stage.
 
 ## Agreed execution order
 
-1. **Pre-production checks 1–44:** complete the local, model, and sandbox-verifiable checks needed before deployment. The Daisy 54-node architecture remains part of this phase and must be verified as an integrated local/sandbox system.
-2. **Stage 45 — production readiness:** this is the final pre-production test. It evaluates the evidence from all 44 checks. If all 44 pass, evidence is current and valid, and the release artifact/target is verified, Stage 45 passes and authorizes deployment.
-3. **Post-production:** only after deployment, verify live provider connectivity, trusted-identity lifecycle execution, production health/telemetry, failure diversion, rollback, recovery, and whole-product operation.
-4. **Stage 46 — final consolidated closure:** this runs after Stage 45 and the required post-production checks. It verifies the complete evidence chain and whole-product result.
-
-There is no dependency from Stage 45 to Stage 46, and no post-production check may block Stage 45. Stage 46 may depend on both Stage 45 and post-production evidence. This removes the former circular dependency.
+1. **Pre-production checks 1–44:** execute the 15 authoritative system checks (GATE-00 through GATE-14) and the 29 pre-production enterprise invariants (INV-01 through INV-29). Daisy's 54-node architecture is verified within this phase and is not an additional gate count.
+2. **Stage 45 — production readiness:** the final numbered stage. It consumes exactly 44 unique, current, commit-matched results. It passes only when every check passes, evidence hashes are present, and no pre-production blocker remains. A pass authorizes deployment; a failure blocks deployment.
+3. **Post-production verification:** only after deployment, run the live provider, trusted-identity lifecycle, production health/telemetry, failure diversion, rollback/recovery, and whole-product checks. These are operational checks outside the numbered 45-stage sequence. Their results must never be used to backfill or change Stage 45.
 
 ## Check assignment
 
-The phase manifest in `config/verification/phase-wiring.json` is the machine-readable source of truth for this split:
+The machine-readable source of truth is config/verification/phase-wiring.json.
 
-- Pre-production 1–44: existing `GATE-00` through `GATE-14` (15 checks) plus `INV-01` through `INV-29` (29 checks).
-- Stage 45: new phase-level readiness evaluator, `STAGE-45`, after all 44 pre-production checks.
-- Post-production: the live production portions of `GATE-11`, `GATE-12`, and `GATE-14`; `INV-30` (central failure diversion/rollback); plus deployment health, failure/recovery, and whole-product checks. Their local contract and sandbox-safe portions remain among the 44 pre-production checks. Local adapter and fail-closed contract checks remain pre-production; live production connectivity is post-production.
-- Stage 46: existing `GATE-46` final proof closure, now dependent on Stage 45 and all required post-production evidence.
+- Pre-production checks 1–44: GATE-00 through GATE-14 (15 checks) plus INV-01 through INV-29 (29 checks).
+- Stage 45: STAGE-45, the final pre-production readiness decision after all 44 checks.
+- Post-production: the live portions of GATE-11, GATE-12, and GATE-14; INV-30 failure diversion/rollback; deployment health; failure/recovery; and whole-product checks. The local adapter contracts, local pipeline, and fail-closed identity behavior are checked before deployment. Live provider connectivity and deployed lifecycle completion are not.
 
-The Daisy 54-node system is architecture under test, not a count of release gates. Its registry, node behavior, and local/sandbox handoffs belong in pre-production; deployed whole-product operation is checked again post-production.
+The 54 Daisy nodes remain part of the architecture under test. Their registration, execution, output assertions, and evidence generation are verified before deployment; deployed whole-product handoffs are exercised again after deployment.
 
-## Evidence and fail-closed rules
+## Runtime and evidence rules
 
-Every result carries immutable gate ID, phase, status, claim scope, execution ID, commit SHA, environment, timestamp, evidence reference/hash, dependencies, and blocker codes. Allowed statuses are `PASSED`, `FAILED`, `BLOCKED`, `PENDING`, and `EXTERNAL_PROVIDER_REQUIRED`.
+The Stage 45 runner executes the authoritative pipeline once, consumes its 29 invariant results without rerunning them, and requires exactly 44 unique IDs. Each result includes status, claim scope, duration, details, and a SHA-256 evidence hash. The report is bound to the exact source commit and environment.
 
-Stage 45 consumes only the 44 pre-production checks. It does not wait for live provider credentials, production lifecycle execution, production failure injection, rollback/recovery, post-deployment monitoring, or Stage 46. Provider-dependent checks are split by scope: local adapter contracts and fail-closed controls are pre-production; actual live connectivity is post-production. A provider-required result is never falsely promoted to a pass.
-
-Stage 46 consumes Stage 45 plus all required post-production and whole-product evidence. Missing or mismatched evidence remains pending/blocked. No synthetic evidence or status promotion is permitted.
+EXTERNAL_PROVIDER_REQUIRED, PENDING, BLOCKED, and failed results are never promoted to PASSED. Live provider credentials, deployed lifecycle completion, production failure injection, rollback/recovery, and post-deployment monitoring are excluded from Stage 45. They remain separately recorded as post-production evidence.
 
 ## Safety boundaries
 
-This phase split does not enable PayPal, write to production databases, run live migrations, or deploy anything. Those operations remain separately authorized. The readiness pass authorizes deployment; it does not claim that post-production checks have already passed.
+A Stage 45 pass authorizes deployment; it does not claim deployment has occurred or that post-production checks have passed. This workflow does not activate payment processing, write to production databases, run live migrations, or start production machines. Those actions remain separately authorized.
 
-## Implementation status
+## Execution
 
-The manifest validation test checks the 44-check count, uniqueness, INV-30 post-production assignment, Stage 45's exclusion of post-production dependencies, and Stage 46's dependency on Stage 45 plus post-production evidence. The runtime evaluator must then be updated to consume this contract, emit Stage 45 separately, preserve post-production results, and block Stage 46 until final evidence exists.
+- bun run verify:phase-wiring validates the 44-check inventory and phase boundaries.
+- bun run verify:stage45 executes the 44 checks, evaluates Stage 45, and writes artifacts/stage-45-readiness.json and artifacts/stage-45-readiness.md.
+- CI runs Stage 45 on pull requests and on pushes to main. Deployment is not triggered automatically by this verification job.
