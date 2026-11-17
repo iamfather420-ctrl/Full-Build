@@ -37,7 +37,7 @@ test('a file path or a boolean cannot seal a verified proof bundle', () => {
   assert.equal(sealed.independent_oracles[0]?.verified, false);
 });
 
-test('a real Ed25519 attestation can seal, and an altered payload cannot', () => {
+test('a caller-generated Ed25519 key cannot establish trusted oracle identity or seal a bundle', () => {
   const { publicKey, privateKey } = generateKeyPairSync('ed25519');
   const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' }).toString();
   const rationale = 'checked the source bytes';
@@ -50,23 +50,27 @@ test('a real Ed25519 attestation can seal, and an altered payload cannot', () =>
     rationale,
     signature: '',
   };
-  const canonical = [attestation.oracleId, attestation.modelId, attestation.inputSha256, attestation.verdict, attestation.rationaleSha256].join('\n');
+  const canonical = [attestation.oracleId, attestation.modelId, attestation.inputSha256, attestation.verdict, attestation.rationaleSha256].join('\\n');
   attestation.signature = sign(null, Buffer.from(canonical), privateKey).toString('base64');
-  const accepted = new ProofBundleBuilder('PB-OK', 'SUB', 'signed');
-  accepted
+  const builder = new ProofBundleBuilder('PB-SELF-SIGNED', 'SUB', 'signed');
+  builder
     .addTest('T', 'runs', true, 1)
-    .addFormalProof('Z3_SMT', 'executed theorem', true)
+    .addFormalProof('Z3_SMT', 'caller-asserted theorem', true)
     .addSignedOracleAttestation(attestation, publicKeyPem)
     .addReplay('R', 'a', 'a');
-  assert.equal(accepted.seal().verification_status, 'VERIFIED');
-  const altered = { ...attestation, inputSha256: 'b'.repeat(64) };
-  const rejected = new ProofBundleBuilder('PB-BAD', 'SUB', 'altered');
-  rejected
-    .addTest('T', 'runs', true, 1)
-    .addFormalProof('Z3_SMT', 'executed theorem', true)
-    .addSignedOracleAttestation(altered, publicKeyPem)
+  const sealed = builder.seal();
+  assert.equal(sealed.verification_status, 'FAIL');
+  assert.equal(sealed.formal_proofs[0]?.checked, false);
+  assert.equal(sealed.independent_oracles[0]?.verified, false);
+});
+
+test('boolean-only formal proof and arbitrary oracle key remain unverified', () => {
+  const builder = new ProofBundleBuilder('PB-BOOL', 'SUB', 'negative');
+  builder.addTest('T', 'runs', true, 1)
+    .addFormalProof('Z3_SMT', 'fabricated theorem', true)
+    .addOracle('ORACLE', 'local', 'boolean', true)
     .addReplay('R', 'a', 'a');
-  assert.equal(rejected.seal().verification_status, 'FAIL');
+  assert.equal(builder.seal().verification_status, 'FAIL');
 });
 
 test('DN-52 stays fail-closed without a production key and DN-36 stays prohibited', async () => {
