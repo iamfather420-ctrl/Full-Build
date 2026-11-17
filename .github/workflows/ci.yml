@@ -88,6 +88,13 @@ jobs:
         run: bun run build
       - name: TypeScript
         run: bun run lint
+      - name: Install Lean 4 and execute the checked-in proof
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.24.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          bunx tsx -e 'import { verifyLeanProof } from "./src/proofs/ExternalProver.ts"; const evidence = verifyLeanProof(); if (!evidence.prover_execution_verified || evidence.exit_code !== 0 || evidence.binary_basename !== "lean") { console.error(JSON.stringify(evidence)); process.exit(1); } console.log(JSON.stringify({ prover: evidence.prover, exit_code: evidence.exit_code, source_sha256: evidence.source_sha256, binary_basename: evidence.binary_basename }));'
       - name: Install and execute Isabelle/HOL and Coq proofs
         run: |
           set -euo pipefail
