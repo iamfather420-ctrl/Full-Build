@@ -624,6 +624,8 @@ export class AuthoritativeVerificationPipeline {
           success: pipeRes.overall_success,
           completed_stages: pipeRes.completed_stages,
           total_stages: pipeRes.total_stages,
+          rejection_reason: pipeRes.rejection_reason,
+          stage_traces: pipeRes.stage_traces.map(t => ({ stage: t.stage, name: t.name, status: t.status, reason: t.reason })),
           solution_id: pipeRes.solution_id
         },
         order_lifecycle: {
