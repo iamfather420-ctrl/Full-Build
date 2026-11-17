@@ -7,7 +7,7 @@ export interface NodePlatformContext {
 let injectedPlatform: NodePlatformContext | null = null;
 
 import { PreflightService } from '../services/preflight';
-import { runEnterpriseVerification } from './enterpriseVerification';
+import { runEnterpriseVerification, EnterpriseTestResult } from './enterpriseVerification';
 import { DFRLFormalVerifier } from '../proofs/DFRLFormalVerifier';
 import { runDaisy54NodeCoverage } from './daisy54NodeCoverage';
 import { runPersistenceVerification } from './persistenceVerification';
@@ -46,6 +46,7 @@ export interface PipelineExecutionReport {
   claim_scope_verdict: string;
   artifacts_directory: string;
   gates: GateResult[];
+  enterprise_results: EnterpriseTestResult[];
 }
 
 export class AuthoritativeVerificationPipeline {
@@ -271,7 +272,7 @@ export class AuthoritativeVerificationPipeline {
     // GATE 5: Unit / Enterprise Invariants
     // ==========================================
     const g5Start = performance.now();
-    const entRes = await runEnterpriseVerification();
+    const entRes = await runEnterpriseVerification({ phase: 'pre-production' });
     recordGate(
       5,
       'GATE-05',
@@ -869,7 +870,8 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       production_blockers: productionBlockers,
       claim_scope_verdict: claimScopeVerdict,
       artifacts_directory: artifactsDir,
-      gates
+      gates,
+      enterprise_results: entRes.results
     };
 
     // Write final summary artifacts
