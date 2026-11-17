@@ -1,4 +1,7 @@
-import * as ts from 'typescript';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
 export interface StaticTypingDiagnostic {
   code: number;
@@ -14,43 +17,49 @@ export interface StaticTypingResult {
   diagnostics: StaticTypingDiagnostic[];
 }
 
-/** Type-check a virtual, isolated TypeScript module. Submitted source is never emitted or executed. */
+/** Strictly type-checks an isolated temporary TypeScript module; submitted code is never executed. */
 export function verifyStaticTyping(source: string): StaticTypingResult {
-  const version = ts.version;
-  if (typeof source !== 'string' || source.trim().length === 0) {
-    return { passed: false, compiler: 'typescript', compiler_version: version, strict: true,
-      diagnostics: [{ code: 0, message: 'Source must be a non-empty TypeScript module.' }] };
-  }
-  if (source.length > 100_000) {
-    return { passed: false, compiler: 'typescript', compiler_version: version, strict: true,
-      diagnostics: [{ code: 0, message: 'Source exceeds the 100 KB static-check limit.' }] };
-  }
-  const fileName = '/__solvex_stage7_input__.ts';
-  const options: ts.CompilerOptions = {
-    strict: true, noEmit: true, target: ts.ScriptTarget.ES2022,
-    module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
-    skipLibCheck: true, exactOptionalPropertyTypes: true,
-    noUncheckedIndexedAccess: true, types: []
-  };
-  const host = ts.createCompilerHost(options, true);
-  const originalGetSourceFile = host.getSourceFile.bind(host);
-  const originalFileExists = host.fileExists.bind(host);
-  const originalReadFile = host.readFile.bind(host);
-  host.fileExists = path => path === fileName || originalFileExists(path);
-  host.readFile = path => path === fileName ? source : originalReadFile(path);
-  host.getSourceFile = (path, languageVersion, onError, shouldCreateNewSourceFile) =>
-    path === fileName
-      ? ts.createSourceFile(path, source, languageVersion, true)
-      : originalGetSourceFile(path, languageVersion, onError, shouldCreateNewSourceFile);
-  const program = ts.createProgram([fileName], options, host);
-  const diagnostics = ts.getPreEmitDiagnostics(program).map(d => {
-    const position = d.file && d.start !== undefined ? d.file.getLineAndCharacterOfPosition(d.start) : undefined;
-    return {
-      code: d.code,
-      message: ts.flattenDiagnosticMessageText(d.messageText, '\n'),
-      ...(position ? { line: position.line + 1, column: position.character + 1 } : {})
-    };
+  const root = process.cwd();
+  const tscPath = path.resolve(root, 'node_modules/typescript/bin/tsc');
+  const run = (args: string[]) => spawnSync(process.execPath, [tscPath, ...args], {
+    cwd: root, encoding: 'utf8', timeout: 15_000, maxBuffer: 1024 * 1024
   });
-  return { passed: diagnostics.length === 0, compiler: 'typescript',
-    compiler_version: version, strict: true, diagnostics };
+  const versionRun = run(['--version']);
+  const versionOutput = (versionRun.stdout || versionRun.stderr || '').trim();
+  const version = versionOutput.replace(/^Version\\s+/i, '') || 'unknown';
+  if (typeof source !== 'string' || source.trim().length === 0 || source.length > 100_000) {
+    return { passed: false, compiler: 'typescript', compiler_version: version, strict: true,
+      diagnostics: [{ code: 0, message: source?.length > 100_000 ? 'Source exceeds the 100 KB static-check limit.' : 'Source must be a non-empty TypeScript module.' }] };
+  }
+  if (versionRun.error || versionRun.status !== 0) {
+    return { passed: false, compiler: 'typescript', compiler_version: version, strict: true,
+      diagnostics: [{ code: 0, message: versionRun.error?.message || versionOutput || 'Unable to start TypeScript compiler.' }] };
+  }
+  const tempDir = mkdtempSync(path.join(os.tmpdir(), 'solvex-stage7-'));
+  const sourceFile = path.join(tempDir, 'input.ts');
+  try {
+    writeFileSync(sourceFile, source, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+    const result = run([
+      '--noEmit', '--strict', '--target', 'ES2022', '--module', 'ESNext',
+      '--moduleResolution', 'Bundler', '--skipLibCheck', '--pretty', 'false',
+      '--exactOptionalPropertyTypes', '--noUncheckedIndexedAccess',
+      '--typeRoots', path.resolve(root, 'node_modules/@types'), sourceFile
+    ]);
+    const output = [result.stdout, result.stderr].filter(Boolean).join('\\n').trim();
+    const diagnostics: StaticTypingDiagnostic[] = output
+      ? output.split(/\\r?\\n/).filter(Boolean).map(line => {
+          const match = line.match(/input\\.ts(?:\\((\\d+),(\\d+)\\)|:(\\d+):(\\d+)):\\s*error TS(\\d+):\\s*(.*)/);
+          if (!match) return { code: 0, message: line };
+          return { line: Number(match[1] || match[3]), column: Number(match[2] || match[4]),
+            code: Number(match[5]), message: match[6] };
+        })
+      : [];
+    const passed = !result.error && result.status === 0 && diagnostics.length === 0;
+    if (result.error) diagnostics.push({ code: 0, message: result.error.message });
+    if (result.signal) diagnostics.push({ code: 0, message: `TypeScript compiler terminated by signal ${result.signal}.` });
+    if (result.status !== 0 && diagnostics.length === 0) diagnostics.push({ code: 0, message: `TypeScript compiler exited with status ${String(result.status)}.` });
+    return { passed, compiler: 'typescript', compiler_version: version, strict: true, diagnostics };
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
 }
