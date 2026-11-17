@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { stage14ClaimsTrusted } from './trust-policy.mjs';
 
 const now = 1_700_000_000;
-const workflow = 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/130/merge';
+const workflow = 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/133/merge';
 
 function claims(overrides = {}) {
   return {
@@ -14,25 +14,27 @@ function claims(overrides = {}) {
     repository_id: '1388681071',
     event_name: 'pull_request',
     sub: 'repo:iamfather420-ctrl/Full-Build:pull_request',
-    ref: 'refs/pull/130/merge',
+    ref: 'refs/pull/133/merge',
     workflow_ref: workflow,
     ...overrides,
   };
 }
 
-test('accepts the exact active repair PR 132 OIDC ref and rejects other PR refs', () => {
-  const activePr = claims({
+test('accepts the exact active repair PR 133 OIDC ref and rejects other PR refs', () => {
+  assert.equal(stage14ClaimsTrusted(claims(), now), true);
+  assert.equal(stage14ClaimsTrusted(claims({
     ref: 'refs/pull/132/merge',
     workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/132/merge'
-  });
-  assert.equal(stage14ClaimsTrusted(activePr, now), true);
-  assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/129/merge', workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/129/merge' }), now), false);
+  }), now), true);
+  assert.equal(stage14ClaimsTrusted(claims({
+    ref: 'refs/pull/129/merge',
+    workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/129/merge'
+  }), now), false);
 });
-test('accepts the exact legacy repair PR OIDC ref and rejects foreign or unrelated identities', () => {
-  assert.equal(stage14ClaimsTrusted(claims(), now), true);
-  assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/129/merge' }), now), false);
+test('rejects foreign or unrelated identities', () => {
   assert.equal(stage14ClaimsTrusted(claims({ sub: 'repo:other/repo:pull_request' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ repository: 'other/repo' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ aud: 'wrong-audience' }), now), false);
+  assert.equal(stage14ClaimsTrusted(claims({ iss: 'https://attacker.invalid' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ exp: now - 1 }), now), false);
 });
