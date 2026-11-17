@@ -15,6 +15,7 @@ if (allPre.length !== 44 || pre.expected_total !== 44) errors.push('Pre-producti
 if (new Set(allPre).size !== 44) errors.push('Pre-production check IDs must be unique.');
 if (stage45.id !== 'STAGE-45' || stage45.depends_on !== 'ALL_PRE_PRODUCTION_CHECKS') errors.push('Stage 45 must depend on the complete pre-production set.');
 if (!postIds.includes('INV-30')) errors.push('INV-30 failure diversion must be post-production.');
+for (const id of ['GATE-11-PRODUCTION','GATE-12-PRODUCTION','GATE-14-PRODUCTION']) if (!postIds.includes(id)) errors.push(id + ' live-production portion must be post-production.');
 if (postIds.some((id: string) => allPre.includes(id))) errors.push('A post-production check is duplicated in the pre-production set.');
 if (stage45.must_not_depend_on.some((item: string) => /post-deployment|production failure|rollback|Stage 46/i.test(item)) === false) errors.push('Stage 45 must explicitly exclude post-production and Stage 46 dependencies.');
 if (!stage46.depends_on.includes('STAGE-45') || !stage46.depends_on.includes('ALL_POST_PRODUCTION_CHECKS')) errors.push('Stage 46 must depend on Stage 45 and post-production evidence.');
