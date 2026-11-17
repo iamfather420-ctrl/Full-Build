@@ -85,7 +85,8 @@
       "Post-deployment lifecycle execution",
       "Production failure injection",
       "Production rollback or recovery",
-      "Post-deployment monitoring or whole-product production exercise"
+      "Post-deployment monitoring or whole-product production exercise",
+      "Live independent model oracle attestation"
     ],
     "on_pass": "PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED",
     "on_fail": "DEPLOYMENT_BLOCKED"
@@ -98,6 +99,12 @@
         "name": "Live Neon and PayPal provider connectivity/authentication",
         "verification_scope": "PRODUCTION",
         "source_gate_id": "GATE-11"
+      },
+      {
+        "id": "PIPE-14",
+        "name": "Multi-Model Independent Oracle Attestation",
+        "verification_scope": "PRODUCTION",
+        "source_pipeline_stage": 14
       },
       {
         "id": "GATE-12-PRODUCTION",
