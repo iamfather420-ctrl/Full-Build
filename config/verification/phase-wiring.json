@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0.0",
+  "status": "PHASE_CROSSWALK_FOR_EXECUTABLE_VALIDATION",
+  "sequence": {
+    "pre_production": {
+      "stages": "1-44",
+      "required_check_count": 44
+    },
+    "production_readiness": {
+      "stage": 45,
+      "gate_id": "STAGE-45"
+    },
+    "post_production": {
+      "begins_after": 45,
+      "required_before_closure": true
+    },
+    "final_closure": {
+      "stage": 46,
+      "gate_id": "GATE-46"
+    }
+  },
+  "pre_production": {
+    "description": "Local, model, and sandbox-verifiable checks required before deployment. For provider and lifecycle gates, this phase validates local adapter contracts, authorization boundaries, fail-closed behavior, and sandbox-safe paths only; it does not claim live production connectivity.",
+    "system_gate_ids": [
+      "GATE-00",
+      "GATE-01",
+      "GATE-02",
+      "GATE-03",
+      "GATE-04",
+      "GATE-05",
+      "GATE-06",
+      "GATE-07",
+      "GATE-08",
+      "GATE-09",
+      "GATE-10",
+      "GATE-11",
+      "GATE-12",
+      "GATE-13",
+      "GATE-14"
+    ],
+    "enterprise_invariant_ids": [
+      "INV-01",
+      "INV-02",
+      "INV-03",
+      "INV-04",
+      "INV-05",
+      "INV-06",
+      "INV-07",
+      "INV-08",
+      "INV-09",
+      "INV-10",
+      "INV-11",
+      "INV-12",
+      "INV-13",
+      "INV-14",
+      "INV-15",
+      "INV-16",
+      "INV-17",
+      "INV-18",
+      "INV-19",
+      "INV-20",
+      "INV-21",
+      "INV-22",
+      "INV-23",
+      "INV-24",
+      "INV-25",
+      "INV-26",
+      "INV-27",
+      "INV-28",
+      "INV-29"
+    ],
+    "expected_total": 44
+  },
+  "stage_45": {
+    "id": "STAGE-45",
+    "name": "Final Pre-Production Production-Readiness Verification",
+    "purpose": "Evaluate the complete pre-production evidence set and authorize deployment only when all 44 checks pass.",
+    "depends_on": "ALL_PRE_PRODUCTION_CHECKS",
+    "pass_conditions": [
+      "Exactly 44 unique pre-production checks are present.",
+      "All 44 checks have PASSED status at LOCAL, MODEL, or SANDBOX scope appropriate to the check.",
+      "Evidence is current, commit-matched, hash-verified, and reproducible.",
+      "Release artifact and deployment target are identified and validated.",
+      "No unresolved pre-production integrity, security, or policy blocker remains."
+    ],
+    "must_not_depend_on": [
+      "Live production provider connectivity",
+      "Post-deployment lifecycle execution",
+      "Production failure injection",
+      "Production rollback or recovery",
+      "Post-deployment monitoring or whole-product production exercise",
+      "Stage 46 final closure"
+    ],
+    "on_pass": "PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED",
+    "on_fail": "DEPLOYMENT_BLOCKED"
+  },
+  "post_production": {
+    "description": "Checks that require a deployed production or production-like target. These checks cannot block Stage 45 because they cannot exist until after deployment.",
+    "checks": [
+      {
+        "id": "INV-30",
+        "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
+        "verification_scope": "DEPLOYED_ENVIRONMENT"
+      },
+      {
+        "id": "GATE-11-PRODUCTION",
+        "name": "Live Neon and PayPal provider connectivity/authentication",
+        "verification_scope": "PRODUCTION",
+        "payments_remain_disabled_until_separately_authorized": true
+      },
+      {
+        "id": "GATE-12-PRODUCTION",
+        "name": "Trusted-identity and signed-tenant-claim lifecycle execution",
+        "verification_scope": "PRODUCTION"
+      },
+      {
+        "id": "POST-DEPLOY-HEALTH",
+        "name": "Deployment health, readiness, telemetry, and monitoring",
+        "verification_scope": "PRODUCTION"
+      },
+      {
+        "id": "POST-FAILURE-INJECTION",
+        "name": "Failure diversion, rollback, and recovery exercise",
+        "verification_scope": "PRODUCTION_OR_APPROVED_STAGING"
+      },
+      {
+        "id": "WHOLE-PRODUCT",
+        "name": "Integrated SolveX verification including Daisy 54-node graph, node handoffs, JIT generation, packaging, distribution, and recovery",
+        "verification_scope": "PRODUCTION_OR_APPROVED_STAGING"
+      }
+    ]
+  },
+  "stage_46": {
+    "id": "GATE-46",
+    "name": "Final Consolidated Truth-Boundary and Proof Closure",
+    "depends_on": [
+      "STAGE-45",
+      "ALL_POST_PRODUCTION_CHECKS"
+    ],
+    "pass_conditions": [
+      "Stage 45 passed and its evidence is preserved.",
+      "Every required post-production check passed with production or approved-staging evidence.",
+      "Whole-product verification passed.",
+      "All evidence is commit/environment matched and hash verified.",
+      "No unresolved blocker remains."
+    ],
+    "circular_dependencies_forbidden": true
+  },
+  "evidence_contract": {
+    "required_fields": [
+      "gate_id",
+      "phase",
+      "status",
+      "claim_scope",
+      "execution_id",
+      "commit_sha",
+      "environment",
+      "timestamp",
+      "evidence_ref",
+      "evidence_hash",
+      "depends_on",
+      "blockers"
+    ],
+    "statuses": [
+      "PASSED",
+      "FAILED",
+      "BLOCKED",
+      "PENDING",
+      "EXTERNAL_PROVIDER_REQUIRED"
+    ],
+    "rules": [
+      "Never promote EXTERNAL_PROVIDER_REQUIRED, PENDING, or BLOCKED to PASSED.",
+      "Local, model, and sandbox evidence cannot establish production connectivity.",
+      "Stage 45 consumes only the 44 pre-production results.",
+      "Stage 46 consumes Stage 45 and all required post-production results.",
+      "No post-production result may be a prerequisite of Stage 45."
+    ]
+  }
+}
