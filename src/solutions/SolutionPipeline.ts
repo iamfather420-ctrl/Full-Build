@@ -1,4 +1,6 @@
-import { computeSha256 } from '../database/DatabaseSchema';
+import { createHash } from 'node:crypto';
+
+const computeSha256 = (data: string): string => createHash('sha256').update(data, 'utf8').digest('hex');
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
 import { NOPOTVerifier } from '../proofs/NOPOTProof';
