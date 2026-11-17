@@ -4,6 +4,7 @@ import { desc, gt, sql } from "drizzle-orm";
 import { db, outreachProspects, outreachEvents } from "@workspace/db";
 import { logger } from "./lib/logger";
 import { startOutreachEngine } from "./lib/outreach";
+import { stage14ClaimsTrusted } from "./stage14-oidc";
 
 function safeDatabaseTarget() {
   const raw = process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL;
@@ -35,13 +36,6 @@ app.use(express.json());
  */
 import { createHash, createPublicKey, verify as verifySignature } from "node:crypto";
 
-const STAGE14_AUDIENCE = "solvex-stage14-evaluator";
-const TRUSTED_REPOSITORY = "iamfather420-ctrl/Full-Build";
-const TRUSTED_REPOSITORY_ID = "1388681071";
-const TRUSTED_WORKFLOWS = new Set([
-  "refs/heads/main",
-  "refs/heads/fix/46-gate-baseline-lifecycle-sandbox",
-]);
 let githubJwksCache: { expiresAt: number; keys: any[] } | undefined;
 
 async function verifyStage14GitHubToken(token: string): Promise<boolean> {
@@ -51,25 +45,7 @@ async function verifyStage14GitHubToken(token: string): Promise<boolean> {
     const header = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
     const claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
     if (header.alg !== "RS256" || typeof header.kid !== "string") return false;
-    const now = Math.floor(Date.now() / 1000);
-    const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
-    const trustedWorkflow = typeof claims.workflow_ref === "string" &&
-      claims.workflow_ref.startsWith(`${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@`);
-    const trustedPush = claims.event_name === "push" &&
-      typeof claims.ref === "string" && TRUSTED_WORKFLOWS.has(claims.ref) &&
-      claims.workflow_ref === `${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@${claims.ref}`;
-    // GitHub's standard OIDC token does not guarantee head_ref/base_ref/head_repository.
-    // Bind this temporary repair run to its exact same-repository PR ref.
-    const trustedPullRequest = claims.event_name === "pull_request" &&
-      claims.sub === `repo:${TRUSTED_REPOSITORY}:pull_request` &&
-      claims.ref === "refs/pull/130/merge" &&
-      trustedWorkflow;
-    if (claims.iss !== "https://token.actions.githubusercontent.com" ||
-        !audience.includes(STAGE14_AUDIENCE) || !Number.isFinite(claims.exp) ||
-        claims.exp <= now || (Number.isFinite(claims.nbf) && claims.nbf > now) ||
-        claims.repository !== TRUSTED_REPOSITORY ||
-        String(claims.repository_id) !== TRUSTED_REPOSITORY_ID ||
-        !(trustedPush || trustedPullRequest)) return false;
+    if (!stage14ClaimsTrusted(claims)) return false;
 
     if (!githubJwksCache || githubJwksCache.expiresAt <= Date.now()) {
       const response = await fetch("https://token.actions.githubusercontent.com/.well-known/jwks", {

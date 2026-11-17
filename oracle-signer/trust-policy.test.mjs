@@ -20,7 +20,15 @@ function claims(overrides = {}) {
   };
 }
 
-test('accepts only the exact repair PR OIDC ref and rejects foreign or unrelated identities', () => {
+test('accepts the exact active repair PR 132 OIDC ref and rejects other PR refs', () => {
+  const activePr = claims({
+    ref: 'refs/pull/132/merge',
+    workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/132/merge'
+  });
+  assert.equal(stage14ClaimsTrusted(activePr, now), true);
+  assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/129/merge', workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/129/merge' }), now), false);
+});
+test('accepts the exact legacy repair PR OIDC ref and rejects foreign or unrelated identities', () => {
   assert.equal(stage14ClaimsTrusted(claims(), now), true);
   assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/129/merge' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ sub: 'repo:other/repo:pull_request' }), now), false);

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { evaluateLifecycleProofClosure } from '../src/proofs/lifecycleProofClosure.ts';
 
 function fail(message: string): never {
   console.error('[CI-FAIL] ' + message);
@@ -59,33 +60,11 @@ const gate09 = authoritative.gates?.find((g: any) => g.gate_id === 'GATE-09');
 if (gate09?.status !== 'PASSED' || (gate09.details?.unsatisfied_node_ids?.length ?? -1) !== 0) {
   fail('Fresh authoritative gate artifact must show all 54 nodes executed with no unsatisfied nodes.');
 }
-const gate12 = authoritative.gates?.find((g: any) => g.gate_id === 'GATE-12');
-const lifecycle = gate12?.details?.order_lifecycle ?? {};
-const lifecycleBlockedSafely =
-  lifecycle.final_status === 'OFFER' &&
-  lifecycle.transitions_executed?.length === 0 &&
-  lifecycle.authorization_blocked === true;
-const disposableLifecycleTestCompleted =
-  lifecycle.test_scope === 'DISPOSABLE_NEON_TEST_ONLY' &&
-  gate12?.details?.identity_resolution === 'VERIFIED_DISPOSABLE_NEON_IDENTITY' &&
-  typeof lifecycle.order_id === 'string' && lifecycle.order_id.startsWith('e2e_order_') &&
-  lifecycle.final_status === 'DEPLOYED' &&
-  lifecycle.transitions_executed?.length === 5 &&
-  lifecycle.authorization_blocked === false &&
-  lifecycle.payment_processing === 'DISABLED' &&
-  ['PASSED', 'BLOCKED'].includes(gate12?.details?.solution_pipeline?.stage_traces?.find((stage: any) => stage.stage === 14)?.status) &&
-  authoritative.gates?.find((g: any) => g.gate_id === 'GATE-14')?.status === 'BLOCKED';
-// A disposable Neon lifecycle may complete for integration-test coverage while
-// the overall lifecycle gate remains BLOCKED because external Stage 14 attestation
-// is still unavailable. Never promote that test completion to a production pass.
-const lifecycleGateStatusValid =
-  gate12?.status === 'BLOCKED' &&
-  (lifecycleBlockedSafely || disposableLifecycleTestCompleted);
-if (!lifecycleGateStatusValid ||
-    (!lifecycleBlockedSafely && !disposableLifecycleTestCompleted) ||
-    lifecycle.payment_processing !== 'DISABLED') {
-  fail('Lifecycle must either remain safely blocked at OFFER or complete only as an explicitly identified disposable Neon test; payments must remain disabled and Stage 14 external blockers must remain visible.');
+const lifecycleDecision = evaluateLifecycleProofClosure(authoritative.gates ?? []);
+if (!lifecycleDecision.valid) {
+  fail('Lifecycle proof closure rejected: ' + lifecycleDecision.reason);
 }
+console.log('Lifecycle proof path: ' + lifecycleDecision.path + ' — ' + lifecycleDecision.reason);
 const masterGate = gates.gates.find((g: any) => g.gate_id === 'GATE-46');
 if (!masterGate) fail('Master GATE-46 is missing.');
 const masterDetails = masterGate.details ?? {};
