@@ -110,7 +110,7 @@ test('trusted oracle attestation must match deployment-pinned identity, key, and
     const input = { paradox_code: 'DH-P-001', source_sha256: 'a'.repeat(64), source: 'source bytes' };
     const rationale = 'independent evaluation accepted';
     const attestation = { oracleId: 'trusted-oracle', modelId: 'gpt-test', inputSha256: computeOracleInputSha256(input), verdict: 'ACCEPT' as const, rationaleSha256: createHash('sha256').update(rationale).digest('hex'), rationale, signature: '' };
-    const canonical = [attestation.oracleId, attestation.modelId, attestation.inputSha256, attestation.verdict, attestation.rationaleSha256].join('\\n');
+    const canonical = [attestation.oracleId, attestation.modelId, attestation.inputSha256, attestation.verdict, attestation.rationaleSha256].join('\n');
     attestation.signature = sign(null, Buffer.from(canonical), privateKey).toString('base64');
     const builder = new ProofBundleBuilder('PB-ORACLE', 'SUB', 'claim');
     builder.setOracleInput(input).addSignedOracleAttestation(attestation);
