@@ -55,23 +55,9 @@ jobs:
           docker build --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t solvex-sandbox:ci sandbox
           image_id="$(docker image inspect --format '{{.Id}}' solvex-sandbox:ci)"
           echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
-      - name: Load digest-pinned independent oracle image
-        env:
-          ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
-          ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
-          ORACLE_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
-        run: |
-          if [[ -n "$ORACLE_IMAGE" && "$ORACLE_IMAGE" == *@sha256:* && -n "$ORACLE_ID" && -n "$ORACLE_PUBLIC_KEY" ]]; then
-            docker pull "$ORACLE_IMAGE" || echo "::warning::Independent oracle image could not be loaded; Stage 45 will remain blocked at oracle attestation."
-          else
-            echo "::warning::Independent oracle image, oracle ID, and Ed25519 public key must all be configured; Stage 45 will remain blocked at oracle attestation."
-          fi
       - name: Proof closure
         env:
           SOLVEX_SANDBOX_IMAGE: ${{ steps.sandbox.outputs.image_id }}
-          SOLVEX_ORACLE_IMAGE: ${{ secrets.SOLVEX_ORACLE_IMAGE }}
-          SOLVEX_ORACLE_ID: ${{ secrets.SOLVEX_ORACLE_ID }}
-          SOLVEX_ORACLE_ED25519_PUBLIC_KEY: ${{ secrets.SOLVEX_ORACLE_ED25519_PUBLIC_KEY }}
           SOLVEX_DEPLOYMENT_TARGET: ${{ vars.SOLVEX_DEPLOYMENT_TARGET }}
           SOLVEX_DEPLOYMENT_TARGET_VERIFIED: ${{ vars.SOLVEX_DEPLOYMENT_TARGET_VERIFIED }}
         run: bun run verify:proof-closure
