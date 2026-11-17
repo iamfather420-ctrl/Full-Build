@@ -24,6 +24,7 @@ import { generateKeyPairSync, sign, verify } from 'node:crypto';
 import { compareToCanonical, DRIFT_CANONICAL_SHA256 } from './driftCheck';
 import { happensBefore, receive, tick } from './vectorClock';
 import { TenantCrypto } from '../security/TenantCrypto';
+import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
 import { planGoal } from './goalPlanner';
 
@@ -143,17 +144,28 @@ export class DaisySubsystemExecutors {
       // 5. DN-05: Crystal Clear Box Audit Engine
       case 'DN-05': {
         const engine = ProofEngine.getInstance();
-        const bundle = engine.getBundle('PB-DH-S-001');
-        const projection = bundle ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
+        const solution = DurableStore.getInstance().getState().solutions['DH-S-001'];
+        const bundle = solution?.proof_bundle_id ? engine.getBundle(solution.proof_bundle_id) : undefined;
+        const integrity = bundle ? engine.verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound verified proof bundle is attached to DH-S-001.'] };
+        const projection = bundle && integrity.verified ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
+        const passed = Boolean(projection && projection.verification_verdict === 'VERIFIED' && projection.proprietary_weights_redacted && projection.internal_reasoning_redacted);
         return {
           node_id: 'DN-05',
           name: 'Crystal Clear Box Audit Engine',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: projection && projection.verification_verdict === 'VERIFIED' ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { token: projection?.public_audit_token, redacted: projection?.proprietary_weights_redacted }
+          evidence: {
+            proof_id: bundle?.proof_id ?? null,
+            proof_integrity_verified: integrity.verified,
+            verification_verdict: projection?.verification_verdict ?? solution?.verification_status ?? 'MISSING',
+            public_audit_token_present: Boolean(projection?.public_audit_token),
+            proprietary_weights_redacted: projection?.proprietary_weights_redacted ?? false,
+            internal_reasoning_redacted: projection?.internal_reasoning_redacted ?? false,
+            reasons: integrity.reasons
+          }
         };
       }
 
@@ -260,16 +272,55 @@ export class DaisySubsystemExecutors {
       // 11. DN-11: 21-Stage Problem Pipeline
       case 'DN-11': {
         const pipe = SolutionPipeline.getInstance();
-        const res = await pipe.runPipeline('DH-P-001', 'export function solve() { return true; }');
+        const durable = DurableStore.getInstance();
+        const solution = durable.getState().solutions['DH-S-001'];
+        const source = solution?.implementation_source ?? '';
+        const sourceHash = computeSha256(source);
+        if (!source || sourceHash !== solution?.implementation_hash) {
+          return {
+            node_id: 'DN-11',
+            name: '21-Stage Problem Pipeline',
+            category: 'CORE_KERNEL',
+            executed: true,
+            claim_scope: 'LOCAL',
+            status: 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: { completed_stages: 0, success: false, source_bound: false, reason: 'DH-S-001 source is missing or does not match its stored implementation hash.' }
+          };
+        }
+        const res = await pipe.runPipeline('DH-P-001', source);
+        const proofId = 'PB-' + sourceHash.slice(0, 24);
+        const bundle = ProofEngine.getInstance().getBundle(proofId);
+        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
+        const passed = res.overall_success && res.completed_stages === 21 &&
+          bundle?.verification_status === 'VERIFIED' && integrity.verified;
+        if (passed && solution) {
+          solution.verification_status = 'VERIFIED';
+          solution.status = 'VERIFIED';
+          solution.proof_bundle_id = proofId;
+          durable.getState().solutions['DH-S-001'] = solution;
+          durable.persist();
+        }
         return {
           node_id: 'DN-11',
           name: '21-Stage Problem Pipeline',
           category: 'CORE_KERNEL',
           executed: true,
           claim_scope: 'LOCAL',
-          status: res.overall_success && res.completed_stages === 21 ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { completed_stages: res.completed_stages, success: res.overall_success }
+          evidence: {
+            completed_stages: res.completed_stages,
+            total_stages: res.total_stages,
+            success: res.overall_success,
+            source_bound: true,
+            source_sha256: sourceHash,
+            proof_id: bundle?.proof_id ?? null,
+            proof_bundle_verified: integrity.verified,
+            proof_bundle_status: bundle?.verification_status ?? 'MISSING',
+            blocked_stage_numbers: res.stage_traces.filter(stage => stage.status !== 'PASSED').map(stage => stage.stage),
+            rejection_reason: res.rejection_reason ?? integrity.reasons.join('; ') || null
+          }
         };
       }
 
@@ -627,30 +678,60 @@ export class DaisySubsystemExecutors {
       case 'DN-29': {
         const durable = DurableStore.getInstance();
         const sol = durable.getState().solutions['DH-S-001'];
+        const bundle = sol?.proof_bundle_id ? ProofEngine.getInstance().getBundle(sol.proof_bundle_id) : undefined;
+        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No proof bundle is attached to DH-S-001.'] };
+        const passed = Boolean(sol && sol.verification_status === 'VERIFIED' && bundle?.verification_status === 'VERIFIED' && integrity.verified);
         return {
           node_id: 'DN-29',
           name: 'Preserved Solution Vault (DH-S-001)',
           category: 'CORE_KERNEL',
           executed: true,
           claim_scope: 'LOCAL',
-          status: sol && sol.verification_status === 'VERIFIED' ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status }
+          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, reasons: integrity.reasons }
         };
       }
 
       // 30. DN-30: Independent Oracle Attestor
       case 'DN-30': {
-        return {
-          node_id: 'DN-30',
-          name: 'Independent Oracle Attestor',
-          category: 'AUDIT',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { independent_oracle_attestation_verified: false, reason: 'No independent oracle key or signature verification is configured.' }
+        const input = {
+          paradox_code: 'DH-P-001',
+          purpose: 'Independent verification of the canonical DH-S-001 bounded Zeno solution.',
+          solution_sha256: computeSha256(DurableStore.getInstance().getState().solutions['DH-S-001']?.implementation_source ?? '')
         };
+        try {
+          const attestation = await IndependentModelOracle.verify(input);
+          return {
+            node_id: 'DN-30',
+            name: 'Independent Oracle Attestor',
+            category: 'AUDIT',
+            executed: true,
+            claim_scope: 'SANDBOX',
+            status: attestation.verdict === 'ACCEPT' ? 'SUCCESS' : 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: {
+              independent_oracle_attestation_verified: true,
+              oracle_id: attestation.oracleId,
+              model_id: attestation.modelId,
+              verdict: attestation.verdict,
+              input_sha256: attestation.inputSha256,
+              rationale_sha256: attestation.rationaleSha256,
+              signature_verified: true
+            }
+          };
+        } catch (error) {
+          return {
+            node_id: 'DN-30',
+            name: 'Independent Oracle Attestor',
+            category: 'AUDIT',
+            executed: true,
+            claim_scope: 'SANDBOX',
+            status: 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: { independent_oracle_attestation_verified: false, reason: error instanceof Error ? error.message : String(error) }
+          };
+        }
       }
 
       // 31. DN-31: Sqlite Local Store Manager
@@ -1106,7 +1187,10 @@ export class DaisySubsystemExecutors {
     const nodeReg = NodeRegistry.getInstance();
     const results: SubsystemExecutionResult[] = [];
 
-    for (let i = 1; i <= 54; i++) {
+    // DN-11 produces the canonical source-bound proof used by DN-05 and DN-29.
+    // Execute those dependent audit/vault nodes immediately after the pipeline, then sort the report by ID.
+    const executionOrder = [11, 5, 29, ...Array.from({ length: 54 }, (_, index) => index + 1).filter(id => ![11, 5, 29].includes(id))];
+    for (const i of executionOrder) {
       const id = `DN-${String(i).padStart(2, '0')}`;
       const nodeDef = nodeReg.getNode(id);
       const isRegistered = Boolean(nodeDef);
@@ -1147,6 +1231,7 @@ export class DaisySubsystemExecutors {
       }
     }
 
+    results.sort((a, b) => Number(a.node_id.slice(3)) - Number(b.node_id.slice(3)));
     return {
       total: results.length,
       registered: results.filter(r => r.registered).length,
