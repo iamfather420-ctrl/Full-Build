@@ -38,7 +38,7 @@
     "test:oidc-tenant-claims": "bash scripts/test_oidc_tenant_claims.sh",
     "verify:stage6-sandbox": "tsx scripts/verify_stage6_sandbox.ts",
     "test:oracle-signer": "node scripts/test_oracle_signer.mjs",
-    "test:ecosystem": "tsx --test --test-concurrency=1 packages/daisy-weight-engine/tests/weight-engine.test.ts packages/daisy-weight-engine/tests/attention.test.ts src/discovery/EvidenceGate.test.ts src/discovery/DiscoverEngineClient.test.ts src/dipstick/BuildLedger.test.ts src/dipstick/BuildLedgerSnapshot.test.ts src/brain/LearningBubbleRegistry.test.ts src/brain/FileLearningBubbleStore.test.ts src/brain/TetherPath.test.ts src/brain/TetherSession.test.ts src/brain/CognitiveMilestone.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts src/orchestration/DaisyEcosystem.test.ts oracle-signer/trust-policy.test.mjs"
+    "test:ecosystem": "tsx --test --test-concurrency=1 packages/daisy-weight-engine/tests/weight-engine.test.ts packages/daisy-weight-engine/tests/attention.test.ts src/discovery/EvidenceGate.test.ts src/discovery/DiscoverEngineClient.test.ts src/dipstick/BuildLedger.test.ts src/dipstick/BuildLedgerSnapshot.test.ts src/brain/LearningBubbleRegistry.test.ts src/brain/FileLearningBubbleStore.test.ts src/brain/TetherPath.test.ts src/brain/TetherSession.test.ts src/brain/CognitiveMilestone.test.ts src/nodes/all54Execution.test.ts src/nodes/goalPlanner.test.ts src/nodes/nodeVerdict.test.ts src/orchestration/DaisyEcosystem.test.ts oracle-signer/trust-policy.test.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
