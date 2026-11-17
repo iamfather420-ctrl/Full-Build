@@ -19,6 +19,7 @@ import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 import type { UserContext } from '../auth/AuthService';
+import { evaluateProviderGateStatus } from './providerGatePolicy';
 
 export interface GateResult {
   gate_index: number;
@@ -580,20 +581,14 @@ export class AuthoritativeVerificationPipeline {
     // Enabling payments remains blocked until live authentication is actually
     // verified by a separate protected release process.
     const paymentsEnabled = String(process.env.PAYMENTS_ENABLED || 'false').toLowerCase() === 'true';
-    let g11Status: GateResult['status'];
-    if (paypalEvidence && !paypalEvidenceShapeValid) {
-      g11Status = 'FAILED';
-    } else if (paypalEvidence && !paypalEvidenceFresh) {
-      g11Status = 'BLOCKED';
-    } else if (hasNeon && !neonConn) {
-      g11Status = 'FAILED';
-    } else if (paymentsEnabled) {
-      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    } else if (hasNeon && neonConn) {
-      g11Status = 'PASSED';
-    } else {
-      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    }
+    const g11Status = evaluateProviderGateStatus({
+      paymentsEnabled,
+      paypalEvidencePresent: Boolean(paypalEvidence),
+      paypalEvidenceShapeValid,
+      paypalEvidenceFresh,
+      hasNeon,
+      neonConnected: neonConn
+    });
 
     recordGate(
       11,
