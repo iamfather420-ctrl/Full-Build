@@ -15,6 +15,7 @@ function claims(overrides = {}) {
     event_name: 'pull_request',
     sub: 'repo:iamfather420-ctrl/Full-Build:pull_request',
     ref: 'refs/pull/133/merge',
+    head_ref: 'fix/inv11-source-bound-proof-state-20261117',
     workflow_ref: workflow,
     ...overrides,
   };
@@ -22,12 +23,16 @@ function claims(overrides = {}) {
 
 test('accepts the exact active repair PR 133 OIDC ref and rejects other PR refs', () => {
   assert.equal(stage14ClaimsTrusted(claims(), now), true);
+  assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'wrong-branch' }), now), false);
+  assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/140/merge', head_ref: 'fix/gate12-disposable-neon-identity-20261117', workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/140/merge' }), now), true);
   assert.equal(stage14ClaimsTrusted(claims({
     ref: 'refs/pull/132/merge',
+    head_ref: 'fix/lifecycle-proof-closure-status-boundary',
     workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/132/merge'
   }), now), true);
   assert.equal(stage14ClaimsTrusted(claims({
     ref: 'refs/pull/129/merge',
+    head_ref: 'unknown',
     workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/129/merge'
   }), now), false);
 });
