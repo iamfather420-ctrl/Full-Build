@@ -58,13 +58,11 @@ async function verifyStage14GitHubToken(token: string): Promise<boolean> {
     const trustedPush = claims.event_name === "push" &&
       typeof claims.ref === "string" && TRUSTED_WORKFLOWS.has(claims.ref) &&
       claims.workflow_ref === `${TRUSTED_REPOSITORY}/.github/workflows/ci.yml@${claims.ref}`;
-    // For pull_request, GitHub executes the base-branch workflow. Only accept
-    // same-repository PRs targeting main from the single protected work branch.
+    // GitHub's standard OIDC token does not guarantee head_ref/base_ref/head_repository.
+    // Bind this temporary repair run to its exact same-repository PR ref.
     const trustedPullRequest = claims.event_name === "pull_request" &&
-      claims.base_ref === "main" &&
-      ["fix/46-gate-baseline-lifecycle-sandbox", "fix/gate05-deterministic-pipeline-test-20261114", "fix/stage14-rationale-and-zeno-evidence-20261114", "feat/daisy-ecosystem-link-20261116", "repair/remaining-17-nodes", "fix/proof-closure-disposable-lifecycle"].includes(claims.head_ref) &&
-      claims.head_repository === TRUSTED_REPOSITORY &&
-      String(claims.head_repository_id) === TRUSTED_REPOSITORY_ID &&
+      claims.sub === `repo:${TRUSTED_REPOSITORY}:pull_request` &&
+      claims.ref === "refs/pull/130/merge" &&
       trustedWorkflow;
     if (claims.iss !== "https://token.actions.githubusercontent.com" ||
         !audience.includes(STAGE14_AUDIENCE) || !Number.isFinite(claims.exp) ||
