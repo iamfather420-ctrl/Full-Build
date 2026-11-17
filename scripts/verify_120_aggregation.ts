@@ -299,7 +299,7 @@ async function main() {
     // Run Stage 45 in a child process. The 120-case WASM corpus creates
     // many solver contexts; re-running the authoritative pipeline in this same
     // process can exhaust the WASM heap (~2 GiB) after the corpus has completed.
-    // A separate process gives the gate suite a fresh WASM heap; any child failure
+    // A separate process gives the Stage 45 verifier a fresh WASM heap; any child failure
     // remains BLOCKED and is never treated as a pass.
     cp.execFileSync(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'scripts/verify_stage45.ts'], {
       stdio: 'inherit',
@@ -525,7 +525,7 @@ async function main() {
     'formal-aggregation.json',
     'z3-120-formal-verification-summary.json',
     'daisy-brain-activation-gate.json',
-    'system-46-gates.json',
+    'stage-45-readiness.json',
     'execution-gates.json',
     path.basename(outPath)
   ];
