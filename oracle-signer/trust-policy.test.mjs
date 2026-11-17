@@ -24,6 +24,7 @@ function claims(overrides = {}) {
 
 test('accepts the verified repair branch and rejects a foreign repository or audience', () => {
   assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'repair/remaining-17-nodes' }), now), true);
+  assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'fix/proof-closure-disposable-lifecycle' }), now), true);
   assert.equal(stage14ClaimsTrusted(claims(), now), true);
   assert.equal(stage14ClaimsTrusted(claims({ repository: 'other/repo' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ aud: 'wrong-audience' }), now), false);
