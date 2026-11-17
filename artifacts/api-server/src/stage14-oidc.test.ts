@@ -4,7 +4,7 @@ import { stage14ClaimsTrusted } from './stage14-oidc.ts';
 
 const now = 1_700_000_000;
 function claims(overrides: Record<string, unknown> = {}) {
-  const ref = 'refs/pull/137/merge';
+  const ref = 'refs/pull/140/merge';
   return {
     iss: 'https://token.actions.githubusercontent.com',
     aud: 'solvex-stage14-evaluator',
@@ -14,17 +14,20 @@ function claims(overrides: Record<string, unknown> = {}) {
     event_name: 'pull_request',
     sub: 'repo:iamfather420-ctrl/Full-Build:pull_request',
     ref,
+    head_ref: 'fix/gate12-disposable-neon-identity-20261117',
     workflow_ref: `iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@${ref}`,
     ...overrides
   };
 }
 
-test('accepts the exact active same-repository PR 137 OIDC identity', () => {
+test('accepts the exact allowlisted same-repository PR 140 OIDC identity', () => {
   assert.equal(stage14ClaimsTrusted(claims(), now), true);
 });
 
 test('rejects unrelated PR refs, repositories, audiences, issuers, and expired tokens', () => {
   assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/131/merge' }), now), false);
+  assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'feature/untrusted' }), now), false);
+  assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'fix/gate12-disposable-neon-identity-20261117', ref: 'refs/pull/137/merge' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ repository: 'other/repo' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ aud: 'wrong-audience' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ iss: 'https://attacker.invalid' }), now), false);
