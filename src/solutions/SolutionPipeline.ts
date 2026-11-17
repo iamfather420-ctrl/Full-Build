@@ -16,7 +16,7 @@ import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { PersistentProofStore } from '../security/PersistentProofStore';
 import { TenantCrypto } from '../security/TenantCrypto';
 
-export type PipelineStageStatus = 'PASSED' | 'FAILED' | 'BLOCKED';
+export type PipelineStageStatus = 'PASSED' | 'FAILED' | 'BLOCKED' | 'EXTERNAL_PROVIDER_REQUIRED';
 export interface PipelineExecutionResult {
   overall_success: boolean;
   completed_stages: number;
@@ -117,7 +117,7 @@ export class SolutionPipeline {
         catch (error) { outcome = { status: 'FAILED', reason: error instanceof Error ? error.message : String(error) }; }
       }
       traces.push({ stage, name: this.STAGES[stage - 1], status: outcome.status, duration_ms: Math.max(0, Date.now() - t), evidence: outcome.evidence, reason: outcome.reason });
-      if (outcome.status !== 'PASSED' && haltedAt === undefined) haltedAt = stage;
+      if (outcome.status !== 'PASSED' && outcome.status !== 'EXTERNAL_PROVIDER_REQUIRED' && haltedAt === undefined) haltedAt = stage;
       return outcome;
     };
     const pass = (evidence: Record<string, unknown>): StageOutcome => ({ status: 'PASSED', evidence });
@@ -207,14 +207,17 @@ export class SolutionPipeline {
       return replayHash === sourceHash ? pass({ deterministic_normalization_replay: true, replay_sha256: replayHash })
         : fail('Normalized source replay diverged.');
     });
-    await runStage(14, async () => {
-      try {
-        const attestation = await IndependentModelOracle.verify({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode });
-        return pass({ independent_oracle_count: 1, oracle_id: attestation.oracleId, model_id: attestation.modelId, verdict: attestation.verdict, input_sha256: attestation.inputSha256, attestation_signature_sha256: computeSha256(attestation.signature) });
-      } catch (error) {
-        return block(error instanceof Error ? error.message : String(error), { independent_oracle_count: 0 });
+    await runStage(14, () => ({
+      status: 'EXTERNAL_PROVIDER_REQUIRED',
+      reason: 'Independent model oracle attestation is a post-production provider check; local signature validation is covered by INV-12.',
+      evidence: {
+        independent_oracle_count: 0,
+        provider: 'IndependentModelOracle',
+        preproduction_adapter_contract: 'INV-12',
+        live_attestation_deferred: true,
+        post_production_check_id: 'PIPE-14-PRODUCTION'
       }
-    });
+    }));
     await runStage(15, () => {
       const replayHash = computeSha256(normalizedCode);
       return replayHash === sourceHash ? pass({ artifact_drift_hash_match: true, source_sha256: sourceHash, replay_sha256: replayHash })
@@ -272,12 +275,14 @@ export class SolutionPipeline {
 
     const failed = traces.find(t => t.status === 'FAILED');
     const blocked = traces.find(t => t.status === 'BLOCKED');
+    const providerRequired = traces.find(t => t.status === 'EXTERNAL_PROVIDER_REQUIRED');
     const completed = traces.filter(t => t.status === 'PASSED').length;
     const sentinelFailure = traces.find(t => t.stage === 9 && t.status === 'FAILED');
     const rejection = sentinelFailure?.reason
       ? 'Sentinel detected fatal specification anomaly'
       : failed ? failed.reason
       : blocked ? blocked.reason
+      : providerRequired ? providerRequired.reason
       : undefined;
     return {
       overall_success: traces.length === 21 && traces.every(t => t.status === 'PASSED'),
