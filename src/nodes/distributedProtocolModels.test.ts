@@ -25,6 +25,7 @@ test('escrow model enforces a two-of-three signature quorum and rejects replay',
   assert.equal(result.passed, true);
   assert.equal(result.valid_signatures, 3);
   assert.equal(result.release_authorized, true);
+  assert.equal(result.insufficient_quorum_rejected, true);
   assert.equal(result.replay_release_rejected, true);
   assert.equal(result.unauthorized_refund_rejected, true);
   assert.equal(result.live_funds_moved, false);
