@@ -1,12 +1,11 @@
 import { computeSha256 } from '../database/DatabaseSchema';
-import { runEnterpriseVerification, EnterpriseTestResult } from '../tests/enterpriseVerification';
 import { AuthoritativeVerificationPipeline } from '../tests/authoritativeVerificationPipeline';
 
 export interface GateExecutionResult {
   gate_number: number;
   gate_id: string;
   name: string;
-  category: 'AUTHORITATIVE_PIPELINE' | 'ENTERPRISE_INVARIANT' | 'MASTER_PROOF_CLOSURE';
+  category: 'AUTHORITATIVE_PIPELINE' | 'ENTERPRISE_INVARIANT' | 'STAGE_45_DECISION';
   status: 'PASSED' | 'EXTERNAL_PROVIDER_REQUIRED' | 'BLOCKED' | 'FAIL';
   claim_scope: 'LOCAL' | 'MODEL' | 'SANDBOX' | 'PRODUCTION';
   duration_ms: number;
@@ -79,10 +78,10 @@ export class Stage45Readiness {
     // -------------------------------------------------------------
     // PART 2: EVALUATE 29 PRE-PRODUCTION ENTERPRISE INVARIANTS
     // -------------------------------------------------------------
-    const enterpriseReport = await runEnterpriseVerification({ phase: 'pre-production' });
+    const enterpriseResults = authReport.enterprise_results;
 
-    for (let i = 0; i < enterpriseReport.results.length; i++) {
-      const inv = enterpriseReport.results[i];
+    for (let i = 0; i < enterpriseResults.length; i++) {
+      const inv = enterpriseResults[i];
       const gateNum = 15 + inv.test_number;
       const gateId = `INV-${String(inv.test_number).padStart(2, '0')}`;
 
@@ -105,7 +104,7 @@ export class Stage45Readiness {
     const failedPrior = evaluatedGates.filter(g => g.status === 'FAIL').length;
     const passedPrior = evaluatedGates.filter(g => g.status === 'PASSED').length;
     const nonPassedPrior = evaluatedGates.filter(g => g.status !== 'PASSED').length;
-    const failClosedChecks = enterpriseReport.results.filter(inv => /fail.closed|unauthorized|unverified.*blocked/i.test(inv.name));
+    const failClosedChecks = enterpriseResults.filter(inv => /fail.closed|unauthorized|unverified.*blocked/i.test(inv.name));
     const externalBoundaryChecks = enterpriseReport.results.filter(inv => /external adapter inventory|paypal dn-35 server.authoritative fail.closed/i.test(inv.name));
     const failClosedActive = failClosedChecks.length > 0 && failClosedChecks.every(inv => inv.passed);
     const externalBoundariesPreserved = externalBoundaryChecks.length > 0 && externalBoundaryChecks.every(inv => inv.passed);
@@ -120,7 +119,7 @@ export class Stage45Readiness {
       gate_number: 45,
       gate_id: 'STAGE-45',
       name: 'Final Pre-Production Production-Readiness Verification',
-      category: 'MASTER_PROOF_CLOSURE',
+      category: 'STAGE_45_DECISION',
       status: masterStatus,
       claim_scope: 'LOCAL',
       duration_ms: Date.now() - startedAt,
