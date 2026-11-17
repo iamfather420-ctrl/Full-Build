@@ -36,8 +36,19 @@ async function main() {
   console.log(`VERIFICATION BLOCKERS:       ${rep.results.filter(n => !['FUNCTIONALLY_PASSED', 'SAFETY_PASSED', 'PROHIBITED_BY_POLICY'].includes(classifyNodeResult(n))).map(n => n.node_id).join(', ') || 'NONE'}`);
   console.log('===========================================================');
 
-  if (!rep.execution_complete || !rep.all_passed) {
-    console.error('[BLOCKED] Node execution coverage is not equivalent to functional verification. Resolve every PROVIDER_REQUIRED and NOT_VERIFIED result before claiming 54/54.');
+  const executionCoverageOnly = process.argv.includes('--execution-coverage-only');
+  const executionEvidenceComplete = rep.execution_complete &&
+    rep.evidence_generated_count === 54 &&
+    rep.unsatisfied_node_ids.length === 0 &&
+    rep.evidence_missing_node_ids.length === 0;
+
+  if (!executionEvidenceComplete) {
+    console.error('[BLOCKED] 54-node execution/evidence coverage is incomplete.');
+    process.exitCode = 1;
+  } else if (!rep.all_passed && executionCoverageOnly) {
+    console.warn('[SCOPE-LIMITED] All 54 nodes executed and emitted evidence, but functional verification is NOT 54/54. Unresolved nodes remain listed above; production activation stays blocked.');
+  } else if (!rep.all_passed) {
+    console.error('[BLOCKED] Execution coverage is not functional verification. Resolve every PROVIDER_REQUIRED and NOT_VERIFIED result before claiming 54/54.');
     process.exitCode = 1;
   }
 }
