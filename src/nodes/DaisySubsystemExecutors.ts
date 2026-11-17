@@ -785,22 +785,29 @@ export class DaisySubsystemExecutors {
       // 34. DN-34: Neon Postgres Adapter (Gateway)
       case 'DN-34': {
         const neon = NeonStore.getInstance();
+        const configured = neon.isConfigured();
+        const testConn = configured ? await neon.connect() : false;
+        // Read status after the connection attempt; a pre-connect snapshot can falsely report PERSISTENCE_UNAVAILABLE.
         const status = neon.getStatus();
-        const testConn = await neon.connect();
-        const success = status.configured ? testConn : true; // fail-closed cleanly handled
+        const connected = configured && testConn && status.connected === true && status.backend === 'NEON_POSTGRES';
         return {
           node_id: 'DN-34',
           name: 'Neon Postgres Adapter',
           category: 'ADAPTERS',
           executed: true,
-          claim_scope: status.configured ? 'PRODUCTION' : 'LOCAL',
-          status: status.configured ? (testConn ? 'SUCCESS' : 'FAIL_CLOSED') : 'PROVIDER_REQUIRED',
+          claim_scope: configured ? 'SANDBOX' : 'LOCAL',
+          status: connected ? 'SUCCESS' : configured ? 'FAIL_CLOSED' : 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: {
-            configured: status.configured,
+            configured,
+            connected,
             backend: status.backend,
-            fallback_active: !status.configured,
-            tables_verified: status.tables_verified
+            fallback_active: false,
+            tables_verified: status.tables_verified,
+            total_required_tables: status.total_required_tables,
+            schema_verification: 'NOT_RUN_BY_CONNECTION_PROBE',
+            tenant_isolation_verified: status.tenant_isolation_verified,
+            last_error: status.last_error ?? null
           }
         };
       }
