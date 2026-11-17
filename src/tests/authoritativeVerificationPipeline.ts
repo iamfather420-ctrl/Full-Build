@@ -618,7 +618,7 @@ export class AuthoritativeVerificationPipeline {
           solution_pipeline_pre_production_passed: solutionPipelinePassed,
           solution_pipeline_completed_stages: pipelineResult.completed_stages,
           solution_pipeline_total_stages: pipelineResult.total_stages,
-          solution_pipeline_stage_traces: pipelineResult.stage_traces.map(stage => ({ stage: stage.stage, name: stage.name, status: stage.status, reason: stage.reason })),
+          solution_pipeline_stage_traces: pipelineResult.stage_traces.map(stage => ({ stage: stage.stage, name: stage.name, status: stage.status, reason: stage.reason, evidence: stage.evidence })),
           post_production_lifecycle_deferred: true,
           post_production_check_id: 'GATE-12-PRODUCTION',
           production_identity_required_only_after_deployment: true
