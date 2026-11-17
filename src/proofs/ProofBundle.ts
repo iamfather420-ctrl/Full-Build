@@ -1,5 +1,5 @@
 import { ProofBundleEntity, computeSha256 } from '../database/DatabaseSchema';
-import { IndependentModelOracle, type OracleAttestation } from '../security/IndependentModelOracle';
+import { type OracleAttestation } from '../security/IndependentModelOracle';
 import { Z3ProofResult } from './Z3FormalProofEngine';
 
 export class ProofBundleBuilder {
@@ -44,22 +44,31 @@ export class ProofBundleBuilder {
     return this;
   }
 
-  public addFormalProof(system: 'Z3_SMT' | 'LEAN4' | 'ISABELLE' | 'NOPOT' | 'TYPE_THEORY', spec: string, checked: boolean): this {
+  /**
+   * A boolean supplied by the caller is not proof-engine evidence.
+   * Keep the record explicitly unchecked until a verifier-produced,
+   * source-bound certificate API is implemented.
+   */
+  public addFormalProof(system: 'Z3_SMT' | 'LEAN4' | 'ISABELLE' | 'NOPOT' | 'TYPE_THEORY', spec: string, _checked: boolean): this {
     this.bundle.formal_proofs.push({
       system,
       specification: spec,
-      checked,
-      proof_term_hash: computeSha256(`${system}:${spec}:${checked}`)
+      checked: false,
+      proof_term_hash: computeSha256(`${system}:${spec}:UNVERIFIED_CALLER_ASSERTION`)
     });
     return this;
   }
 
+  /**
+   * A structurally supplied result can be fabricated by any caller.
+   * It is retained as diagnostic metadata only, never as a verified proof.
+   */
   public addZ3Proof(proofResult: Z3ProofResult): this {
     this.bundle.formal_proofs.push({
       system: 'Z3_SMT',
       specification: `[${proofResult.theorem_id}] ${proofResult.theorem_name} (Z3 Engine) - Result: ${proofResult.solver_result.toUpperCase()}`,
-      checked: proofResult.proved,
-      proof_term_hash: proofResult.certificate_sha256
+      checked: false,
+      proof_term_hash: computeSha256(`UNVERIFIED_Z3_RESULT:${proofResult.certificate_sha256}`)
     });
     return this;
   }
@@ -79,20 +88,22 @@ export class ProofBundleBuilder {
     return this;
   }
 
-  public addSignedOracleAttestation(attestation: OracleAttestation, publicKeyPem: string): this {
-    const verified = IndependentModelOracle.verifyAttestation(
-      attestation,
-      attestation.oracleId,
-      attestation.inputSha256,
-      publicKeyPem
-    );
+  /**
+   * A valid signature against a caller-supplied key proves only self-consistency.
+   * It does not establish a trusted oracle identity or bind the attestation to
+   * this bundle's independently established claim. Therefore this API cannot
+   * promote an oracle record. A pinned trust-store and expected-input contract
+   * must be added before any attestation can be accepted.
+   */
+  public addSignedOracleAttestation(attestation: OracleAttestation, _publicKeyPem: string): this {
     this.bundle.independent_oracles.push({
       oracle_id: attestation.oracleId,
       name: attestation.modelId,
-      method: 'Ed25519 signature checked against the supplied public key',
+      method: 'REJECTED: caller-supplied trust root and self-selected expected values are not authoritative',
       attestation_hash: computeSha256(`${attestation.signature}\n${attestation.inputSha256}\n${attestation.rationaleSha256}`),
-      verified
+      verified: false
     });
+    this.bundle.limitations.push('Oracle attestation was not accepted: trusted oracle identity, pinned public key, and independently derived input binding are not yet enforced.');
     return this;
   }
 
