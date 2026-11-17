@@ -28,7 +28,8 @@ async function main() {
   const evidenceComplete = [...report.gates, report.stage_45].every(g => /^[a-f0-9]{64}$/i.test(g.evidence_hash));
   const allChecksPassed = report.gates.every(g => g.status === 'PASSED');
   const stage45Passed = exactInventory && commitMatched && evidenceComplete &&
-    allChecksPassed && report.stage_45.status === 'PASSED' && report.all_pre_production_passed;
+    allChecksPassed && report.stage_45.status === 'PASSED' && report.all_pre_production_passed &&
+    report.stage_45.details.release_artifact_present === true && report.stage_45.details.deployment_target_validated === true;
 
   const artifact = {
     ...report,
@@ -56,6 +57,8 @@ async function main() {
     '- Inventory exact: ' + exactInventory,
     '- Commit matched: ' + commitMatched,
     '- Evidence hashes complete: ' + evidenceComplete,
+    '- Release artifact: ' + (report.stage_45.details.release_artifact_present ? 'verified' : 'missing'),
+    '- Deployment target: ' + (report.stage_45.details.deployment_target_validated ? 'identified and verified' : 'not verified'),
     '- Stage 45: ' + (stage45Passed ? 'PASSED — DEPLOYMENT AUTHORIZED' : 'BLOCKED — DEPLOYMENT NOT AUTHORIZED'),
     '',
     '| Check | Status | Scope | Evidence hash |',
