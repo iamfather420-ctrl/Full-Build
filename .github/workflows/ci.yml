@@ -84,6 +84,8 @@ jobs:
       - name: Report isolated OIDC integration secret requirement
         if: ${{ env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL == '' }}
         run: echo "OIDC database integration was validated directly on the isolated Neon branch; add SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL (owner connection for a disposable branch) to enable this CI step."
+      - name: Daisy weight engine unit tests
+        run: bunx tsx --test packages/daisy-weight-engine/tests/*.test.ts
       - name: Build
         run: bun run build
       - name: TypeScript
