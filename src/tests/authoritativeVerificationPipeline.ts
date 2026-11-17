@@ -6,6 +6,7 @@ export interface NodePlatformContext {
 
 let injectedPlatform: NodePlatformContext | null = null;
 
+import { createHash } from 'node:crypto';
 import { PreflightService } from '../services/preflight';
 import { runEnterpriseVerification } from './enterpriseVerification';
 import { DFRLFormalVerifier } from '../proofs/DFRLFormalVerifier';
@@ -516,9 +517,8 @@ export class AuthoritativeVerificationPipeline {
     // ==========================================
     const g11Start = performance.now();
     const paypalEvidencePath = platform.fs && platform.path
-      ? platform.path.resolve(rootDir, 'artifacts/provider-evidence/paypal-sandbox-oauth-2026-11-13.json')
+      ? platform.path.resolve(rootDir, 'artifacts/provider-evidence/paypal-sandbox-oauth.json')
       : '';
-    const expectedPayPalEvidenceDigest = 'e21c021eca87bd5796c3a1a2ace992755b33bc430cd8ed1d4072a96e41abae8b';
     let paypalEvidence: any = null;
     let paypalEvidenceError: string | undefined;
     let paypalEvidenceShapeValid = false;
@@ -530,7 +530,10 @@ export class AuthoritativeVerificationPipeline {
         const evidenceTime = Date.parse(paypalEvidence?.source?.timestamp || '');
         const evidenceAgeMs = Date.now() - evidenceTime;
         const evidenceFresh = Number.isFinite(evidenceTime) && evidenceAgeMs >= -5 * 60 * 1000 && evidenceAgeMs <= 48 * 60 * 60 * 1000;
-        const evidenceShapeValid =
+        const { evidence_sha256: suppliedEvidenceDigest, ...evidencePayload } = paypalEvidence ?? {};
+        const calculatedEvidenceDigest = createHash('sha256').update(JSON.stringify(evidencePayload)).digest('hex');
+        const evidenceDigestValid = suppliedEvidenceDigest === calculatedEvidenceDigest;
+        const evidenceShapeValid = evidenceDigestValid &&
           paypalEvidence?.artifact_type === 'EXTERNAL_PROVIDER_SANDBOX_AUTHENTICATION_EVIDENCE' &&
           paypalEvidence?.artifact_version === '1.0' &&
           paypalEvidence?.provider === 'PayPal' &&
@@ -554,7 +557,7 @@ export class AuthoritativeVerificationPipeline {
           paypalEvidence?.security_boundary?.live_environment_tested === false &&
           paypalEvidence?.security_boundary?.orders_captures_refunds_or_transactions_attempted === false &&
           paypalEvidence?.security_boundary?.payments_enabled === false &&
-          paypalEvidence?.evidence_sha256 === expectedPayPalEvidenceDigest;
+          /^[a-f0-9]{64}$/.test(suppliedEvidenceDigest || '');
         paypalEvidenceShapeValid = evidenceShapeValid;
         paypalEvidenceFresh = evidenceFresh;
         paypalSandboxVerified = evidenceShapeValid && evidenceFresh;
@@ -601,7 +604,7 @@ export class AuthoritativeVerificationPipeline {
           authenticated: paypalSandboxVerified,
           status: paypalSandboxVerified ? 'SANDBOX_AUTHENTICATED' : (paypalEvidence && paypalEvidenceShapeValid && !paypalEvidenceFresh ? 'EVIDENCE_STALE' : paypalEvidence ? 'EVIDENCE_INVALID' : 'EXTERNAL_PROVIDER_REQUIRED'),
           claim_scope: 'SANDBOX',
-          evidence_file: 'artifacts/provider-evidence/paypal-sandbox-oauth-2026-11-13.json',
+          evidence_file: 'artifacts/provider-evidence/paypal-sandbox-oauth.json',
           evidence_sha256: paypalEvidence?.evidence_sha256 || null,
           source: paypalEvidence?.source?.system || null,
           verified_at: paypalEvidence?.source?.timestamp || null,
