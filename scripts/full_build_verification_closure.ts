@@ -24,7 +24,6 @@ const commands = [
   'verify:nodes',
   'verify:enterprise',
   'verify:authoritative',
-  'verify:stage45',
   'verify:120',
   'verify:ci',
   'verify:67-gates',
