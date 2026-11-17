@@ -146,9 +146,29 @@ export class AuthoritativeVerificationPipeline {
       try {
         const gitStatus = platform.execSync('git status --porcelain --untracked-files=no', { encoding: 'utf8' });
         const statusLines = gitStatus.split(/\r?\n/).filter(Boolean);
+        // Verification runs intentionally regenerate these tracked root-level
+        // evidence snapshots. They are outputs, not source modifications, and
+        // must not make a subsequent authoritative run fail its own baseline gate.
+        const generatedEvidenceFiles = new Set([
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.json',
+          'DFRL-88-MACHINE-VERIFICATION-AUDIT.md',
+          'enterprise-verification-report.json',
+          'enterprise-verification-report.md',
+          'solvex-manifest.json',
+          'preflight-report.json',
+          'preflight-report.md',
+          'execution-gates.json',
+          'execution-gates.md',
+          'production-gate-evaluation.json',
+          'production-gate-evaluation.md'
+        ]);
         const sourceChanges = statusLines.filter(line => {
           const changedPath = line.slice(3).replace(/^.* -> /, '');
-          return !changedPath.startsWith('artifacts/') && !changedPath.startsWith('public/');
+          const normalizedPath = changedPath.replace(/\\/g, '/');
+          const basename = normalizedPath.split('/').pop() || normalizedPath;
+          return !normalizedPath.startsWith('artifacts/') &&
+            !normalizedPath.startsWith('public/') &&
+            !generatedEvidenceFiles.has(basename);
         });
         modCount = sourceChanges.length;
         workingTreeClean = sourceChanges.length === 0;
