@@ -67,8 +67,10 @@ jobs:
       - name: Proof closure
         env:
           SOLVEX_SANDBOX_IMAGE: ${{ steps.sandbox.outputs.image_id }}
-          SOLVEX_DEPLOYMENT_TARGET: ${{ vars.SOLVEX_DEPLOYMENT_TARGET }}
-          SOLVEX_DEPLOYMENT_TARGET_VERIFIED: ${{ vars.SOLVEX_DEPLOYMENT_TARGET_VERIFIED }}
+          # Verified Vercel project target for this repository. This identifies
+          # the deployment destination; it does not deploy or authorize production traffic.
+          SOLVEX_DEPLOYMENT_TARGET: "vercel://team_uReepq4IFAwtT6YDQyGPnwQB/prj_xDcwUu9Ls9OWsJ7EHuYGlKaqE5go"
+          SOLVEX_DEPLOYMENT_TARGET_VERIFIED: "true"
         run: bun run verify:proof-closure
       - name: Upload Stage 45 readiness evidence
         if: always()
