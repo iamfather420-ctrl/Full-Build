@@ -50,7 +50,7 @@ test('a caller-generated Ed25519 key cannot establish trusted oracle identity or
     rationale,
     signature: '',
   };
-  const canonical = [attestation.oracleId, attestation.modelId, attestation.inputSha256, attestation.verdict, attestation.rationaleSha256].join('\\n');
+  const canonical = [attestation.oracleId, attestation.modelId, attestation.inputSha256, attestation.verdict, attestation.rationaleSha256].join('\n');
   attestation.signature = sign(null, Buffer.from(canonical), privateKey).toString('base64');
   const builder = new ProofBundleBuilder('PB-SELF-SIGNED', 'SUB', 'signed');
   builder
