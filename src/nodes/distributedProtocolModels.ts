@@ -112,6 +112,7 @@ export interface EscrowModelResult {
   quorum_required: number;
   valid_signatures: number;
   release_authorized: boolean;
+  insufficient_quorum_rejected: boolean;
   replay_release_rejected: boolean;
   unauthorized_refund_rejected: boolean;
   final_state: 'FUNDED' | 'RELEASED' | 'REFUNDED';
@@ -128,19 +129,25 @@ export function simulateEscrowQuorum(): EscrowModelResult {
   ).length;
   const quorumRequired = 2;
   let state: 'FUNDED' | 'RELEASED' | 'REFUNDED' = 'FUNDED';
+  const transition = (target: 'RELEASED' | 'REFUNDED', approvals: number): boolean => {
+    if (state !== 'FUNDED' || approvals < quorumRequired) return false;
+    state = target;
+    return true;
+  };
 
-  const releaseAuthorized = validSignatures >= quorumRequired && state === 'FUNDED';
-  if (releaseAuthorized) state = 'RELEASED';
+  const insufficientQuorumRejected = !transition('RELEASED', 1);
+  const releaseAuthorized = transition('RELEASED', validSignatures);
 
   // A second release and a refund after release must be rejected as invalid transitions.
-  const replayReleaseRejected = state !== 'FUNDED';
-  const unauthorizedRefundRejected = state !== 'FUNDED' || validSignatures < quorumRequired;
+  const replayReleaseRejected = !transition('RELEASED', validSignatures);
+  const unauthorizedRefundRejected = !transition('REFUNDED', 1);
 
   return {
-    passed: releaseAuthorized && replayReleaseRejected && unauthorizedRefundRejected && state === 'RELEASED',
+    passed: insufficientQuorumRejected && releaseAuthorized && replayReleaseRejected && unauthorizedRefundRejected && state === 'RELEASED',
     quorum_required: quorumRequired,
     valid_signatures: validSignatures,
     release_authorized: releaseAuthorized,
+    insufficient_quorum_rejected: insufficientQuorumRejected,
     replay_release_rejected: replayReleaseRejected,
     unauthorized_refund_rejected: unauthorizedRefundRejected,
     final_state: state,
