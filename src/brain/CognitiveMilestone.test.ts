@@ -99,5 +99,10 @@ test('tether runs the resolution node and the five catalog paradox solvers', asy
   const settlement = await executors.executeNode('DN-36');
   assert.equal(settlement.status, 'PROHIBITED_BLOCKED');
   const lean = await executors.executeNode('DN-40');
-  assert.equal(lean.status, 'FAIL_CLOSED');
+  if (lean.evidence.prover_execution_verified === true) {
+    assert.equal(lean.status, 'SUCCESS');
+    assert.equal(lean.evidence.exit_code, 0);
+  } else {
+    assert.equal(lean.status, 'FAIL_CLOSED');
+  }
 });

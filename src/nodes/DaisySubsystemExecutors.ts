@@ -24,6 +24,8 @@ import { compareToCanonical, DRIFT_CANONICAL_SHA256 } from './driftCheck';
 import { happensBefore, receive, tick } from './vectorClock';
 import { TenantCrypto } from '../security/TenantCrypto';
 import { IndependentModelOracle } from '../security/IndependentModelOracle';
+import { runRangeProofSelfTest } from '../security/RangeProof';
+import { verifyCoqProof, verifyIsabelleProof, verifyLeanProof } from '../proofs/ExternalProver';
 import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
 import { planGoal } from './goalPlanner';
 import { simulateChandyLamportSnapshot, simulateRaftConsensus, simulateEscrowQuorum } from './distributedProtocolModels';
@@ -950,43 +952,46 @@ export class DaisySubsystemExecutors {
 
       // 40. DN-40: Lean4 Theorem Verification Bridge
       case 'DN-40': {
+        const proof = verifyLeanProof();
         return {
           node_id: 'DN-40',
           name: 'Lean4 Theorem Verification Bridge',
           category: 'LOGIC_SOLVER',
           executed: true,
           claim_scope: 'MODEL',
-          status: 'FAIL_CLOSED',
+          status: proof.prover_execution_verified ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { prover_execution_verified: false, reason: 'Lean4 is not installed or invoked by this node.' }
+          evidence: proof
         };
       }
 
       // 41. DN-41: Isabelle/HOL Proof Ingestion Node
       case 'DN-41': {
+        const proof = verifyIsabelleProof();
         return {
           node_id: 'DN-41',
           name: 'Isabelle/HOL Proof Ingestion Node',
           category: 'LOGIC_SOLVER',
           executed: true,
           claim_scope: 'MODEL',
-          status: 'FAIL_CLOSED',
+          status: proof.prover_execution_verified ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { prover_execution_verified: false, reason: 'Isabelle/HOL is not installed or invoked by this node.' }
+          evidence: proof
         };
       }
 
       // 42. DN-42: Coq Gallina Specification Node
       case 'DN-42': {
+        const proof = verifyCoqProof();
         return {
           node_id: 'DN-42',
           name: 'Coq Gallina Specification Node',
           category: 'LOGIC_SOLVER',
           executed: true,
           claim_scope: 'MODEL',
-          status: 'FAIL_CLOSED',
+          status: proof.prover_execution_verified ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { prover_execution_verified: false, reason: 'Coq is not installed or invoked by this node.' }
+          evidence: proof
         };
       }
 
@@ -1204,15 +1209,16 @@ export class DaisySubsystemExecutors {
 
       // 53. DN-53: Zero-Knowledge Range Proof Engine
       case 'DN-53': {
+        const proof = runRangeProofSelfTest();
         return {
           node_id: 'DN-53',
           name: 'Zero-Knowledge Range Proof Engine',
           category: 'SECURITY',
           executed: true,
           claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          status: proof.zero_knowledge_proof_verified ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { zero_knowledge_proof_verified: false, reason: 'No commitment scheme or range-proof verifier is configured.' }
+          evidence: proof
         };
       }
 
