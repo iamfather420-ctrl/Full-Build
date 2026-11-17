@@ -1,4 +1,4 @@
-Require Import Lia.
+Require Import Arith Lia.
 
 Theorem two_plus_two : 2 + 2 = 4.
 Proof. reflexivity. Qed.
