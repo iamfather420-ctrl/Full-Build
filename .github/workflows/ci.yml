@@ -48,13 +48,16 @@ jobs:
       - name: Enterprise invariants
         run: bun run verify:enterprise
       - name: Build digest-pinned sandbox execution image
+        id: sandbox
         env:
           NODE_BASE_IMAGE: node:22.23-slim@sha256:47725aca53d3295ec2d3be8f62726599b3033cc262edc2c7e429909b3ac599fc
         run: |
           docker build --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t solvex-sandbox:ci sandbox
           image_id="$(docker image inspect --format '{{.Id}}' solvex-sandbox:ci)"
-          echo "SOLVEX_SANDBOX_IMAGE=$image_id" >> "$GITHUB_ENV"
+          echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
       - name: Proof closure
+        env:
+          SOLVEX_SANDBOX_IMAGE: ${{ steps.sandbox.outputs.image_id }}
         run: bun run verify:proof-closure
       - name: Upload Stage 45 readiness evidence
         if: always()
