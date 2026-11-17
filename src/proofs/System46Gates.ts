@@ -30,14 +30,14 @@ export interface Stage45ReadinessReport {
   overall_verdict: 'PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED' | 'BLOCKED';
 }
 
-export class System46Gates {
-  private static instance: System46Gates | null = null;
+export class Stage45Readiness {
+  private static instance: Stage45Readiness | null = null;
 
-  public static getInstance(): System46Gates {
-    if (!System46Gates.instance) {
-      System46Gates.instance = new System46Gates();
+  public static getInstance(): Stage45Readiness {
+    if (!Stage45Readiness.instance) {
+      Stage45Readiness.instance = new Stage45Readiness();
     }
-    return System46Gates.instance;
+    return Stage45Readiness.instance;
   }
 
   public async evaluateStage45(): Promise<Stage45ReadinessReport> {
@@ -150,11 +150,9 @@ export class System46Gates {
       external_provider_required_count: extCount,
       blocked_count: blockedCount,
       failed_count: failCount,
-      all_local_and_model_passed: failCount === 0 && extCount === 0 && blockedCount === 0 && passedCount === 46,
+      all_pre_production_passed: masterPassed,
       gates: evaluatedGates,
-      overall_verdict: failCount === 0 && extCount === 0 && blockedCount === 0 && passedCount === 46
-        ? 'VERIFIED_SOVEREIGN_CLOSURE'
-        : 'BLOCKED'
+      overall_verdict: masterPassed ? 'PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED' : 'BLOCKED'
     };
   }
 }
