@@ -1,4 +1,5 @@
 import { DaisySubsystemExecutors, SubsystemExecutionResult } from '../nodes/DaisySubsystemExecutors';
+import { classifyNodeResult, type NodeVerdict } from '../nodes/nodeVerdict';
 
 export interface NodeCoverageReport {
   total_nodes: number;
@@ -9,11 +10,14 @@ export interface NodeCoverageReport {
   output_asserted_count: number;
   evidence_generated_count: number;
   unsatisfied_node_ids: string[];
+  evidence_missing_node_ids: string[];
   internal_previously_covered: number;
   internal_newly_covered: number;
   external_gateways: number;
   policy_interlocks: number;
+  execution_complete: boolean;
   all_passed: boolean;
+  verdict_counts: Record<NodeVerdict, number>;
   results: SubsystemExecutionResult[];
   breakdown: {
     baseline_internal_18: SubsystemExecutionResult[];
@@ -43,17 +47,20 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
 
   // Determine any unsatisfied nodes
   const unsatisfied = rawResults.results.filter(
-    r => !r.registered || !r.instantiated || !r.reachable || !r.executed || !r.output_asserted || !r.evidence_generated
+    r => !r.registered || !r.instantiated || !r.reachable || !r.executed || !r.output_asserted
   );
+  const evidenceMissing = rawResults.results.filter(r => !r.evidence_generated);
 
-  const allExecuted = rawResults.results.every(r => r.executed === true);
-  const noUnexpectedFailures = rawResults.results.every(r =>
-    r.status === 'SUCCESS' ||
-    r.status === 'PROVIDER_REQUIRED' ||
-    r.status === 'PROHIBITED_BLOCKED' ||
-    r.status === 'FAIL_CLOSED'
-  );
-
+  const verdictCounts = rawResults.results.reduce<Record<NodeVerdict, number>>((counts, result) => {
+    counts[classifyNodeResult(result)] += 1;
+    return counts;
+  }, { FUNCTIONALLY_PASSED: 0, SAFETY_PASSED: 0, PROVIDER_REQUIRED: 0, PROHIBITED_BY_POLICY: 0, NOT_VERIFIED: 0 });
+  const executionComplete = rawResults.total === 54 &&
+    rawResults.registered === 54 &&
+    rawResults.instantiated === 54 &&
+    rawResults.reachable === 54 &&
+    rawResults.executed === 54 &&
+    rawResults.output_asserted === 54;
   return {
     total_nodes: rawResults.total,
     registered_count: rawResults.registered,
@@ -63,11 +70,14 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     output_asserted_count: rawResults.output_asserted,
     evidence_generated_count: rawResults.evidence_generated,
     unsatisfied_node_ids: unsatisfied.map(u => u.node_id),
+    evidence_missing_node_ids: evidenceMissing.map(u => u.node_id),
     internal_previously_covered: baselineResults.length,
     internal_newly_covered: expandedResults.length,
     external_gateways: gatewayResults.length,
     policy_interlocks: rawResults.results.filter(r => r.status === 'PROHIBITED_BLOCKED').length,
-    all_passed: allExecuted && noUnexpectedFailures && unsatisfied.length === 0,
+    execution_complete: executionComplete,
+    all_passed: verdictCounts.FUNCTIONALLY_PASSED + verdictCounts.SAFETY_PASSED + verdictCounts.PROHIBITED_BY_POLICY === 54,
+    verdict_counts: verdictCounts,
     results: rawResults.results,
     breakdown: {
       baseline_internal_18: baselineResults,

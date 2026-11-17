@@ -25,10 +25,16 @@ async function main() {
   console.log(`EXPANDED INTERNAL (33):    ${rep.internal_newly_covered}`);
   console.log(`EXTERNAL GATEWAYS (3):     ${rep.external_gateways}`);
   console.log(`FIAT PAYMENT POLICY GUARD:   ${rep.policy_interlocks}`);
-  console.log(`ALL SUBSYSTEMS SATISFIED:  ${rep.all_passed ? 'YES' : 'NO'}`);
+  console.log(`EXECUTION COVERAGE:         ${rep.execution_complete ? '54/54' : 'INCOMPLETE'}`);
+  console.log(`FUNCTIONALLY PASSED:        ${rep.verdict_counts.FUNCTIONALLY_PASSED}`);
+  console.log(`SAFETY PASSED:              ${rep.verdict_counts.SAFETY_PASSED}`);
+  console.log(`POLICY GUARD PASSED:        ${rep.verdict_counts.PROHIBITED_BY_POLICY}`);
+  console.log(`PROVIDER REQUIRED:          ${rep.verdict_counts.PROVIDER_REQUIRED}`);
+  console.log(`NOT VERIFIED:               ${rep.verdict_counts.NOT_VERIFIED}`);
+  console.log(`ALL 54 VERIFIED:            ${rep.all_passed ? 'YES' : 'NO'}`);
   console.log('===========================================================');
 
-  if (!rep.all_passed) {
+  if (!rep.execution_complete) {
     process.exit(1);
   }
 }

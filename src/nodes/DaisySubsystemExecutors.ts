@@ -12,6 +12,7 @@ import { NeonStore } from '../database/NeonPersistence';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { Z3FormalProofEngine } from '../proofs/Z3FormalProofEngine';
 import { AUTHORITATIVE_32_DH_CONTRACTS } from '../formal/dhAuthoritativeFormalContracts';
+import { REAL_32_DH_FORMAL_REGISTRY } from '../data/dhParadoxFormalRegistry';
 import { AuthService } from '../auth/AuthService';
 import { ReversibilityEngine } from '../database/ReversibilityEngine';
 import { ParadoxRegistry } from '../paradoxes/ParadoxRegistry';
@@ -22,6 +23,11 @@ import path from 'node:path';
 import { generateKeyPairSync, sign, verify } from 'node:crypto';
 import { compareToCanonical, DRIFT_CANONICAL_SHA256 } from './driftCheck';
 import { happensBefore, receive, tick } from './vectorClock';
+import { TenantCrypto } from '../security/TenantCrypto';
+import { IndependentModelOracle } from '../security/IndependentModelOracle';
+import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
+import { planGoal } from './goalPlanner';
+import { simulateChandyLamportSnapshot, simulateRaftConsensus, simulateEscrowQuorum } from './distributedProtocolModels';
 
 export interface RawNodeExecutionResult {
   node_id: string;
@@ -42,6 +48,16 @@ export interface SubsystemExecutionResult extends RawNodeExecutionResult {
   output_asserted: boolean;
   evidence_generated: boolean;
   evidence_hash: string;
+}
+
+function hasMeaningfulEvidence(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value === 'boolean') return true;
+  if (Array.isArray(value)) return value.some(hasMeaningfulEvidence);
+  if (typeof value === 'object') return Object.values(value as Record<string, unknown>).some(hasMeaningfulEvidence);
+  return false;
 }
 
 export class DaisySubsystemExecutors {
@@ -129,17 +145,28 @@ export class DaisySubsystemExecutors {
       // 5. DN-05: Crystal Clear Box Audit Engine
       case 'DN-05': {
         const engine = ProofEngine.getInstance();
-        const bundle = engine.getBundle('PB-DH-S-001');
-        const projection = bundle ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
+        const solution = DurableStore.getInstance().getState().solutions['DH-S-001'];
+        const bundle = solution?.proof_bundle_id ? engine.getBundle(solution.proof_bundle_id) : undefined;
+        const integrity = bundle ? engine.verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound verified proof bundle is attached to DH-S-001.'] };
+        const projection = bundle && integrity.verified ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
+        const passed = Boolean(projection && projection.verification_verdict === 'VERIFIED' && projection.proprietary_weights_redacted && projection.internal_reasoning_redacted);
         return {
           node_id: 'DN-05',
           name: 'Crystal Clear Box Audit Engine',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: projection && projection.verification_verdict === 'VERIFIED' ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { token: projection?.public_audit_token, redacted: projection?.proprietary_weights_redacted }
+          evidence: {
+            proof_id: bundle?.proof_id ?? null,
+            proof_integrity_verified: integrity.verified,
+            verification_verdict: projection?.verification_verdict ?? solution?.verification_status ?? 'MISSING',
+            public_audit_token_present: Boolean(projection?.public_audit_token),
+            proprietary_weights_redacted: projection?.proprietary_weights_redacted ?? false,
+            internal_reasoning_redacted: projection?.internal_reasoning_redacted ?? false,
+            reasons: integrity.reasons
+          }
         };
       }
 
@@ -245,17 +272,59 @@ export class DaisySubsystemExecutors {
 
       // 11. DN-11: 21-Stage Problem Pipeline
       case 'DN-11': {
+        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
+          return { node_id: 'DN-11', name: '21-Stage Problem Pipeline', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'Full pipeline execution is reserved for the authoritative external-provider verification step.' } };
+        }
         const pipe = SolutionPipeline.getInstance();
-        const res = await pipe.runPipeline('DH-P-001', 'export function solve() { return true; }');
+        const durable = DurableStore.getInstance();
+        const solution = durable.getState().solutions['DH-S-001'];
+        const source = solution?.implementation_source ?? '';
+        const sourceHash = computeSha256(source);
+        if (!source || sourceHash !== solution?.implementation_hash) {
+          return {
+            node_id: 'DN-11',
+            name: '21-Stage Problem Pipeline',
+            category: 'CORE_KERNEL',
+            executed: true,
+            claim_scope: 'LOCAL',
+            status: 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: { completed_stages: 0, success: false, source_bound: false, reason: 'DH-S-001 source is missing or does not match its stored implementation hash.' }
+          };
+        }
+        const res = await pipe.runPipeline('DH-P-001', source);
+        const proofId = 'PB-' + sourceHash.slice(0, 24);
+        const bundle = ProofEngine.getInstance().getBundle(proofId);
+        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
+        const passed = res.overall_success && res.completed_stages === 21 &&
+          bundle?.verification_status === 'VERIFIED' && integrity.verified;
+        if (passed && solution) {
+          solution.verification_status = 'VERIFIED';
+          solution.status = 'VERIFIED';
+          solution.proof_bundle_id = proofId;
+          durable.getState().solutions['DH-S-001'] = solution;
+          durable.persist();
+        }
         return {
           node_id: 'DN-11',
           name: '21-Stage Problem Pipeline',
           category: 'CORE_KERNEL',
           executed: true,
           claim_scope: 'LOCAL',
-          status: res.overall_success && res.completed_stages === 21 ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { completed_stages: res.completed_stages, success: res.overall_success }
+          evidence: {
+            completed_stages: res.completed_stages,
+            total_stages: res.total_stages,
+            success: res.overall_success,
+            source_bound: true,
+            source_sha256: sourceHash,
+            proof_id: bundle?.proof_id ?? null,
+            proof_bundle_verified: integrity.verified,
+            proof_bundle_status: bundle?.verification_status ?? 'MISSING',
+            blocked_stage_numbers: res.stage_traces.filter(stage => stage.status !== 'PASSED').map(stage => stage.stage),
+            rejection_reason: res.rejection_reason ?? (integrity.reasons.join('; ') || null)
+          }
         };
       }
 
@@ -312,16 +381,17 @@ export class DaisySubsystemExecutors {
 
       // 15. DN-15: Multi-Tenant Partition Manager
       case 'DN-15': {
-        return {
-          node_id: 'DN-15',
-          name: 'Multi-Tenant Partition Manager',
-          category: 'SECURITY',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { cryptographic_tenant_isolation_verified: false, reason: 'Distinct static hashes do not verify tenant storage isolation or a trusted key boundary.' }
-        };
+        try {
+          const crypto = new TenantCrypto();
+          const encrypted = crypto.encrypt('TENANT_A', 'tenant-isolation-probe');
+          const roundTrip = crypto.decrypt('TENANT_A', encrypted) === 'tenant-isolation-probe';
+          let crossTenantDenied = false;
+          try { crypto.decrypt('TENANT_B', encrypted); } catch { crossTenantDenied = true; }
+          const passed = roundTrip && crossTenantDenied;
+          return { node_id: 'DN-15', name: 'Multi-Tenant Partition Manager', category: 'SECURITY', executed: true, claim_scope: 'LOCAL', status: passed ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { cryptographic_tenant_isolation_verified: passed, authenticated_encryption: 'AES-256-GCM', key_derivation: 'HKDF-SHA256', round_trip: roundTrip, cross_tenant_denied: crossTenantDenied, scope: 'record-level cryptographic separation; not a substitute for database/RLS isolation' } };
+        } catch (error) {
+          return { node_id: 'DN-15', name: 'Multi-Tenant Partition Manager', category: 'SECURITY', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { cryptographic_tenant_isolation_verified: false, reason: error instanceof Error ? error.message : String(error) } };
+        }
       }
 
       // 16. DN-16: RBAC Token Boundary (Fail-Closed Until OIDC)
@@ -376,16 +446,11 @@ export class DaisySubsystemExecutors {
 
       // 18. DN-18: Cleanroom Deterministic Sandbox
       case 'DN-18': {
-        return {
-          node_id: 'DN-18',
-          name: 'Cleanroom Deterministic Sandbox',
-          category: 'CORE_KERNEL',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { isolated_cleanroom_execution_verified: false, reason: 'Hashing the same literal twice does not exercise a cleanroom sandbox.' }
-        };
+        const image = process.env.SOLVEX_SANDBOX_IMAGE ?? '';
+        if (!/@sha256:[a-f0-9]{64}$/i.test(image)) return { node_id: 'DN-18', name: 'Cleanroom Deterministic Sandbox', category: 'CORE_KERNEL', executed: true, claim_scope: 'SANDBOX', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { isolated_cleanroom_execution_verified: false, reason: 'SOLVEX_SANDBOX_IMAGE must reference an immutable sha256 digest.' } };
+        const source = 'const result = 6 * 7; if (result !== 42) throw new Error("sandbox probe failed");';
+        const result = await IsolatedExecutionSandbox.execute(image, ['/opt/solvex-sandbox/verify-source.mjs'], source, { timeoutMs: 15000, memoryBytes: 256 * 1024 * 1024, cpuCount: 1, pidsLimit: 64 });
+        return { node_id: 'DN-18', name: 'Cleanroom Deterministic Sandbox', category: 'CORE_KERNEL', executed: true, claim_scope: 'SANDBOX', status: result.passed ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { isolated_cleanroom_execution_verified: result.passed, image_digest: image.split('@sha256:')[1], exit_code: result.exitCode, timed_out: result.timedOut, oom_killed: result.oomKilled, error: result.error } };
       }
 
       // 19. DN-19: Bitrot & Drift Detection Oracle
@@ -617,30 +682,63 @@ export class DaisySubsystemExecutors {
       case 'DN-29': {
         const durable = DurableStore.getInstance();
         const sol = durable.getState().solutions['DH-S-001'];
+        const bundle = sol?.proof_bundle_id ? ProofEngine.getInstance().getBundle(sol.proof_bundle_id) : undefined;
+        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No proof bundle is attached to DH-S-001.'] };
+        const passed = Boolean(sol && sol.verification_status === 'VERIFIED' && bundle?.verification_status === 'VERIFIED' && integrity.verified);
         return {
           node_id: 'DN-29',
           name: 'Preserved Solution Vault (DH-S-001)',
           category: 'CORE_KERNEL',
           executed: true,
           claim_scope: 'LOCAL',
-          status: sol && sol.verification_status === 'VERIFIED' ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status }
+          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, reasons: integrity.reasons }
         };
       }
 
       // 30. DN-30: Independent Oracle Attestor
       case 'DN-30': {
-        return {
-          node_id: 'DN-30',
-          name: 'Independent Oracle Attestor',
-          category: 'AUDIT',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { independent_oracle_attestation_verified: false, reason: 'No independent oracle key or signature verification is configured.' }
+        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
+          return { node_id: 'DN-30', name: 'Independent Oracle Attestor', category: 'AUDIT', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'External oracle attestation is reserved for the authoritative provider verification step.' } };
+        }
+        const input = {
+          paradox_code: 'DH-P-001',
+          purpose: 'Independent verification of the canonical DH-S-001 bounded Zeno solution.',
+          solution_sha256: computeSha256(DurableStore.getInstance().getState().solutions['DH-S-001']?.implementation_source ?? '')
         };
+        try {
+          const attestation = await IndependentModelOracle.verify(input);
+          return {
+            node_id: 'DN-30',
+            name: 'Independent Oracle Attestor',
+            category: 'AUDIT',
+            executed: true,
+            claim_scope: 'SANDBOX',
+            status: attestation.verdict === 'ACCEPT' ? 'SUCCESS' : 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: {
+              independent_oracle_attestation_verified: true,
+              oracle_id: attestation.oracleId,
+              model_id: attestation.modelId,
+              verdict: attestation.verdict,
+              input_sha256: attestation.inputSha256,
+              rationale_sha256: attestation.rationaleSha256,
+              signature_verified: true
+            }
+          };
+        } catch (error) {
+          return {
+            node_id: 'DN-30',
+            name: 'Independent Oracle Attestor',
+            category: 'AUDIT',
+            executed: true,
+            claim_scope: 'SANDBOX',
+            status: 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: { independent_oracle_attestation_verified: false, reason: error instanceof Error ? error.message : String(error) }
+          };
+        }
       }
 
       // 31. DN-31: Sqlite Local Store Manager
@@ -663,16 +761,8 @@ export class DaisySubsystemExecutors {
 
       // 32. DN-32: Durable JSON WAL Sync Engine
       case 'DN-32': {
-        return {
-          node_id: 'DN-32',
-          name: 'Durable JSON WAL Sync Engine',
-          category: 'PERSISTENCE',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { durable_wal_sync_verified: false, reason: 'The current server-side DurableStore has no disk WAL or fsync implementation.' }
-        };
+        const durability = SqliteStore.getInstance().verifyDurableWal();
+        return { node_id: 'DN-32', name: 'Durable JSON WAL Sync Engine', category: 'PERSISTENCE', executed: true, claim_scope: 'LOCAL', status: durability.verified ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { durable_wal_sync_verified: durability.verified, disk_backed: durability.disk_backed, journal_mode: durability.journal_mode, synchronous: durability.synchronous, reason: durability.reason ?? null, note: 'SQLite WAL with synchronous=FULL provides SQLite-managed write-ahead logging and sync semantics; not a separate JSON WAL.' } };
       }
 
       // 33. DN-33: Central Failure Diversion Router
@@ -695,22 +785,29 @@ export class DaisySubsystemExecutors {
       // 34. DN-34: Neon Postgres Adapter (Gateway)
       case 'DN-34': {
         const neon = NeonStore.getInstance();
+        const configured = neon.isConfigured();
+        const testConn = configured ? await neon.connect() : false;
+        // Read status after the connection attempt; a pre-connect snapshot can falsely report PERSISTENCE_UNAVAILABLE.
         const status = neon.getStatus();
-        const testConn = await neon.connect();
-        const success = status.configured ? testConn : true; // fail-closed cleanly handled
+        const connected = configured && testConn && status.connected === true && status.backend === 'NEON_POSTGRES';
         return {
           node_id: 'DN-34',
           name: 'Neon Postgres Adapter',
           category: 'ADAPTERS',
           executed: true,
-          claim_scope: status.configured ? 'PRODUCTION' : 'LOCAL',
-          status: status.configured ? (testConn ? 'SUCCESS' : 'FAIL_CLOSED') : 'PROVIDER_REQUIRED',
+          claim_scope: configured ? 'SANDBOX' : 'LOCAL',
+          status: connected ? 'SUCCESS' : configured ? 'FAIL_CLOSED' : 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: {
-            configured: status.configured,
+            configured,
+            connected,
             backend: status.backend,
-            fallback_active: !status.configured,
-            tables_verified: status.tables_verified
+            fallback_active: false,
+            tables_verified: status.tables_verified,
+            total_required_tables: status.total_required_tables,
+            schema_verification: 'NOT_RUN_BY_CONNECTION_PROBE',
+            tenant_isolation_verified: status.tenant_isolation_verified,
+            last_error: status.last_error ?? null
           }
         };
       }
@@ -718,27 +815,56 @@ export class DaisySubsystemExecutors {
       // 35. DN-35: PayPal Enterprise Payment Gateway (Gateway)
       case 'DN-35': {
         const pp = PayPalAdapter.getInstance();
-        const creds = pp.getEffectiveCredentials();
-        const info = pp.getMaskedCredentialsInfo();
-        let authTest: any = { valid: false };
-        if (creds) {
-          authTest = await pp.testLiveCredentials(creds.clientId, creds.clientSecret, creds.environment);
+        let evidence: any = null;
+        let digestValid = false;
+        let fresh = false;
+        try {
+          const evidencePath = path.resolve(process.cwd(), 'artifacts/provider-evidence/paypal-sandbox-oauth.json');
+          evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
+          const { evidence_sha256: suppliedDigest, ...payload } = evidence;
+          digestValid = suppliedDigest === computeSha256(JSON.stringify(payload));
+          const verifiedAt = Date.parse(evidence?.source?.timestamp ?? '');
+          const age = Date.now() - verifiedAt;
+          fresh = Number.isFinite(verifiedAt) && age >= -5 * 60 * 1000 && age <= 48 * 60 * 60 * 1000;
+        } catch {
+          evidence = null;
         }
-        const isAuth = Boolean(authTest.valid || authTest.authenticated);
+        const sandboxAuthenticated = Boolean(
+          evidence && digestValid && fresh &&
+          evidence.artifact_type === 'EXTERNAL_PROVIDER_SANDBOX_AUTHENTICATION_EVIDENCE' &&
+          evidence.provider === 'PayPal' && evidence.claim_scope === 'SANDBOX_ONLY' &&
+          evidence.result?.ok === true && evidence.result?.oauth_http_status === 200 &&
+          evidence.result?.environment === 'sandbox' &&
+          evidence.result?.sandbox_credentials_present === true &&
+          evidence.result?.sandbox_oauth_authenticated === true &&
+          evidence.result?.payments_enabled === false &&
+          evidence.result?.live_credentials_read === false &&
+          evidence.result?.live_api_contacted === false &&
+          evidence.result?.transaction_attempted === false &&
+          evidence.result?.token_persisted === false
+        );
+        const paymentAdapterRemainsDisabled = pp.publicStatus() === 'EXTERNAL_PROVIDER_REQUIRED';
+        const passed = sandboxAuthenticated && paymentAdapterRemainsDisabled;
         return {
           node_id: 'DN-35',
           name: 'PayPal Enterprise Payment Gateway',
           category: 'PAYMENTS',
           executed: true,
-          claim_scope: creds ? (creds.environment === 'live' ? 'PRODUCTION' : 'SANDBOX') : 'LOCAL',
-          status: creds ? (isAuth ? 'SUCCESS' : 'FAIL_CLOSED') : 'PROVIDER_REQUIRED',
+          claim_scope: 'SANDBOX',
+          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
-            configured: pp.hasActiveCredentials(),
-            environment: info.environment,
-            client_id_prefix: info.masked_client_id,
-            authenticated: isAuth,
-            fail_closed_enforced: true
+            configured: Boolean(evidence?.result?.sandbox_credentials_present),
+            environment: 'sandbox',
+            sandbox_oauth_authenticated: sandboxAuthenticated,
+            evidence_digest_verified: digestValid,
+            evidence_fresh: fresh,
+            payment_adapter_remains_disabled: paymentAdapterRemainsDisabled,
+            payments_enabled: false,
+            live_credentials_read: false,
+            live_api_contacted: false,
+            transactions_attempted: false,
+            evidence_sha256: evidence?.evidence_sha256 ?? null
           }
         };
       }
@@ -782,15 +908,28 @@ export class DaisySubsystemExecutors {
 
       // 38. DN-38: Sovereign Settlement Escrow Program
       case 'DN-38': {
+        const escrow = simulateEscrowQuorum();
         return {
           node_id: 'DN-38',
           name: 'Sovereign Settlement Escrow Program',
           category: 'SETTLEMENT',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'MODEL',
+          status: escrow.passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { escrow_execution_verified: false, reason: 'No escrow contract, signer quorum, or settlement provider was executed.' }
+          evidence: {
+            escrow_state_machine_model_verified: escrow.passed,
+            quorum_required: escrow.quorum_required,
+            valid_signatures: escrow.valid_signatures,
+            release_authorized: escrow.release_authorized,
+            insufficient_quorum_rejected: escrow.insufficient_quorum_rejected,
+            replay_release_rejected: escrow.replay_release_rejected,
+            unauthorized_refund_rejected: escrow.unauthorized_refund_rejected,
+            final_state: escrow.final_state,
+            live_funds_moved: escrow.live_funds_moved,
+            contract_deployed: escrow.contract_deployed,
+            scope: 'Ed25519 two-of-three escrow state-machine model; no live contract or settlement provider'
+          }
         };
       }
 
@@ -854,16 +993,21 @@ export class DaisySubsystemExecutors {
 
       // 43. DN-43: Daisy Brain Autonomous Planner
       case 'DN-43': {
-        return {
-          node_id: 'DN-43',
-          name: 'Daisy Brain Autonomous Planner',
-          category: 'CORE_KERNEL',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: { goal_decomposition_executed: false, reason: 'No problem-specific planning input or planning engine is wired to this node.' }
-        };
+        try {
+          const goal = typeof testPayload.goal === 'string' ? testPayload.goal : 'Verify release readiness';
+          const tasks = Array.isArray(testPayload.tasks) ? testPayload.tasks : [
+            { id: 'inspect', description: 'Inspect changes' },
+            { id: 'test', description: 'Run regression tests', dependsOn: ['inspect'] },
+            { id: 'review', description: 'Review evidence', dependsOn: ['test'] }
+          ];
+          const plan = planGoal(goal, tasks);
+          const ordered = new Map(plan.orderedTasks.map((task, index) => [task.id, index]));
+          const dependenciesRespectOrder = plan.orderedTasks.every(task => task.dependsOn.every(dep => ordered.get(dep)! < ordered.get(task.id)!));
+          const passed = dependenciesRespectOrder && plan.orderedTasks.length === tasks.length;
+          return { node_id: 'DN-43', name: 'Daisy Brain Autonomous Planner', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: passed ? 'SUCCESS' : 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { goal_decomposition_executed: true, strategy: plan.strategy, task_count: plan.orderedTasks.length, ordered_task_ids: plan.orderedTasks.map(task => task.id), dependencies_respect_order: dependenciesRespectOrder, scope: 'deterministic dependency planner; not autonomous AI reasoning' } };
+        } catch (error) {
+          return { node_id: 'DN-43', name: 'Daisy Brain Autonomous Planner', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { goal_decomposition_executed: false, reason: error instanceof Error ? error.message : String(error) } };
+        }
       }
 
       // 44. DN-44: Pigeonhole Collision SMT Verifier
@@ -884,43 +1028,92 @@ export class DaisySubsystemExecutors {
 
       // 45. DN-45: Two Generals Consensus Barrier Node
       case 'DN-45': {
+        const contract = REAL_32_DH_FORMAL_REGISTRY.find((item) => item.case_id === 'DH-P-015' && item.name === 'Two Generals Problem');
+        if (!contract) {
+          return {
+            node_id: 'DN-45',
+            name: 'Two Generals Consensus Barrier Node',
+            category: 'LOGIC_SOLVER',
+            executed: true,
+            claim_scope: 'MODEL',
+            status: 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: { formal_model_executed: false, reason: 'The DH-P-015 Two Generals contract is not in the formal registry.' }
+          };
+        }
+        const proof = await Z3FormalProofEngine.getInstance().executeSmtVerification(
+          contract.case_id,
+          contract.name,
+          contract.domain,
+          contract.formal_proposition,
+          contract.z3_smt_assertion,
+          contract.expected_result,
+          'Z3 checked the DH-P-015 lossy-channel attack formula. This is not a live network execution.'
+        );
         return {
           node_id: 'DN-45',
           name: 'Two Generals Consensus Barrier Node',
           category: 'LOGIC_SOLVER',
           executed: true,
           claim_scope: 'MODEL',
-          status: 'FAIL_CLOSED',
+          status: proof.proved ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { formal_model_executed: false, reason: 'No distributed-protocol model or solver execution is wired to this node.' }
+          evidence: {
+            paradox_id: contract.case_id,
+            contract_hash: contract.contract_hash,
+            expected_solver_result: contract.expected_result,
+            solver_result: proof.solver_result,
+            formal_model_executed: proof.proved,
+            distributed_network_executed: false
+          }
         };
       }
 
       // 46. DN-46: Chandy-Lamport Distributed Snapshot
       case 'DN-46': {
+        const snapshot = simulateChandyLamportSnapshot();
         return {
           node_id: 'DN-46',
           name: 'Chandy-Lamport Distributed Snapshot',
           category: 'PERSISTENCE',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'MODEL',
+          status: snapshot.passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { distributed_snapshot_executed: false, reason: 'No distributed process state or channel markers are available.' }
+          evidence: {
+            model_execution_verified: snapshot.passed,
+            snapshot_id: snapshot.snapshot_id,
+            process_states_recorded: snapshot.process_states_recorded,
+            channel_states: snapshot.channel_states,
+            markers_received: snapshot.markers_received,
+            in_transit_message_recorded: snapshot.in_transit_message_recorded,
+            scope: 'deterministic three-process algorithm model; not a live distributed cluster'
+          }
         };
       }
 
       // 47. DN-47: Raft Consensus State Machine
       case 'DN-47': {
+        const raft = simulateRaftConsensus();
         return {
           node_id: 'DN-47',
           name: 'Raft Consensus State Machine',
           category: 'CORE_KERNEL',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'MODEL',
+          status: raft.passed ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { raft_consensus_executed: false, reason: 'No Raft peers, election, or replicated log are configured.' }
+          evidence: {
+            raft_model_execution_verified: raft.passed,
+            term: raft.term,
+            leader_id: raft.leader_id,
+            votes_received: raft.votes_received,
+            cluster_size: raft.cluster_size,
+            log_indexes: raft.log_indexes,
+            commit_indexes: raft.commit_indexes,
+            stale_term_rejected: raft.stale_term_rejected,
+            scope: 'deterministic three-node Raft model; not a live distributed cluster'
+          }
         };
       }
 
@@ -1070,14 +1263,17 @@ export class DaisySubsystemExecutors {
     const nodeReg = NodeRegistry.getInstance();
     const results: SubsystemExecutionResult[] = [];
 
-    for (let i = 1; i <= 54; i++) {
+    // DN-11 produces the canonical source-bound proof used by DN-05 and DN-29.
+    // Execute those dependent audit/vault nodes immediately after the pipeline, then sort the report by ID.
+    const executionOrder = [11, 5, 29, ...Array.from({ length: 54 }, (_, index) => index + 1).filter(id => ![11, 5, 29].includes(id))];
+    for (const i of executionOrder) {
       const id = `DN-${String(i).padStart(2, '0')}`;
       const nodeDef = nodeReg.getNode(id);
       const isRegistered = Boolean(nodeDef);
 
       try {
         const rawRes = await this.executeNode(id);
-        const hasEvidence = rawRes.evidence && Object.keys(rawRes.evidence).length > 0;
+        const hasEvidence = hasMeaningfulEvidence(rawRes.evidence);
         const evHash = computeSha256(JSON.stringify(rawRes.evidence || {}));
 
         results.push({
@@ -1111,6 +1307,7 @@ export class DaisySubsystemExecutors {
       }
     }
 
+    results.sort((a, b) => Number(a.node_id.slice(3)) - Number(b.node_id.slice(3)));
     return {
       total: results.length,
       registered: results.filter(r => r.registered).length,

@@ -121,6 +121,21 @@ export class SqliteStore {
   public isDiskBacked(): boolean {
     return this.diskBacked;
   }
+  public verifyDurableWal(): { verified: boolean; disk_backed: boolean; journal_mode: string | null; synchronous: number | null; reason?: string } {
+    if (!this.diskBacked) return { verified: false, disk_backed: false, journal_mode: null, synchronous: null, reason: 'SQLite is using the in-memory fallback; durable WAL cannot be claimed.' };
+    try {
+      this.db.exec('PRAGMA journal_mode=WAL');
+      this.db.exec('PRAGMA synchronous=FULL');
+      const journal = this.db.get('PRAGMA journal_mode');
+      const sync = this.db.get('PRAGMA synchronous');
+      const journalMode = String(journal?.journal_mode ?? journal?.[Object.keys(journal ?? {})[0]] ?? '').toLowerCase();
+      const synchronous = Number(sync?.synchronous ?? sync?.[Object.keys(sync ?? {})[0]]);
+      const verified = journalMode === 'wal' && synchronous === 2;
+      return { verified, disk_backed: true, journal_mode: journalMode || null, synchronous: Number.isFinite(synchronous) ? synchronous : null, ...(!verified ? { reason: 'SQLite did not confirm WAL mode and synchronous=FULL.' } : {}) };
+    } catch (error) {
+      return { verified: false, disk_backed: true, journal_mode: null, synchronous: null, reason: error instanceof Error ? error.message : String(error) };
+    }
+  }
 
   private runMigrations(): void {
     const required27 = [

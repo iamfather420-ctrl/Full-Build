@@ -30,8 +30,10 @@ export class MemorySafetyInstrumentation {
     const processMetricsAvailable = Number.isFinite(m.rss) && Number.isFinite(maxRssBytes) && maxRssBytes > 0;
     const cgroupMetricsAvailable = current !== undefined && peak !== undefined && limit !== undefined &&
       oom !== undefined && oomKill !== undefined;
-    const cgroupWithinLimit = !cgroupMetricsAvailable ||
-      (Math.max(current!, peak!) <= limitBytes && limit! <= limitBytes && oomEvents === 0);
+    // The runner's root cgroup may have a larger host-level limit than this process budget.
+    // Enforce the process RSS budget above; use root-cgroup telemetry only to detect OOM events.
+    // The submitted program's own cgroup limit/peak is independently enforced by the sandbox below.
+    const cgroupWithinLimit = !cgroupMetricsAvailable || oomEvents === 0;
     // The orchestrator runs on a shared CI host where the root cgroup can be
     // unlimited. Enforce its actual current and lifetime peak RSS separately;
     // the submitted program itself is independently bounded by the sandbox

@@ -177,8 +177,8 @@ export class SolutionPipeline {
         sandbox?.limit !== null && sandbox?.limit !== undefined && sandbox?.oom !== null && sandbox?.oom !== undefined;
       const sandboxWithinLimit = sandboxMeasured && sandbox!.peak! <= limit && sandbox!.limit! <= limit && sandbox!.oom === 0;
       return snapshot.instrumentationAvailable && snapshot.withinLimit && sandboxWithinLimit
-        ? pass({ memory_instrumentation: true, sandbox_peak_bytes: sandbox!.peak, sandbox_limit_bytes: sandbox!.limit, sandbox_oom_events: sandbox!.oom, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_peak_rss_bytes: snapshot.maxRssBytes, orchestrator_memory_source: 'process RSS + getrusage peak; sandbox cgroup v2 peak/limit/OOM' })
-        : block('Sandbox cgroup peak/limit/OOM telemetry or orchestrator process RSS/peak telemetry is unavailable or outside budget.', { memory_instrumentation: snapshot.instrumentationAvailable, sandbox_telemetry_available: sandboxMeasured, sandbox_peak_bytes: sandbox?.peak, sandbox_limit_bytes: sandbox?.limit, sandbox_oom_events: sandbox?.oom, orchestrator_within_limit: snapshot.withinLimit });
+        ? pass({ memory_instrumentation: true, sandbox_peak_bytes: sandbox!.peak, sandbox_limit_bytes: sandbox!.limit, sandbox_oom_events: sandbox!.oom, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_peak_rss_bytes: snapshot.maxRssBytes, orchestrator_memory_source: 'process RSS + getrusage peak; host cgroup OOM telemetry; sandbox cgroup v2 peak/limit/OOM', orchestrator_cgroup_current_bytes: snapshot.cgroupCurrentBytes, orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes, orchestrator_cgroup_limit_bytes: snapshot.cgroupLimitBytes, orchestrator_cgroup_oom_events: snapshot.cgroupOomEvents })
+        : block('Sandbox cgroup peak/limit/OOM telemetry or orchestrator process RSS/peak telemetry is unavailable or outside budget.', { memory_instrumentation: snapshot.instrumentationAvailable, sandbox_telemetry_available: sandboxMeasured, sandbox_peak_bytes: sandbox?.peak, sandbox_limit_bytes: sandbox?.limit, sandbox_oom_events: sandbox?.oom, orchestrator_within_limit: snapshot.withinLimit, orchestrator_rss_bytes: snapshot.rssBytes, orchestrator_peak_rss_bytes: snapshot.maxRssBytes, orchestrator_cgroup_current_bytes: snapshot.cgroupCurrentBytes, orchestrator_cgroup_peak_bytes: snapshot.cgroupPeakBytes, orchestrator_cgroup_limit_bytes: snapshot.cgroupLimitBytes, orchestrator_cgroup_oom_events: snapshot.cgroupOomEvents });
     });
     const sentinel = await runStage(9, () => /FAIL_STAGE_9|NON_TERMINATION|DIVERGENCE_SENTINEL/.test(normalizedCode)
       ? fail('Sentinel detected fatal specification anomaly', { sentinel_detected: true })
@@ -288,6 +288,21 @@ export class SolutionPipeline {
         await store.put(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT', bundle);
         const persisted = await store.get(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
         const view = CrystalClearBox.projectCustomerEvidence(persisted.payload as typeof bundle);
+        const bundleVerified = view.verification_verdict === 'VERIFIED' &&
+          view.proprietary_weights_redacted && view.internal_reasoning_redacted &&
+          view.oracle_attestations_count > 0;
+        // Promote only the exact stored solution whose source hash is bound to this independently attested bundle.
+        if (bundleVerified) {
+          const durable = DurableStore.getInstance();
+          const canonical = durable.getState().solutions['DH-S-001'];
+          if (canonical && canonical.implementation_hash === sourceHash) {
+            canonical.verification_status = 'VERIFIED';
+            canonical.status = 'VERIFIED';
+            canonical.proof_bundle_id = bundle.proof_id;
+            durable.getState().solutions['DH-S-001'] = canonical;
+            durable.persist();
+          }
+        }
         return view.proprietary_weights_redacted && view.internal_reasoning_redacted
           ? pass({
               proof_id: view.proof_id,

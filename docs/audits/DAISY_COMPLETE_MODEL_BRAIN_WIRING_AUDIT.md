@@ -197,3 +197,28 @@ The fresh coverage contract still passed: 54 executed, no unsatisfied ids, `all_
 
 
 
+
+
+## Latest verification update — 2026-11-17
+
+This addendum supersedes the earlier aggregate 54-node counts above for the current repair branch. The current work is in [Full-Build PR #129](https://github.com/iamfather420-ctrl/Full-Build/pull/129), branch `repair/remaining-17-nodes`, head `81c19f752ca16564044983b88733e645a00fbe7a`. The PR remains open and unmerged.
+
+The authoritative CI run `44012272982` completed successfully for Build and Enterprise CI; the matching Authoritative 120-Case Verification and Formal evidence hash stability runs also completed successfully. The generated runtime artifact is `artifacts/daisy-54-node-execution.json`.
+
+Current node results:
+
+- 54/54 registered, instantiated, reachable, and executed
+- 54/54 output assertions and evidence records generated
+- 39 functionally passed
+- 2 safety controls passed
+- 1 prohibited-by-policy guard passed
+- 2 external providers required
+- 10 not verified
+
+The previous committed `daisy-54-node-canonical.json` reported 51 successes and conflicted with detailed execution results. It has been replaced with a summary pointer to the runtime artifact; do not use the old 51/54 figure.
+
+The 46-gate run reports 43 passed, 3 blocked, 0 failed. PayPal Sandbox OAuth was freshly authenticated through the protected Vercel preview console (HTTP 200); the evidence is hash-verified. This did not enable payments, read live credentials, or attempt transactions. The 256 MiB cleanroom sandbox and 2 GiB CI orchestrator memory budget passed Stage 8.
+
+Remaining blockers are explicit: Fly Stage 14 still rejects the repair branch because the deployed Fly trust policy does not yet include the new branch allowlist; Coinbase Commerce has no configured `COINBASE_API_KEY`; the EVM bridge has no configured `ETH_RPC_URL`; Lean4, Isabelle/HOL, and Coq have not been invoked; and DN-49, DN-51, and DN-53 still require a trusted license signer, HSM attestation, and a real range-proof verifier respectively.
+
+The PR includes the Stage 14 trust-policy change, but it has not been merged or deployed to Fly. Production remains closed, payments remain disabled, and no PR merge or production deployment has been performed.
