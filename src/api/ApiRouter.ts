@@ -35,7 +35,8 @@ export class SovereignApiRouter {
           audit_records: store.getState().audit_chain.length,
           readiness: production.readiness,
           production_status: production.status,
-          authentication_enabled: production.authentication_enabled,
+          authentication_enabled: false, // authentication_enabled: false until the live authentication flow is independently verified; config is reported separately.
+          authentication_configured: production.authentication_configured,
           payments_enabled: false,
           environment: production.environment,
           blockers: production.blockers,
