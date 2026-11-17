@@ -552,7 +552,7 @@ export class AuthoritativeVerificationPipeline {
     const solutionPipeline = SolutionPipeline.getInstance();
     const pipelineResult = await solutionPipeline.runPipeline(
       'DH-P-001',
-      'export function zenoStep(dist: number, eps: number) { return dist < eps ? 0 : dist / 2; }'
+      'export function zenoStep(dist, eps) { return dist < eps ? 0 : dist / 2; }'
     );
     const solutionPipelinePassed = pipelineResult.overall_success &&
       pipelineResult.completed_stages === 21 &&
