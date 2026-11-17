@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "status": "PHASE_CROSSWALK_FOR_EXECUTABLE_VALIDATION",
+  "status": "EXECUTABLE_45_STAGE_SEQUENCE",
   "sequence": {
     "pre_production": {
       "stages": "1-44",
@@ -12,11 +12,8 @@
     },
     "post_production": {
       "begins_after": 45,
-      "required_before_closure": true
-    },
-    "final_closure": {
-      "stage": 46,
-      "gate_id": "GATE-46"
+      "required_for_operational_completion": true,
+      "numbered_stage": false
     }
   },
   "pre_production": {
@@ -74,7 +71,7 @@
   "stage_45": {
     "id": "STAGE-45",
     "name": "Final Pre-Production Production-Readiness Verification",
-    "purpose": "Evaluate the complete pre-production evidence set and authorize deployment only when all 44 checks pass.",
+    "purpose": "Evaluate all 44 pre-production checks and authorize deployment only when every check passes with current, commit-matched evidence.",
     "depends_on": "ALL_PRE_PRODUCTION_CHECKS",
     "pass_conditions": [
       "Exactly 44 unique pre-production checks are present.",
@@ -88,14 +85,13 @@
       "Post-deployment lifecycle execution",
       "Production failure injection",
       "Production rollback or recovery",
-      "Post-deployment monitoring or whole-product production exercise",
-      "Stage 46 final closure"
+      "Post-deployment monitoring or whole-product production exercise"
     ],
     "on_pass": "PRE_PRODUCTION_COMPLETE_AND_DEPLOYMENT_AUTHORIZED",
     "on_fail": "DEPLOYMENT_BLOCKED"
   },
   "post_production": {
-    "description": "Checks that require a deployed production or production-like target. These checks cannot block Stage 45 because they cannot exist until after deployment.",
+    "description": "Checks that require a deployed production or approved production-like target. These checks run after Stage 45 authorizes deployment and are recorded as a separate operational evidence set; they are not a numbered stage.",
     "checks": [
       {
         "id": "GATE-11-PRODUCTION",
@@ -137,22 +133,6 @@
       }
     ]
   },
-  "stage_46": {
-    "id": "GATE-46",
-    "name": "Final Consolidated Truth-Boundary and Proof Closure",
-    "depends_on": [
-      "STAGE-45",
-      "ALL_POST_PRODUCTION_CHECKS"
-    ],
-    "pass_conditions": [
-      "Stage 45 passed and its evidence is preserved.",
-      "Every required post-production check passed with production or approved-staging evidence.",
-      "Whole-product verification passed.",
-      "All evidence is commit/environment matched and hash verified.",
-      "No unresolved blocker remains."
-    ],
-    "circular_dependencies_forbidden": true
-  },
   "evidence_contract": {
     "required_fields": [
       "gate_id",
@@ -179,8 +159,8 @@
       "Never promote EXTERNAL_PROVIDER_REQUIRED, PENDING, or BLOCKED to PASSED.",
       "Local, model, and sandbox evidence cannot establish production connectivity.",
       "Stage 45 consumes only the 44 pre-production results.",
-      "Stage 46 consumes Stage 45 and all required post-production results.",
-      "No post-production result may be a prerequisite of Stage 45."
+      "No post-production result may be a prerequisite of Stage 45.",
+      "Post-production checks execute only after deployment and are not part of the 45-stage pre-production sequence."
     ]
   }
 }
