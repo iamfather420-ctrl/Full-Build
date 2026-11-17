@@ -2,6 +2,12 @@ name: Build and Enterprise CI
 
 on:
   workflow_dispatch:
+    inputs:
+      run_46_gate_scan:
+        description: 'Run the authoritative 46-gate scan after proof closure (start Fly machines first)'
+        required: true
+        type: boolean
+        default: false
   pull_request:
   push:
     branches: [main, fix/46-gate-baseline-lifecycle-sandbox]
@@ -131,14 +137,20 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/solvex-proof-store
           chmod 700 /tmp/solvex-proof-store
+          PROOF_HMAC_KEY="$(openssl rand -hex 32)"
+          TENANT_ROOT_KEY="$(openssl rand -hex 32)"
+          echo "::add-mask::$PROOF_HMAC_KEY"
+          echo "::add-mask::$TENANT_ROOT_KEY"
           echo "SOLVEX_PROOF_DIR=/tmp/solvex-proof-store" >> "$GITHUB_ENV"
-          echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
-          echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "SOLVEX_PROOF_HMAC_KEY=$PROOF_HMAC_KEY" >> "$GITHUB_ENV"
+          echo "SOLVEX_TENANT_ROOT_KEY=$TENANT_ROOT_KEY" >> "$GITHUB_ENV"
       - name: Lifecycle proof-closure contract regression tests
         run: bunx tsx --test src/proofs/lifecycleProofClosure.test.ts
       - name: Proof closure
         run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification
+        id: authoritative_46
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_46_gate_scan }}
         env:
           SOLVEX_NODE_EXTERNAL_PROBES: 'true'
           # Permit only the explicitly configured disposable Neon branch to issue
@@ -148,7 +160,7 @@ jobs:
           SOLVEX_E2E_USE_DISPOSABLE_NEON: 'true'
         run: bunx tsx scripts/verify_46_gates.ts
       - name: Upload 46-gate evidence
-        if: always()
+        if: ${{ steps.authoritative_46.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: system-46-gates

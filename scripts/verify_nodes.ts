@@ -1,5 +1,6 @@
 import { configureTestAuthEnvironment } from './testAuthEnvironment';
 import { runDaisy54NodeCoverage } from '../src/tests/daisy54NodeCoverage';
+import { classifyNodeResult } from '../src/nodes/nodeVerdict';
 
 async function main() {
   configureTestAuthEnvironment();
@@ -32,10 +33,23 @@ async function main() {
   console.log(`PROVIDER REQUIRED:          ${rep.verdict_counts.PROVIDER_REQUIRED}`);
   console.log(`NOT VERIFIED:               ${rep.verdict_counts.NOT_VERIFIED}`);
   console.log(`ALL 54 VERIFIED:            ${rep.all_passed ? 'YES' : 'NO'}`);
+  console.log(`VERIFICATION BLOCKERS:       ${rep.results.filter(n => !['FUNCTIONALLY_PASSED', 'SAFETY_PASSED', 'PROHIBITED_BY_POLICY'].includes(classifyNodeResult(n))).map(n => n.node_id).join(', ') || 'NONE'}`);
   console.log('===========================================================');
 
-  if (!rep.execution_complete) {
-    process.exit(1);
+  const executionCoverageOnly = process.argv.includes('--execution-coverage-only');
+  const executionEvidenceComplete = rep.execution_complete &&
+    rep.evidence_generated_count === 54 &&
+    rep.unsatisfied_node_ids.length === 0 &&
+    rep.evidence_missing_node_ids.length === 0;
+
+  if (!executionEvidenceComplete) {
+    console.error('[BLOCKED] 54-node execution/evidence coverage is incomplete.');
+    process.exitCode = 1;
+  } else if (!rep.all_passed && executionCoverageOnly) {
+    console.warn('[SCOPE-LIMITED] All 54 nodes executed and emitted evidence, but functional verification is NOT 54/54. Unresolved nodes remain listed above; production activation stays blocked.');
+  } else if (!rep.all_passed) {
+    console.error('[BLOCKED] Execution coverage is not functional verification. Resolve every PROVIDER_REQUIRED and NOT_VERIFIED result before claiming 54/54.');
+    process.exitCode = 1;
   }
 }
 

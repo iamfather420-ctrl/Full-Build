@@ -18,6 +18,7 @@ test('54-node coverage can pass while functional success stays below 54', async 
   assert.equal(classifyNodeResult(pipelineNode), 'NOT_VERIFIED');
   assert.deepEqual(coverage.evidence_missing_node_ids, []);
   assert.equal(coverage.all_passed, false);
+  assert.equal(coverage.all_passed, coverage.execution_complete && coverage.evidence_missing_node_ids.length === 0 && coverage.verdict_counts.FUNCTIONALLY_PASSED + coverage.verdict_counts.SAFETY_PASSED + coverage.verdict_counts.PROHIBITED_BY_POLICY === 54 && coverage.verdict_counts.PROVIDER_REQUIRED === 0 && coverage.verdict_counts.NOT_VERIFIED === 0);
   assert.equal(coverage.verdict_counts.FUNCTIONALLY_PASSED + coverage.verdict_counts.SAFETY_PASSED + coverage.verdict_counts.PROHIBITED_BY_POLICY + coverage.verdict_counts.PROVIDER_REQUIRED + coverage.verdict_counts.NOT_VERIFIED, 54);
   assert.equal(counts.FUNCTIONALLY_PASSED, coverage.results.filter((result) => result.status === 'SUCCESS').length);
   assert.ok(counts.FUNCTIONALLY_PASSED < 54);
