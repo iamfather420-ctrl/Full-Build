@@ -149,7 +149,7 @@ export class SolutionPipeline {
       try { receipt = JSON.parse(result.output.trim()); } catch { return fail('Sandbox did not return a valid machine-readable receipt.'); }
       sandboxMemoryEvidence = { current: receipt.cgroup_memory_current_bytes, peak: receipt.cgroup_memory_peak_bytes, limit: receipt.cgroup_memory_limit_bytes, oom: receipt.cgroup_oom_events };
       return receipt.accepted === true && receipt.input_sha256 === sourceHash
-        ? pass({ sandbox_started: true, image_digest: image.split('@sha256:')[1], input_sha256: sourceHash, exit_code: result.exitCode, memory_limit_bytes: result.memoryLimitBytes, cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes, cgroup_oom_events: receipt.cgroup_oom_events })
+        ? pass({ sandbox_started: true, image_digest: image.match(/(?:@)?sha256:([a-f0-9]{64})$/i)?.[1], input_sha256: sourceHash, exit_code: result.exitCode, memory_limit_bytes: result.memoryLimitBytes, cgroup_memory_peak_bytes: receipt.cgroup_memory_peak_bytes, cgroup_oom_events: receipt.cgroup_oom_events })
         : fail('Sandbox receipt did not bind acceptance to the submitted source hash.');
     });
     await runStage(7, () => {
