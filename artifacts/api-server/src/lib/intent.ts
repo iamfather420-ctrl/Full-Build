@@ -14,7 +14,8 @@
  *
  * Verification: crypto.verify() — RSA-SHA256 or Ed25519 depending on key type
  * Public key: SOLVEX_SIGNER_PUBLIC_KEY env var (PEM format)
- * Fallback:   HMAC confirmation hash (legacy, used when no public key registered)
+ * Fallback:   HMAC confirmation hash only when no public key is configured.
+ *              An invalid key does not fall back. Asymmetric mode rejects HMAC.
  */
 
 import crypto from "crypto";
@@ -22,6 +23,7 @@ import { nanoid } from "nanoid";
 import { tickLamport } from "./lamport";
 import { executeSecure } from "./vault";
 import { logger } from "./logger";
+import { selectConfirmationMode } from "./confirmationMode";
 
 // ── Intent types ───────────────────────────────────────────────────────────────
 export type IntentAction =
@@ -72,13 +74,16 @@ export interface SolanaIntent {
 
 // ── Public key registry ────────────────────────────────────────────────────────
 // Load once at startup — PEM format, RSA or Ed25519
+let signerKeyInvalid = false;
+
 function loadSignerPublicKey(): crypto.KeyObject | null {
   const pem = process.env.SOLVEX_SIGNER_PUBLIC_KEY;
   if (!pem) return null;
   try {
     return crypto.createPublicKey(pem.replace(/\\n/g, "\n"));
   } catch (err) {
-    logger.error({ err }, "SIGNER: failed to parse SOLVEX_SIGNER_PUBLIC_KEY — falling back to HMAC");
+    signerKeyInvalid = true;
+    logger.error({ err }, "SIGNER: SOLVEX_SIGNER_PUBLIC_KEY is invalid; confirmation is blocked");
     return null;
   }
 }
@@ -241,27 +246,26 @@ export function confirmIntent(payload: ConfirmPayload): {
 
   let verified = false;
   let mode = "NONE";
+  const decision = selectConfirmationMode({
+    publicKeyConfigured: Boolean(process.env.SOLVEX_SIGNER_PUBLIC_KEY?.trim()) || signerKeyInvalid,
+    publicKeyValid: isAsymmetricMode(),
+    hasHeader: Boolean(header),
+    hasSignature: Boolean(signature),
+    hasConfirmationHash: Boolean(confirmationHash),
+  });
+  if (decision.mode === 'REJECT') return { ok: false, error: decision.error };
 
-  // Path 1: Asymmetric — preferred when public key is registered
-  if (isAsymmetricMode() && header && signature) {
-    // Verify that the header matches what we generated (prevents header substitution attacks)
+  if (decision.mode === 'ASYMMETRIC') {
     if (header !== intent.header) {
       intent.status = "REJECTED";
       logger.warn({ intentId }, "INTENT_REJECTED: header mismatch");
       return { ok: false, error: "HEADER_MISMATCH" };
     }
-    verified = verifyAsymmetric(header, intentId, signature);
+    verified = verifyAsymmetric(header, intentId, signature ?? '');
     mode = "ASYMMETRIC";
-  }
-  // Path 2: HMAC legacy fallback
-  else if (confirmationHash) {
-    verified = verifyHmacLegacy(intent, confirmationHash);
+  } else {
+    verified = verifyHmacLegacy(intent, confirmationHash ?? '');
     mode = "HMAC_LEGACY";
-  }
-  else {
-    return { ok: false, error: isAsymmetricMode()
-      ? "ASYMMETRIC_MODE: provide header + signature"
-      : "LEGACY_MODE: provide confirmationHash" };
   }
 
   if (!verified) {

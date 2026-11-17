@@ -265,8 +265,8 @@ export async function runEnterpriseVerification() {
       .addOracle('ORACLE-01', 'Test Witness', 'SIG_CHECK', true)
       .addReplay('REPLAY-01', 'hash_a', 'hash_a');
     const sealed = builder.seal();
-    if (sealed.verification_status !== 'VERIFIED') {
-      throw new Error('Clean proof bundle failed to seal as VERIFIED');
+    if (sealed.verification_status !== 'FAIL') {
+      throw new Error('A boolean oracle flag sealed as VERIFIED');
     }
   });
 

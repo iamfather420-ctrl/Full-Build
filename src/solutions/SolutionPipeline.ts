@@ -277,8 +277,11 @@ export class SolutionPipeline {
           .addEvidence('z3_certificate_sha256:' + (theoremCertificate || 'NOT_AVAILABLE'))
           .addSourceReference('paradox_registry:' + paradoxCode);
         if (process.env.GITHUB_SHA) builder.addSourceReference('commit:' + process.env.GITHUB_SHA);
-        if (oracleAttestation) {
-          builder.addOracle(oracleAttestation.oracleId, oracleAttestation.modelId, 'Ed25519 source-bound independent oracle attestation', true);
+        if (oracleAttestation && process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY) {
+          builder.addSignedOracleAttestation(oracleAttestation, process.env.SOLVEX_ORACLE_ED25519_PUBLIC_KEY);
+        } else if (oracleAttestation) {
+          builder.addLimitation('Oracle response was not bound to a configured public key; this bundle is not VERIFIED.');
+          builder.addOracle(oracleAttestation.oracleId, oracleAttestation.modelId, 'unsigned oracle response', false);
         } else {
           builder.addLimitation('Independent oracle attestation is unavailable; this bundle is not VERIFIED.');
         }

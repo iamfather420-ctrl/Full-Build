@@ -20,7 +20,6 @@ import { SovereignApiRouter } from '../api/ApiRouter';
 import { NodeRegistry } from './NodeRegistry';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { generateKeyPairSync, sign, verify } from 'node:crypto';
 import { compareToCanonical, DRIFT_CANONICAL_SHA256 } from './driftCheck';
 import { happensBefore, receive, tick } from './vectorClock';
 import { TenantCrypto } from '../security/TenantCrypto';
@@ -1186,24 +1185,19 @@ export class DaisySubsystemExecutors {
 
       // 52. DN-52: Ed25519 Cryptographic Signer
       case 'DN-52': {
-        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-        const message = Buffer.from('daisy-dn-52-ephemeral-self-test');
-        const signature = sign(null, message, privateKey);
-        const verified = verify(null, message, publicKey, signature);
-        const tamperedAccepted = verify(null, Buffer.from('tampered'), publicKey, signature);
         return {
           node_id: 'DN-52',
           name: 'Ed25519 Cryptographic Signer',
           category: 'SECURITY',
           executed: true,
           claim_scope: 'LOCAL',
-          status: verified && !tamperedAccepted ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
-            ed25519_signature_verified: verified,
-            tampered_signature_rejected: !tamperedAccepted,
-            ephemeral_process_key: true,
-            production_key_configured: false
+            ed25519_signature_verified: false,
+            production_key_configured: false,
+            ephemeral_key_accepted: false,
+            reason: 'No persistent production Ed25519 key is configured. An ephemeral process key is not operational.'
           }
         };
       }

@@ -1,4 +1,5 @@
 import { ProofBundleEntity, computeSha256 } from '../database/DatabaseSchema';
+import { IndependentModelOracle, type OracleAttestation } from '../security/IndependentModelOracle';
 import { Z3ProofResult } from './Z3FormalProofEngine';
 
 export class ProofBundleBuilder {
@@ -64,15 +65,32 @@ export class ProofBundleBuilder {
   }
 
   public addLean4Proof(filePath: string): this {
-    return this.addFormalProof('LEAN4', filePath, true);
+    return this.addFormalProof('LEAN4', `${filePath}; prover_executed=false`, false);
   }
 
-  public addOracle(oracleId: string, name: string, method: string, verified: boolean): this {
+  public addOracle(oracleId: string, name: string, method: string, _verified: boolean): this {
     this.bundle.independent_oracles.push({
       oracle_id: oracleId,
       name,
       method,
-      attestation_hash: computeSha256(`${oracleId}:${name}:${verified}`),
+      attestation_hash: computeSha256(`${oracleId}:${name}:UNVERIFIED_BOOLEAN`),
+      verified: false
+    });
+    return this;
+  }
+
+  public addSignedOracleAttestation(attestation: OracleAttestation, publicKeyPem: string): this {
+    const verified = IndependentModelOracle.verifyAttestation(
+      attestation,
+      attestation.oracleId,
+      attestation.inputSha256,
+      publicKeyPem
+    );
+    this.bundle.independent_oracles.push({
+      oracle_id: attestation.oracleId,
+      name: attestation.modelId,
+      method: 'Ed25519 signature checked against the supplied public key',
+      attestation_hash: computeSha256(`${attestation.signature}\n${attestation.inputSha256}\n${attestation.rationaleSha256}`),
       verified
     });
     return this;
