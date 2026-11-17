@@ -19,6 +19,7 @@ import { DurableStore } from '../database/DurableStore';
 import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 import type { UserContext } from '../auth/AuthService';
+import { evaluateProviderGateStatus } from './providerGatePolicy';
 
 export interface GateResult {
   gate_index: number;
@@ -575,20 +576,19 @@ export class AuthoritativeVerificationPipeline {
     let neonConn = false;
     if (hasNeon) neonConn = await neon.connect();
 
-    let g11Status: GateResult['status'];
-    if (paypalEvidence && !paypalEvidenceShapeValid) {
-      g11Status = 'FAILED';
-    } else if (paypalEvidence && !paypalEvidenceFresh) {
-      g11Status = 'BLOCKED';
-    } else if (hasNeon && !neonConn) {
-      g11Status = 'FAILED';
-    } else if (paypalSandboxVerified && neonConn) {
-      g11Status = 'PASSED';
-    } else if (paypalSandboxVerified || neonConn || hasNeon) {
-      g11Status = 'CONFIGURED';
-    } else {
-      g11Status = 'EXTERNAL_PROVIDER_REQUIRED';
-    }
+    // Payment-provider authentication is not required while payments are
+    // disabled. If evidence is present, however, it must always be valid/fresh.
+    // Enabling payments remains blocked until live authentication is actually
+    // verified by a separate protected release process.
+    const paymentsEnabled = String(process.env.PAYMENTS_ENABLED || 'false').toLowerCase() === 'true';
+    const g11Status = evaluateProviderGateStatus({
+      paymentsEnabled,
+      paypalEvidencePresent: Boolean(paypalEvidence),
+      paypalEvidenceShapeValid,
+      paypalEvidenceFresh,
+      hasNeon,
+      neonConnected: neonConn
+    });
 
     recordGate(
       11,
@@ -643,18 +643,24 @@ export class AuthoritativeVerificationPipeline {
 
     let lifecycleUser: UserContext | undefined;
     let lifecycleIdentityResolution = 'NOT_CONFIGURED';
-    // Only CI's disposable Neon validation branch may supply the test identity.
-    // Never read a browser session or mint an application-side tenant token here.
-    if (process.env.GITHUB_ACTIONS === 'true' && process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL) {
+    // Only the explicitly opted-in GitHub Actions disposable Neon validation
+    // branch may supply this real signed identity. Never use an application DB,
+    // production URL, browser session, or locally minted tenant token.
+    const disposableDatabaseUrl = process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL;
+    const disposableNeonOptIn =
+      process.env.GITHUB_ACTIONS === 'true' &&
+      process.env.SOLVEX_E2E_USE_DISPOSABLE_NEON === 'true' &&
+      Boolean(disposableDatabaseUrl) &&
+      disposableDatabaseUrl !== process.env.NEON_DATABASE_URL &&
+      disposableDatabaseUrl !== process.env.DATABASE_URL;
+    if (disposableNeonOptIn && disposableDatabaseUrl) {
       try {
         // The DB package initializes its default client from DATABASE_URL at module load.
         // Bind that default explicitly to the disposable validation branch before importing it;
         // never fall back to a production/application database for this CI lifecycle proof.
-        process.env.DATABASE_URL = process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL;
+        process.env.DATABASE_URL = disposableDatabaseUrl;
         const { resolveUniqueActiveOidcOwnerIdentity } = await import('@workspace/db');
-        const identity = await resolveUniqueActiveOidcOwnerIdentity(
-          process.env.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL
-        );
+        const identity = await resolveUniqueActiveOidcOwnerIdentity(disposableDatabaseUrl);
         lifecycleUser = {
           user_id: identity.user_id,
           tenant_id: identity.tenant_id,
@@ -941,19 +947,23 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       productionBlockers.push('GATE-12 end-to-end lifecycle verification is incomplete.');
     }
 
-    // Production credential gates. Sandbox evidence never authorizes live payments.
-    // Live OAuth is intentionally not attempted by this verification pipeline.
-    const paypalLiveCredentialsPresent = Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
-    const paypalLiveAuthVerified = false;
+    // Payment activation is independent from production readiness. Payments
+    // remain disabled; if explicitly enabled, live provider authentication is
+    // mandatory and is never inferred from sandbox evidence.
+    const paypalLiveCredentialsPresent = Boolean(process.env.PAYPAL_LIVE_CLIENT_ID && process.env.PAYPAL_LIVE_CLIENT_SECRET);
+    const paypalLiveAuthVerified = false; // This pipeline deliberately does not perform live OAuth.
     if (env === 'production') {
-      if (!paypalLiveCredentialsPresent || !paypalLiveAuthVerified) {
-        productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
+      if (paymentsEnabled && (!paypalLiveCredentialsPresent || !paypalLiveAuthVerified)) {
+        productionBlockers.push('GATE-11 PayPal live authentication is not verified. Live fiat payments remain disabled.');
       }
       if (!hasNeon || !neonConn) {
-        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
+        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production persistence requires NEON_DATABASE_URL.');
+      }
+      if (paymentsEnabled) {
+        productionBlockers.push('Payments must remain disabled until a separately reviewed live-provider activation flow passes.');
       }
     } else {
-      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
+      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and production prerequisites.`);
     }
 
     const prodPassed = productionBlockers.length === 0;

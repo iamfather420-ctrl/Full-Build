@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { evaluateProviderGateStatus } from './providerGatePolicy';
+const base = { paymentsEnabled: false, paypalEvidencePresent: false, paypalEvidenceShapeValid: false, paypalEvidenceFresh: false, hasNeon: true, neonConnected: true };
+assert.equal(evaluateProviderGateStatus(base), 'PASSED', 'payments disabled + connected Neon does not require PayPal evidence');
+assert.equal(evaluateProviderGateStatus({ ...base, paypalEvidencePresent: true, paypalEvidenceShapeValid: false }), 'FAILED', 'invalid supplied evidence is rejected');
+assert.equal(evaluateProviderGateStatus({ ...base, paypalEvidencePresent: true, paypalEvidenceShapeValid: true, paypalEvidenceFresh: false }), 'BLOCKED', 'stale supplied evidence is blocked');
+assert.equal(evaluateProviderGateStatus({ ...base, paymentsEnabled: true }), 'EXTERNAL_PROVIDER_REQUIRED', 'payment activation requires external provider authentication');
+assert.equal(evaluateProviderGateStatus({ ...base, neonConnected: false }), 'FAILED', 'configured but disconnected Neon fails');
+assert.equal(evaluateProviderGateStatus({ ...base, hasNeon: false, neonConnected: false }), 'EXTERNAL_PROVIDER_REQUIRED', 'missing Neon remains externally blocked');
+console.log('PASS: provider gate policy preserves PayPal evidence integrity and keeps payment activation fail-closed.');

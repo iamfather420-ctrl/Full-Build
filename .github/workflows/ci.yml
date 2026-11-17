@@ -61,6 +61,8 @@ jobs:
         run: bun run test:local-inference
       - name: System 46 release-guard regression tests
         run: bun run test:system46-guard
+      - name: Provider gate payments-disabled policy regression tests
+        run: bun run test:provider-gate-policy
       - name: Production OIDC configuration alignment regression test
         run: bun run test:production-state
       - name: Compile native Daisy server entrypoint
