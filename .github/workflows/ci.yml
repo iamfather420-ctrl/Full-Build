@@ -100,6 +100,8 @@ jobs:
           echo "SOLVEX_PROOF_DIR=/tmp/solvex-proof-store" >> "$GITHUB_ENV"
           echo "SOLVEX_PROOF_HMAC_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
           echo "SOLVEX_TENANT_ROOT_KEY=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+      - name: Lifecycle proof-closure contract regression tests
+        run: bunx tsx --test src/proofs/lifecycleProofClosure.test.ts
       - name: Proof closure
         run: bun run verify:proof-closure
       - name: Authoritative 46-gate verification
