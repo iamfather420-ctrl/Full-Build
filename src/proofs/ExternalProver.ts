@@ -172,5 +172,5 @@ export function verifyIsabelleProof(): ProverEvidence {
 export function verifyCoqProof(): ProverEvidence {
   const outputDirectory = path.join(tmpdir(), 'solvex-coq-proof');
   mkdirSync(outputDirectory, { recursive: true });
-  return runExternalProver('coq', ['formal/coq/BoundedZeno.v'], ['-q', '-output-directory', outputDirectory, 'formal/coq/BoundedZeno.v']);
+  return runExternalProver('coq', ['formal/coq/BoundedZeno.v'], ['-q', '-no-glob', '-o', path.join(outputDirectory, 'BoundedZeno.vo'), 'formal/coq/BoundedZeno.v']);
 }
