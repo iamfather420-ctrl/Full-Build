@@ -130,6 +130,9 @@ export function runExternalProver(id: ExternalProverId, relativeSources: string[
   const proof = spawnSync(resolved.binary, args, { encoding: 'utf8', timeout: 180_000, cwd: repoRoot(), maxBuffer: 8 * 1024 * 1024 });
   const stdout = proof.stdout ?? '';
   const stderr = proof.stderr ?? '';
+  if (proof.error) {
+    return { ...base, executed: false, exit_code: proof.status, binary_basename: basename, binary_sha256: binaryHash, stdout_sha256: sha256(stdout), stderr_sha256: sha256(stderr), version_sha256: sha256(versionText), reason: `${id} execution could not be completed: ${proof.error.message}` };
+  }
   const assessment = assessProverRun({
     basename,
     expectedBasenames: spec.basenames,
