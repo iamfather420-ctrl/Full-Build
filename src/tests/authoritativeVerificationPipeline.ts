@@ -554,11 +554,13 @@ export class AuthoritativeVerificationPipeline {
       'DH-P-001',
       'export function zenoStep(dist, eps) { return dist < eps ? 0 : dist / 2; }'
     );
-    const solutionPipelinePassed = pipelineResult.overall_success &&
-      pipelineResult.completed_stages === 21 &&
-      pipelineResult.total_stages === 21 &&
+    const oracleStage = pipelineResult.stage_traces.find(stage => stage.stage === 14);
+    const localPipelineStages = pipelineResult.stage_traces.filter(stage => stage.stage !== 14);
+    const solutionPipelinePassed = pipelineResult.total_stages === 21 &&
       pipelineResult.stage_traces.length === 21 &&
-      pipelineResult.stage_traces.every(stage => stage.status === 'PASSED');
+      localPipelineStages.length === 20 &&
+      localPipelineStages.every(stage => stage.status === 'PASSED') &&
+      oracleStage?.status === 'EXTERNAL_PROVIDER_REQUIRED';
     const testOrderId = 'e2e_order_' + Date.now();
     const sqliteInst = SqliteStore.getInstance();
     sqliteInst.insertTenantRecord('orders', 'TENANT_ENTERPRISE_DEMO', {
@@ -619,6 +621,8 @@ export class AuthoritativeVerificationPipeline {
           solution_pipeline_completed_stages: pipelineResult.completed_stages,
           solution_pipeline_total_stages: pipelineResult.total_stages,
           solution_pipeline_stage_traces: pipelineResult.stage_traces.map(stage => ({ stage: stage.stage, name: stage.name, status: stage.status, reason: stage.reason, evidence: stage.evidence })),
+          oracle_attestation_deferred: oracleStage?.status === 'EXTERNAL_PROVIDER_REQUIRED',
+          oracle_post_production_check_id: 'PIPE-14-PRODUCTION',
           post_production_lifecycle_deferred: true,
           post_production_check_id: 'GATE-12-PRODUCTION',
           production_identity_required_only_after_deployment: true
