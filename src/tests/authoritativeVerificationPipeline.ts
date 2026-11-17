@@ -47,6 +47,8 @@ export interface PipelineExecutionReport {
   artifacts_directory: string;
   gates: GateResult[];
   enterprise_results: EnterpriseTestResult[];
+  pre_production_passed: boolean;
+  pre_production_blockers: string[];
 }
 
 export class AuthoritativeVerificationPipeline {
@@ -847,15 +849,18 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       14,
       'GATE-14',
       'Final Truth-Boundary Audit & Production Gate',
-      prodPassed ? 'PRODUCTION' : 'LOCAL',
-      prodPassed ? 'PASSED' : 'BLOCKED',
+      'LOCAL',
+      preProductionPassed ? 'PASSED' : 'FAILED',
       performance.now() - g14Start,
       {
         execution_id: executionId,
         verdict: prodVerdict,
         claim_scope: claimScopeVerdict,
-        blockers_count: productionBlockers.length,
-        blockers: productionBlockers
+        pre_production_passed: preProductionPassed,
+        pre_production_blockers: preProductionBlockers,
+        production_verdict: prodVerdict,
+        production_blockers_count: productionBlockers.length,
+        production_blockers: productionBlockers
       }
     );
 
