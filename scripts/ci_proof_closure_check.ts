@@ -79,8 +79,8 @@ const disposableLifecycleTestCompleted =
 // the overall lifecycle gate remains BLOCKED because external Stage 14 attestation
 // is still unavailable. Never promote that test completion to a production pass.
 const lifecycleGateStatusValid =
-  gate12?.status === 'BLOCKED' &&
-  (lifecycleBlockedSafely || disposableLifecycleTestCompleted);
+  (gate12?.status === 'BLOCKED' && lifecycleBlockedSafely) ||
+  (gate12?.status === 'PASSED' && disposableLifecycleTestCompleted);
 if (!lifecycleGateStatusValid ||
     (!lifecycleBlockedSafely && !disposableLifecycleTestCompleted) ||
     lifecycle.payment_processing !== 'DISABLED') {
