@@ -12,7 +12,6 @@ import { ProofEngine } from '../proofs/ProofEngine';
 import { CrystalClearBox } from '../audit/CrystalClearBox';
 import { IsolatedExecutionSandbox } from '../security/IsolatedExecutionSandbox';
 import { MemorySafetyInstrumentation } from '../security/MemorySafetyInstrumentation';
-import { IndependentModelOracle } from '../security/IndependentModelOracle';
 import { PersistentProofStore } from '../security/PersistentProofStore';
 import { TenantCrypto } from '../security/TenantCrypto';
 
