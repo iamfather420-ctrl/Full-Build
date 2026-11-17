@@ -19,5 +19,5 @@ test('54-node coverage can pass while functional success stays below 54', async 
   assert.equal(verdicts.find((row) => row.id === 'DN-36')?.verdict, 'PROHIBITED_BY_POLICY');
   assert.equal(verdicts.find((row) => row.id === 'DN-40')?.verdict, 'NOT_VERIFIED');
   assert.deepEqual(counts, coverage.verdict_counts);
-  console.log(JSON.stringify({ verdicts: counts, unsatisfied_node_ids: coverage.unsatisfied_node_ids }));
+  console.log(JSON.stringify({ verdicts: counts, unsatisfied_node_ids: coverage.unsatisfied_node_ids, node_results: coverage.results.filter(result => classifyNodeResult(result) === 'NOT_VERIFIED' || classifyNodeResult(result) === 'PROVIDER_REQUIRED').map(result => ({ node_id: result.node_id, status: result.status, claim_scope: result.claim_scope, evidence: result.evidence, error: result.error })) }));
 });
