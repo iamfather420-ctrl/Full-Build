@@ -10,6 +10,7 @@ const TRUSTED_PULL_REQUEST_HEADS = new Set([
   'fix/gate05-deterministic-pipeline-test-20261114',
   'fix/stage14-rationale-and-zeno-evidence-20261114',
   'feat/daisy-ecosystem-link-20261116',
+  'repair/remaining-17-nodes',
 ]);
 
 /** Claim checks only. Signature verification stays in the caller. */
