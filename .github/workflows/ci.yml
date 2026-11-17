@@ -11,6 +11,8 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      SOLVEX_SANDBOX_IMAGE: ${{ secrets.SOLVEX_SANDBOX_IMAGE }}
     timeout-minutes: 25
     steps:
       - name: Checkout
