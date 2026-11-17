@@ -707,7 +707,7 @@ ${dfrlReport.results.map(r => `| \`${r.operator_id}\` | ${r.operator_name} | \`$
     const entReportStr = JSON.stringify(entRes, null, 2);
     writeArtifact('enterprise-verification-report.json', entReportStr, true);
 
-    const entReportMd = `# SOLVEX + Daisy Haminja AI/UI/OS 30-Stage Enterprise Invariant Verification Report
+    const entReportMd = `# SOLVEX + Daisy Haminja AI/UI/OS — Pre-Production Enterprise Invariant Verification Report
 - **Total Tests:** ${entRes.totalTests}
 - **Passed:** ${entRes.passedTests}
 - **Status:** ${entRes.allPassed ? 'ALL INVARIANTS SATISFIED' : 'FAILURES DETECTED'}
