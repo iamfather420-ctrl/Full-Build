@@ -127,6 +127,9 @@ export function runExternalProver(id: ExternalProverId, relativeSources: string[
     return { ...base, binary_basename: basename, binary_sha256: binaryHash, reason: `${id} is not installed` };
   }
   const versionText = `${version.stdout ?? ''}\n${version.stderr ?? ''}`;
+  if (version.error || version.status !== 0) {
+    return { ...base, binary_basename: basename, binary_sha256: binaryHash, exit_code: version.status, reason: `${id} version probe failed` };
+  }
   const proof = spawnSync(resolved.binary, args, { encoding: 'utf8', timeout: 180_000, cwd: repoRoot(), maxBuffer: 8 * 1024 * 1024 });
   const stdout = proof.stdout ?? '';
   const stderr = proof.stderr ?? '';
