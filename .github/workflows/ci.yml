@@ -20,7 +20,7 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_A: ${{ secrets.SOLVEX_NEON_TEST_TENANT_A }}
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
-      SOLVEX_MEMORY_LIMIT_BYTES: '1073741824'
+      SOLVEX_MEMORY_LIMIT_BYTES: '2147483648'
       # Stage 14 uses short-lived GitHub OIDC for Fly evaluation and Railway signing.
     steps:
       - name: Checkout
