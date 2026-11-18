@@ -125,7 +125,7 @@ jobs:
           echo "Pulling pinned Isabelle image: $IMAGE_REF"
           timeout --signal=TERM --kill-after=30s 20m docker pull "$IMAGE_REF"
           echo "Pinned Isabelle image is available."
-          printf '%s\\n' '#!/usr/bin/env bash' 'set -euo pipefail' 'exec docker run --rm --entrypoint /home/isabelle/Isabelle/bin/isabelle -v "$PWD:/workspace" -w /workspace "$SOLVEX_ISABELLE_IMAGE" "$@"' > "$RUNNER_TEMP/isabelle"
+          printf '%s\n' '#!/usr/bin/env bash' 'set -euo pipefail' 'exec docker run --rm --entrypoint /home/isabelle/Isabelle/bin/isabelle -v "$PWD:/workspace" -w /workspace "$SOLVEX_ISABELLE_IMAGE" "$@"' > "$RUNNER_TEMP/isabelle"
           chmod 755 "$RUNNER_TEMP/isabelle"
           echo "SOLVEX_ISABELLE_IMAGE=$IMAGE_REF" >> "$GITHUB_ENV"
           echo "SOLVEX_ISABELLE_BIN=$RUNNER_TEMP/isabelle" >> "$GITHUB_ENV"
