@@ -13,7 +13,8 @@ async function startServer() {
   const port = Number(process.env.PORT || 8080);
   app.disable('x-powered-by');
   app.use(express.json({ limit: '64kb', strict: true }));
-  app.use(apiRouter);
+  app.get('/healthz', (_req, res) => res.status(200).json({ status: 'ok', payments_enabled: false }));
+  app.use('/api', apiRouter);
 
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(__dirname, 'dist'), { index: false, fallthrough: true }));
