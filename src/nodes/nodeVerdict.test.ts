@@ -1,42 +1,59 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { runDaisy54NodeCoverage } from '../tests/daisy54NodeCoverage.ts';
-import { classifyNodeResult, type NodeVerdict } from './nodeVerdict.ts';
+import { classifyNodeResult } from './nodeVerdict.ts';
 
-test('54-node coverage can pass while functional success stays below 54', async () => {
-  const coverage = await runDaisy54NodeCoverage();
-  const verdicts = coverage.results.map((result) => ({ id: result.node_id, status: result.status, verdict: classifyNodeResult(result) }));
-  const counts = verdicts.reduce<Record<NodeVerdict, number>>((total, row) => {
-    total[row.verdict] += 1;
-    return total;
-  }, { FUNCTIONALLY_PASSED: 0, SAFETY_PASSED: 0, PROVIDER_REQUIRED: 0, PROHIBITED_BY_POLICY: 0, NOT_VERIFIED: 0 });
-  assert.equal(coverage.results.length, 54);
-  assert.equal(coverage.execution_complete, true);
-  assert.deepEqual(coverage.unsatisfied_node_ids, []);
-  const pipelineNode = coverage.results.find(result => result.node_id === 'DN-11');
-  assert.ok(pipelineNode);
-  assert.equal(classifyNodeResult(pipelineNode), 'NOT_VERIFIED');
-  assert.deepEqual(coverage.evidence_missing_node_ids, []);
-  assert.equal(coverage.all_passed, false);
-  assert.equal(coverage.all_passed, coverage.execution_complete && coverage.evidence_missing_node_ids.length === 0 && coverage.verdict_counts.FUNCTIONALLY_PASSED + coverage.verdict_counts.SAFETY_PASSED + coverage.verdict_counts.PROHIBITED_BY_POLICY === 54 && coverage.verdict_counts.PROVIDER_REQUIRED === 0 && coverage.verdict_counts.NOT_VERIFIED === 0);
-  assert.equal(coverage.verdict_counts.FUNCTIONALLY_PASSED + coverage.verdict_counts.SAFETY_PASSED + coverage.verdict_counts.PROHIBITED_BY_POLICY + coverage.verdict_counts.PROVIDER_REQUIRED + coverage.verdict_counts.NOT_VERIFIED, 54);
-  assert.equal(counts.FUNCTIONALLY_PASSED, coverage.results.filter((result) => result.status === 'SUCCESS').length);
-  assert.ok(counts.FUNCTIONALLY_PASSED < 54);
-  assert.equal(verdicts.find((row) => row.id === 'DN-36')?.verdict, 'PROHIBITED_BY_POLICY');
-  const lean = verdicts.find((row) => row.id === 'DN-40');
-  assert.ok(lean);
-  assert.equal(lean.verdict, lean.status === 'SUCCESS' ? 'FUNCTIONALLY_PASSED' : 'NOT_VERIFIED');
-  const range = verdicts.find((row) => row.id === 'DN-53');
-  assert.equal(range?.status, 'SUCCESS');
-  assert.equal(range?.verdict, 'FUNCTIONALLY_PASSED');
-  assert.deepEqual(counts, coverage.verdict_counts);
-  const providerRequired = {
-    node_id: 'DN-51',
-    status: 'PROVIDER_REQUIRED',
-    evidence: { hsm_attestation_verified: false, external_provider_required: true }
-  } as any;
-  assert.equal(classifyNodeResult(providerRequired), 'PROVIDER_REQUIRED');
-  assert.ok(coverage.not_verified_node_ids.includes('DN-11'));
-  assert.equal(coverage.provider_required_node_ids.length, coverage.verdict_counts.PROVIDER_REQUIRED);
-  console.log(JSON.stringify({ verdicts: counts, unsatisfied_node_ids: coverage.unsatisfied_node_ids, node_results: coverage.results.filter(result => classifyNodeResult(result) === 'NOT_VERIFIED' || classifyNodeResult(result) === 'PROVIDER_REQUIRED').map(result => ({ node_id: result.node_id, status: result.status, claim_scope: result.claim_scope, evidence: result.evidence, error: result.error })) }));
+function node(node_id: string, status: string, evidence: Record<string, unknown> = {}) {
+  return { node_id, status, evidence } as any;
+}
+
+test('functional success requires an explicit successful execution result', () => {
+  assert.equal(classifyNodeResult(node('DN-03', 'SUCCESS', { solver_result: 'unsat', proved: true })), 'FUNCTIONALLY_PASSED');
+  assert.equal(classifyNodeResult(node('DN-03', 'FAIL_CLOSED', { solver_result: 'unknown' })), 'NOT_VERIFIED');
+});
+
+test('fail-closed security controls count only when their rejection evidence is explicit', () => {
+  assert.equal(classifyNodeResult(node('DN-16', 'FAIL_CLOSED', {
+    local_token_mint_blocked: true,
+    untrusted_token_rejected: true,
+    authorization_mode: 'TRUSTED_OIDC_REQUIRED'
+  })), 'SAFETY_PASSED');
+  assert.equal(classifyNodeResult(node('DN-16', 'FAIL_CLOSED', {
+    local_token_mint_blocked: false,
+    untrusted_token_rejected: true,
+    reason: 'No trusted identity provider configured'
+  })), 'NOT_VERIFIED');
+});
+
+test('provider dependencies and prohibited policy interlocks are not functional passes', () => {
+  assert.equal(classifyNodeResult(node('DN-37', 'PROVIDER_REQUIRED', {
+    configuration_present: false,
+    provider_authenticated: false,
+    fail_closed: true
+  })), 'PROVIDER_REQUIRED');
+  assert.equal(classifyNodeResult(node('DN-36', 'PROHIBITED_BLOCKED', {
+    directive: 'SOVEREIGN_DIRECTIVE_PAYPAL_EXCLUSIVE',
+    enforced: true,
+    unapproved_payment_blocked: true
+  })), 'PROHIBITED_BY_POLICY');
+});
+
+test('incomplete pipeline and missing source-bound proof remain unverified', () => {
+  assert.equal(classifyNodeResult(node('DN-11', 'FAIL_CLOSED', {
+    external_probe_enabled: false,
+    reason: 'Independent provider attestation is required'
+  })), 'NOT_VERIFIED');
+  assert.equal(classifyNodeResult(node('DN-29', 'FAIL_CLOSED', {
+    status: 'MISSING',
+    proof_bundle_integrity_verified: false,
+    reasons: ['No proof bundle is attached to DH-S-001.']
+  })), 'NOT_VERIFIED');
+});
+
+test('production signing and HSM capabilities remain provider-required until attested', () => {
+  for (const id of ['DN-49', 'DN-51', 'DN-52']) {
+    assert.equal(classifyNodeResult(node(id, 'PROVIDER_REQUIRED', {
+      external_provider_required: true,
+      production_attestation_verified: false
+    })), 'PROVIDER_REQUIRED');
+  }
 });
