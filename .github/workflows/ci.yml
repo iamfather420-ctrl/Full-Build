@@ -125,6 +125,7 @@ jobs:
           echo "Pulling pinned Isabelle image: $IMAGE_REF"
           timeout --signal=TERM --kill-after=30s 20m docker pull "$IMAGE_REF"
           echo "Pinned Isabelle image is available."
+          export SOLVEX_ISABELLE_IMAGE="$IMAGE_REF"
           cat > "$RUNNER_TEMP/isabelle" <<'ISABELLE_WRAPPER'
           #!/usr/bin/env bash
           set -euo pipefail
@@ -138,8 +139,8 @@ jobs:
               shift
             fi
           done
-          # Preserve the image's /home/isabelle working directory because its
-          # declared ENTRYPOINT is relative: Isabelle/bin/isabelle.
+          # Preserve the image's declared working directory because its
+          # ENTRYPOINT is relative: Isabelle/bin/isabelle.
           exec docker run --rm -v "$PWD:/workspace" "$SOLVEX_ISABELLE_IMAGE" "${args[@]}"
           ISABELLE_WRAPPER
           chmod 755 "$RUNNER_TEMP/isabelle"
@@ -147,9 +148,6 @@ jobs:
           echo "SOLVEX_ISABELLE_BIN=$RUNNER_TEMP/isabelle" >> "$GITHUB_ENV"
           echo "Smoke-testing the pinned Isabelle container entrypoint."
           "$RUNNER_TEMP/isabelle" version
-          chmod 755 "$RUNNER_TEMP/isabelle"
-          echo "SOLVEX_ISABELLE_IMAGE=$IMAGE_REF" >> "$GITHUB_ENV"
-          echo "SOLVEX_ISABELLE_BIN=$RUNNER_TEMP/isabelle" >> "$GITHUB_ENV"
       - name: Execute checked-in Coq proof
         run: |
           set -euo pipefail
