@@ -8,9 +8,12 @@ import { SovereignApiRouter } from '../api/ApiRouter';
 import { readLiveRegistry } from '../registry/liveRegistry.mjs';
 
 const router = express.Router();
+const authBoundary: express.RequestHandler = (req, res, next) => {
+  Promise.resolve(authMiddleware(req, res, next)).catch(next);
+};
 
 // Keep the same-origin OIDC boundary shared by the Node server and Vercel functions.
-router.use('/', pinoHttp({ logger }), cookieParser(), authMiddleware, authRouter);
+router.use('/', pinoHttp({ logger }), cookieParser(), authBoundary, authRouter);
 
 const healthHandler: express.RequestHandler = (_req, res) => {
   res.status(200).json({ status: 'ok', payments_enabled: false });
