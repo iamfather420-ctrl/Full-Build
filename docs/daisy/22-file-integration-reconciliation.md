@@ -53,10 +53,10 @@ Absence from this snapshot does not prove these files are unnecessary. Their act
 | `scripts/test_daisy_ai_api.ts` | API integration tests | Missing: add after router and runtime contract are defined |
 | `scripts/verify_daisy_foundational_safety.mjs` | Foundational safety static checks | Existing: compare test coverage and referenced paths; do not weaken checks |
 | `server.ts` | HTTP server bootstrap | Existing: keep current server and shared auth boundary; mount Daisy routes through the existing API router |
-| `src/App.tsx` | React application composition | Existing: integrate console through current navigation/state patterns |
+| `src/App.tsx` | React application composition | Existing: preserve unchanged; do not add a second console, navigation, tabs, or dashboard |
 | `src/api/DaisyAIRouter.ts` | Daisy HTTP endpoints | Missing: implement behind the shared authentication middleware; validate inputs and fail closed |
 | `src/api/DaisyAIRuntimeContract.ts` | Request/response and runtime contracts | Missing: define typed schemas and explicit capability/authority/authorization boundaries |
-| `src/components/DaisyAIConsole.tsx` | Daisy operator/user console | Missing: connect only to authenticated, implemented APIs; label unavailable capabilities accurately |
+| `src/components/DaisyAIConsole.tsx` | Daisy operator/user console | Do not import into the current UI; retain as reference only unless a later, explicitly approved screen-level change is required |
 | `src/components/DaisyBrainView.tsx` | Existing brain topology/state view | Existing: retain as the brain visualization; reconcile props/state instead of duplicating it |
 | `src/discovery/DiscoverEngineClient.test.ts` | Discovery client tests | Existing: extend with malformed-payload and publishable-response rejection cases |
 | `src/discovery/DiscoverEngineClient.ts` | Discovery service client | Existing: runtime-validate remote responses and fail closed on malformed or publishable assertions |
@@ -71,9 +71,10 @@ Absence from this snapshot does not prove these files are unnecessary. Their act
 
 ## Current architecture constraints
 
-- `server.ts` mounts `src/server/apiRouter.ts`; the latter applies the shared OIDC/auth middleware. Daisy endpoints must be mounted within this authenticated routing boundary.
+- `server.ts` mounts `src/server/apiRouter.ts`; the latter applies the shared OIDC/auth middleware. Any Daisy backend endpoint must be mounted within this authenticated routing boundary, not by replacing the server bootstrap or bypassing middleware.
+- Preserve the existing SolveX UI exactly: no `src/App.tsx` replacement, no new dashboard, no new navigation item, and no Daisy console insertion. Backend-only integration is the current scope.
 - The repository already has brain, node registry, orchestration, inference, discovery, learning/tether, and weight-engine subsystems. New files should adapt these rather than create parallel sources of truth.
-- Daisy Tether is the connection system for 54 cognitive nodes. The 120 paradoxes are a separate corpus, not a 120-synapse topology.
+- User-defined architecture: Daisy Tether is the synaptic connection system for 54 cognitive nodes; 120 is the paradox count, not a synapse count. The current repository's `src/brain/DaisyBrainGraph.ts` independently hard-codes `expected_synapse_count: 120` and requires 120 synapse definitions. This is a documented architecture conflict, not authority to redefine the user's architecture. Do not feed a 120-paradox count into the graph's synapse validator or modify the existing graph/UI until the authoritative Tether edge manifest and intended schema are reconciled.
 - Capability, authority, authorization, and execution must remain distinct. External model/provider access must be explicit and opt-in; unverified claims remain withheld.
 - The 45-gate verification inventory and its separate subsequent 46th gate must not be conflated with the 67 activation-gate checks.
 
@@ -82,11 +83,13 @@ Absence from this snapshot does not prove these files are unnecessary. Their act
 1. `src/discovery/DiscoverEngineClient.ts`: removed the impossible `'VERIFIED' as never` comparison and added runtime validation for every required review field and allowed status. A malformed successful response now fails closed.
 2. `src/discovery/DiscoverEngineClient.test.ts`: added tests that reject a publishable review and reject a malformed review payload.
 
-## Not yet established
+## Updated status after source recovery
 
-- The original complete source of all 22 submitted files was not available for exact diffing.
-- No API router, UI console, runtime contract, workspace manifest, or handoff/readiness document has been imported from the truncated export.
-- No production deployment, runtime integration, APK build, or full verification suite has been claimed or performed by this reconciliation.
+- The user has supplied the remaining Manus source in the conversation, including `scripts/test_daisy_ai_api.ts` and `scripts/verify_daisy_foundational_safety.mjs`. The 22-path inventory is accounted for, but source-to-repository reconciliation is not complete.
+- No new Daisy dashboard or replacement app shell is authorized. Existing `src/App.tsx` and current navigation remain unchanged.
+- The new API router/runtime contract are still not present on `main`; the pasted implementation must be adapted to the existing `src/server/apiRouter.ts`, `InferenceRuntime`/`InferenceRouter`, and existing node/brain graph rather than copied wholesale.
+- The pasted API/router assumptions require further validation against the live middleware, existing inference interfaces, and topology manifest before backend code is added.
+- No production deployment, runtime integration, APK build, or full verification suite has been claimed or performed by this reconciliation. On the current PR head, `verify` and `formal-evidence` passed, while `validate` failed; passing checks do not constitute a successful full CI run.
 - Existing CI notifications indicated failures on the repository's main/related branches; this branch still requires CI execution and review.
 
 ## Required next input for full source integration
