@@ -654,7 +654,7 @@ export class AuthoritativeVerificationPipeline {
     });
 
     const orderMgr = OrderLifecycleManager.getInstance();
-    const deniedTransition = orderMgr.transitionOrder(testOrderId, 'ORDER_CREATED');
+    const deniedTransition = await orderMgr.transitionOrder(testOrderId, 'ORDER_CREATED');
     const finalOrderRow = sqliteInst.getRawDb().get('SELECT status FROM orders WHERE id = ?', [testOrderId]);
     const actualFinalStatus = String(finalOrderRow?.status ?? 'UNKNOWN');
     const authorizationBlocked = !deniedTransition.success &&
