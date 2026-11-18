@@ -34,6 +34,17 @@ async function isExecutableFile(filePath: string): Promise<boolean> {
   }
 }
 
+export function createInferenceChildEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const allowed = ['PATH', 'HOME', 'TMPDIR', 'TEMP', 'TMP', 'LANG', 'LC_ALL', 'SystemRoot', 'WINDIR'];
+  const child: NodeJS.ProcessEnv = {};
+  for (const key of allowed) {
+    const value = source[key];
+    if (typeof value === 'string') child[key] = value;
+  }
+  child.DAISY_INFERENCE_OFFLINE = '1'; // Advisory only; this runtime does not enforce OS-level network isolation.
+  return child;
+}
+
 function validateRequest(request: InferenceRequest): string | null {
   if (!request || !Array.isArray(request.messages) || request.messages.length === 0) {
     return 'Messages are required.';
@@ -221,11 +232,7 @@ export class LocalInferenceRuntime implements InferenceRuntime {
       // Operators may wrap llama.cpp / similar behind a thin adapter script.
       const child = spawn(engine, ['--model', model, '--prompt', prompt], {
         stdio: ['ignore', 'pipe', 'pipe'],
-        env: {
-          ...process.env,
-          // Discourage accidental network use from wrapper scripts.
-          DAISY_INFERENCE_OFFLINE: '1',
-        },
+        env: createInferenceChildEnvironment(),
       });
 
       let stdout = '';
