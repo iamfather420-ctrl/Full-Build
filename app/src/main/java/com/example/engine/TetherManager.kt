@@ -23,7 +23,7 @@ class TetherManager(
             targetBucket = bucket,
             lastToken = ""
         )
-        repository.insertDaisyTetherNode(node)
+        repository.insertTetherNode(node)
         repository.log("Bound browser session to element node '$targetElement' as $name. ID: $sessionId", "INFO")
         
         voiceCoPilot.speak("Successfully bound new MMTAI node $name to element $targetElement. Ready to stream.")
@@ -49,7 +49,7 @@ class TetherManager(
             status = "SYNCING",
             lastToken = tokenString
         )
-        repository.insertDaisyTetherNode(updatedNode)
+        repository.insertTetherNode(updatedNode)
         repository.log("Programmatically injecting token string: \"$tokenString\" into ${node.name} [${node.targetElement}]", "INFO")
     }
 
@@ -76,7 +76,7 @@ class TetherManager(
             lastToken = token,
             errorCount = 0
         )
-        repository.insertDaisyTetherNode(updatedNode)
+        repository.insertTetherNode(updatedNode)
     }
 
     /**
@@ -93,7 +93,7 @@ class TetherManager(
             errorCount = node.errorCount + 1,
             rateLimitedAt = System.currentTimeMillis()
         )
-        repository.insertDaisyTetherNode(brokenNode)
+        repository.insertTetherNode(brokenNode)
 
         // Attempt a hot-swap to another healthy tethered session
         val healthyAlternative = repository.tetherNodes.first().firstOrNull { 
@@ -109,7 +109,7 @@ class TetherManager(
                 targetBucket = node.targetBucket,
                 status = "HOT_SWAPPING"
             )
-            repository.insertDaisyTetherNode(remappedNode)
+            repository.insertTetherNode(remappedNode)
         } else {
             repository.log("No healthy alternative node available to handle hot-swap!", "WARNING")
             voiceCoPilot.speak("Warning. No available backup nodes in current cluster. Session is stalled.")
