@@ -173,6 +173,9 @@ jobs:
   android-apk:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -181,10 +184,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
       - name: Install Android SDK components
-        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
       - name: Assemble debug APK
         run: ./gradlew :app:assembleDebug --no-daemon
       - name: Run Android unit tests
