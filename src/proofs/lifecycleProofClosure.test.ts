@@ -103,7 +103,7 @@ test('accepts an independent pre-production blocker without reclassifying it as 
     gate14Status: 'FAILED',
     productionVerdict: 'NOT_EVALUATED_PREPRODUCTION',
     preProductionPassed: false,
-    preProductionBlockers: ['GATE-09 Daisy 54-node CUJ coverage failed.'],
+    preProductionBlockers: ['GATE-09 Daisy 54-node functional verification incomplete.'],
     finalStatus: 'OFFER',
     authorizationBlocked: true,
     transitionsExecuted: [],
