@@ -909,9 +909,10 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
 
     const preProductionPassed = preProductionBlockers.length === 0;
     const prodPassed = preProductionPassed && productionBlockers.length === 0;
-    const prodVerdict: PipelineExecutionReport['production_gate_verdict'] = prodPassed
-      ? 'PASSED'
-      : (productionBlockers.some(b => b.includes('GATE-11') || b.includes('Environment is currently'))
+    const prodVerdict: PipelineExecutionReport['production_gate_verdict'] = env !== 'production'
+      ? 'NOT_EVALUATED_PREPRODUCTION'
+      : prodPassed ? 'PASSED'
+      : (productionBlockers.some(b => b.includes('GATE-11'))
         ? 'BLOCKED_MISSING_EXTERNAL_CREDENTIALS'
         : 'BLOCKED_INTEGRITY_FAILURE');
 
@@ -958,7 +959,9 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       gates_total: gates.length,
       gates_passed: gates.filter(g => g.status === 'PASSED').length,
       production_gate_verdict: prodVerdict,
-      production_blockers: productionBlockers,\n      pre_production_passed: preProductionPassed,\n      pre_production_blockers: preProductionBlockers,
+      production_blockers: productionBlockers,
+      pre_production_passed: preProductionPassed,
+      pre_production_blockers: preProductionBlockers,
       claim_scope_verdict: claimScopeVerdict,
       artifacts_directory: artifactsDir,
       gates
