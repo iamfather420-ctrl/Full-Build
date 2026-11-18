@@ -45,7 +45,8 @@
     "test:ecosystem": "tsx --test --test-concurrency=1 packages/daisy-weight-engine/tests/weight-engine.test.ts packages/daisy-weight-engine/tests/attention.test.ts src/discovery/EvidenceGate.test.ts src/discovery/DiscoverEngineClient.test.ts src/dipstick/BuildLedger.test.ts src/dipstick/BuildLedgerSnapshot.test.ts src/brain/LearningBubbleRegistry.test.ts src/brain/FileLearningBubbleStore.test.ts src/brain/TetherPath.test.ts src/brain/TetherSession.test.ts src/brain/CognitiveMilestone.test.ts src/brain/SecurityRepairs.test.ts src/security/RangeProof.test.ts src/proofs/ExternalProver.test.ts src/nodes/all54Execution.test.ts src/nodes/goalPlanner.test.ts src/nodes/nodeVerdict.test.ts src/orchestration/DaisyEcosystem.test.ts oracle-signer/trust-policy.test.mjs",
     "verify:auth-boundary": "node scripts/verify_auth_boundary.mjs",
     "verify:45-gates": "tsx scripts/verify_45_gates.ts",
-    "test:45-gate-inventory": "tsx scripts/test_45_gate_inventory.ts"
+    "test:45-gate-inventory": "tsx scripts/test_45_gate_inventory.ts",
+    "verify:46-closure": "tsx scripts/verify_46_closure_artifact.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
