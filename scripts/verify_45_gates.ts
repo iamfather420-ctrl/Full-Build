@@ -52,6 +52,7 @@ async function main() {
     passed: sequenceReport.gates_passed,
     blocked: sequenceReport.blocked_count,
     failed: sequenceReport.failed_count,
+    non_passed: sequence.filter(g => g.status !== 'PASSED').length,
     source_commit_sha: sourceCommitSha
   }));
   console.log('[SEPARATE-GATE-46]', JSON.stringify({
@@ -59,7 +60,7 @@ async function main() {
     status: closure[0].status,
     source_commit_sha: sourceCommitSha
   }));
-  if (sequenceReport.failed_count > 0) process.exitCode = 1;
+  if (sequence.some(g => g.status !== 'PASSED')) process.exitCode = 1;
 }
 
 main().catch(error => {
