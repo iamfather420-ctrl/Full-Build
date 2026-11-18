@@ -71,16 +71,16 @@ class DaisyViewModel(application: Application) : AndroidViewModel(application) {
     val ingressFiles: StateFlow<List<IngressFile>> = repository.ingressFiles
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val tetherNodes: StateFlow<List<TetherNode>> = repository.tetherNodes
+    val tetherNodes: StateFlow<List<DaisyTetherNode>> = repository.tetherNodes
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val discoveryLinks: StateFlow<List<DiscoveryLink>> = repository.discoveryLinks
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val consensusTasks: StateFlow<List<ConsensusTask>> = repository.consensusTasks
+    val consensusTasks: StateFlow<List<DaisyConsensusTask>> = repository.consensusTasks
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val logEvents: StateFlow<List<LogEvent>> = repository.logEvents
+    val logEvents: StateFlow<List<DaisyLogEvent>> = repository.logEvents
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val isSpeaking: StateFlow<Boolean> by lazy { voiceCoPilot.isSpeaking }

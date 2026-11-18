@@ -1,6 +1,6 @@
 package com.example.engine
 
-import com.example.data.TetherNode
+import com.example.data.DaisyTetherNode
 import com.example.data.DaisyRepository
 import kotlinx.coroutines.flow.first
 import java.util.UUID
@@ -15,7 +15,7 @@ class TetherManager(
      */
     suspend fun bindToElement(name: String, targetElement: String, bucket: String): String {
         val sessionId = "node_${UUID.randomUUID().toString().substring(0, 8)}"
-        val node = TetherNode(
+        val node = DaisyTetherNode(
             sessionId = sessionId,
             name = name,
             targetElement = targetElement,
