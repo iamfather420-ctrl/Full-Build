@@ -431,7 +431,7 @@ export const SOLVEX_VERIFICATION_GATES: readonly VerificationGateDefinition[] = 
   CLOSURE_GATE,
   ...PIPELINE_GATES
 ];
-export function validateVerificationGateCatalog(): { valid: boolean; total: number; system: number; pipeline: number; duplicateIds: string[]; unresolvedReferences: string[] } {
+export function validateVerificationGateCatalog(): { valid: boolean; total: number; system: number; closure: number; pipeline: number; duplicateIds: string[]; unresolvedReferences: string[] } {
   const ids = SOLVEX_VERIFICATION_GATES.map(g => g.id);
   const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
   const known = new Set(ids);
@@ -445,7 +445,8 @@ export function validateVerificationGateCatalog(): { valid: boolean; total: numb
       SOLVEX_VERIFICATION_GATES.length === TOTAL_VERIFICATION_GATE_COUNT &&
       duplicateIds.length === 0 && unresolvedReferences.length === 0,
     total: SOLVEX_VERIFICATION_GATES.length,
-    system: SYSTEM_GATES.length + CLOSURE_GATE_COUNT,
+    system: SYSTEM_GATES.length,
+    closure: CLOSURE_GATE_COUNT,
     pipeline: PIPELINE_GATES.length,
     duplicateIds,
     unresolvedReferences
