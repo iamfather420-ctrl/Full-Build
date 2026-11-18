@@ -21,11 +21,11 @@ class DaisyRepository(private val dao: DaisyDao) {
     suspend fun insertDiscoveryLink(link: DiscoveryLink) = dao.insertDiscoveryLink(link)
     suspend fun clearAllDiscoveryLinks() = dao.clearAllDiscoveryLinks()
 
-    suspend fun insertDaisyConsensusTask(task: DaisyConsensusTask): Long = dao.insertDaisyConsensusTask(task)
+    suspend fun insertDaisyConsensusTask(task: DaisyConsensusTask): Long = dao.insertConsensusTask(task)
     suspend fun clearAllConsensusTasks() = dao.clearAllConsensusTasks()
 
     suspend fun log(message: String, type: String = "INFO") {
-        dao.insertDaisyLogEvent(DaisyLogEvent(message = message, type = type))
+        dao.insertLogEvent(DaisyLogEvent(message = message, type = type))
     }
     suspend fun clearAllLogs() = dao.clearAllLogEvents()
 }
