@@ -297,6 +297,8 @@ export class DaisySubsystemExecutors {
         const proofId = 'PB-' + sourceHash.slice(0, 24);
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
+        const stage14 = res.stage_traces.find(stage => stage.stage === 14);
+        const oracleProviderBlocked = stage14?.status === 'BLOCKED';
         const passed = res.overall_success && res.completed_stages === 21 &&
           bundle?.verification_status === 'VERIFIED' && integrity.verified;
         if (passed && solution) {
@@ -311,10 +313,12 @@ export class DaisySubsystemExecutors {
           name: '21-Stage Problem Pipeline',
           category: 'CORE_KERNEL',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
+          claim_scope: oracleProviderBlocked ? 'SANDBOX' : 'LOCAL',
+          status: passed ? 'SUCCESS' : oracleProviderBlocked ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
+            external_provider_required: oracleProviderBlocked,
+            provider_blocker: oracleProviderBlocked ? (stage14?.reason ?? 'Independent Stage 14 attestation provider is required.') : null,
             completed_stages: res.completed_stages,
             total_stages: res.total_stages,
             success: res.overall_success,
@@ -735,9 +739,9 @@ export class DaisySubsystemExecutors {
             category: 'AUDIT',
             executed: true,
             claim_scope: 'SANDBOX',
-            status: 'FAIL_CLOSED',
+            status: 'PROVIDER_REQUIRED',
             duration_ms: performance.now() - start,
-            evidence: { independent_oracle_attestation_verified: false, reason: error instanceof Error ? error.message : String(error) }
+            evidence: { independent_oracle_attestation_verified: false, external_provider_required: true, reason: error instanceof Error ? error.message : String(error) }
           };
         }
       }
@@ -1152,8 +1156,8 @@ export class DaisySubsystemExecutors {
           name: 'License Generation & Proof Tokenizer',
           category: 'MARKETPLACE',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'PRODUCTION',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: { signed_license_issued: false, reason: 'No trusted signing key or verified solution authorization is configured.' }
         };
@@ -1181,8 +1185,8 @@ export class DaisySubsystemExecutors {
           name: 'Hardware Security Module (HSM) Proxy',
           category: 'SECURITY',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'PRODUCTION',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: { hsm_attestation_verified: false, reason: 'No HSM connection or signed device attestation is configured.' }
         };
@@ -1195,8 +1199,8 @@ export class DaisySubsystemExecutors {
           name: 'Ed25519 Cryptographic Signer',
           category: 'SECURITY',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'PRODUCTION',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: {
             ed25519_signature_verified: false,
