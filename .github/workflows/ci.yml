@@ -151,6 +151,10 @@ jobs:
         run: bun run verify:proof-closure
       - name: Execute the authoritative 45-gate sequence
         id: authoritative_45
+        env:
+          SOLVEX_NODE_EXTERNAL_PROBES: 'true'
+          # Use only the disposable Neon validation branch configured above.
+          SOLVEX_E2E_USE_DISPOSABLE_NEON: 'true'
         run: bun run verify:45-gates
       - name: Evaluate the subsequent GATE-46 closure separately
         if: ${{ always() && steps.authoritative_45.outcome != 'skipped' }}
