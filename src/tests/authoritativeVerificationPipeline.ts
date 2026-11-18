@@ -891,7 +891,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     if (!dfrlOk) preProductionBlockers.push('GATE-06 DFRL SMT formal proofs failed.');
     if (!replayOk) preProductionBlockers.push('GATE-07 Deterministic replay divergence detected.');
     if (!g8Passed) preProductionBlockers.push('GATE-08 Mutation, failure injection, or tamper alarm failed.');
-    if (!nodeCoverage.all_passed) preProductionBlockers.push(`GATE-09 Daisy 54-node CUJ coverage failed. NOT_VERIFIED: ${nodeCoverage.not_verified_node_ids.join(', ') || 'none'}. PROVIDER_REQUIRED: ${nodeCoverage.provider_required_node_ids.join(', ') || 'none'}.`);
+    if (!nodeCoverage.all_passed) preProductionBlockers.push(`GATE-09 Daisy 54-node functional verification incomplete. NOT_VERIFIED: ${nodeCoverage.not_verified_node_ids.join(', ') || 'none'}. PROVIDER_REQUIRED: ${nodeCoverage.provider_required_node_ids.join(', ') || 'none'}.`);
     if (!persistRep.all_local_passed) preProductionBlockers.push('GATE-10 Relational persistence or Merkle chain failed.');
     const gate12Local = gates.find(g => g.gate_id === 'GATE-12');
     if (gate12Local?.status !== 'PASSED') {
