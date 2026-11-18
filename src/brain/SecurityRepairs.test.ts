@@ -75,10 +75,11 @@ test('boolean-only formal proof and arbitrary oracle key remain unverified', () 
   assert.equal(builder.seal().verification_status, 'FAIL');
 });
 
-test('DN-52 stays fail-closed without a production key and DN-36 stays prohibited', async () => {
+test('DN-52 remains provider-required without a production key and DN-36 stays prohibited', async () => {
   const executors = new DaisySubsystemExecutors();
   const signer = await executors.executeNode('DN-52');
-  assert.equal(signer.status, 'FAIL_CLOSED');
+  assert.equal(signer.status, 'PROVIDER_REQUIRED');
+  assert.equal(signer.claim_scope, 'PRODUCTION');
   assert.equal(signer.evidence.ephemeral_key_accepted, false);
   const prohibited = await executors.executeNode('DN-36');
   assert.equal(prohibited.status, 'PROHIBITED_BLOCKED');
