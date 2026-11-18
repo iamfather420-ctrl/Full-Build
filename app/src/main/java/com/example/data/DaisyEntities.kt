@@ -120,10 +120,10 @@ interface DaisyDao {
 @Database(
     entities = [
         IngressFile::class,
-        TetherNode::class,
+        DaisyTetherNode::class,
         DiscoveryLink::class,
-        ConsensusTask::class,
-        LogEvent::class
+        DaisyConsensusTask::class,
+        DaisyLogEvent::class
     ],
     version = 1,
     exportSchema = false
