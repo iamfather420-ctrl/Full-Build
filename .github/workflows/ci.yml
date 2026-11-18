@@ -207,4 +207,6 @@ jobs:
           path: |
             artifacts/system-45-gates.json
             artifacts/system-46-closure-gate.json
+            artifacts/daisy-54-node-execution.json
+            artifacts/execution-gates.json
           if-no-files-found: warn
