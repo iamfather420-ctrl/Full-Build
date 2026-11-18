@@ -15,7 +15,7 @@ assert.match(authMiddleware, /verifyOidcTenantToken\(/);
 assert.match(authMiddleware, /clearSession\(res, sid\)/);
 assert.match(dbAuth, /solvex_private\.issue_oidc_session_claim/);
 assert.match(dbAuth, /solvex_private\.current_claims\(\)/);
-assert.match(dbAuth, /m2\.status = 'ACTIVE'/);
+assert.match(dbAuth, /m2\.status\s*=\s*'ACTIVE'/);
 
 // PR #71's independent password/session router must not become part of the
 // production API by accidental import or mounting. It remains a separate,
