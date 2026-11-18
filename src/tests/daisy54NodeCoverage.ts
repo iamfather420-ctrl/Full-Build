@@ -11,6 +11,10 @@ export interface NodeCoverageReport {
   evidence_generated_count: number;
   unsatisfied_node_ids: string[];
   evidence_missing_node_ids: string[];
+  not_verified_node_ids: string[];
+  not_verified_nodes: Array<{ node_id: string; status: string; claim_scope: string; evidence: Record<string, any>; error?: string }>;
+  provider_required_node_ids: string[];
+  provider_required_nodes: Array<{ node_id: string; status: string; claim_scope: string; evidence: Record<string, any>; error?: string }>;
   internal_previously_covered: number;
   internal_newly_covered: number;
   external_gateways: number;
@@ -50,6 +54,15 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     r => !r.registered || !r.instantiated || !r.reachable || !r.executed || !r.output_asserted
   );
   const evidenceMissing = rawResults.results.filter(r => !r.evidence_generated);
+  const notVerified = rawResults.results.filter(r => classifyNodeResult(r) === 'NOT_VERIFIED');
+  const providerRequired = rawResults.results.filter(r => classifyNodeResult(r) === 'PROVIDER_REQUIRED');
+  const toDiagnostic = (r: SubsystemExecutionResult) => ({
+    node_id: r.node_id,
+    status: r.status,
+    claim_scope: r.claim_scope,
+    evidence: r.evidence,
+    error: r.error
+  });
 
   const verdictCounts = rawResults.results.reduce<Record<NodeVerdict, number>>((counts, result) => {
     counts[classifyNodeResult(result)] += 1;
@@ -71,6 +84,10 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
     evidence_generated_count: rawResults.evidence_generated,
     unsatisfied_node_ids: unsatisfied.map(u => u.node_id),
     evidence_missing_node_ids: evidenceMissing.map(u => u.node_id),
+    not_verified_node_ids: notVerified.map(r => r.node_id),
+    not_verified_nodes: notVerified.map(toDiagnostic),
+    provider_required_node_ids: providerRequired.map(r => r.node_id),
+    provider_required_nodes: providerRequired.map(toDiagnostic),
     internal_previously_covered: baselineResults.length,
     internal_newly_covered: expandedResults.length,
     external_gateways: gatewayResults.length,
