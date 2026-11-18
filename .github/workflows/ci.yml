@@ -1,13 +1,6 @@
 name: Build and Enterprise CI
 
 on:
-  workflow_dispatch:
-    inputs:
-      run_46_gate_scan:
-        description: 'Run the authoritative 46-gate scan after proof closure (start Fly machines first)'
-        required: true
-        type: boolean
-        default: false
   pull_request:
   push:
     branches: [main, fix/46-gate-baseline-lifecycle-sandbox]
@@ -20,7 +13,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     env:
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
@@ -99,8 +92,14 @@ jobs:
         run: echo "OIDC database integration was validated directly on the isolated Neon branch; add SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL (owner connection for a disposable branch) to enable this CI step."
       - name: Stage 7 strict static typing regression tests
         run: bun run test:stage7-static-typing
+      - name: Validate 45-gate sequence and separate closure inventory
+        run: bun run test:45-gate-inventory
       - name: Build
         run: bun run build
+      - name: Compile Vercel API function and shared Node server
+        run: |
+          bunx esbuild 'api/[...path].ts' --bundle --platform=node --format=esm --packages=external --outfile=/tmp/solvex-vercel-api.mjs
+          bunx esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=/tmp/solvex-node-server.mjs
       - name: TypeScript
         run: bun run lint
       - name: Install Lean 4 and execute the checked-in proof
@@ -150,24 +149,22 @@ jobs:
         run: bunx tsx --test src/proofs/lifecycleProofClosure.test.ts
       - name: Proof closure
         run: bun run verify:proof-closure
-      - name: Authoritative 46-gate verification
-        id: authoritative_46
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_46_gate_scan }}
+      - name: Execute the authoritative 45-gate sequence
+        id: authoritative_45
         env:
           SOLVEX_NODE_EXTERNAL_PROBES: 'true'
-          # Permit only the explicitly configured disposable Neon branch to issue
-          # the signed test identity used by the lifecycle gate. Keep NEON_DATABASE_URL
-          # bound to the separate isolation-test URL from the job-level environment;
-          # the identity resolver rejects using the migration URL as the default DB URL.
+          # Use only the disposable Neon validation branch configured above.
           SOLVEX_E2E_USE_DISPOSABLE_NEON: 'true'
-        run: bunx tsx scripts/verify_46_gates.ts
-      - name: Upload 46-gate evidence
-        if: ${{ steps.authoritative_46.outcome == 'success' }}
+        run: bun run verify:45-gates
+      - name: Evaluate the subsequent GATE-46 closure separately
+        if: ${{ always() && steps.authoritative_45.outcome != 'skipped' }}
+        run: bun run verify:46-closure
+      - name: Upload separate 45-gate and GATE-46 evidence
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: system-46-gates
+          name: solvex-45-gates-and-separate-46-closure-${{ github.sha }}
           path: |
-            artifacts/system-46-gates.json
-            artifacts/daisy-54-node-execution.json
-            artifacts/execution-gates.json
-          if-no-files-found: ignore
+            artifacts/system-45-gates.json
+            artifacts/system-46-closure-gate.json
+          if-no-files-found: warn

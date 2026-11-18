@@ -238,12 +238,12 @@ const SYSTEM_GATES: readonly VerificationGateDefinition[] = [
     "name": "Central Failure Diversion Preserves Evidence & Executes Rollback",
     "layer": "SYSTEM"
   },
-  {
+] as const;
+const CLOSURE_GATE: VerificationGateDefinition = {
     "id": "GATE-46",
     "name": "Master Truth-Boundary & Proof Closure Gate",
     "layer": "SYSTEM"
-  }
-] as const;
+  };
 const PIPELINE_GATES: readonly VerificationGateDefinition[] = [
   {
     "id": "PIPE-01",
@@ -422,14 +422,16 @@ const PIPELINE_GATES: readonly VerificationGateDefinition[] = [
     ]
   }
 ] as const;
-export const SYSTEM_GATE_COUNT = 46;
+export const SYSTEM_GATE_COUNT = 45;
+export const CLOSURE_GATE_COUNT = 1;
 export const PIPELINE_STAGE_GATE_COUNT = 21;
-export const TOTAL_VERIFICATION_GATE_COUNT = SYSTEM_GATE_COUNT + PIPELINE_STAGE_GATE_COUNT;
+export const TOTAL_VERIFICATION_GATE_COUNT = SYSTEM_GATE_COUNT + CLOSURE_GATE_COUNT + PIPELINE_STAGE_GATE_COUNT;
 export const SOLVEX_VERIFICATION_GATES: readonly VerificationGateDefinition[] = [
   ...SYSTEM_GATES,
+  CLOSURE_GATE,
   ...PIPELINE_GATES
 ];
-export function validateVerificationGateCatalog(): { valid: boolean; total: number; system: number; pipeline: number; duplicateIds: string[]; unresolvedReferences: string[] } {
+export function validateVerificationGateCatalog(): { valid: boolean; total: number; system: number; closure: number; pipeline: number; duplicateIds: string[]; unresolvedReferences: string[] } {
   const ids = SOLVEX_VERIFICATION_GATES.map(g => g.id);
   const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
   const known = new Set(ids);
@@ -438,11 +440,13 @@ export function validateVerificationGateCatalog(): { valid: boolean; total: numb
   );
   return {
     valid: SYSTEM_GATES.length === SYSTEM_GATE_COUNT &&
+      CLOSURE_GATE.id === 'GATE-46' &&
       PIPELINE_GATES.length === PIPELINE_STAGE_GATE_COUNT &&
       SOLVEX_VERIFICATION_GATES.length === TOTAL_VERIFICATION_GATE_COUNT &&
       duplicateIds.length === 0 && unresolvedReferences.length === 0,
     total: SOLVEX_VERIFICATION_GATES.length,
     system: SYSTEM_GATES.length,
+    closure: CLOSURE_GATE_COUNT,
     pipeline: PIPELINE_GATES.length,
     duplicateIds,
     unresolvedReferences
