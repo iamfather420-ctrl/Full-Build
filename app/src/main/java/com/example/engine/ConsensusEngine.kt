@@ -1,7 +1,7 @@
 package com.example.engine
 
-import com.example.data.ConsensusTask
-import com.example.data.TetherNode
+import com.example.data.DaisyConsensusTask
+import com.example.data.DaisyTetherNode
 import com.example.data.DaisyRepository
 import kotlinx.coroutines.flow.first
 import org.json.JSONArray
@@ -16,7 +16,7 @@ class ConsensusEngine(
      * Map-Reduce Loop: Decomposes a major software architecture task into isolated sub-tasks
      * and distributes them across available active tether nodes.
      */
-    suspend fun distributeTask(parentObjective: String, activeNodes: List<TetherNode>) {
+    suspend fun distributeTask(parentObjective: String, activeNodes: List<DaisyTetherNode>) {
         if (activeNodes.isEmpty()) {
             repository.log("Map-Reduce failed: No active MMTAI tether nodes connected.", "ERROR")
             voiceCoPilot.speak("No active tether nodes detected. Please bind at least one external node.")
@@ -28,8 +28,8 @@ class ConsensusEngine(
         voiceCoPilot.speak("Initiating Map Reduce loop. Distributing sub tasks across ${activeNodes.size} parallel sessions.")
 
         // Parent task representation
-        val parentId = repository.insertConsensusTask(
-            ConsensusTask(
+        val parentId = repository.insertDaisyConsensusTask(
+            DaisyConsensusTask(
                 objective = parentObjective,
                 status = "SPLIT"
             )
@@ -57,13 +57,13 @@ class ConsensusEngine(
                 for (i in 0 until jsonArray.length()) {
                     val assignedNode = activeNodes[i]
                     val subTaskText = jsonArray.getString(i)
-                    val subTask = ConsensusTask(
+                    val subTask = DaisyConsensusTask(
                         objective = subTaskText,
                         status = "SPLIT",
                         parentId = parentId,
                         assignedNodeId = assignedNode.sessionId
                     )
-                    repository.insertConsensusTask(subTask)
+                    repository.insertDaisyConsensusTask(subTask)
                     repository.log("Assigned Sub-Task to ${assignedNode.name}: \"$subTaskText\"", "INFO")
                 }
                 success = true
@@ -92,7 +92,7 @@ class ConsensusEngine(
         return clean.trim()
     }
 
-    private suspend fun runFallbackDistribution(parentId: Long, activeNodes: List<TetherNode>) {
+    private suspend fun runFallbackDistribution(parentId: Long, activeNodes: List<DaisyTetherNode>) {
         val subTasks = when (activeNodes.size) {
             1 -> listOf(
                 "Full Stack Draft: Design both data entities and UI elements sequentially."
@@ -110,13 +110,13 @@ class ConsensusEngine(
 
         for (i in subTasks.indices) {
             val assignedNode = activeNodes[i % activeNodes.size]
-            val subTask = ConsensusTask(
+            val subTask = DaisyConsensusTask(
                 objective = subTasks[i],
                 status = "SPLIT",
                 parentId = parentId,
                 assignedNodeId = assignedNode.sessionId
             )
-            repository.insertConsensusTask(subTask)
+            repository.insertDaisyConsensusTask(subTask)
             repository.log("Assigned Sub-Task to ${assignedNode.name}: \"${subTasks[i]}\"", "INFO")
         }
     }
@@ -189,7 +189,7 @@ class ConsensusEngine(
 
                 // Update tasks with arbitrating state
                 for (task in tasks) {
-                    repository.insertConsensusTask(task.copy(status = "ARBITRATING"))
+                    repository.insertDaisyConsensusTask(task.copy(status = "ARBITRATING"))
                 }
 
                 voiceCoPilot.speak("Synthesizing correction prompt. Injecting reconciliation instructions to ${arbitratorNode.name} now.")
@@ -200,7 +200,7 @@ class ConsensusEngine(
                     resultCode = arbitrated
                 )
                 if (resolvedTask != null) {
-                    repository.insertConsensusTask(resolvedTask)
+                    repository.insertDaisyConsensusTask(resolvedTask)
                     repository.log("Arbitration solved. Typing harmonized. Single consolidated local build updated.", "INFO")
                     voiceCoPilot.speak("Arbitration complete. Multi-agent code unified. Consolidated local build is fully stable.")
                 }
@@ -262,7 +262,7 @@ class ConsensusEngine(
             
             // Update tasks with arbitrating state
             for (task in tasks) {
-                repository.insertConsensusTask(task.copy(status = "ARBITRATING"))
+                repository.insertDaisyConsensusTask(task.copy(status = "ARBITRATING"))
             }
 
             voiceCoPilot.speak("Synthesizing correction prompt. Injecting reconciliation instructions to ${arbitratorNode.name} now.")
@@ -275,7 +275,7 @@ class ConsensusEngine(
                              "val userId: Int = user.id"
             )
             if (resolvedTask != null) {
-                repository.insertConsensusTask(resolvedTask)
+                repository.insertDaisyConsensusTask(resolvedTask)
                 repository.log("Arbitration solved. Typing harmonized. Single consolidated local build updated.", "INFO")
                 voiceCoPilot.speak("Arbitration complete. Multi-agent code unified. Consolidated local build is fully stable.")
             }
