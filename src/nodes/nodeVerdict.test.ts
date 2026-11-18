@@ -30,5 +30,13 @@ test('54-node coverage can pass while functional success stays below 54', async 
   assert.equal(range?.status, 'SUCCESS');
   assert.equal(range?.verdict, 'FUNCTIONALLY_PASSED');
   assert.deepEqual(counts, coverage.verdict_counts);
+  const providerRequired = {
+    node_id: 'DN-51',
+    status: 'PROVIDER_REQUIRED',
+    evidence: { hsm_attestation_verified: false, external_provider_required: true }
+  } as any;
+  assert.equal(classifyNodeResult(providerRequired), 'PROVIDER_REQUIRED');
+  assert.ok(coverage.not_verified_node_ids.includes('DN-11'));
+  assert.equal(coverage.provider_required_node_ids.length, coverage.verdict_counts.PROVIDER_REQUIRED);
   console.log(JSON.stringify({ verdicts: counts, unsatisfied_node_ids: coverage.unsatisfied_node_ids, node_results: coverage.results.filter(result => classifyNodeResult(result) === 'NOT_VERIFIED' || classifyNodeResult(result) === 'PROVIDER_REQUIRED').map(result => ({ node_id: result.node_id, status: result.status, claim_scope: result.claim_scope, evidence: result.evidence, error: result.error })) }));
 });
