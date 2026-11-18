@@ -51,6 +51,11 @@ export interface SubsystemExecutionResult extends RawNodeExecutionResult {
   evidence_hash: string;
 }
 
+function isExternalProviderUnavailable(reason: string | undefined): boolean {
+  if (!reason) return false;
+  return /requires GitHub Actions OIDC permission|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
+}
+
 function hasMeaningfulEvidence(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === 'string') return value.trim().length > 0;
@@ -298,7 +303,7 @@ export class DaisySubsystemExecutors {
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
         const stage14 = res.stage_traces.find(stage => stage.stage === 14);
-        const oracleProviderBlocked = stage14?.status === 'BLOCKED';
+        const oracleProviderBlocked = stage14?.status === 'BLOCKED' && isExternalProviderUnavailable(stage14.reason);
         const passed = res.overall_success && res.completed_stages === 21 &&
           bundle?.verification_status === 'VERIFIED' && integrity.verified;
         if (passed && solution) {
@@ -739,9 +744,13 @@ export class DaisySubsystemExecutors {
             category: 'AUDIT',
             executed: true,
             claim_scope: 'SANDBOX',
-            status: 'PROVIDER_REQUIRED',
+            status: isExternalProviderUnavailable(error instanceof Error ? error.message : String(error)) ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
             duration_ms: performance.now() - start,
-            evidence: { independent_oracle_attestation_verified: false, external_provider_required: true, reason: error instanceof Error ? error.message : String(error) }
+            evidence: {
+              independent_oracle_attestation_verified: false,
+              external_provider_required: isExternalProviderUnavailable(error instanceof Error ? error.message : String(error)),
+              reason: error instanceof Error ? error.message : String(error)
+            }
           };
         }
       }
