@@ -14,7 +14,7 @@ data class IngressFile(
     val timestamp: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "tether_nodes")
+@Entity(tableName = "daisy_tether_nodes")
 data class DaisyTetherNode(
     @PrimaryKey val sessionId: String,
     val name: String, // e.g. "Google AI Studio Node Alpha", "Meta AI Node Beta"
@@ -39,7 +39,7 @@ data class DiscoveryLink(
     val timestamp: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "consensus_tasks")
+@Entity(tableName = "daisy_consensus_tasks")
 data class DaisyConsensusTask(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val objective: String,
@@ -50,7 +50,7 @@ data class DaisyConsensusTask(
     val timestamp: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "log_events")
+@Entity(tableName = "daisy_log_events")
 data class DaisyLogEvent(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val message: String,
@@ -71,19 +71,19 @@ interface DaisyDao {
     suspend fun clearAllIngressFiles()
 
     // Tether nodes
-    @Query("SELECT * FROM tether_nodes")
+    @Query("SELECT * FROM daisy_tether_nodes")
     fun getAllTetherNodes(): Flow<List<DaisyTetherNode>>
 
-    @Query("SELECT * FROM tether_nodes WHERE sessionId = :sessionId")
+    @Query("SELECT * FROM daisy_tether_nodes WHERE sessionId = :sessionId")
     suspend fun getTetherNodeById(sessionId: String): DaisyTetherNode?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTetherNode(node: DaisyTetherNode)
 
-    @Query("DELETE FROM tether_nodes WHERE sessionId = :sessionId")
+    @Query("DELETE FROM daisy_tether_nodes WHERE sessionId = :sessionId")
     suspend fun deleteTetherNode(sessionId: String)
 
-    @Query("DELETE FROM tether_nodes")
+    @Query("DELETE FROM daisy_tether_nodes")
     suspend fun clearAllTetherNodes()
 
     // Discovery links
@@ -97,23 +97,23 @@ interface DaisyDao {
     suspend fun clearAllDiscoveryLinks()
 
     // Consensus tasks
-    @Query("SELECT * FROM consensus_tasks ORDER BY timestamp DESC")
+    @Query("SELECT * FROM daisy_consensus_tasks ORDER BY timestamp DESC")
     fun getAllConsensusTasks(): Flow<List<DaisyConsensusTask>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertConsensusTask(task: DaisyConsensusTask): Long
 
-    @Query("DELETE FROM consensus_tasks")
+    @Query("DELETE FROM daisy_consensus_tasks")
     suspend fun clearAllConsensusTasks()
 
     // Log events
-    @Query("SELECT * FROM log_events ORDER BY timestamp DESC LIMIT 100")
+    @Query("SELECT * FROM daisy_log_events ORDER BY timestamp DESC LIMIT 100")
     fun getAllLogEvents(): Flow<List<DaisyLogEvent>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLogEvent(event: DaisyLogEvent)
 
-    @Query("DELETE FROM log_events")
+    @Query("DELETE FROM daisy_log_events")
     suspend fun clearAllLogEvents()
 }
 
