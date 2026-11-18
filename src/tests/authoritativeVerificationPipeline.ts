@@ -45,6 +45,8 @@ export interface PipelineExecutionReport {
   gates_passed: number;
   production_gate_verdict: 'PASSED' | 'BLOCKED_MISSING_EXTERNAL_CREDENTIALS' | 'BLOCKED_INTEGRITY_FAILURE' | 'NOT_EVALUATED_PREPRODUCTION';
   production_blockers: string[];
+  pre_production_passed: boolean;
+  pre_production_blockers: string[];
   claim_scope_verdict: string;
   artifacts_directory: string;
   gates: GateResult[];
