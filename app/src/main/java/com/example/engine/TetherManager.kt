@@ -1,6 +1,6 @@
 package com.example.engine
 
-import com.example.data.TetherNode
+import com.example.data.DaisyTetherNode
 import com.example.data.DaisyRepository
 import kotlinx.coroutines.flow.first
 import java.util.UUID
@@ -15,7 +15,7 @@ class TetherManager(
      */
     suspend fun bindToElement(name: String, targetElement: String, bucket: String): String {
         val sessionId = "node_${UUID.randomUUID().toString().substring(0, 8)}"
-        val node = TetherNode(
+        val node = DaisyTetherNode(
             sessionId = sessionId,
             name = name,
             targetElement = targetElement,
@@ -23,7 +23,7 @@ class TetherManager(
             targetBucket = bucket,
             lastToken = ""
         )
-        repository.insertTetherNode(node)
+        repository.insertDaisyTetherNode(node)
         repository.log("Bound browser session to element node '$targetElement' as $name. ID: $sessionId", "INFO")
         
         voiceCoPilot.speak("Successfully bound new MMTAI node $name to element $targetElement. Ready to stream.")
@@ -49,7 +49,7 @@ class TetherManager(
             status = "SYNCING",
             lastToken = tokenString
         )
-        repository.insertTetherNode(updatedNode)
+        repository.insertDaisyTetherNode(updatedNode)
         repository.log("Programmatically injecting token string: \"$tokenString\" into ${node.name} [${node.targetElement}]", "INFO")
     }
 
@@ -76,7 +76,7 @@ class TetherManager(
             lastToken = token,
             errorCount = 0
         )
-        repository.insertTetherNode(updatedNode)
+        repository.insertDaisyTetherNode(updatedNode)
     }
 
     /**
@@ -93,7 +93,7 @@ class TetherManager(
             errorCount = node.errorCount + 1,
             rateLimitedAt = System.currentTimeMillis()
         )
-        repository.insertTetherNode(brokenNode)
+        repository.insertDaisyTetherNode(brokenNode)
 
         // Attempt a hot-swap to another healthy tethered session
         val healthyAlternative = repository.tetherNodes.first().firstOrNull { 
@@ -109,7 +109,7 @@ class TetherManager(
                 targetBucket = node.targetBucket,
                 status = "HOT_SWAPPING"
             )
-            repository.insertTetherNode(remappedNode)
+            repository.insertDaisyTetherNode(remappedNode)
         } else {
             repository.log("No healthy alternative node available to handle hot-swap!", "WARNING")
             voiceCoPilot.speak("Warning. No available backup nodes in current cluster. Session is stalled.")
