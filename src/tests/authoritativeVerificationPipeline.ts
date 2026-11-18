@@ -897,16 +897,17 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     }
     productionBlockers.push('GATE-12-PRODUCTION lifecycle execution requires verified identity and signed tenant claims on the deployed target.');
 
-    // Production credential gates
+    // Production evaluation is intentionally separate from pre-production CI.
+    // Payment activation is not a prerequisite while PAYMENTS_ENABLED remains false.
     if (env === 'production') {
-      if (!hasPayPal || ppCreds?.environment !== 'live' || !ppAuth) {
-        productionBlockers.push('GATE-11 PayPal live credentials not authenticated. Live fiat payments require active PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET.');
-      }
       if (!hasNeon || !neonConn) {
-        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) not connected. Production multi-region persistence requires NEON_DATABASE_URL.');
+        productionBlockers.push('GATE-11 Neon Serverless PostgreSQL (DN-34) is not connected in the explicitly selected production runtime.');
+      }
+      if (paymentsEnabled) {
+        productionBlockers.push('Live payment activation requires its separately reviewed provider-authentication and release flow; this pipeline does not enable payments.');
       }
     } else {
-      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production requires explicit SOLVEX_ENV=production opt-in and live provider verification.`);
+      productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production readiness is not evaluated outside an explicitly selected production runtime.`);
     }
 
     const preProductionPassed = preProductionBlockers.length === 0;
