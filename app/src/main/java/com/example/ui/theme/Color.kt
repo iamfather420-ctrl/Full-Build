@@ -19,3 +19,17 @@ val NeonAmber = Color(0xFFFFB300)
 val NeonPink = Color(0xFFFF0055)
 val TextMuted = Color(0xFF7A8B9E)
 val LightCyan = Color(0xFFE0FBFC)
+
+ 
+// Stable aliases used by the native SolveX screens.
+val CyberPrimary = NeonCyan
+val CyberSecondary = NeonGreen
+val CyberTertiary = NeonAmber
+val CyberSurface = CyberCard
+val CyberSurfaceVariant = Color(0xFF172337)
+val CyberDivider = Color(0xFF2B3B52)
+val CyberTextBright = LightCyan
+val CyberTextMuted = TextMuted
+val CyberOnPrimary = CyberDark
+val CyberAlertRed = NeonPink
+val CyberBlueAccent = Color(0xFF2D8CFF)
