@@ -13,7 +13,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
@@ -115,7 +115,7 @@ jobs:
           echo "Updating apt package indexes for Coq."
           timeout --signal=TERM --kill-after=30s 20m sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=60 -o Acquire::https::Timeout=60 update
           echo "Installing Coq."
-          timeout --signal=TERM --kill-after=30s 20m sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 install -y coq
+          timeout --signal=TERM --kill-after=30s 40m sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=120 -o Acquire::https::Timeout=120 install -y coq/
           command -v coqc
           coqc --version
       - name: Pull pinned Isabelle/HOL image
