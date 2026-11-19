@@ -21,17 +21,6 @@ data class LogEvent(
     val timestamp: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "b2b_accounts")
-data class LegacyB2BAccount(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val companyName: String,
-    val ein: String,
-    val email: String,
-    val balance: Double = 500000.00, // Default starting credit
-    val isVerified: Boolean = false,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
 @Entity(tableName = "consensus_tasks")
 data class ConsensusTask(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
