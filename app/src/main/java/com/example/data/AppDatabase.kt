@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
     entities = [
         TetherNode::class,
         LogEvent::class,
-        LegacyB2BAccount::class,
+        B2BAccount::class,
         ConsensusTask::class,
         SolvedParadox::class,
         BalanceSheetRecord::class
