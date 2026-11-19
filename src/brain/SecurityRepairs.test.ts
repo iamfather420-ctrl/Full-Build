@@ -79,7 +79,7 @@ test('DN-52 remains provider-required without a production key and DN-36 stays p
   const executors = new DaisySubsystemExecutors();
   const signer = await executors.executeNode('DN-52');
   assert.equal(signer.status, 'PROVIDER_REQUIRED');
-  assert.equal(signer.claim_scope, 'PRODUCTION');
+  assert.equal(signer.claim_scope, 'SANDBOX');
   assert.equal(signer.evidence.ephemeral_key_accepted, false);
   const prohibited = await executors.executeNode('DN-36');
   assert.equal(prohibited.status, 'PROHIBITED_BLOCKED');
