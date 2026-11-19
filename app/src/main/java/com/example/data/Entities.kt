@@ -22,7 +22,7 @@ data class LogEvent(
 )
 
 @Entity(tableName = "b2b_accounts")
-data class B2BAccount(
+data class LegacyB2BAccount(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val companyName: String,
     val ein: String,
