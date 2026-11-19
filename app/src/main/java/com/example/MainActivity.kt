@@ -1,10 +1,12 @@
 package com.example
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -43,8 +45,34 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewModelScope
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     private val viewModel: DaisyViewModel by viewModels()
+
+    fun showBiometricPrompt(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val executor = ContextCompat.getMainExecutor(this)
+        val prompt = BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                onError(errString.toString())
+            }
+
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                onSuccess()
+            }
+
+            override fun onAuthenticationFailed() {
+                onError("Biometric not recognized. Try again.")
+            }
+        })
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Unlock Daisy Haminja")
+            .setSubtitle("Authenticate to access the SolveX brain")
+            .setNegativeButtonText("Cancel")
+            .build()
+        prompt.authenticate(promptInfo)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -735,7 +763,7 @@ fun NativeCyberWorkspace(
 
 @Composable
 fun TethersTabContent(
-    tetherNodes: List<com.example.data.TetherNode>,
+    tetherNodes: List<com.example.data.DaisyTetherNode>,
     onBindClick: () -> Unit,
     onTripClick: (String) -> Unit,
     onResetClick: (String) -> Unit,
@@ -1147,7 +1175,7 @@ fun IngressTabContent(
 fun ConsensusTabContent(
     viewModel: DaisyViewModel,
     discoveryLinks: List<com.example.data.DiscoveryLink>,
-    consensusTasks: List<com.example.data.ConsensusTask>
+    consensusTasks: List<com.example.data.DaisyConsensusTask>
 ) {
     val promptInput by viewModel.userWrittenPrompt.collectAsState()
 
@@ -1422,7 +1450,7 @@ fun ConsensusTabContent(
 
 @Composable
 fun TelemetryTabContent(
-    logEvents: List<com.example.data.LogEvent>,
+    logEvents: List<com.example.data.DaisyLogEvent>,
     onClearLogs: () -> Unit
 ) {
     val listState = rememberLazyListState()

@@ -13,7 +13,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_MIGRATION_DATABASE_URL }}
       SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
@@ -113,7 +113,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y coq
+          timeout --signal=TERM --kill-after=30s 40m sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=120 -o Acquire::https::Timeout=120 install -y coq
           IMAGE_REF="makarius/isabelle@sha256:9bd33b183c399327c5d554fc8cde27c29b5d2b20cdc6fe7a604caa3f951018fc"
           docker pull "$IMAGE_REF"
           printf '%s\n' '#!/usr/bin/env bash' 'set -euo pipefail' 'exec docker run --rm --entrypoint /home/isabelle/Isabelle/bin/isabelle -v "$PWD:/workspace" -w /workspace "$SOLVEX_ISABELLE_IMAGE" "$@"' > "$RUNNER_TEMP/isabelle"
@@ -168,3 +168,39 @@ jobs:
             artifacts/system-45-gates.json
             artifacts/system-46-closure-gate.json
           if-no-files-found: warn
+
+
+  android-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools"
+      - name: Install Android SDK components
+        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
+      - name: Assemble debug APK
+        run: gradle :app:assembleDebug --no-daemon
+      - name: Run Android unit tests
+        run: gradle :app:testDebugUnitTest --no-daemon
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: solvex-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

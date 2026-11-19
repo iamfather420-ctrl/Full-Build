@@ -3,7 +3,7 @@ package com.example.data
 import android.util.Base64
 import android.util.Log
 import com.example.BuildConfig
-import com.example.ui.B2BProduct
+import com.example.ui.corporate.B2BProduct
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
