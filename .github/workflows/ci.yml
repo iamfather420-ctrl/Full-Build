@@ -109,15 +109,123 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
           export PATH="$HOME/.elan/bin:$PATH"
           bunx tsx -e 'import { verifyLeanProof } from "./src/proofs/ExternalProver.ts"; const evidence = verifyLeanProof(); if (!evidence.prover_execution_verified || evidence.exit_code !== 0 || evidence.binary_basename !== "lean") { console.error(JSON.stringify(evidence)); process.exit(1); } console.log(JSON.stringify({ prover: evidence.prover, exit_code: evidence.exit_code, source_sha256: evidence.source_sha256, binary_basename: evidence.binary_basename }));'
-      - name: Install Coq proof checker
+      - name: Install pinned Coq proof checker
         run: |
           set -euo pipefail
-          echo "Updating apt package indexes for Coq."
-          timeout --signal=TERM --kill-after=30s 20m sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=60 -o Acquire::https::Timeout=60 update
-          echo "Installing Coq."
-          timeout --signal=TERM --kill-after=30s 40m sudo env DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=120 -o Acquire::https::Timeout=120 install -y coq/
-          command -v coqc
-          coqc --version
+          IMAGE_TAG="coqorg/coq:8.20.1"
+          echo "Pulling maintained Coq 8.20.1 image: $IMAGE_TAG"
+          timeout --signal=TERM --kill-after=30s 30m docker pull "$IMAGE_TAG"
+          IMAGE_REF="$(docker image inspect "$IMAGE_TAG" --format '{{range .RepoDigests}}{{println .}}{{end}}' | grep '^coqorg/coq@sha256:' | head -n 1)"
+          if ! printf '%s' "$IMAGE_REF" | grep -Eq '^coqorg/coq@sha256:[a-f0-9]{64}
+      - name: Pull pinned Isabelle/HOL image
+        run: |
+          set -euo pipefail
+          IMAGE_REF="makarius/isabelle@sha256:9bd33b183c399327c5d554fc8cde27c29b5d2b20cdc6fe7a604caa3f951018fc"
+          echo "Pulling pinned Isabelle image: $IMAGE_REF"
+          timeout --signal=TERM --kill-after=30s 20m docker pull "$IMAGE_REF"
+          echo "Pinned Isabelle image is available."
+          export SOLVEX_ISABELLE_IMAGE="$IMAGE_REF"
+          cat > "$RUNNER_TEMP/isabelle" <<'ISABELLE_WRAPPER'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          args=()
+          while (($#)); do
+            if [[ "$1" == "-D" && $# -ge 2 ]]; then
+              args+=("-D" "/workspace/$2")
+              shift 2
+            else
+              args+=("$1")
+              shift
+            fi
+          done
+          # Preserve the image's declared working directory because its
+          # ENTRYPOINT is relative: Isabelle/bin/isabelle.
+          exec docker run --rm -v "$PWD:/workspace" "$SOLVEX_ISABELLE_IMAGE" "${args[@]}"
+          ISABELLE_WRAPPER
+          chmod 755 "$RUNNER_TEMP/isabelle"
+          echo "SOLVEX_ISABELLE_IMAGE=$IMAGE_REF" >> "$GITHUB_ENV"
+          echo "SOLVEX_ISABELLE_BIN=$RUNNER_TEMP/isabelle" >> "$GITHUB_ENV"
+          echo "Smoke-testing the pinned Isabelle container entrypoint."
+          "$RUNNER_TEMP/isabelle" version
+      - name: Execute checked-in Coq proof
+        run: |
+          set -euo pipefail
+          export SOLVEX_COQC_BIN="$(command -v coqc)"
+          echo "Compiling formal/coq/BoundedZeno.v with Coq."
+          mkdir -p /tmp/solvex-coq-proof
+          timeout --signal=TERM --kill-after=30s 5m coqc -q -no-glob -o /tmp/solvex-coq-proof/BoundedZeno.vo formal/coq/BoundedZeno.v
+          echo "Coq proof compilation completed."
+          echo "SOLVEX_COQC_BIN=$SOLVEX_COQC_BIN" >> "$GITHUB_ENV"
+      - name: Verify Coq execution receipt
+        run: |
+          set -euo pipefail
+          echo "Running the repository's independent Coq evidence verifier."
+          timeout --signal=TERM --kill-after=30s 5m bunx tsx -e 'import { verifyCoqProof } from "./src/proofs/ExternalProver.ts"; const result = verifyCoqProof(); console.log(JSON.stringify(result)); if (!result.prover_execution_verified || result.exit_code !== 0) process.exit(1);'
+      - name: Verify Isabelle/HOL execution receipt
+        run: |
+          set -euo pipefail
+          echo "Running the repository's Isabelle/HOL build and evidence verifier."
+          timeout --signal=TERM --kill-after=30s 15m bunx tsx -e 'import { verifyIsabelleProof } from "./src/proofs/ExternalProver.ts"; const result = verifyIsabelleProof(); console.log(JSON.stringify(result)); if (!result.prover_execution_verified || result.exit_code !== 0) process.exit(1);'
+      - name: Daisy cognitive regression, including DN-25 and DN-45
+        run: bunx tsx --test --test-concurrency=1 src/brain/CognitiveMilestone.test.ts src/brain/SecurityRepairs.test.ts src/security/RangeProof.test.ts src/proofs/ExternalProver.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts src/nodes/distributedProtocolModels.test.ts
+      - name: Enterprise invariants
+        run: bun run verify:enterprise
+      - name: Formal verification corpus
+        run: bun run verify:120
+      - name: Prepare ephemeral local proof and tenant crypto keys
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/solvex-proof-store
+          chmod 700 /tmp/solvex-proof-store
+          PROOF_HMAC_KEY="$(openssl rand -hex 32)"
+          TENANT_ROOT_KEY="$(openssl rand -hex 32)"
+          echo "::add-mask::$PROOF_HMAC_KEY"
+          echo "::add-mask::$TENANT_ROOT_KEY"
+          echo "SOLVEX_PROOF_DIR=/tmp/solvex-proof-store" >> "$GITHUB_ENV"
+          echo "SOLVEX_PROOF_HMAC_KEY=$PROOF_HMAC_KEY" >> "$GITHUB_ENV"
+          echo "SOLVEX_TENANT_ROOT_KEY=$TENANT_ROOT_KEY" >> "$GITHUB_ENV"
+      - name: Lifecycle proof-closure contract regression tests
+        run: bunx tsx --test src/proofs/lifecycleProofClosure.test.ts
+      - name: Proof closure
+        run: bun run verify:proof-closure
+      - name: Execute the authoritative 45-gate sequence
+        id: authoritative_45
+        env:
+          SOLVEX_NODE_EXTERNAL_PROBES: 'true'
+          # Use only the disposable Neon validation branch configured above.
+          SOLVEX_E2E_USE_DISPOSABLE_NEON: 'true'
+        run: bun run verify:45-gates
+      - name: Evaluate the subsequent GATE-46 closure separately
+        if: ${{ always() && steps.authoritative_45.outcome != 'skipped' }}
+        run: bun run verify:46-closure
+      - name: Upload separate 45-gate and GATE-46 evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: solvex-45-gates-and-separate-46-closure-${{ github.sha }}
+          path: |
+            artifacts/system-45-gates.json
+            artifacts/system-46-closure-gate.json
+            artifacts/daisy-54-node-execution.json
+            artifacts/execution-gates.json
+          if-no-files-found: warn
+; then
+            echo "Could not resolve the Coq image to an immutable registry digest." >&2
+            exit 1
+          fi
+          echo "Resolved Coq image: $IMAGE_REF"
+          cat > "$RUNNER_TEMP/coqc" <<'COQC_WRAPPER'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          exec docker run --rm -v "$PWD:/workspace" -w /workspace --entrypoint opam "$SOLVEX_COQ_IMAGE" exec -- coqc "$@"
+          COQC_WRAPPER
+          chmod 755 "$RUNNER_TEMP/coqc"
+          echo "SOLVEX_COQ_IMAGE=$IMAGE_REF" >> "$GITHUB_ENV"
+          echo "SOLVEX_COQC_BIN=$RUNNER_TEMP/coqc" >> "$GITHUB_ENV"
+          export SOLVEX_COQ_IMAGE="$IMAGE_REF"
+          export SOLVEX_COQC_BIN="$RUNNER_TEMP/coqc"
+          echo "Smoke-testing the pinned Coq compiler."
+          "$RUNNER_TEMP/coqc" --version
       - name: Pull pinned Isabelle/HOL image
         run: |
           set -euo pipefail
