@@ -43,7 +43,7 @@ class CorporateViewModel(application: Application) : AndroidViewModel(applicatio
     val allLogs: StateFlow<List<LogEvent>> = repository.allLogs
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    val activeAccount: StateFlow<B2BAccount?> = repository.activeAccount
+    val activeAccount: StateFlow<LegacyB2BAccount?> = repository.activeAccount
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val allTasks: StateFlow<List<ConsensusTask>> = repository.allTasks
