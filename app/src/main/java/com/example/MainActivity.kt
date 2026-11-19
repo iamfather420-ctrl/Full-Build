@@ -763,7 +763,7 @@ fun NativeCyberWorkspace(
 
 @Composable
 fun TethersTabContent(
-    tetherNodes: List<com.example.data.TetherNode>,
+    tetherNodes: List<com.example.data.DaisyTetherNode>,
     onBindClick: () -> Unit,
     onTripClick: (String) -> Unit,
     onResetClick: (String) -> Unit,
@@ -1175,7 +1175,7 @@ fun IngressTabContent(
 fun ConsensusTabContent(
     viewModel: DaisyViewModel,
     discoveryLinks: List<com.example.data.DiscoveryLink>,
-    consensusTasks: List<com.example.data.ConsensusTask>
+    consensusTasks: List<com.example.data.DaisyConsensusTask>
 ) {
     val promptInput by viewModel.userWrittenPrompt.collectAsState()
 
@@ -1450,7 +1450,7 @@ fun ConsensusTabContent(
 
 @Composable
 fun TelemetryTabContent(
-    logEvents: List<com.example.data.LogEvent>,
+    logEvents: List<com.example.data.DaisyLogEvent>,
     onClearLogs: () -> Unit
 ) {
     val listState = rememberLazyListState()
