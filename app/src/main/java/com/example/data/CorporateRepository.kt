@@ -6,7 +6,7 @@ import java.util.regex.Pattern
 class CorporateRepository(private val database: AppDatabase) {
     val allTethers: Flow<List<TetherNode>> = database.tetherNodeDao().getAllTethers()
     val allLogs: Flow<List<LogEvent>> = database.logEventDao().getRecentLogs()
-    val activeAccount: Flow<B2BAccount?> = database.b2bAccountDao().getActiveAccountFlow()
+    val activeAccount: Flow<LegacyB2BAccount?> = database.b2bAccountDao().getActiveAccountFlow()
     val allTasks: Flow<List<ConsensusTask>> = database.consensusTaskDao().getAllTasks()
     val allParadoxes: Flow<List<SolvedParadox>> = database.solvedParadoxDao().getAllParadoxes()
     val allBalanceSheetRecords: Flow<List<BalanceSheetRecord>> = database.balanceSheetDao().getAllRecords()
@@ -48,7 +48,7 @@ class CorporateRepository(private val database: AppDatabase) {
         database.logEventDao().insertLog(LogEvent(message = message, level = level))
     }
 
-    suspend fun updateAccount(account: B2BAccount) {
+    suspend fun updateAccount(account: LegacyB2BAccount) {
         database.b2bAccountDao().updateAccount(account)
     }
 
@@ -73,7 +73,7 @@ class CorporateRepository(private val database: AppDatabase) {
             return false
         }
 
-        val account = B2BAccount(
+        val account = LegacyB2BAccount(
             companyName = companyName,
             ein = ein,
             email = email,
@@ -87,7 +87,7 @@ class CorporateRepository(private val database: AppDatabase) {
     }
 
     suspend fun triggerAdminBypass() {
-        val account = B2BAccount(
+        val account = LegacyB2BAccount(
             companyName = "Sovereign Admin Bypass Corp",
             ein = "99-9999999",
             email = "admin@solvex.global",
