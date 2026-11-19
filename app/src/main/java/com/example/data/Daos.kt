@@ -35,18 +35,18 @@ interface LogEventDao {
 }
 
 @Dao
-interface B2BAccountDao {
+interface LegacyB2BAccountDao {
     @Query("SELECT * FROM b2b_accounts LIMIT 1")
-    fun getActiveAccountFlow(): Flow<B2BAccount?>
+    fun getActiveAccountFlow(): Flow<LegacyB2BAccount?>
 
     @Query("SELECT * FROM b2b_accounts LIMIT 1")
-    suspend fun getActiveAccount(): B2BAccount?
+    suspend fun getActiveAccount(): LegacyB2BAccount?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAccount(account: B2BAccount)
+    suspend fun insertAccount(account: LegacyB2BAccount)
 
     @Update
-    suspend fun updateAccount(account: B2BAccount)
+    suspend fun updateAccount(account: LegacyB2BAccount)
 
     @Query("DELETE FROM b2b_accounts")
     suspend fun clearAll()
