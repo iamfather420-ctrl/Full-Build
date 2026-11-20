@@ -124,7 +124,7 @@ jobs:
           cat > "$RUNNER_TEMP/coqc" <<'COQC_WRAPPER'
           #!/usr/bin/env bash
           set -euo pipefail
-          exec docker run --rm -v "$PWD:/workspace" -w /workspace --entrypoint opam "$SOLVEX_COQ_IMAGE" exec -- coqc "$@"
+          exec docker run --rm -v "$PWD:/workspace" -v "/tmp/solvex-coq-proof:/tmp/solvex-coq-proof" -w /workspace --entrypoint opam "$SOLVEX_COQ_IMAGE" exec -- coqc "$@"
           COQC_WRAPPER
           chmod 755 "$RUNNER_TEMP/coqc"
           echo "SOLVEX_COQ_IMAGE=$IMAGE_REF" >> "$GITHUB_ENV"
