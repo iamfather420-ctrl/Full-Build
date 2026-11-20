@@ -14,11 +14,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_oidc_subject_unique
 
 -- The tenants table is keyed by id; tenant_id is an optional parent/reference field.
 -- Replace the previous tenant_id-based policies, which hid tenant rows from RLS clients.
-DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.tenants;
-DROP POLICY IF EXISTS solvex_tenant_access ON public.tenants;
-CREATE POLICY solvex_signed_tenant_context ON public.tenants
-  USING (id = (solvex_private.current_claims()->>'tenant_id'))
-  WITH CHECK (id = (solvex_private.current_claims()->>'tenant_id'));
+-- Serialize this replace sequence across concurrent CI runs sharing the
+-- disposable validation branch. The lock and DDL execute in one transaction,
+-- so a second runner cannot race between DROP POLICY and CREATE POLICY.
+DO $tenant_policy$
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtext('solvex:oidc:tenants-policy:v1')::bigint);
+  DROP POLICY IF EXISTS solvex_signed_tenant_context ON public.tenants;
+  DROP POLICY IF EXISTS solvex_tenant_access ON public.tenants;
+  CREATE POLICY solvex_signed_tenant_context ON public.tenants
+    USING (id = (solvex_private.current_claims()->>'tenant_id'))
+    WITH CHECK (id = (solvex_private.current_claims()->>'tenant_id'));
+END
+$tenant_policy$;
 
 CREATE OR REPLACE FUNCTION solvex_private.issue_oidc_session_claim(
   p_subject text,

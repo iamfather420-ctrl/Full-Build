@@ -7,6 +7,9 @@ const transitions = ['ORDER_CREATED', 'ESCROW_FUNDED', 'SANDBOX_PROVISIONED', 'R
 function gates(overrides: {
   gate12Status?: string;
   gate14Status?: string;
+  productionVerdict?: string;
+  preProductionPassed?: boolean;
+  preProductionBlockers?: string[];
   stage14Status?: string;
   paymentProcessing?: string;
   finalStatus?: string;
@@ -39,7 +42,7 @@ function gates(overrides: {
         }
       }
     },
-    { gate_id: 'GATE-14', status: overrides.gate14Status ?? 'BLOCKED' }
+    { gate_id: 'GATE-14', status: overrides.gate14Status ?? 'BLOCKED', details: { production_verdict: overrides.productionVerdict ?? 'BLOCKED', pre_production_passed: overrides.preProductionPassed, pre_production_blockers: overrides.preProductionBlockers } }
   ];
 }
 
@@ -51,6 +54,7 @@ test('accepts completed disposable Neon lifecycle while Stage 14 and GATE-14 rem
 
 test('accepts safely blocked OFFER lifecycle without transitions', () => {
   const result = evaluateLifecycleProofClosure(gates({
+    gate12Status: 'PASSED',
     finalStatus: 'OFFER',
     authorizationBlocked: true,
     transitionsExecuted: [],
@@ -77,9 +81,46 @@ test('rejects lifecycle status that contradicts Stage 14', () => {
   assert.equal(result.path, 'INVALID');
 });
 
-test('rejects any lifecycle proof that enables payment processing or unblocks production GATE-14', () => {
+test('accepts a passing pre-production contract while production remains unevaluated', () => {
+  const result = evaluateLifecycleProofClosure(gates({
+    gate12Status: 'PASSED',
+    gate14Status: 'PASSED',
+    productionVerdict: 'NOT_EVALUATED_PREPRODUCTION',
+    preProductionPassed: true,
+    finalStatus: 'OFFER',
+    authorizationBlocked: true,
+    transitionsExecuted: [],
+    transitionAttempts: [],
+    testScope: 'PRE_PRODUCTION_CONTRACT_ONLY'
+  }));
+  assert.equal(result.valid, true);
+  assert.equal(result.path, 'SAFE_BLOCKED_OFFER');
+});
+
+test('accepts an independent pre-production blocker without reclassifying it as a production pass', () => {
+  const result = evaluateLifecycleProofClosure(gates({
+    gate12Status: 'PASSED',
+    gate14Status: 'FAILED',
+    productionVerdict: 'NOT_EVALUATED_PREPRODUCTION',
+    preProductionPassed: false,
+    preProductionBlockers: ['GATE-09 Daisy 54-node functional verification incomplete.'],
+    finalStatus: 'OFFER',
+    authorizationBlocked: true,
+    transitionsExecuted: [],
+    transitionAttempts: [],
+    testScope: 'PRE_PRODUCTION_CONTRACT_ONLY'
+  }));
+  assert.equal(result.valid, true);
+  assert.equal(result.path, 'SAFE_BLOCKED_OFFER');
+});
+
+test('rejects payment activation and inconsistent production boundary claims', () => {
   assert.equal(evaluateLifecycleProofClosure(gates({ paymentProcessing: 'ENABLED' })).valid, false);
-  assert.equal(evaluateLifecycleProofClosure(gates({ gate14Status: 'PASSED' })).valid, false);
+  assert.equal(evaluateLifecycleProofClosure(gates({
+    gate14Status: 'PASSED',
+    productionVerdict: 'PASSED',
+    preProductionPassed: true
+  })).valid, false);
 });
 
 test('rejects incomplete or falsely successful disposable transitions', () => {

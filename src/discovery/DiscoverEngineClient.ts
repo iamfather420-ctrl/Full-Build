@@ -24,8 +24,9 @@ export async function submitAssertion(
         signal: AbortSignal.timeout(options?.timeoutMs ?? 10_000),
       });
       if ((response.status === 503 || response.status === 429) && attempt < attempts) continue;
-      const review = response.ok ? await response.json() as DiscoveryReview : null;
-      if (review && (review.publishable !== false || review.reviewStatus === 'VERIFIED' as never || !review.withheld)) {
+      const payload: unknown = response.ok ? await response.json() : null;
+      const review = payload === null ? null : parseDiscoveryReview(payload);
+      if (review && (review.publishable || !review.withheld)) {
         throw new Error('Discover-Engine returned a response that would publish an unverified assertion.');
       }
       return { status: response.status, review };
@@ -37,3 +38,30 @@ export async function submitAssertion(
   throw lastError instanceof Error ? lastError : new Error('Discover-Engine request failed.');
 }
 
+
+const REVIEW_STATUSES = new Set<DiscoveryReview['reviewStatus']>([
+  'HUMAN_REVIEW_REQUIRED',
+  'INSUFFICIENT_EVIDENCE',
+  'WITHHELD',
+  'CONTRADICTED',
+  'UNVERIFIED',
+]);
+
+function parseDiscoveryReview(value: unknown): DiscoveryReview {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error('Discover-Engine returned an invalid review payload.');
+  }
+  const candidate = value as Record<string, unknown>;
+  if (
+    typeof candidate.service !== 'string' ||
+    typeof candidate.publishable !== 'boolean' ||
+    typeof candidate.withheld !== 'boolean' ||
+    typeof candidate.reviewStatus !== 'string' ||
+    !REVIEW_STATUSES.has(candidate.reviewStatus as DiscoveryReview['reviewStatus']) ||
+    typeof candidate.passageValid !== 'boolean' ||
+    typeof candidate.reason !== 'string'
+  ) {
+    throw new Error('Discover-Engine returned an invalid review payload.');
+  }
+  return candidate as unknown as DiscoveryReview;
+}

@@ -6,6 +6,7 @@ import { authMiddleware } from '../../artifacts/api-server/src/middlewares/authM
 import { logger } from '../../artifacts/api-server/src/lib/logger';
 import { SovereignApiRouter } from '../api/ApiRouter';
 import { readLiveRegistry } from '../registry/liveRegistry.mjs';
+import daisyBackendRouter from '../api/DaisyBackendRouter';
 
 const router = express.Router();
 const authBoundary: express.RequestHandler = (req, res, next) => {
@@ -13,7 +14,9 @@ const authBoundary: express.RequestHandler = (req, res, next) => {
 };
 
 // Keep the same-origin OIDC boundary shared by the Node server and Vercel functions.
+// Daisy endpoints are mounted only after the shared middleware has resolved the session.
 router.use('/', pinoHttp({ logger }), cookieParser(), authBoundary, authRouter);
+router.use('/daisy', daisyBackendRouter);
 
 const healthHandler: express.RequestHandler = (_req, res) => {
   res.status(200).json({ status: 'ok', payments_enabled: false });
