@@ -166,12 +166,14 @@ jobs:
       - name: Execute checked-in Coq proof
         run: |
           set -euo pipefail
-          export SOLVEX_COQC_BIN="$(command -v coqc)"
-          echo "Compiling formal/coq/BoundedZeno.v with Coq."
+          if [[ -z "${SOLVEX_COQC_BIN:-}" || ! -x "$SOLVEX_COQC_BIN" ]]; then
+            echo "Pinned Coq wrapper is missing or not executable: ${SOLVEX_COQC_BIN:-<unset>}" >&2
+            exit 1
+          fi
+          echo "Compiling formal/coq/BoundedZeno.v with the pinned Coq container wrapper."
           mkdir -p /tmp/solvex-coq-proof
-          timeout --signal=TERM --kill-after=30s 5m coqc -q -no-glob -o /tmp/solvex-coq-proof/BoundedZeno.vo formal/coq/BoundedZeno.v
+          timeout --signal=TERM --kill-after=30s 5m "$SOLVEX_COQC_BIN" -q -no-glob -o /tmp/solvex-coq-proof/BoundedZeno.vo formal/coq/BoundedZeno.v
           echo "Coq proof compilation completed."
-          echo "SOLVEX_COQC_BIN=$SOLVEX_COQC_BIN" >> "$GITHUB_ENV"
       - name: Verify Coq execution receipt
         run: |
           set -euo pipefail
