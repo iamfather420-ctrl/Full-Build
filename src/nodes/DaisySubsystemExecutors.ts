@@ -171,52 +171,62 @@ export class DaisySubsystemExecutors {
         };
       }
 
-      // 6. DN-06: Linear SHA-256 Merkle Ledger
+      // 6. DN-06: Linear SHA-256 Audit Hash Chain (unsigned; not a Merkle tree)
       case 'DN-06': {
         const store = DurableStore.getInstance();
-        const rec = store.appendAudit('TENANT_ROOT', 'DN-06', 'CHAIN_TEST', 'LEDGER', 'REC_01', { payload: 'merkle_link' });
-        const valid = store.verifyChain().valid;
+        const rec = store.appendAudit('TENANT_ROOT', 'DN-06', 'CHAIN_TEST', 'LEDGER', 'REC_01', { payload: 'audit_chain_link' });
+        const verification = store.verifyChain();
         return {
           node_id: 'DN-06',
-          name: 'Linear SHA-256 Merkle Ledger',
+          name: 'Linear SHA-256 Audit Hash Chain',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: valid ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: verification.valid ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { record_hash: rec.record_hash, chain_valid: valid }
+          evidence: {
+            record_hash: rec.record_hash,
+            chain_valid: verification.valid,
+            source: verification.source,
+            durable: verification.durable,
+            signed: verification.signed,
+            ledger_type: 'LINEAR_HASH_CHAIN_NOT_MERKLE'
+          }
         };
       }
 
-      // 7. DN-07: Anti-Tamper Sentinel Monitor
+      // 7. DN-07: Persistent Audit Record Tamper Detection
       case 'DN-07': {
         const store = DurableStore.getInstance();
-        const chain = store.getState().audit_chain;
-        if (chain.length > 0) {
-          const orig = chain[chain.length - 1].payload_hash;
-          chain[chain.length - 1].payload_hash = 'deadbeef'.repeat(8);
-          const detected = !store.verifyChain().valid;
-          chain[chain.length - 1].payload_hash = orig;
-          return {
-            node_id: 'DN-07',
-            name: 'Anti-Tamper Sentinel Monitor',
-            category: 'AUDIT',
-            executed: true,
-            claim_scope: 'LOCAL',
-            status: detected ? 'SUCCESS' : 'FAIL_CLOSED',
-            duration_ms: performance.now() - start,
-            evidence: { mutation_alarm_tripped: detected }
-          };
+        const sqlite = SqliteStore.getInstance();
+        if (store.getState().audit_chain.length === 0) {
+          store.appendAudit('TENANT_SENTINEL', 'DN-07', 'SENTINEL_SEED', 'AUDIT', 'SENTINEL_01', { seed: true });
         }
+        const target = store.getState().audit_chain[store.getState().audit_chain.length - 1];
+        const originalHash = target.payload_hash;
+        const changed = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+          payload_hash: 'deadbeef'.repeat(8)
+        });
+        const tamperDetected = changed === 1 && !store.verifyChain().valid;
+        const restored = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+          payload_hash: originalHash
+        });
+        const chainRestored = restored === 1 && store.verifyChain().valid;
         return {
           node_id: 'DN-07',
-          name: 'Anti-Tamper Sentinel Monitor',
+          name: 'Persistent Audit Record Tamper Detection',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: 'SUCCESS',
+          status: tamperDetected && chainRestored ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { sentinel: 'ACTIVE' }
+          evidence: {
+            persistent_record_mutation: changed === 1,
+            mutation_alarm_tripped: tamperDetected,
+            original_record_restored: chainRestored,
+            durable_store: sqlite.isDiskBacked(),
+            signed: false
+          }
         };
       }
 
