@@ -121,22 +121,32 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // 5. Anti-Tamper Sentinel Detection
-  runTest('Anti-Tamper Sentinel Active Tamper Detection', 'AUDIT', () => {
+  // 5. Persistent audit-record tamper detection and recovery.
+  runTest('Persistent Audit Record Tamper Detection & Recovery', 'AUDIT', () => {
     const store = DurableStore.getInstance();
-    const chain = store.getState().audit_chain;
-    if (chain.length < 2) {
+    const sqlite = SqliteStore.getInstance();
+    if (store.getState().audit_chain.length === 0) {
       store.appendAudit('TENANT_SENTINEL', 'SENTINEL', 'GENERATE_BLOCK', 'ENTITY', 'ID_SENTINEL', {});
     }
-    const targetIdx = chain.length - 1;
-    const originalHash = chain[targetIdx].payload_hash;
-    // Inject subtle byte mutation
-    chain[targetIdx].payload_hash = 'f'.repeat(64);
+    const target = store.getState().audit_chain[store.getState().audit_chain.length - 1];
+    const originalHash = target.payload_hash;
+    const changed = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+      payload_hash: 'f'.repeat(64)
+    });
+    if (changed !== 1) throw new Error('Could not mutate the persisted audit record in the test store');
     const tamperCheck = store.verifyChain();
-    // Restore original immediately
-    chain[targetIdx].payload_hash = originalHash;
-    if (tamperCheck.valid) {
-      throw new Error('Tampered block failed to trigger cryptographic validation alarm!');
+    const appendRejected = (() => {
+      try {
+        store.appendAudit('TENANT_SENTINEL', 'SENTINEL', 'SHOULD_REJECT', 'ENTITY', 'ID_AFTER_TAMPER', {});
+        return false;
+      } catch { return true; }
+    })();
+    const restored = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+      payload_hash: originalHash
+    });
+    const restoredCheck = store.verifyChain();
+    if (tamperCheck.valid || !appendRejected || restored !== 1 || !restoredCheck.valid) {
+      throw new Error('Persistent tamper was not detected, append was not blocked, or restoration failed');
     }
   });
 
