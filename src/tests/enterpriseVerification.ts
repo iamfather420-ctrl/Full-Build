@@ -396,21 +396,40 @@ export async function runEnterpriseVerification() {
     if (!pp) throw new Error('DN-35 PayPal adapter missing from inventory');
   });
 
-  // 20. Crystal Clear Box projects only evidence that is actually persisted.
-  runTest('Crystal Clear Box Redaction Uses Persisted Evidence Only', 'AUDIT', () => {
+  // 20. Crystal Clear Box must reject fabricated proofs and expose only allowlisted fields.
+  runTest('Crystal Clear Box Rejects Fabricated Proofs and Redacts Untrusted Text', 'AUDIT', () => {
     const engine = ProofEngine.getInstance();
     const bundles = engine.getAllBundles();
+    const fabricated = {
+      proof_id: 'PB-CCB-NEGATIVE-TEST',
+      subject_id: 'DH-S-001',
+      claim: 'synthetic claim',
+      claim_hash: '',
+      evidence: ['PRIVATE_REASONING_SENTINEL'],
+      tests: [{ test_id: 't1', description: 'fake', passed: true, duration_ms: 1, receipt_hash: '' }],
+      formal_proofs: [{ system: 'fake', specification: 'fake', checked: true, proof_term_hash: '' }],
+      independent_oracles: [{ oracle_id: 'fake', name: 'fake', method: 'fake', attestation_hash: '', verified: true }],
+      replay_results: [{ replay_id: 'r1', status: 'MATCH', expected_hash: '', observed_hash: '' }],
+      implementation_hash: '', environment_hash: '', dependency_hash: '',
+      source_references: [], timestamp: Date.now(), verifier_identity: 'untrusted',
+      verification_status: 'VERIFIED', limitations: [],
+      reproducibility_instructions: 'PRIVATE_INSTRUCTIONS_SENTINEL'
+    } as any;
+    const rejected = engine.verifyBundleIntegrity(fabricated);
+    if (rejected.verified) throw new Error('Fabricated proof with boolean flags was accepted');
+    let projectionRejected = false;
+    try { CrystalClearBox.projectCustomerEvidence(fabricated); } catch { projectionRejected = true; }
+    if (!projectionRejected) throw new Error('Unverified proof was projected to a customer');
+
     for (const bundle of bundles) {
-      const customerView = CrystalClearBox.projectCustomerEvidence(bundle);
-      if (!customerView.proprietary_weights_redacted) throw new Error('Proprietary weights not marked redacted');
-      if (!customerView.internal_reasoning_redacted) throw new Error('Internal reasoning not marked redacted');
-      if (!customerView.public_audit_token || customerView.public_audit_token.length !== 64) {
-        throw new Error('Customer public audit token invalid');
+      const integrity = engine.verifyBundleIntegrity(bundle);
+      if (!integrity.verified) throw new Error(`Persisted bundle ${bundle.proof_id} failed: ${integrity.reasons.join('; ')}`);
+      const view = CrystalClearBox.projectCustomerEvidence(bundle);
+      if (!view.proprietary_weights_redacted || !view.internal_reasoning_redacted) throw new Error('Private material redaction failed');
+      if (!view.public_audit_token || !/^[a-f0-9]{64}$/i.test(view.public_audit_token)) throw new Error('Customer content digest invalid');
+      if (view.evidence_statements.length !== 0 || /PRIVATE_INSTRUCTIONS_SENTINEL/.test(view.reproducibility_instructions)) {
+        throw new Error('Untrusted evidence text crossed the customer projection boundary');
       }
-    }
-    // An empty evidence store is valid; the test must not create a fake proof to make itself pass.
-    if (bundles.length === 0 && Object.keys(DurableStore.getInstance().getState().proof_bundles).length !== 0) {
-      throw new Error('Proof engine failed to load persisted proof records');
     }
   });
 
