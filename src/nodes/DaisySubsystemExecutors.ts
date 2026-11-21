@@ -218,7 +218,7 @@ export class DaisySubsystemExecutors {
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: tamperDetected && chainRestored ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: tamperDetected && chainRestored && sqlite.isDiskBacked() ? 'SUCCESS' : (sqlite.isDiskBacked() ? 'FAIL_CLOSED' : 'PROVIDER_REQUIRED'),
           duration_ms: performance.now() - start,
           evidence: {
             persistent_record_mutation: changed === 1,
