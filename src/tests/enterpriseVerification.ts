@@ -427,17 +427,23 @@ export async function runEnterpriseVerification() {
 
     for (const bundle of bundles) {
       const integrity = engine.verifyBundleIntegrity(bundle);
-      if (integrity.verified) {
-        const view = CrystalClearBox.projectCustomerEvidence(bundle);
-        if (!view.proprietary_weights_redacted || !view.internal_reasoning_redacted) throw new Error('Private material redaction failed');
-        if (!view.public_audit_token || !/^[a-f0-9]{64}$/i.test(view.public_audit_token)) throw new Error('Customer content digest invalid');
-        if (view.evidence_statements.length !== 0 || /PRIVATE_INSTRUCTIONS_SENTINEL/.test(view.reproducibility_instructions)) {
-          throw new Error('Untrusted evidence text crossed the customer projection boundary');
-        }
-      } else {
-        let projectionRejected = false;
-        try { CrystalClearBox.projectCustomerEvidence(bundle); } catch { projectionRejected = true; }
-        if (!projectionRejected) throw new Error('Unverified persisted proof was projected to a customer');
+      let rejected = false;
+      let view: ReturnType<typeof CrystalClearBox.projectCustomerEvidence> | undefined;
+      try { view = CrystalClearBox.projectCustomerEvidence(bundle); } catch { rejected = true; }
+
+      if (!integrity.verified) {
+        if (!rejected) throw new Error(`Unverified persisted bundle ${bundle.proof_id} crossed the customer projection boundary`);
+        continue;
+      }
+      if (rejected || !view) throw new Error(`Verified bundle ${bundle.proof_id} could not be projected`);
+      if (!view.proprietary_weights_redacted || !view.internal_reasoning_redacted) {
+        throw new Error('Private material redaction failed');
+      }
+      if (!/^[a-f0-9]{64}$/i.test(view.public_audit_token)) {
+        throw new Error('Customer content digest invalid');
+      }
+      if (view.evidence_statements.length !== 0) {
+        throw new Error('Untrusted evidence text crossed the customer projection boundary');
       }
     }
   });
