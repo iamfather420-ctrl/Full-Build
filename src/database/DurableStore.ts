@@ -43,7 +43,15 @@ export class DurableStore {
     const sqlite = SqliteStore.getInstance();
     const persisted = sqlite.findAllRecords<AuditRecordEntity>('audit_records')
       .sort((a, b) => a.index_num - b.index_num);
-    if (persisted.length > 0) this.state.audit_chain = persisted;
+    if (persisted.length > 0 && this.state.audit_chain.length === 0) {
+      this.state.audit_chain = persisted;
+    } else if (persisted.length === 0 && this.state.audit_chain.length > 0) {
+      // Migrate existing browser-persisted records into the SQLite wrapper once;
+      // verifyChain will still validate every imported hash before appending.
+      for (const record of this.state.audit_chain.slice().sort((a, b) => a.index_num - b.index_num)) {
+        sqlite.insertTenantRecord('audit_records', record.tenant_id, record as unknown as Record<string, any>);
+      }
+    }
   }
 
   public static getInstance(): DurableStore {
