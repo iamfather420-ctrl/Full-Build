@@ -1,4 +1,5 @@
 import { ProofBundleEntity, computeSha256 } from '../database/DatabaseSchema';
+import { ProofEngine } from '../proofs/ProofEngine';
 
 export interface CustomerEvidenceView {
   proof_id: string;
@@ -23,6 +24,10 @@ export class CrystalClearBox {
   public static projectCustomerEvidence(bundle: ProofBundleEntity): CustomerEvidenceView {
     if (!bundle || bundle.verification_status !== 'VERIFIED') {
       throw new Error('Customer evidence projection requires a VERIFIED proof bundle.');
+    }
+    const integrity = ProofEngine.getInstance().verifyBundleIntegrity(bundle);
+    if (!integrity.verified) {
+      throw new Error(`Customer evidence projection rejected: ${integrity.reasons.join('; ')}`);
     }
     if (!bundle.claim || !SHA256_HEX.test(bundle.claim_hash || '') ||
         computeSha256(bundle.claim) !== bundle.claim_hash) {
