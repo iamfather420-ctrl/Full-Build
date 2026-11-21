@@ -125,6 +125,7 @@ export async function runEnterpriseVerification() {
   runTest('Persistent Audit Record Tamper Detection & Recovery', 'AUDIT', () => {
     const store = DurableStore.getInstance();
     const sqlite = SqliteStore.getInstance();
+    if (!sqlite.isDiskBacked()) throw new Error('Disk-backed SQLite is required for a persistent tamper test');
     if (store.getState().audit_chain.length === 0) {
       store.appendAudit('TENANT_SENTINEL', 'SENTINEL', 'GENERATE_BLOCK', 'ENTITY', 'ID_SENTINEL', {});
     }
