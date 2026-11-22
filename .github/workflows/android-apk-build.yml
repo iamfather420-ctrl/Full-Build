@@ -54,7 +54,8 @@ jobs:
       # are compile-only sentinels, never production credentials or endpoints.
       - name: Provide non-secret Android CI build defaults
         run: |
-          cat > .env <<'ENV'
+          write_ci_env() {
+            cat > "$1" <<'ENV'
           APP_URL="https://ci.invalid"
           DAISY_INFERENCE_ENGINE="CI_NOT_CONFIGURED"
           DAISY_MODEL_ID="CI_NOT_CONFIGURED"
@@ -68,6 +69,10 @@ jobs:
           SOLVEX_FLY="CI_NOT_CONFIGURED"
           SOVEREIGN_AUTH_SECRET="CI_ONLY_NOT_A_SECRET"
           ENV
+          }
+          write_ci_env .env
+          mkdir -p app
+          write_ci_env app/.env
 
       - name: Assemble debug APK
         run: gradle :app:assembleDebug --no-daemon
