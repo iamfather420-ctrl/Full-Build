@@ -16,7 +16,6 @@ import { SqliteStore } from '../database/SqliteStore';
 import { NeonStore } from '../database/NeonPersistence';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
-import { SolutionPipeline } from '../solutions/SolutionPipeline';
 import { OrderLifecycleManager } from '../marketplace/OrderLifecycle';
 import { evaluateProviderGateStatus } from './providerGatePolicy';
 
