@@ -194,6 +194,29 @@ jobs:
           packages: "platform-tools"
       - name: Install Android SDK components
         run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
+      # Compile-only sentinels for the Secrets Gradle Plugin. Never use production secrets here.
+      - name: Provide non-secret Android CI build defaults
+        run: |
+          write_ci_env() {
+            cat > "$1" <<'ENV'
+          APP_URL="https://ci.invalid"
+          DAISY_INFERENCE_ENGINE="CI_NOT_CONFIGURED"
+          DAISY_MODEL_ID="CI_NOT_CONFIGURED"
+          DAISY_MODEL_PATH="CI_NOT_CONFIGURED"
+          DAISY_MODEL_VERSION="CI_NOT_CONFIGURED"
+          GEMINI_API_KEY="CI_NOT_CONFIGURED"
+          NEON_DATABASE_URL="postgresql://ci.invalid/disabled"
+          OIDC_CLIENT_ID="CI_NOT_CONFIGURED"
+          OIDC_ISSUER_URL="https://ci.invalid"
+          OPENAI_API_KEY="CI_NOT_CONFIGURED"
+          SOLVEX_FLY="CI_NOT_CONFIGURED"
+          SOVEREIGN_AUTH_SECRET="CI_ONLY_NOT_A_SECRET"
+          ENV
+          }
+          write_ci_env .env
+          mkdir -p app
+          write_ci_env app/.env
+
       - name: Assemble debug APK
         run: gradle :app:assembleDebug --no-daemon
       - name: Run Android unit tests
