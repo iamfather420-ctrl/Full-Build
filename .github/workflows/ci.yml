@@ -56,6 +56,8 @@ jobs:
         run: bun run verify:release-safety
       - name: Daisy foundational instruction and no-simulated-success checks
         run: bun run verify:daisy-safety
+      - name: Daisy Creative Integrity & Contextual Appropriateness tests
+        run: bun run test:creative-integrity
       - name: First-party inference fail-closed tests
         run: bun run test:local-inference
       - name: System 46 release-guard regression tests
