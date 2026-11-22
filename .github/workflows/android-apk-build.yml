@@ -54,7 +54,7 @@ jobs:
       # are compile-only sentinels, never production credentials or endpoints.
       - name: Provide non-secret Android CI build defaults
         run: |
-          cat > app/.env <<'ENV'
+          cat > .env <<'ENV'
           APP_URL="https://ci.invalid"
           DAISY_INFERENCE_ENGINE="CI_NOT_CONFIGURED"
           DAISY_MODEL_ID="CI_NOT_CONFIGURED"
