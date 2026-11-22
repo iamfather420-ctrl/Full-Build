@@ -935,7 +935,19 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       'GATE-14',
       'Final Truth-Boundary Audit & Production Gate',
       'LOCAL',
-      preProductionPassed ? 'PASSED' : 'FAILED',
+      preProductionPassed
+        ? 'PASSED'
+        : preProductionBlockers.some(blocker =>
+            blocker.includes('compilation errors') ||
+            blocker.includes('Enterprise invariant tests failed') ||
+            blocker.includes('formal proofs failed') ||
+            blocker.includes('replay divergence') ||
+            blocker.includes('tamper alarm failed') ||
+            blocker.includes('persistence or Merkle chain failed') ||
+            blocker.includes('authorization-boundary contract failed')
+          )
+          ? 'FAILED'
+          : 'BLOCKED',
       performance.now() - g14Start,
       {
         execution_id: executionId,
