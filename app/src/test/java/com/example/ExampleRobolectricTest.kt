@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLooper
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [36])
+@Config(sdk = [35])
 class ExampleRobolectricTest {
 
   private suspend fun awaitCondition(timeoutMs: Long = 4000, condition: () -> Boolean) {
