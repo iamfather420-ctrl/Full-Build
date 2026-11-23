@@ -1,0 +1,422 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GIT G.O.A.T. Readiness API",
+    "version": "1.1.0",
+    "description": "Public, read-only GitHub scan API. The report contains complete Git-tree metadata when not truncated, bounded text-inspection coverage, a per-file inventory (capped at 10,000 entries), omission reasons, and explicit executionStatus=BLOCKED with executedFiles=0 until a secure isolated runner is configured. Private-repository access and GitHub writes are not enabled."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Service health and capability flags",
+        "responses": {
+          "200": {
+            "description": "Live service capability report"
+          }
+        }
+      }
+    },
+    "/scans": {
+      "post": {
+        "summary": "Scan a public GitHub repository at its current default-branch commit",
+        "description": "Read-only. Requires an https://github.com/owner/repo URL. Stores report in MongoDB if configured; otherwise stores it only in process memory.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "repository"
+                ],
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Evidence-backed scan report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or URL"
+          },
+          "404": {
+            "description": "Repository missing or not public"
+          },
+          "413": {
+            "description": "Incomplete inventory refused"
+          },
+          "429": {
+            "description": "GitHub API rate limit reached"
+          }
+        }
+      }
+    },
+    "/scans/{id}": {
+      "get": {
+        "summary": "Retrieve a scan report",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scan report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScanReport"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Report not found or expired"
+          }
+        }
+      }
+    },
+    "/scans/{id}/choices": {
+      "post": {
+        "summary": "Record a guided decision or justified scope exclusion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "findingId",
+                  "choice",
+                  "rationale"
+                ],
+                "properties": {
+                  "findingId": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "choice": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "rationale": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Choice recorded with updated report"
+          },
+          "400": {
+            "description": "Invalid choice or rationale"
+          },
+          "404": {
+            "description": "Scan or finding not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FileInventoryEntry": {
+        "type": "object",
+        "required": [
+          "path",
+          "size",
+          "contentStatus"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "size": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "contentStatus": {
+            "type": "string",
+            "enum": [
+              "TEXT_INSPECTED",
+              "NOT_INSPECTED"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "ScanCoverage": {
+        "type": "object",
+        "required": [
+          "inventoryComplete",
+          "totalFiles",
+          "totalBytes",
+          "contentInspected",
+          "contentOmitted",
+          "contentBytes",
+          "exclusionsTruncated",
+          "inventoryEntriesReturned",
+          "inventoryEntriesTruncated",
+          "executionStatus",
+          "executedFiles",
+          "executionReason"
+        ],
+        "properties": {
+          "inventoryComplete": {
+            "type": "boolean"
+          },
+          "totalFiles": {
+            "type": "integer"
+          },
+          "totalBytes": {
+            "type": "integer"
+          },
+          "contentInspected": {
+            "type": "integer"
+          },
+          "contentOmitted": {
+            "type": "integer"
+          },
+          "contentBytes": {
+            "type": "integer"
+          },
+          "exclusionsTruncated": {
+            "type": "boolean"
+          },
+          "inventoryEntriesReturned": {
+            "type": "integer"
+          },
+          "inventoryEntriesTruncated": {
+            "type": "boolean"
+          },
+          "executionStatus": {
+            "type": "string",
+            "enum": [
+              "BLOCKED"
+            ]
+          },
+          "executedFiles": {
+            "type": "integer",
+            "const": 0
+          },
+          "executionReason": {
+            "type": "string"
+          }
+        }
+      },
+      "ScanReport": {
+        "type": "object",
+        "required": [
+          "id",
+          "repository",
+          "owner",
+          "name",
+          "commit",
+          "branch",
+          "scannedAt",
+          "files",
+          "fileInventory",
+          "exclusions",
+          "coverage",
+          "score",
+          "weightComplete",
+          "weightInScope",
+          "counts",
+          "findings",
+          "durability",
+          "notes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "repository": {
+            "type": "string",
+            "format": "uri"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "commit": {
+            "type": "string"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "scannedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "files": {
+            "type": "integer"
+          },
+          "fileInventory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileInventoryEntry"
+            }
+          },
+          "exclusions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "reason"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/ScanCoverage"
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "weightComplete": {
+            "type": "integer"
+          },
+          "weightInScope": {
+            "type": "integer"
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "title",
+                "category",
+                "severity",
+                "status",
+                "detail",
+                "evidence",
+                "nextStep"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "Critical",
+                    "High",
+                    "Medium",
+                    "Low"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "VERIFIED_COMPLETE",
+                    "REMEDIATION_REQUIRED",
+                    "BLOCKED",
+                    "NOT RUN",
+                    "NOT_REQUIRED"
+                  ]
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "nextStep": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "durability": {
+            "type": "string",
+            "enum": [
+              "mongodb",
+              "volatile"
+            ]
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
