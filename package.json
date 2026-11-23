@@ -47,7 +47,8 @@
     "verify:45-gates": "tsx scripts/verify_45_gates.ts",
     "test:45-gate-inventory": "tsx scripts/test_45_gate_inventory.ts",
     "verify:46-closure": "tsx scripts/verify_46_closure_artifact.ts",
-    "trace:registry": "tsx scripts/trace_shared_registry.ts"
+    "trace:registry": "tsx scripts/trace_shared_registry.ts",
+    "test:creative-integrity": "tsx --test src/creative/CreativeIntegrityProtocol.test.ts daisy-ai-os/src/native-os/system-tools/SystemTools.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
