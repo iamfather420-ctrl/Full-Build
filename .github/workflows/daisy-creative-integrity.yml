@@ -1,0 +1,28 @@
+name: Daisy Creative Integrity Tests
+on:
+  pull_request:
+    paths:
+      - "src/creative/**"
+      - "daisy-ai-os/src/native-os/system-tools/**"
+      - "package.json"
+      - ".github/workflows/daisy-creative-integrity.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/creative/**"
+      - "daisy-ai-os/src/native-os/system-tools/**"
+      - "package.json"
+      - ".github/workflows/daisy-creative-integrity.yml"
+permissions:
+  contents: read
+jobs:
+  creative-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --no-save
+      - run: bun run test:creative-integrity
