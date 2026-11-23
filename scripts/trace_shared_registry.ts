@@ -1,5 +1,9 @@
 import { createHash } from 'node:crypto';
-import { readSharedRegistryItem } from '../src/registry/sharedRegistry.ts';
+import {
+  readSharedRegistryIndex,
+  readSharedRegistryItem,
+  SHARED_REGISTRY_REPOSITORY,
+} from '../src/registry/sharedRegistry.ts';
 import { submitAssertion } from '../src/discovery/DiscoverEngineClient.ts';
 import { getLocalInferenceRuntime } from '../src/inference/LocalInferenceRuntime.ts';
 
@@ -17,13 +21,35 @@ if (correlationFromArg && correlationFromArg !== correlationId) {
 }
 
 const hops: Array<Record<string, unknown>> = [{
-  hop: 'full_build_contents_read',
+  hop: 'full_build_registry_read',
   correlationId,
+  repository: SHARED_REGISTRY_REPOSITORY,
   status: read.ok ? 'READ_BACK' : 'BLOCKED',
   at: new Date().toISOString(),
+  via: read.via,
+  url: read.url,
   blockReason: read.ok ? null : read.error,
-  evidence: read.ok ? `Read ${read.item.name} correlation ${correlationId}.` : read.error,
+  evidence: read.ok
+    ? `Read ${read.item.name} correlation ${correlationId} via ${read.via} ${read.url}.`
+    : read.error,
+  inputHash: sha256(read.url || 'missing'),
+  outputHash: read.ok ? sha256(JSON.stringify(read.item)) : null,
 }];
+
+const index = await readSharedRegistryIndex();
+hops.push({
+  hop: 'full_build_registry_index',
+  correlationId,
+  repository: SHARED_REGISTRY_REPOSITORY,
+  status: index.ok && index.hasProof ? 'READ_BACK' : 'BLOCKED',
+  at: new Date().toISOString(),
+  url: index.url,
+  blockReason: index.ok && index.hasProof ? null : (index.ok ? 'solvex-link is not on the live registry index.' : index.error),
+  evidence: index.ok
+    ? `Index HTTP ${index.status}. ${index.names.length} items. solvex-link ${index.hasProof ? 'present' : 'absent'}.`
+    : index.error,
+  outputHash: index.ok ? sha256(index.names.join('\n')) : null,
+});
 
 const discoverBase = process.env.DISCOVER_ENGINE_URL;
 const discoverToken = process.env.DISCOVER_ENGINE_TOKEN;
@@ -92,9 +118,10 @@ const blocked = hops.some((hop) => hop.status === 'BLOCKED' || hop.status === 'M
 console.log(JSON.stringify({
   schema: 'SOLVEX_SHARED_REGISTRY_TRACE_V1',
   correlationId,
+  repository: SHARED_REGISTRY_REPOSITORY,
   productionReady: false,
   productionReason: 'A registry read is not production authorization. Model, discover service, activation, and sandbox gaps stay blocked.',
   blocked,
   hops,
 }, null, 2));
-process.exit(read.ok ? 0 : 2);
+process.exit(read.ok && index.ok && index.hasProof ? 0 : 2);
