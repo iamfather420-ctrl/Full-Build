@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {evaluateCreativeIntegrity} from './CreativeIntegrityProtocol';
+const safe={task:'Design a service',output:'Proposed modular design',mode:'GENERATIVE' as const,evidenceLabel:'PROPOSED' as const,audience:'Engineering',domain:'Software',assessments:{taskRelevance:'PASS' as const,contextualAppropriateness:'PASS' as const,safety:'PASS' as const,evidenceIntegrity:'PASS' as const}};
+test('allows assessed proposals',()=>assert.equal(evaluateCreativeIntegrity(safe).decision,'ALLOW'));
+test('blocks empty task',()=>assert.equal(evaluateCreativeIntegrity({...safe,task:' '}).decision,'BLOCKED'));
+test('unknown assessment requires review',()=>assert.equal(evaluateCreativeIntegrity({...safe,assessments:{...safe.assessments,safety:'UNKNOWN'}}).decision,'REVIEW_REQUIRED'));
+test('failed assessment blocks',()=>assert.equal(evaluateCreativeIntegrity({...safe,assessments:{...safe.assessments,safety:'FAIL'}}).decision,'BLOCKED'));
+test('verified requires evidence',()=>assert.equal(evaluateCreativeIntegrity({...safe,evidenceLabel:'VERIFIED'}).decision,'BLOCKED'));
+test('simulation must be declared',()=>assert.equal(evaluateCreativeIntegrity({...safe,evidenceLabel:'SIMULATED'}).decision,'BLOCKED'));
+test('simulation cannot claim execution',()=>assert.equal(evaluateCreativeIntegrity({...safe,evidenceLabel:'SIMULATED',simulationDeclared:true,claimsActualExecution:true}).decision,'BLOCKED'));
+test('executable mode requires authorization',()=>assert.equal(evaluateCreativeIntegrity({...safe,mode:'EXECUTABLE'}).decision,'BLOCKED'));
+test('execution claim requires evidence',()=>assert.equal(evaluateCreativeIntegrity({...safe,claimsActualExecution:true}).decision,'BLOCKED'));
+test('verified output requires evidence reference',()=>assert.equal(evaluateCreativeIntegrity({...safe,evidenceLabel:'VERIFIED',evidence:[{kind:'TEST',id:'ci-123'}]}).decision,'ALLOW'));
