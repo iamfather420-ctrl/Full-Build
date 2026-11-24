@@ -56,7 +56,13 @@ export async function runDaisy54NodeCoverage(): Promise<NodeCoverageReport> {
   const evidenceMissing = rawResults.results.filter(r => !r.evidence_generated);
   const notVerified = rawResults.results.filter(r => classifyNodeResult(r) === 'NOT_VERIFIED');
   const providerRequired = rawResults.results.filter(r => classifyNodeResult(r) === 'PROVIDER_REQUIRED');
-  const toDiagnostic = (r: SubsystemExecutionResult) => ({ node_id: r.node_id, status: r.status, claim_scope: r.claim_scope, evidence: r.evidence, error: r.error });
+  const toDiagnostic = (r: SubsystemExecutionResult) => ({
+    node_id: r.node_id,
+    status: r.status,
+    claim_scope: r.claim_scope,
+    evidence: r.evidence,
+    error: r.error
+  });
 
   const verdictCounts = rawResults.results.reduce<Record<NodeVerdict, number>>((counts, result) => {
     counts[classifyNodeResult(result)] += 1;
