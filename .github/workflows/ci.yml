@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          IMAGE="ghcr.io/iamfather420-ctrl/solvex-sandbox:ci-${{GITHUB_SHA}}"
+          IMAGE="ghcr.io/iamfather420-ctrl/solvex-sandbox:ci-$GITHUB_SHA"
           NODE_BASE_IMAGE="node:22.16.0-bookworm-slim@sha256:048ed02c5fd52e86fda6fbd2f6a76cf0d4492fd6c6fee9e2c463ed5108da0e34"
           docker build --platform linux/amd64 --build-arg NODE_BASE_IMAGE="$NODE_BASE_IMAGE" -f sandbox/Dockerfile -t "$IMAGE" sandbox
           docker push "$IMAGE"
@@ -46,8 +46,8 @@ jobs:
             echo "Could not resolve the pushed sandbox manifest digest." >&2
             exit 1
           fi
-          echo "SOLVEX_SANDBOX_IMAGE=ghcr.io/iamfather420-ctrl/solvex-sandbox@${{DIGEST}}" >> "$GITHUB_ENV"
-          echo "Published current-source sandbox image at immutable digest ${{DIGEST}}"
+          echo "SOLVEX_SANDBOX_IMAGE=ghcr.io/iamfather420-ctrl/solvex-sandbox@$DIGEST" >> "$GITHUB_ENV"
+          echo "Published current-source sandbox image at immutable digest $DIGEST"
       - name: Stage 14 signer authentication and Ed25519 regression tests
         run: bun run test:oracle-signer
       - name: Stage 14 Fly gateway OIDC trust regression tests
