@@ -83,7 +83,7 @@ jobs:
           else
             bun run trace:registry 2>&1 | tee artifacts/runtime-trace/shared-registry-trace.log
           fi
-          status=${PIPESTATUS[0]}
+          status=$?
           echo "trace_exit_code=$status" >> "$GITHUB_OUTPUT"
           exit "$status"
 
