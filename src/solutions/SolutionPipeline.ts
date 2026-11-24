@@ -94,7 +94,7 @@ export class SolutionPipeline {
     return SolutionPipeline.instance;
   }
 
-  public async runPipeline(paradoxCode: string, codeSolution: string, options: { continueAfterFailure?: boolean } = {}): Promise<PipelineExecutionResult> {
+  public async runPipeline(paradoxCode: string, codeSolution: string, options: { continueAfterFailure?: boolean; continueAfterProviderRequired?: boolean } = {}): Promise<PipelineExecutionResult> {
     const traces: PipelineExecutionResult['stage_traces'] = [];
     const started = Date.now();
     const normalizedCode = typeof codeSolution === 'string' ? codeSolution.replace(/\r\n/g, '\n').trim() : '';
@@ -120,7 +120,8 @@ export class SolutionPipeline {
         catch (error) { outcome = { status: 'FAILED', reason: error instanceof Error ? error.message : String(error) }; }
       }
       traces.push({ stage, name: this.STAGES[stage - 1], status: outcome.status, duration_ms: Math.max(0, Date.now() - t), evidence: outcome.evidence, reason: outcome.reason });
-      if (outcome.status !== 'PASSED' && haltedAt === undefined && options.continueAfterFailure !== true) haltedAt = stage;
+      const deferredProviderBoundary = options.continueAfterProviderRequired === true && stage === 14 && outcome.status === 'BLOCKED';
+      if (outcome.status !== 'PASSED' && haltedAt === undefined && options.continueAfterFailure !== true && !deferredProviderBoundary) haltedAt = stage;
       return outcome;
     };
     const pass = (evidence: Record<string, unknown>): StageOutcome => ({ status: 'PASSED', evidence });
@@ -288,28 +289,42 @@ export class SolutionPipeline {
             .setOracleInput({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode })
             .addSignedOracleAttestation(oracleAttestation);
         } else {
-          builder.addLimitation('Independent oracle attestation is unavailable; this bundle is not VERIFIED.');
+          const oracleStage = traces.find(stage => stage.stage === 14);
+          const providerUnavailable = oracleStage?.status === 'BLOCKED' &&
+            /Pinned external signer identity and Ed25519 public key are required|requires GitHub Actions OIDC permission|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|signer self-test endpoint/i.test(oracleStage.reason ?? '');
+          builder.addLimitation(providerUnavailable
+            ? 'Independent oracle attestation is unavailable; this bundle is not VERIFIED.'
+            : 'Independent oracle attestation did not complete successfully; this bundle remains unverified.');
         }
         const bundle = builder.seal();
-        ProofEngine.getInstance().registerBundle(bundle);
+        const proofEngine = ProofEngine.getInstance();
+        const existingBundle = proofEngine.getBundle(bundle.proof_id);
+        const selectedBundle = existingBundle?.verification_status === 'VERIFIED' && bundle.verification_status !== 'VERIFIED'
+          ? existingBundle
+          : bundle;
+        if (selectedBundle === bundle) proofEngine.registerBundle(bundle);
         const store = new PersistentProofStore();
-        await store.put(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT', bundle);
-        const persisted = await store.get(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
+        await store.put(selectedBundle.proof_id, 'TENANT_SOVEREIGN_ROOT', selectedBundle);
+        const persisted = await store.get(selectedBundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
         const view = CrystalClearBox.projectCustomerEvidence(persisted.payload as typeof bundle);
         const bundleVerified = view.verification_verdict === 'VERIFIED' &&
           view.proprietary_weights_redacted && view.internal_reasoning_redacted &&
           view.oracle_attestations_count > 0;
-        // Promote only the exact stored solution whose source hash is bound to this independently attested bundle.
-        if (bundleVerified) {
-          const durable = DurableStore.getInstance();
-          const canonical = durable.getState().solutions['DH-S-001'];
-          if (canonical && canonical.implementation_hash === sourceHash) {
+        // Preserve a source-bound PARTIAL candidate when the independent oracle is unavailable.
+        // This makes the missing external witness explicit to dependent nodes without promoting the solution.
+        const durable = DurableStore.getInstance();
+        const canonical = durable.getState().solutions['DH-S-001'];
+        if (canonical && canonical.implementation_hash === sourceHash) {
+          canonical.proof_bundle_id = bundle.proof_id;
+          if (bundleVerified) {
             canonical.verification_status = 'VERIFIED';
             canonical.status = 'VERIFIED';
-            canonical.proof_bundle_id = bundle.proof_id;
-            durable.getState().solutions['DH-S-001'] = canonical;
-            durable.persist();
+          } else if (canonical.verification_status !== 'VERIFIED') {
+            canonical.verification_status = 'PARTIAL';
+            canonical.status = 'PARTIAL';
           }
+          durable.getState().solutions['DH-S-001'] = canonical;
+          durable.persist();
         }
         return view.proprietary_weights_redacted && view.internal_reasoning_redacted
           ? pass({

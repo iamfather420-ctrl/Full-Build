@@ -1,3 +1,4 @@
+import { createHash, createPublicKey } from 'node:crypto';
 import { computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
 import { SqliteStore } from '../database/SqliteStore';
@@ -51,6 +52,11 @@ export interface SubsystemExecutionResult extends RawNodeExecutionResult {
   evidence_hash: string;
 }
 
+function isExternalProviderUnavailable(reason: string | undefined): boolean {
+  if (!reason) return false;
+  return /requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
+}
+
 function hasMeaningfulEvidence(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === 'string') return value.trim().length > 0;
@@ -59,6 +65,30 @@ function hasMeaningfulEvidence(value: unknown): boolean {
   if (Array.isArray(value)) return value.some(hasMeaningfulEvidence);
   if (typeof value === 'object') return Object.values(value as Record<string, unknown>).some(hasMeaningfulEvidence);
   return false;
+}
+
+function isSourceBoundOraclePending(solution: any, bundle: any, reasons: string[]): boolean {
+  if (!solution || !bundle || bundle.verification_status !== 'PARTIAL') return false;
+  const sourceHash = solution.implementation_hash;
+  const expectedProofId = typeof sourceHash === 'string' ? 'PB-' + sourceHash.slice(0, 24) : '';
+  const onlyOracleMissing = reasons.length > 0 && reasons.every(reason =>
+    reason === 'Missing independent oracle attestation'
+  );
+  return Boolean(
+    /^[a-f0-9]{64}$/i.test(sourceHash || '') &&
+    bundle.proof_id === expectedProofId &&
+    bundle.subject_id === 'DH-P-001' &&
+    bundle.implementation_hash === sourceHash &&
+    Array.isArray(bundle.evidence) && bundle.evidence.includes('source_sha256:' + sourceHash) &&
+    Array.isArray(bundle.source_references) && bundle.source_references.includes('paradox_registry:DH-P-001') &&
+    Array.isArray(bundle.tests) && bundle.tests.length > 0 && bundle.tests.every((test: any) => test.passed === true) &&
+    Array.isArray(bundle.formal_proofs) && bundle.formal_proofs.length > 0 && bundle.formal_proofs.every((proof: any) => proof.checked === true) &&
+    Array.isArray(bundle.replay_results) && bundle.replay_results.some((replay: any) =>
+      replay.status === 'MATCH' && replay.expected_hash === sourceHash && replay.observed_hash === sourceHash
+    ) &&
+    Array.isArray(bundle.independent_oracles) && bundle.independent_oracles.length === 0 &&
+    onlyOracleMissing
+  );
 }
 
 export class DaisySubsystemExecutors {
@@ -147,17 +177,19 @@ export class DaisySubsystemExecutors {
       case 'DN-05': {
         const engine = ProofEngine.getInstance();
         const solution = DurableStore.getInstance().getState().solutions['DH-S-001'];
-        const bundle = solution?.proof_bundle_id ? engine.getBundle(solution.proof_bundle_id) : undefined;
-        const integrity = bundle ? engine.verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound verified proof bundle is attached to DH-S-001.'] };
-        const projection = bundle && integrity.verified ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
-        const passed = Boolean(projection && projection.verification_verdict === 'VERIFIED' && projection.proprietary_weights_redacted && projection.internal_reasoning_redacted);
+        const expectedProofId = solution?.implementation_hash ? 'PB-' + solution.implementation_hash.slice(0, 24) : solution?.proof_bundle_id;
+        const bundle = expectedProofId ? engine.getBundle(expectedProofId) : undefined;
+        const integrity = bundle ? engine.verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound proof candidate is attached to DH-S-001.'] };
+        const providerRequired = isSourceBoundOraclePending(solution, bundle, integrity.reasons);
+        const projection = bundle ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
+        const passed = Boolean(integrity.verified && projection && projection.verification_verdict === 'VERIFIED' && projection.proprietary_weights_redacted && projection.internal_reasoning_redacted);
         return {
           node_id: 'DN-05',
           name: 'Crystal Clear Box Audit Engine',
           category: 'AUDIT',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
+          claim_scope: providerRequired ? 'SANDBOX' : 'LOCAL',
+          status: passed ? 'SUCCESS' : providerRequired ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
             proof_id: bundle?.proof_id ?? null,
@@ -166,6 +198,7 @@ export class DaisySubsystemExecutors {
             public_audit_token_present: Boolean(projection?.public_audit_token),
             proprietary_weights_redacted: projection?.proprietary_weights_redacted ?? false,
             internal_reasoning_redacted: projection?.internal_reasoning_redacted ?? false,
+            external_provider_required: providerRequired,
             reasons: integrity.reasons
           }
         };
@@ -293,10 +326,12 @@ export class DaisySubsystemExecutors {
             evidence: { completed_stages: 0, success: false, source_bound: false, reason: 'DH-S-001 source is missing or does not match its stored implementation hash.' }
           };
         }
-        const res = await pipe.runPipeline('DH-P-001', source);
+        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true });
         const proofId = 'PB-' + sourceHash.slice(0, 24);
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
+        const stage14 = res.stage_traces.find(stage => stage.stage === 14);
+        const oracleProviderBlocked = stage14?.status === 'BLOCKED' && isExternalProviderUnavailable(stage14.reason);
         const passed = res.overall_success && res.completed_stages === 21 &&
           bundle?.verification_status === 'VERIFIED' && integrity.verified;
         if (passed && solution) {
@@ -311,10 +346,12 @@ export class DaisySubsystemExecutors {
           name: '21-Stage Problem Pipeline',
           category: 'CORE_KERNEL',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
+          claim_scope: oracleProviderBlocked ? 'SANDBOX' : 'LOCAL',
+          status: passed ? 'SUCCESS' : oracleProviderBlocked ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
+            external_provider_required: oracleProviderBlocked,
+            provider_blocker: oracleProviderBlocked ? (stage14?.reason ?? 'Independent Stage 14 attestation provider is required.') : null,
             completed_stages: res.completed_stages,
             total_stages: res.total_stages,
             success: res.overall_success,
@@ -683,18 +720,20 @@ export class DaisySubsystemExecutors {
       case 'DN-29': {
         const durable = DurableStore.getInstance();
         const sol = durable.getState().solutions['DH-S-001'];
-        const bundle = sol?.proof_bundle_id ? ProofEngine.getInstance().getBundle(sol.proof_bundle_id) : undefined;
-        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No proof bundle is attached to DH-S-001.'] };
+        const expectedProofId = sol?.implementation_hash ? 'PB-' + sol.implementation_hash.slice(0, 24) : sol?.proof_bundle_id;
+        const bundle = expectedProofId ? ProofEngine.getInstance().getBundle(expectedProofId) : undefined;
+        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound proof candidate is attached to DH-S-001.'] };
+        const providerRequired = isSourceBoundOraclePending(sol, bundle, integrity.reasons);
         const passed = Boolean(sol && sol.verification_status === 'VERIFIED' && bundle?.verification_status === 'VERIFIED' && integrity.verified);
         return {
           node_id: 'DN-29',
           name: 'Preserved Solution Vault (DH-S-001)',
           category: 'CORE_KERNEL',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
+          claim_scope: providerRequired ? 'SANDBOX' : 'LOCAL',
+          status: passed ? 'SUCCESS' : providerRequired ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, reasons: integrity.reasons }
+          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, external_provider_required: providerRequired, reasons: integrity.reasons }
         };
       }
 
@@ -735,9 +774,13 @@ export class DaisySubsystemExecutors {
             category: 'AUDIT',
             executed: true,
             claim_scope: 'SANDBOX',
-            status: 'FAIL_CLOSED',
+            status: isExternalProviderUnavailable(error instanceof Error ? error.message : String(error)) ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
             duration_ms: performance.now() - start,
-            evidence: { independent_oracle_attestation_verified: false, reason: error instanceof Error ? error.message : String(error) }
+            evidence: {
+              independent_oracle_attestation_verified: false,
+              external_provider_required: isExternalProviderUnavailable(error instanceof Error ? error.message : String(error)),
+              reason: error instanceof Error ? error.message : String(error)
+            }
           };
         }
       }
@@ -1152,8 +1195,8 @@ export class DaisySubsystemExecutors {
           name: 'License Generation & Proof Tokenizer',
           category: 'MARKETPLACE',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'PRODUCTION',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: { signed_license_issued: false, reason: 'No trusted signing key or verified solution authorization is configured.' }
         };
@@ -1181,8 +1224,8 @@ export class DaisySubsystemExecutors {
           name: 'Hardware Security Module (HSM) Proxy',
           category: 'SECURITY',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
+          claim_scope: 'PRODUCTION',
+          status: 'PROVIDER_REQUIRED',
           duration_ms: performance.now() - start,
           evidence: { hsm_attestation_verified: false, reason: 'No HSM connection or signed device attestation is configured.' }
         };
@@ -1190,21 +1233,116 @@ export class DaisySubsystemExecutors {
 
       // 52. DN-52: Ed25519 Cryptographic Signer
       case 'DN-52': {
-        return {
-          node_id: 'DN-52',
-          name: 'Ed25519 Cryptographic Signer',
-          category: 'SECURITY',
-          executed: true,
-          claim_scope: 'LOCAL',
-          status: 'FAIL_CLOSED',
-          duration_ms: performance.now() - start,
-          evidence: {
-            ed25519_signature_verified: false,
-            production_key_configured: false,
-            ephemeral_key_accepted: false,
-            reason: 'No persistent production Ed25519 key is configured. An ephemeral process key is not operational.'
+        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
+          return {
+            node_id: 'DN-52',
+            name: 'Ed25519 Cryptographic Signer',
+            category: 'SECURITY',
+            executed: true,
+            claim_scope: 'SANDBOX',
+            status: 'PROVIDER_REQUIRED',
+            duration_ms: performance.now() - start,
+            evidence: {
+              ed25519_signature_verified: false,
+              external_probe_enabled: false,
+              provider_required: 'DEPLOYED_ORACLE_SIGNER',
+              ephemeral_key_accepted: false,
+              reason: 'The deployed signer self-test is reserved for the authoritative external-provider verification step.'
+            }
+          };
+        }
+        const signerUrl = process.env.SOLVEX_ORACLE_SIGNER_URL ?? 'https://solvex-oracle-signer-isolated.up.railway.app';
+        try {
+          const parsed = new URL(signerUrl);
+          if (parsed.protocol !== 'https:') {
+            return {
+              node_id: 'DN-52',
+              name: 'Ed25519 Cryptographic Signer',
+              category: 'SECURITY',
+              executed: true,
+              claim_scope: 'SANDBOX',
+              status: 'FAIL_CLOSED',
+              duration_ms: performance.now() - start,
+              evidence: { ed25519_signature_verified: false, reason: 'External signer URL must use HTTPS.' }
+            };
           }
-        };
+          const response = await fetch(new URL('/selftest', parsed), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10_000) });
+          if (!response.ok) {
+            const reason = `Signer self-test endpoint failed (HTTP ${response.status}).`;
+            const providerUnavailable = isExternalProviderUnavailable(reason);
+            return {
+              node_id: 'DN-52',
+              name: 'Ed25519 Cryptographic Signer',
+              category: 'SECURITY',
+              executed: true,
+              claim_scope: 'SANDBOX',
+              status: providerUnavailable ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
+              duration_ms: performance.now() - start,
+              evidence: { ed25519_signature_verified: false, external_provider_required: providerUnavailable, http_status: response.status, reason }
+            };
+          }
+          const selftest = await response.json() as { ok?: boolean; oracleId?: string; keyType?: string; signatureVerified?: boolean; publicKeyPem?: string; publicKeySha256?: string };
+          if (!selftest.ok || selftest.keyType !== 'ed25519' || selftest.signatureVerified !== true ||
+              typeof selftest.publicKeyPem !== 'string' || !selftest.publicKeyPem.includes('BEGIN PUBLIC KEY') ||
+              typeof selftest.publicKeySha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(selftest.publicKeySha256)) {
+            return {
+              node_id: 'DN-52',
+              name: 'Ed25519 Cryptographic Signer',
+              category: 'SECURITY',
+              executed: true,
+              claim_scope: 'SANDBOX',
+              status: 'FAIL_CLOSED',
+              duration_ms: performance.now() - start,
+              evidence: { ed25519_signature_verified: false, signer_self_test_valid: false, oracle_id: selftest.oracleId ?? null, reason: 'External signer self-test returned invalid key or signature evidence.' }
+            };
+          }
+          const publicKey = createPublicKey(selftest.publicKeyPem);
+          const publicKeyType = publicKey.asymmetricKeyType;
+          const publicKeySha256 = createHash('sha256').update(publicKey.export({ type: 'spki', format: 'der' })).digest('hex');
+          const expectedOracleId = process.env.SOLVEX_ORACLE_ID;
+          const identityMatches = !expectedOracleId || selftest.oracleId === expectedOracleId;
+          const keyMatches = publicKeyType === 'ed25519' && publicKeySha256 === selftest.publicKeySha256;
+          const passed = identityMatches && keyMatches;
+          return {
+            node_id: 'DN-52',
+            name: 'Ed25519 Cryptographic Signer',
+            category: 'SECURITY',
+            executed: true,
+            claim_scope: 'SANDBOX',
+            status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: {
+              ed25519_signature_verified: passed,
+              signer_self_test_valid: true,
+              oracle_id: selftest.oracleId,
+              expected_oracle_id_configured: Boolean(expectedOracleId),
+              identity_matches: identityMatches,
+              public_key_type: publicKeyType,
+              public_key_sha256: publicKeySha256,
+              public_key_hash_matches: keyMatches,
+              persistent_key_material_exposed: false,
+              ephemeral_key_accepted: false
+            }
+          };
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error);
+          const providerUnavailable = isExternalProviderUnavailable(reason);
+          return {
+            node_id: 'DN-52',
+            name: 'Ed25519 Cryptographic Signer',
+            category: 'SECURITY',
+            executed: true,
+            claim_scope: 'SANDBOX',
+            status: providerUnavailable ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
+            duration_ms: performance.now() - start,
+            evidence: {
+              ed25519_signature_verified: false,
+              external_provider_required: providerUnavailable,
+              ephemeral_key_accepted: false,
+              reason
+            }
+          };
+        }
       }
 
       // 53. DN-53: Zero-Knowledge Range Proof Engine

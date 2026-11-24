@@ -82,20 +82,45 @@ test('rejects lifecycle status that contradicts Stage 14', () => {
 });
 
 test('accepts a passing pre-production contract while production remains unevaluated', () => {
-  const result = evaluateLifecycleProofClosure(gates({ gate12Status: 'PASSED', gate14Status: 'PASSED', productionVerdict: 'NOT_EVALUATED_PREPRODUCTION', preProductionPassed: true, finalStatus: 'OFFER', authorizationBlocked: true, transitionsExecuted: [], transitionAttempts: [], testScope: 'PRE_PRODUCTION_CONTRACT_ONLY' }));
+  const result = evaluateLifecycleProofClosure(gates({
+    gate12Status: 'PASSED',
+    gate14Status: 'PASSED',
+    productionVerdict: 'NOT_EVALUATED_PREPRODUCTION',
+    preProductionPassed: true,
+    finalStatus: 'OFFER',
+    authorizationBlocked: true,
+    transitionsExecuted: [],
+    transitionAttempts: [],
+    testScope: 'PRE_PRODUCTION_CONTRACT_ONLY'
+  }));
   assert.equal(result.valid, true);
   assert.equal(result.path, 'SAFE_BLOCKED_OFFER');
 });
 
 test('accepts an independent pre-production blocker without reclassifying it as a production pass', () => {
-  const result = evaluateLifecycleProofClosure(gates({ gate12Status: 'PASSED', gate14Status: 'FAILED', productionVerdict: 'NOT_EVALUATED_PREPRODUCTION', preProductionPassed: false, preProductionBlockers: ['GATE-09 Daisy 54-node functional verification incomplete.'], finalStatus: 'OFFER', authorizationBlocked: true, transitionsExecuted: [], transitionAttempts: [], testScope: 'PRE_PRODUCTION_CONTRACT_ONLY' }));
+  const result = evaluateLifecycleProofClosure(gates({
+    gate12Status: 'PASSED',
+    gate14Status: 'FAILED',
+    productionVerdict: 'NOT_EVALUATED_PREPRODUCTION',
+    preProductionPassed: false,
+    preProductionBlockers: ['GATE-09 Daisy 54-node functional verification incomplete.'],
+    finalStatus: 'OFFER',
+    authorizationBlocked: true,
+    transitionsExecuted: [],
+    transitionAttempts: [],
+    testScope: 'PRE_PRODUCTION_CONTRACT_ONLY'
+  }));
   assert.equal(result.valid, true);
   assert.equal(result.path, 'SAFE_BLOCKED_OFFER');
 });
 
 test('rejects payment activation and inconsistent production boundary claims', () => {
   assert.equal(evaluateLifecycleProofClosure(gates({ paymentProcessing: 'ENABLED' })).valid, false);
-  assert.equal(evaluateLifecycleProofClosure(gates({ gate14Status: 'PASSED', productionVerdict: 'PASSED', preProductionPassed: true })).valid, false);
+  assert.equal(evaluateLifecycleProofClosure(gates({
+    gate14Status: 'PASSED',
+    productionVerdict: 'PASSED',
+    preProductionPassed: true
+  })).valid, false);
 });
 
 test('rejects incomplete or falsely successful disposable transitions', () => {

@@ -22,6 +22,16 @@ function claims(overrides = {}) {
 }
 
 test('accepts the exact active repair PR 133 OIDC ref and rejects other PR refs', () => {
+  assert.equal(stage14ClaimsTrusted(claims({
+    ref: 'refs/pull/152/merge',
+    head_ref: 'integration/daisy-22-file-reconciliation-20261118',
+    workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/152/merge'
+  }), now), true);
+  assert.equal(stage14ClaimsTrusted(claims({
+    ref: 'refs/pull/152/merge',
+    head_ref: 'another-branch',
+    workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/152/merge'
+  }), now), false);
   assert.equal(stage14ClaimsTrusted(claims(), now), true);
   assert.equal(stage14ClaimsTrusted(claims({ head_ref: 'wrong-branch' }), now), false);
   assert.equal(stage14ClaimsTrusted(claims({ ref: 'refs/pull/140/merge', head_ref: 'fix/gate12-disposable-neon-identity-20261117', workflow_ref: 'iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@refs/pull/140/merge' }), now), true);

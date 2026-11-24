@@ -10,6 +10,7 @@ const TRUSTED_PULL_REQUEST_HEADS = new Map([
   ['refs/pull/132/merge', 'fix/lifecycle-proof-closure-status-boundary'],
   ['refs/pull/133/merge', 'fix/inv11-source-bound-proof-state-20261117'],
   ['refs/pull/140/merge', 'fix/gate12-disposable-neon-identity-20261117'],
+  ['refs/pull/152/merge', 'integration/daisy-22-file-reconciliation-20261118'],
 ]);
 
 /** Claim checks only. Signature verification stays in the caller. */

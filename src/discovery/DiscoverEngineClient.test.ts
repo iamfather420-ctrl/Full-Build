@@ -56,3 +56,35 @@ test('an authentication failure is not retried', async () => {
     await server.close();
   }
 });
+
+test('a publishable review response is rejected', async () => {
+  const server = await listen((_body, response) => {
+    response.writeHead(200, { 'content-type': 'application/json' });
+    response.end(JSON.stringify({
+      service: 'test', publishable: true, withheld: false, reviewStatus: 'UNVERIFIED', passageValid: true, reason: 'not verified',
+    }));
+  });
+  try {
+    await assert.rejects(
+      submitAssertion(server.url, 'discovery-test-token-32-characters-min', {}, { attempts: 1, timeoutMs: 1000 }),
+      /would publish an unverified assertion/,
+    );
+  } finally {
+    await server.close();
+  }
+});
+
+test('an invalid review payload is rejected rather than trusted', async () => {
+  const server = await listen((_body, response) => {
+    response.writeHead(200, { 'content-type': 'application/json' });
+    response.end(JSON.stringify({ service: 'test', publishable: false }));
+  });
+  try {
+    await assert.rejects(
+      submitAssertion(server.url, 'discovery-test-token-32-characters-min', {}, { attempts: 1, timeoutMs: 1000 }),
+      /invalid review payload/,
+    );
+  } finally {
+    await server.close();
+  }
+});

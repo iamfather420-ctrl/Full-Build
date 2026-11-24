@@ -97,10 +97,13 @@ export class IndependentModelOracle {
     });
     if (!selftestResponse.ok) throw new Error(`External signer self-test endpoint failed (HTTP ${selftestResponse.status}).`);
     const selftest = await selftestResponse.json() as { ok?: boolean; oracleId?: string; publicKeyPem?: string };
-    const oracleId = oracleIdEnv || selftest.oracleId || '';
-    const publicKeyPem = publicKeyEnv || selftest.publicKeyPem || '';
-    if (!selftest.ok || !oracleId || !publicKeyPem.includes('BEGIN PUBLIC KEY')) {
-      throw new Error('External signer did not publish a valid Ed25519 identity and public key.');
+    // Trust roots must be configured out-of-band. A signer cannot establish
+    // its own identity by returning its own public key from /selftest.
+    const oracleId = oracleIdEnv;
+    const publicKeyPem = publicKeyEnv;
+    if (!selftest.ok || !oracleId || !publicKeyPem.includes('BEGIN PUBLIC KEY') ||
+        selftest.oracleId !== oracleId) {
+      throw new Error('Pinned external signer identity and Ed25519 public key are required; self-advertised trust roots are rejected.');
     }
 
     const payload = JSON.stringify({ protocol: 'solvex-single-openai-evaluator-v1', input });

@@ -34,6 +34,20 @@ test('rejects unrelated PR refs, repositories, audiences, issuers, and expired t
   assert.equal(stage14ClaimsTrusted(claims({ exp: now - 1 }), now), false);
 });
 
+test('accepts the exact SolveX full-build repair PR 152 identity only', () => {
+  const ref = 'refs/pull/152/merge';
+  assert.equal(stage14ClaimsTrusted(claims({
+    ref,
+    head_ref: 'integration/daisy-22-file-reconciliation-20261118',
+    workflow_ref: `iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@${ref}`
+  }), now), true);
+  assert.equal(stage14ClaimsTrusted(claims({
+    ref,
+    head_ref: 'another-branch',
+    workflow_ref: `iamfather420-ctrl/Full-Build/.github/workflows/ci.yml@${ref}`
+  }), now), false);
+});
+
 test('accepts only explicitly trusted mainline push refs', () => {
   const ref = 'refs/heads/main';
   assert.equal(stage14ClaimsTrusted(claims({
