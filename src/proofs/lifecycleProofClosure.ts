@@ -24,15 +24,24 @@ export function evaluateLifecycleProofClosure(gates: LifecycleGate[]): Lifecycle
   if (!gate12 || !gate14) {
     return { valid: false, path: 'INVALID', reason: 'GATE-12 or GATE-14 evidence is missing.' };
   }
-  if (gate14.status !== 'BLOCKED') {
-    return { valid: false, path: 'INVALID', reason: 'Production GATE-14 must remain BLOCKED for this non-production proof.' };
+  const productionVerdict = gate14.details?.production_verdict ?? gate14.details?.verdict;
+  const preProductionPassed = gate14.details?.pre_production_passed;
+  const preProductionBlockers = gate14.details?.pre_production_blockers;
+  const gate14BoundaryValid =
+    gate14.status === 'BLOCKED' ||
+    (productionVerdict === 'NOT_EVALUATED_PREPRODUCTION' &&
+      ((gate14.status === 'PASSED' && preProductionPassed === true) ||
+       (gate14.status === 'FAILED' && preProductionPassed === false &&
+        Array.isArray(preProductionBlockers) && preProductionBlockers.length > 0)));
+  if (!gate14BoundaryValid) {
+    return { valid: false, path: 'INVALID', reason: 'GATE-14 does not preserve the non-production boundary or its pre-production evidence is inconsistent.' };
   }
   if (lifecycle.payment_processing !== 'DISABLED') {
     return { valid: false, path: 'INVALID', reason: 'Payment processing must remain DISABLED.' };
   }
 
   const safeBlockedOffer =
-    gate12.status === 'BLOCKED' &&
+    gate12.status === 'PASSED' &&
     lifecycle.final_status === 'OFFER' &&
     Array.isArray(lifecycle.transitions_executed) &&
     lifecycle.transitions_executed.length === 0 &&

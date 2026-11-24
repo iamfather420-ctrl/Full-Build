@@ -1,8 +1,7 @@
 import * as client from "openid-client";
 import crypto from "crypto";
 import { type Request, type Response } from "express";
-import { db, sessionsTable } from "../../../../packages/db/src/index.js";
-import { eq } from "drizzle-orm";
+import { authSql } from "../../../../packages/db/src/index.js";
 import type { AuthUser } from "../../../../lib/api-zod/src/generated/types/authUser.js";
 
 export const ISSUER_URL = process.env.OIDC_ISSUER_URL ?? "";
@@ -35,17 +34,32 @@ export async function getOidcConfig(): Promise<client.Configuration> {
 
 export async function createSession(data: SessionData): Promise<string> {
   const sid = crypto.randomBytes(32).toString("hex");
-  await db.insert(sessionsTable).values({
-    sid,
-    sess: data as unknown as Record<string, unknown>,
-    expire: new Date(Date.now() + SESSION_TTL),
-  });
+  const expires = new Date(Date.now() + SESSION_TTL);
+  await authSql`
+    WITH session_context AS MATERIALIZED (
+      SELECT set_config('app.session_sid', ${sid}, true) AS sid
+    )
+    INSERT INTO public.auth_sessions (sid, sess, expire)
+    SELECT ${sid}, ${JSON.stringify(data)}::jsonb, ${expires.toISOString()}::timestamptz
+      FROM session_context
+  `;
   return sid;
 }
 
 export async function getSession(sid: string): Promise<SessionData | null> {
-  const [row] = await db.select().from(sessionsTable).where(eq(sessionsTable.sid, sid));
-  if (!row || row.expire < new Date()) {
+  if (!/^[a-f0-9]{64}$/.test(sid)) return null;
+  const rows = await authSql`
+    WITH session_context AS MATERIALIZED (
+      SELECT set_config('app.session_sid', ${sid}, true) AS sid
+    )
+    SELECT s.sess, s.expire
+      FROM public.auth_sessions s
+      CROSS JOIN session_context
+     WHERE s.sid = ${sid}
+     LIMIT 1
+  `;
+  const row = rows[0] as { sess: Record<string, unknown>; expire: Date | string } | undefined;
+  if (!row || new Date(row.expire) < new Date()) {
     if (row) await deleteSession(sid);
     return null;
   }
@@ -53,13 +67,30 @@ export async function getSession(sid: string): Promise<SessionData | null> {
 }
 
 export async function updateSession(sid: string, data: SessionData): Promise<void> {
-  await db.update(sessionsTable)
-    .set({ sess: data as unknown as Record<string, unknown>, expire: new Date(Date.now() + SESSION_TTL) })
-    .where(eq(sessionsTable.sid, sid));
+  if (!/^[a-f0-9]{64}$/.test(sid)) throw new Error("Invalid session identifier.");
+  const expires = new Date(Date.now() + SESSION_TTL);
+  await authSql`
+    WITH session_context AS MATERIALIZED (
+      SELECT set_config('app.session_sid', ${sid}, true) AS sid
+    )
+    UPDATE public.auth_sessions
+       SET sess = ${JSON.stringify(data)}::jsonb,
+           expire = ${expires.toISOString()}::timestamptz
+      FROM session_context
+     WHERE public.auth_sessions.sid = ${sid}
+  `;
 }
 
 export async function deleteSession(sid: string): Promise<void> {
-  await db.delete(sessionsTable).where(eq(sessionsTable.sid, sid));
+  if (!/^[a-f0-9]{64}$/.test(sid)) return;
+  await authSql`
+    WITH session_context AS MATERIALIZED (
+      SELECT set_config('app.session_sid', ${sid}, true) AS sid
+    )
+    DELETE FROM public.auth_sessions
+     USING session_context
+     WHERE public.auth_sessions.sid = ${sid}
+  `;
 }
 
 export async function clearSession(res: Response, sid?: string): Promise<void> {

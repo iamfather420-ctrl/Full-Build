@@ -6,7 +6,7 @@ const databaseUrl = process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL or NEON_DATABASE_URL must be configured for the outreach worker");
 
 export const db = drizzle(neon(databaseUrl));
-const authSql = neon(databaseUrl);
+export const authSql = neon(databaseUrl);
 
 export interface OidcTenantIdentity {
   user_id: string;
