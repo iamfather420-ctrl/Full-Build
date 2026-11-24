@@ -111,26 +111,28 @@ let indexReady = false;
 if (registryReady && correlationId) {
   try {
     const index = await readSharedRegistryIndex();
-    indexReady = index.ok && index.hasProof;
-    hops.push(indexReady
-      ? {
-          hop: 'full_build_registry_index',
-          correlationId,
-          status: 'READ_BACK',
-          at: new Date().toISOString(),
-          blockReason: null,
-          evidence: `Registry index HTTP ${index.status}; solvex-link is present among ${index.names.length} items.`,
-          sourceUrl: index.url,
-          outputHash: sha256(index.names.join('\\n')),
-        }
-      : blockedHop(
-          'full_build_registry_index',
-          correlationId,
-          index.ok ? 'solvex-link is not on the live registry index.' : index.error,
-          index.ok
-            ? `Index HTTP ${index.status}; ${index.names.length} items returned without solvex-link proof.`
-            : 'Registry index read did not complete.',
-        ));
+    if (index.ok && index.hasProof) {
+      indexReady = true;
+      hops.push({
+        hop: 'full_build_registry_index',
+        correlationId,
+        status: 'READ_BACK',
+        at: new Date().toISOString(),
+        blockReason: null,
+        evidence: `Registry index HTTP ${index.status}; solvex-link is present among ${index.names.length} items.`,
+        sourceUrl: index.url,
+        outputHash: sha256(index.names.join('\\n')),
+      });
+    } else {
+      hops.push(blockedHop(
+        'full_build_registry_index',
+        correlationId,
+        index.ok ? 'solvex-link is not on the live registry index.' : index.error,
+        index.ok
+          ? `Index HTTP ${index.status}; ${index.names.length} items returned without solvex-link proof.`
+          : 'Registry index read did not complete.',
+      ));
+    }
   } catch (error) {
     hops.push(blockedHop(
       'full_build_registry_index',
