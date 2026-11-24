@@ -289,13 +289,23 @@ export class SolutionPipeline {
             .setOracleInput({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode })
             .addSignedOracleAttestation(oracleAttestation);
         } else {
-          builder.addLimitation('Independent oracle attestation is unavailable; this bundle is not VERIFIED.');
+          const oracleStage = traces.find(stage => stage.stage === 14);
+          const providerUnavailable = oracleStage?.status === 'BLOCKED' &&
+            /Pinned external signer identity and Ed25519 public key are required|requires GitHub Actions OIDC permission|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|signer self-test endpoint/i.test(oracleStage.reason ?? '');
+          builder.addLimitation(providerUnavailable
+            ? 'Independent oracle attestation is unavailable; this bundle is not VERIFIED.'
+            : 'Independent oracle attestation did not complete successfully; this bundle remains unverified.');
         }
         const bundle = builder.seal();
-        ProofEngine.getInstance().registerBundle(bundle);
+        const proofEngine = ProofEngine.getInstance();
+        const existingBundle = proofEngine.getBundle(bundle.proof_id);
+        const selectedBundle = existingBundle?.verification_status === 'VERIFIED' && bundle.verification_status !== 'VERIFIED'
+          ? existingBundle
+          : bundle;
+        if (selectedBundle === bundle) proofEngine.registerBundle(bundle);
         const store = new PersistentProofStore();
-        await store.put(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT', bundle);
-        const persisted = await store.get(bundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
+        await store.put(selectedBundle.proof_id, 'TENANT_SOVEREIGN_ROOT', selectedBundle);
+        const persisted = await store.get(selectedBundle.proof_id, 'TENANT_SOVEREIGN_ROOT');
         const view = CrystalClearBox.projectCustomerEvidence(persisted.payload as typeof bundle);
         const bundleVerified = view.verification_verdict === 'VERIFIED' &&
           view.proprietary_weights_redacted && view.internal_reasoning_redacted &&
