@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const scope = process.argv[2];
 const root = process.cwd();
+const currentSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 
 function fail(message) {
   console.error(`[CI-GATE-POLICY] FAIL: ${message}`);
@@ -14,6 +16,7 @@ if (scope === '45') {
   const file = path.join(root, 'artifacts', 'system-45-gates.json');
   if (!fs.existsSync(file)) fail('45-gate evidence is missing; refusing to infer a pass.');
   const report = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (report.source_commit_sha !== currentSha) fail('45-gate evidence does not belong to this exact CI checkout.');
   if (report.total_gates !== 45 || report.observed_gates !== 45 ||
       !Array.isArray(report.gates) || report.gates.length !== 45) {
     fail('45-gate evidence has an invalid or incomplete inventory.');
@@ -25,8 +28,7 @@ if (scope === '45') {
   }
   const blocked = statuses.filter((status) => status !== 'PASSED').length;
   const passed = statuses.filter((status) => status === 'PASSED').length;
-  if (passed !== report.gates_passed || blocked !== report.blocked_count ||
-      statuses.some((status) => status === 'FAIL')) {
+  if (passed !== report.gates_passed || blocked !== report.blocked_count) {
     fail('45-gate summary counters do not match the underlying gate evidence.');
   }
   if (blocked > 0) {
@@ -38,6 +40,7 @@ if (scope === '45') {
   const file = path.join(root, 'artifacts', 'system-46-closure-gate.json');
   if (!fs.existsSync(file)) fail('separate GATE-46 evidence is missing; refusing to infer a pass.');
   const report = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (report.source_commit_sha !== currentSha) fail('GATE-46 evidence does not belong to this exact CI checkout.');
   if (report.sequence_gate_count !== 45 || report.total_gates !== 1 ||
       report.gate?.gate_id !== 'GATE-46' ||
       !['PASSED', 'BLOCKED'].includes(report.gate.status)) {
