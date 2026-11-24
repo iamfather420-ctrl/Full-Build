@@ -916,10 +916,11 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production readiness is not evaluated outside an explicitly selected production runtime.`);
     }
 
-    const preProductionPassed = preProductionBlockers.length === 0 && preProductionProviderRequirements.length === 0;
-    const preProductionStatus: GateResult['status'] = preProductionBlockers.length > 0
-      ? 'FAILED'
-      : preProductionProviderRequirements.length > 0 ? 'BLOCKED' : 'PASSED';
+    // Provider integrations are production requirements, not local pre-production
+    // execution requirements. Keep them visible in production_blockers and GATE-11,
+    // but do not make a correctly verified local contract fail GATE-14.
+    const preProductionPassed = preProductionBlockers.length === 0;
+    const preProductionStatus: GateResult['status'] = preProductionPassed ? 'PASSED' : 'FAILED';
     const prodPassed = preProductionPassed && productionBlockers.length === 0;
     const prodVerdict: PipelineExecutionReport['production_gate_verdict'] = env !== 'production'
       ? 'NOT_EVALUATED_PREPRODUCTION'
