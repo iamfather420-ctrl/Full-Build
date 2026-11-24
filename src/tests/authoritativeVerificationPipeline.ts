@@ -891,12 +891,16 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     if (!dfrlOk) preProductionBlockers.push('GATE-06 DFRL SMT formal proofs failed.');
     if (!replayOk) preProductionBlockers.push('GATE-07 Deterministic replay divergence detected.');
     if (!g8Passed) preProductionBlockers.push('GATE-08 Mutation, failure injection, or tamper alarm failed.');
-    if (!nodeCoverage.all_passed) preProductionBlockers.push(`GATE-09 Daisy 54-node functional verification incomplete. NOT_VERIFIED: ${nodeCoverage.not_verified_node_ids.join(', ') || 'none'}. PROVIDER_REQUIRED: ${nodeCoverage.provider_required_node_ids.join(', ') || 'none'}.`);
+    if (!nodeCoverage.execution_complete) preProductionBlockers.push('GATE-09 Daisy 54-node execution inventory is incomplete.');
+    if (nodeCoverage.evidence_missing_node_ids.length > 0) preProductionBlockers.push(`GATE-09 Daisy node evidence is missing: ${nodeCoverage.evidence_missing_node_ids.join(', ')}.`);
+    if (nodeCoverage.not_verified_node_ids.length > 0) preProductionBlockers.push(`GATE-09 Daisy nodes remain locally unverified: ${nodeCoverage.not_verified_node_ids.join(', ')}.`);
+    const preProductionProviderRequirements = nodeCoverage.provider_required_node_ids;
     if (!persistRep.all_local_passed) preProductionBlockers.push('GATE-10 Relational persistence or Merkle chain failed.');
     const gate12Local = gates.find(g => g.gate_id === 'GATE-12');
     if (gate12Local?.status !== 'PASSED') {
       preProductionBlockers.push('GATE-12 pre-production lifecycle authorization-boundary contract failed.');
     }
+    if (preProductionProviderRequirements.length > 0) productionBlockers.push(`External provider evidence remains required for Daisy nodes: ${preProductionProviderRequirements.join(', ')}.`);
     productionBlockers.push('GATE-12-PRODUCTION lifecycle execution requires verified identity and signed tenant claims on the deployed target.');
 
     // Production evaluation is intentionally separate from pre-production CI.
@@ -912,7 +916,10 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       productionBlockers.push(`Environment is currently [${env.toUpperCase()}]. Production readiness is not evaluated outside an explicitly selected production runtime.`);
     }
 
-    const preProductionPassed = preProductionBlockers.length === 0;
+    const preProductionPassed = preProductionBlockers.length === 0 && preProductionProviderRequirements.length === 0;
+    const preProductionStatus: GateResult['status'] = preProductionBlockers.length > 0
+      ? 'FAILED'
+      : preProductionProviderRequirements.length > 0 ? 'BLOCKED' : 'PASSED';
     const prodPassed = preProductionPassed && productionBlockers.length === 0;
     const prodVerdict: PipelineExecutionReport['production_gate_verdict'] = env !== 'production'
       ? 'NOT_EVALUATED_PREPRODUCTION'
@@ -935,7 +942,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
       'GATE-14',
       'Final Truth-Boundary Audit & Production Gate',
       'LOCAL',
-      preProductionPassed ? 'PASSED' : 'FAILED',
+      preProductionStatus,
       performance.now() - g14Start,
       {
         execution_id: executionId,
@@ -943,6 +950,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
         claim_scope: claimScopeVerdict,
         pre_production_passed: preProductionPassed,
         pre_production_blockers: preProductionBlockers,
+        pre_production_provider_requirements: preProductionProviderRequirements,
         production_verdict: prodVerdict,
         production_blockers_count: productionBlockers.length,
         production_blockers: productionBlockers
