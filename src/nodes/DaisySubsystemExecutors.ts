@@ -67,6 +67,30 @@ function hasMeaningfulEvidence(value: unknown): boolean {
   return false;
 }
 
+function isSourceBoundOraclePending(solution: any, bundle: any, reasons: string[]): boolean {
+  if (!solution || !bundle || bundle.verification_status !== 'PARTIAL') return false;
+  const sourceHash = solution.implementation_hash;
+  const expectedProofId = typeof sourceHash === 'string' ? 'PB-' + sourceHash.slice(0, 24) : '';
+  const onlyOracleMissing = reasons.length > 0 && reasons.every(reason =>
+    reason === 'Missing independent oracle attestation'
+  );
+  return Boolean(
+    /^[a-f0-9]{64}$/i.test(sourceHash || '') &&
+    bundle.proof_id === expectedProofId &&
+    bundle.subject_id === 'DH-P-001' &&
+    bundle.implementation_hash === sourceHash &&
+    Array.isArray(bundle.evidence) && bundle.evidence.includes('source_sha256:' + sourceHash) &&
+    Array.isArray(bundle.source_references) && bundle.source_references.includes('paradox_registry:DH-P-001') &&
+    Array.isArray(bundle.tests) && bundle.tests.length > 0 && bundle.tests.every((test: any) => test.passed === true) &&
+    Array.isArray(bundle.formal_proofs) && bundle.formal_proofs.length > 0 && bundle.formal_proofs.every((proof: any) => proof.checked === true) &&
+    Array.isArray(bundle.replay_results) && bundle.replay_results.some((replay: any) =>
+      replay.status === 'MATCH' && replay.expected_hash === sourceHash && replay.observed_hash === sourceHash
+    ) &&
+    Array.isArray(bundle.independent_oracles) && bundle.independent_oracles.length === 0 &&
+    onlyOracleMissing
+  );
+}
+
 export class DaisySubsystemExecutors {
   private static instance: DaisySubsystemExecutors | null = null;
 
@@ -153,17 +177,19 @@ export class DaisySubsystemExecutors {
       case 'DN-05': {
         const engine = ProofEngine.getInstance();
         const solution = DurableStore.getInstance().getState().solutions['DH-S-001'];
-        const bundle = solution?.proof_bundle_id ? engine.getBundle(solution.proof_bundle_id) : undefined;
-        const integrity = bundle ? engine.verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound verified proof bundle is attached to DH-S-001.'] };
-        const projection = bundle && integrity.verified ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
-        const passed = Boolean(projection && projection.verification_verdict === 'VERIFIED' && projection.proprietary_weights_redacted && projection.internal_reasoning_redacted);
+        const expectedProofId = solution?.implementation_hash ? 'PB-' + solution.implementation_hash.slice(0, 24) : solution?.proof_bundle_id;
+        const bundle = expectedProofId ? engine.getBundle(expectedProofId) : undefined;
+        const integrity = bundle ? engine.verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound proof candidate is attached to DH-S-001.'] };
+        const providerRequired = isSourceBoundOraclePending(solution, bundle, integrity.reasons);
+        const projection = bundle ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
+        const passed = Boolean(integrity.verified && projection && projection.verification_verdict === 'VERIFIED' && projection.proprietary_weights_redacted && projection.internal_reasoning_redacted);
         return {
           node_id: 'DN-05',
           name: 'Crystal Clear Box Audit Engine',
           category: 'AUDIT',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
+          claim_scope: providerRequired ? 'SANDBOX' : 'LOCAL',
+          status: passed ? 'SUCCESS' : providerRequired ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
             proof_id: bundle?.proof_id ?? null,
@@ -172,6 +198,7 @@ export class DaisySubsystemExecutors {
             public_audit_token_present: Boolean(projection?.public_audit_token),
             proprietary_weights_redacted: projection?.proprietary_weights_redacted ?? false,
             internal_reasoning_redacted: projection?.internal_reasoning_redacted ?? false,
+            external_provider_required: providerRequired,
             reasons: integrity.reasons
           }
         };
@@ -299,7 +326,7 @@ export class DaisySubsystemExecutors {
             evidence: { completed_stages: 0, success: false, source_bound: false, reason: 'DH-S-001 source is missing or does not match its stored implementation hash.' }
           };
         }
-        const res = await pipe.runPipeline('DH-P-001', source);
+        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true });
         const proofId = 'PB-' + sourceHash.slice(0, 24);
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
@@ -693,18 +720,20 @@ export class DaisySubsystemExecutors {
       case 'DN-29': {
         const durable = DurableStore.getInstance();
         const sol = durable.getState().solutions['DH-S-001'];
-        const bundle = sol?.proof_bundle_id ? ProofEngine.getInstance().getBundle(sol.proof_bundle_id) : undefined;
-        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No proof bundle is attached to DH-S-001.'] };
+        const expectedProofId = sol?.implementation_hash ? 'PB-' + sol.implementation_hash.slice(0, 24) : sol?.proof_bundle_id;
+        const bundle = expectedProofId ? ProofEngine.getInstance().getBundle(expectedProofId) : undefined;
+        const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound proof candidate is attached to DH-S-001.'] };
+        const providerRequired = isSourceBoundOraclePending(sol, bundle, integrity.reasons);
         const passed = Boolean(sol && sol.verification_status === 'VERIFIED' && bundle?.verification_status === 'VERIFIED' && integrity.verified);
         return {
           node_id: 'DN-29',
           name: 'Preserved Solution Vault (DH-S-001)',
           category: 'CORE_KERNEL',
           executed: true,
-          claim_scope: 'LOCAL',
-          status: passed ? 'SUCCESS' : 'FAIL_CLOSED',
+          claim_scope: providerRequired ? 'SANDBOX' : 'LOCAL',
+          status: passed ? 'SUCCESS' : providerRequired ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, reasons: integrity.reasons }
+          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, external_provider_required: providerRequired, reasons: integrity.reasons }
         };
       }
 
