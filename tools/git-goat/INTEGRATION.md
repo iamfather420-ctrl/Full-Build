@@ -51,3 +51,15 @@ The source project's `BUILD_REPORT.md` records its own typecheck, test, and
 build results. Those checks have not been rerun in this Full-Build checkout
 as part of this import. A successful build of the scanner app would not
 constitute a test or production-readiness pass for Full-Build.
+
+## Authenticated Registry handoff
+
+The app now exposes an explicit **Record in Autonomous Registry** action after a scan. It does not publish automatically during scanning. The server forwards the signed `x-grok-identity` and original `x-forwarded-host` to the Registry, then performs an independent GET and compares assessment ID, SHA-256 digest, and pinned commit before returning a verified result.
+
+Configure these server-side values before enabling the handoff:
+
+- G.O.A.T.: `SOLVEX_REGISTRY_API_ORIGIN=https://autonomous-registry.vercel.app`
+- Autonomous Registry: `SOLVEX_REGISTRY_INGEST_AUDIENCES` with the exact gate JWT audience issued to the authenticated G.O.A.T. app.
+- Autonomous Registry: existing `DATABASE_URL` for durable Neon/Postgres storage; without it, preview storage is process-local PGLite and is not durable across restarts.
+
+The Registry requires a signed gate identity with a tenant/team claim. Missing identity, missing configuration, cross-tenant reads, write failures, and readback mismatches fail closed. This adds assessment evidence storage only; it does not grant GitHub write access, execute repository code, create repair PRs, or deploy.
