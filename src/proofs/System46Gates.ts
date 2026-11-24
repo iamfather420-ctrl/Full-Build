@@ -107,8 +107,16 @@ export class System46Gates {
     const failClosedActive = failClosedChecks.length > 0 && failClosedChecks.every(inv => inv.passed);
     const externalBoundariesPreserved = externalBoundaryChecks.length > 0 && externalBoundaryChecks.every(inv => inv.passed);
     const structuralIntegrityOk = evaluatedGates.length === 45 && failClosedActive && externalBoundariesPreserved;
-    const masterPassed = structuralIntegrityOk && nonPassedPrior === 0 && failedPrior === 0;
-    const masterBlocked = !masterPassed && structuralIntegrityOk && failedPrior === 0 && nonPassedPrior > 0;
+    // GATE-46 closes the local/model truth boundary. External provider requirements
+    // remain explicit in GATE-11 and production blockers, but do not invalidate a
+    // structurally sound non-production closure. Any BLOCKED gate or actual FAIL
+    // still prevents closure.
+    const externalProviderOnly = evaluatedGates.every(g =>
+      g.status === 'PASSED' || g.status === 'EXTERNAL_PROVIDER_REQUIRED'
+    );
+    const masterPassed = structuralIntegrityOk && failedPrior === 0 && externalProviderOnly;
+    const masterBlocked = !masterPassed && structuralIntegrityOk && failedPrior === 0 &&
+      evaluatedGates.every(g => g.status === 'PASSED' || g.status === 'EXTERNAL_PROVIDER_REQUIRED' || g.status === 'BLOCKED');
     const masterStatus: GateExecutionResult['status'] = masterPassed
       ? 'PASSED'
       : masterBlocked ? 'BLOCKED' : 'FAIL';

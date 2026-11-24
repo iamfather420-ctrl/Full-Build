@@ -1,0 +1,97 @@
+name: Shared Registry Runtime Trace
+
+on:
+  workflow_dispatch:
+    inputs:
+      correlation_id:
+        description: Optional expected correlation ID; leave blank to validate the registry's current ID.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-registry-runtime-trace
+  cancel-in-progress: false
+
+jobs:
+  trace:
+    # This job deliberately requires an operator-managed runner with the
+    # verified first-party model and engine installed locally.
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 20
+    env:
+      DISCOVER_ENGINE_URL: ${{ secrets.DISCOVER_ENGINE_URL }}
+      DISCOVER_ENGINE_TOKEN: ${{ secrets.DISCOVER_ENGINE_TOKEN }}
+      DAISY_MODEL_PATH: ${{ vars.DAISY_MODEL_PATH }}
+      DAISY_INFERENCE_ENGINE: ${{ vars.DAISY_INFERENCE_ENGINE }}
+      DAISY_MODEL_ID: ${{ vars.DAISY_MODEL_ID }}
+      DAISY_MODEL_VERSION: ${{ vars.DAISY_MODEL_VERSION }}
+    steps:
+      - name: Checkout selected revision
+        uses: actions/checkout@v4
+
+      - name: Verify runtime prerequisites without exposing secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in DISCOVER_ENGINE_URL DISCOVER_ENGINE_TOKEN DAISY_MODEL_PATH DAISY_INFERENCE_ENGINE; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::$name is not configured."
+              missing=1
+            fi
+          done
+          if [[ "$missing" -ne 0 ]]; then
+            echo "Runtime trace blocked: configure the two Discover-Engine repository secrets and the two Daisy runner-path repository variables."
+            exit 2
+          fi
+          if [[ "$DISCOVER_ENGINE_URL" != https://* ]]; then
+            echo "::error::DISCOVER_ENGINE_URL must use HTTPS."
+            exit 2
+          fi
+          if [[ ! -f "$DAISY_MODEL_PATH" || ! -r "$DAISY_MODEL_PATH" ]]; then
+            echo "::error::DAISY_MODEL_PATH must point to a readable model file on this runner."
+            exit 2
+          fi
+          if [[ ! -f "$DAISY_INFERENCE_ENGINE" || ! -x "$DAISY_INFERENCE_ENGINE" ]]; then
+            echo "::error::DAISY_INFERENCE_ENGINE must point to an executable engine on this runner."
+            exit 2
+          fi
+          echo "Required credentials are present; model file and executable engine are accessible."
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install locked dependencies
+        run: bun install --no-save
+
+      - name: Execute real shared-registry integration trace
+        id: trace
+        shell: bash
+        env:
+          EXPECTED_CORRELATION_ID: ${{ inputs.correlation_id }}
+        run: |
+          set -uo pipefail
+          mkdir -p artifacts/runtime-trace
+          chmod 700 artifacts/runtime-trace
+          if [[ -n "$EXPECTED_CORRELATION_ID" ]]; then
+            bun run trace:registry -- "$EXPECTED_CORRELATION_ID" 2>&1 | tee artifacts/runtime-trace/shared-registry-trace.log
+          else
+            bun run trace:registry 2>&1 | tee artifacts/runtime-trace/shared-registry-trace.log
+          fi
+          status=$?
+          echo "trace_exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Upload trace evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shared-registry-runtime-trace-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/runtime-trace/
+          if-no-files-found: warn
+          retention-days: 14
