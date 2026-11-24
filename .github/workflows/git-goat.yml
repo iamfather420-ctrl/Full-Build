@@ -1,0 +1,44 @@
+name: Git G.O.A.T. sub-application
+
+on:
+  pull_request:
+    paths:
+      - "tools/git-goat/**"
+      - ".github/workflows/git-goat.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tools/git-goat/**"
+      - ".github/workflows/git-goat.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  goat:
+    name: G.O.A.T. typecheck, tests, and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/git-goat
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: tools/git-goat/pnpm-lock.yaml
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.0
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile
+      - name: TypeScript
+        run: pnpm typecheck
+      - name: Unit tests
+        run: pnpm test
+      - name: Production build
+        run: pnpm build
