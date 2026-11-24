@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { join } from 'node:path';
 import { scanPublicRepository } from './scanner.js';
 import { getScan, recordChoice, saveScan } from './store.js';
+import { getIdentityHeader, publishScanToRegistry } from './registry.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -17,7 +18,7 @@ app.use((_req, res, next) => {
 });
 app.use(express.json({ limit: '32kb' }));
 app.use('/api/v1', rateLimit({ windowMs: 60_000, limit: 30, standardHeaders: true, legacyHeaders: false }));
-app.get('/api/v1/health', (_req, res) => res.json({ status: 'ok', capabilities: { publicReadOnlyScan: true, mongodb: !!process.env.MONGO_URL, githubOAuth: !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET), isolatedRunner: false, githubWrites: false } }));
+app.get('/api/v1/health', (_req, res) => res.json({ status: 'ok', capabilities: { publicReadOnlyScan: true, registryPublish: Boolean(process.env.SOLVEX_REGISTRY_API_ORIGIN), registryReadback: Boolean(process.env.SOLVEX_REGISTRY_API_ORIGIN), mongodb: !!process.env.MONGO_URL, githubOAuth: !!(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET), isolatedRunner: false, githubWrites: false } }));
 
 // Each scan can fan out to GitHub. Bound aggregate process-level work as well as per-scan work.
 const maxConcurrentScans = 3;
@@ -46,6 +47,25 @@ app.get('/api/v1/scans/:id', async (req, res) => {
     return res.json(report);
   } catch (err) { console.error('Scan lookup failed:', err); return res.status(503).json({ error: 'Scan storage unavailable.' }); }
 });
+
+// Publishing is explicit. The signed gate identity is forwarded to the Registry;
+// the Registry verifies it and scopes the immutable record to the signed tenant.
+app.post('/api/v1/scans/:id/publish', async (req, res) => {
+  const token = getIdentityHeader(req.headers['x-grok-identity']);
+  const forwardedHost = getIdentityHeader(req.headers['x-forwarded-host']);
+  if (!token) return res.status(401).json({ error: 'Authenticated gate identity is required before publishing.' });
+  try {
+    const report = await getScan(req.params.id);
+    if (!report) return res.status(404).json({ error: 'Scan not found or expired.' });
+    const result = await publishScanToRegistry(report, token, forwardedHost);
+    return res.status(200).json({ ...result, verifiedReadback: true });
+  } catch (err) {
+    const error = err as Error & { status?: number };
+    const status = error.status && error.status >= 400 && error.status < 500 ? error.status : 502;
+    return res.status(status).json({ error: error.message || 'Registry publishing or readback failed.', verifiedReadback: false });
+  }
+});
+
 app.post('/api/v1/scans/:id/choices', async (req, res) => {
   const parsed = z.object({ findingId: z.string().max(40), choice: z.string().min(1).max(200), rationale: z.string().min(10).max(1000) }).safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Choose an option and provide a rationale of at least 10 characters.' });
