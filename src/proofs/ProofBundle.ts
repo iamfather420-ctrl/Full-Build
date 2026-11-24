@@ -150,8 +150,14 @@ export class ProofBundleBuilder {
     const oraclesAttested = this.bundle.independent_oracles.length > 0 && this.bundle.independent_oracles.every(o => o.verified);
     const replaysMatched = this.bundle.replay_results.length > 0 && this.bundle.replay_results.every(r => r.status === 'MATCH');
 
+    const oracleUnavailable = this.bundle.independent_oracles.length === 0 &&
+      this.bundle.limitations.some(item => item.includes('Independent oracle attestation is unavailable'));
     if (allTestsPassed && formalChecked && oraclesAttested && replaysMatched) {
       this.bundle.verification_status = 'VERIFIED';
+    } else if (allTestsPassed && formalChecked && replaysMatched && oracleUnavailable) {
+      // Internal evidence is complete, but external authenticity is still unverified.
+      // PARTIAL is not a pass and cannot authorize publication or activation.
+      this.bundle.verification_status = 'PARTIAL';
     } else {
       this.bundle.verification_status = 'FAIL';
     }
