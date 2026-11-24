@@ -9,6 +9,7 @@ const TRUSTED_PULL_REQUEST_HEADS = new Map([
   ['refs/pull/136/merge', 'feat/dn53-provers-rebased-2026-11-17'],
   ['refs/pull/137/merge', 'ops/enable-manual-46-gate-scan'],
   ['refs/pull/140/merge', 'fix/gate12-disposable-neon-identity-20261117'],
+  ['refs/pull/152/merge', 'integration/daisy-22-file-reconciliation-20261118'],
 ]);
 
 export function stage14ClaimsTrusted(claims: any, now = Math.floor(Date.now() / 1000)): boolean {
