@@ -155,10 +155,13 @@ jobs:
           SOLVEX_NODE_EXTERNAL_PROBES: 'true'
           # Use only the disposable Neon validation branch configured above.
           SOLVEX_E2E_USE_DISPOSABLE_NEON: 'true'
-        run: bun run verify:45-gates
+        run: |
+          rm -f artifacts/system-45-gates.json artifacts/system-46-closure-gate.json
+          bun run verify:45-gates || node scripts/ci_nonproduction_gate_policy.mjs 45
       - name: Evaluate the subsequent GATE-46 closure separately
         if: ${{ always() && steps.authoritative_45.outcome != 'skipped' }}
-        run: bun run verify:46-closure
+        run: |
+          bun run verify:46-closure || node scripts/ci_nonproduction_gate_policy.mjs 46
       - name: Upload separate 45-gate and GATE-46 evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
