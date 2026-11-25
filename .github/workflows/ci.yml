@@ -58,6 +58,8 @@ jobs:
         run: bun run verify:daisy-safety
       - name: First-party inference fail-closed tests
         run: bun run test:local-inference
+      - name: Daisy authenticated API and withheld-only discovery regression tests
+        run: bun run test:daisy-ai-api
       - name: System 46 release-guard regression tests
         run: bun run test:system46-guard
       - name: Provider gate payments-disabled policy regression tests
