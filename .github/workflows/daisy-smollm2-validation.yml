@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           output="$(DAISY_TRAIN_FILE=/tmp/daisy-corpus-must-not-exist.jsonl DAISY_OUTPUT_DIR=/tmp/daisy-output-must-not-exist python training/daisy-smollm2/train.py 2>&1 || true)"
-          printf '%s\\n' "$output"
+          printf '%s\n' "$output"
           grep -q "BLOCKED: verified training corpus not found" <<< "$output"
           test ! -e /tmp/daisy-output-must-not-exist
       - name: Prepare the real LOC corpus in quarantine
@@ -50,6 +50,6 @@ jobs:
         run: |
           set -euo pipefail
           output="$(DAISY_TRAIN_FILE=artifacts/training/loc-english/quarantined-corpus.jsonl DAISY_OUTPUT_DIR=/tmp/daisy-quarantined-training-must-not-exist python training/daisy-smollm2/train.py 2>&1 || true)"
-          printf '%s\\n' "$output"
+          printf '%s\n' "$output"
           grep -q "BLOCKED: schema keys mismatch" <<< "$output"
           test ! -e /tmp/daisy-quarantined-training-must-not-exist
