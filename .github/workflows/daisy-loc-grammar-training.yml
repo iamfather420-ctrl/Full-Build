@@ -1,0 +1,62 @@
+name: Daisy LOC Grammar Language Training
+
+on:
+  workflow_dispatch:
+    inputs:
+      epochs:
+        description: Training epochs
+        required: true
+        default: "3"
+      max_length:
+        description: Token sequence length
+        required: true
+        default: "512"
+
+permissions:
+  contents: read
+
+jobs:
+  train-loc-grammar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout Full-Build and pinned LOC collection
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: training/daisy-smollm2/requirements.txt
+      - name: Prepare source-disjoint plain-text grammar corpus
+        run: node scripts/prepare_loc_language_model_corpus.mjs
+      - name: Install local training dependencies
+        run: python -m pip install -r training/daisy-smollm2/requirements.txt
+      - name: Compile and validate trainer before model download
+        run: |
+          python -m py_compile training/daisy-smollm2/train_text.py
+          DAISY_LM_TRAIN_FILE=artifacts/training/loc-english/language-model-corpus.jsonl \
+            DAISY_OUTPUT_DIR=/tmp/daisy-must-not-exist \
+            python -c "from pathlib import Path; import sys; sys.path.insert(0, 'training/daisy-smollm2'); from train_text import load_records; rows, digest = load_records(Path('artifacts/training/loc-english/language-model-corpus.jsonl')); print({'records': len(rows), 'sha256': digest})"
+      - name: Train Daisy locally on the GitHub-hosted CPU runner
+        env:
+          DAISY_LM_TRAIN_FILE: artifacts/training/loc-english/language-model-corpus.jsonl
+          DAISY_OUTPUT_DIR: artifacts/daisy-smollm2-loc-grammar
+          DAISY_REQUIRE_CUDA: "false"
+          DAISY_EPOCHS: ${{ inputs.epochs }}
+          DAISY_MAX_LENGTH: ${{ inputs.max_length }}
+          DAISY_BATCH_SIZE: "1"
+        run: python training/daisy-smollm2/train_text.py
+      - name: Upload checkpoint, metrics, and hash manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: daisy-loc-grammar-cpu-checkpoint
+          path: artifacts/daisy-smollm2-loc-grammar/
+          if-no-files-found: error
+          retention-days: 30
