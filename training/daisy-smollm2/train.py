@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
+DEFAULT_MODEL_REVISION = "eba0825ddc7730d24a88685a6c0a078cf919b383"
 REQUIRED = {
     "recordId", "split", "messages", "sourceId", "sourceSha256",
     "evidenceRefs", "verification", "licenseStatus", "trainingEligible",
@@ -83,6 +84,10 @@ def main() -> int:
     data_path = Path(os.environ.get("DAISY_TRAIN_FILE", "data/daisy_train.jsonl"))
     output_dir = Path(os.environ.get("DAISY_OUTPUT_DIR", "artifacts/daisy-smollm2-135m"))
     model_id = os.environ.get("DAISY_MODEL_ID", DEFAULT_MODEL)
+    model_revision = os.environ.get("DAISY_MODEL_REVISION", DEFAULT_MODEL_REVISION)
+    if not re.fullmatch(r"[a-fA-F0-9]{40}", model_revision):
+        print("BLOCKED: DAISY_MODEL_REVISION must be an immutable 40-character commit SHA", file=sys.stderr)
+        return 2
     max_length = int(os.environ.get("DAISY_MAX_LENGTH", "2048"))
     epochs = float(os.environ.get("DAISY_EPOCHS", "3"))
     batch_size = int(os.environ.get("DAISY_BATCH_SIZE", "4"))
@@ -111,7 +116,7 @@ def main() -> int:
         return 2
 
     output_dir.mkdir(parents=True, exist_ok=False)
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=model_revision)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
@@ -131,7 +136,7 @@ def main() -> int:
 
     train_ds = Dataset.from_list(train_rows).map(tokenize_batch, batched=True, remove_columns=["text", "split"])
     validation_ds = Dataset.from_list(validation_rows).map(tokenize_batch, batched=True, remove_columns=["text", "split"])
-    model = AutoModelForCausalLM.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(model_id, revision=model_revision)
     model.config.use_cache = False
 
     args = TrainingArguments(
@@ -171,6 +176,7 @@ def main() -> int:
     manifest = {
         "status": "TRAINING_COMPLETED",
         "model_id": model_id,
+        "model_revision": model_revision,
         "dataset_path": str(data_path),
         "dataset_sha256": dataset_hash,
         "records": len(records),
