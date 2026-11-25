@@ -11,6 +11,13 @@ on:
         description: Token sequence length
         required: true
         default: "512"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/prepare_loc_language_model_corpus.mjs"
+      - "training/daisy-smollm2/train_text.py"
+      - "training/daisy-smollm2/requirements.txt"
+      - ".github/workflows/daisy-loc-grammar-training.yml"
 
 permissions:
   contents: read
@@ -41,16 +48,14 @@ jobs:
       - name: Compile and validate trainer before model download
         run: |
           python -m py_compile training/daisy-smollm2/train_text.py
-          DAISY_LM_TRAIN_FILE=artifacts/training/loc-english/language-model-corpus.jsonl \
-            DAISY_OUTPUT_DIR=/tmp/daisy-must-not-exist \
-            python -c "from pathlib import Path; import sys; sys.path.insert(0, 'training/daisy-smollm2'); from train_text import load_records; rows, digest = load_records(Path('artifacts/training/loc-english/language-model-corpus.jsonl')); print({'records': len(rows), 'sha256': digest})"
+          python -c "from pathlib import Path; import sys; sys.path.insert(0, 'training/daisy-smollm2'); from train_text import load_records; rows, digest = load_records(Path('artifacts/training/loc-english/language-model-corpus.jsonl')); print({'records': len(rows), 'sha256': digest})"
       - name: Train Daisy locally on the GitHub-hosted CPU runner
         env:
           DAISY_LM_TRAIN_FILE: artifacts/training/loc-english/language-model-corpus.jsonl
           DAISY_OUTPUT_DIR: artifacts/daisy-smollm2-loc-grammar
           DAISY_REQUIRE_CUDA: "false"
-          DAISY_EPOCHS: ${{ inputs.epochs }}
-          DAISY_MAX_LENGTH: ${{ inputs.max_length }}
+          DAISY_EPOCHS: ${{ inputs.epochs || '3' }}
+          DAISY_MAX_LENGTH: ${{ inputs.max_length || '512' }}
           DAISY_BATCH_SIZE: "1"
         run: python training/daisy-smollm2/train_text.py
       - name: Upload checkpoint, metrics, and hash manifest
