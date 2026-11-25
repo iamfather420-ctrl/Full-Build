@@ -1,0 +1,46 @@
+name: LOC English Corpus Preparation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/prepare_loc_english_corpus.mjs"
+      - ".gitmodules"
+      - "data/training_sources/public_domain/english"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loc-english-corpus-preparation
+  cancel-in-progress: false
+
+jobs:
+  prepare-quarantined-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Full-Build and pinned source collection
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Verify pinned source checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          git submodule status --recursive
+          test -f data/training_sources/public_domain/english/data/training_sources/public_domain/english/provenance-manifest.json
+
+      - name: Prepare hash-verified quarantined corpus
+        run: node scripts/prepare_loc_english_corpus.mjs
+
+      - name: Upload review-only corpus and audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: loc-english-quarantined-corpus
+          path: artifacts/training/loc-english/
+          if-no-files-found: error
+          retention-days: 30
