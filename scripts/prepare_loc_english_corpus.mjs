@@ -10,7 +10,8 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const collectionDir = path.join(root, "data/training_sources/public_domain/english");
+const submoduleRoot = path.join(root, "data/training_sources/public_domain/english");
+const collectionDir = path.join(submoduleRoot, "data/training_sources/public_domain/english");
 const manifestPath = path.join(collectionDir, "provenance-manifest.json");
 const outputDir = path.join(root, "artifacts/training/loc-english");
 const chunkLimit = 1800;
@@ -20,8 +21,8 @@ const fail = (message) => { throw new Error(message); };
 
 function safeRepoPath(relativePath) {
   if (typeof relativePath !== "string" || !relativePath.trim()) fail("Manifest contains an empty file path.");
-  const resolved = path.resolve(root, relativePath);
-  if (resolved !== root && !resolved.startsWith(root + path.sep)) fail(`Path escapes repository: ${relativePath}`);
+  const resolved = path.resolve(submoduleRoot, relativePath);
+  if (resolved !== submoduleRoot && !resolved.startsWith(submoduleRoot + path.sep)) fail(`Path escapes source submodule: ${relativePath}`);
   return resolved;
 }
 
