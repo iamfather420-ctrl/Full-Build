@@ -7,6 +7,8 @@ import { NodeRegistry } from '../nodes/NodeRegistry';
 import { InferenceRouter } from '../inference/InferenceRouter';
 import { getLocalInferenceRuntime } from '../inference/LocalInferenceRuntime';
 import type { InferenceMessage } from '../inference/InferenceRuntime';
+import { DiscoveryAssertionRequestSchema } from '../discovery/DiscoverEngineContract';
+import { submitAssertion } from '../discovery/DiscoverEngineClient';
 
 const router = Router();
 const inference = new InferenceRouter(getLocalInferenceRuntime());
@@ -71,34 +73,72 @@ async function loadCanonicalInstruction(): Promise<{ text: string; sha256: strin
   }
 }
 
+function discoveryConfig(): { baseUrl: string; token: string } | null {
+  const rawUrl = process.env.DAISY_DISCOVER_ENGINE_URL?.trim();
+  const token = process.env.DAISY_DISCOVER_ENGINE_TOKEN?.trim();
+  if (!rawUrl || !token || token.length < 32) return null;
+  try {
+    const url = new URL(rawUrl);
+    const hostname = url.hostname.replace(/^\[|\]$/g, '').toLowerCase();
+    const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
+    const localDevelopmentHttp = process.env.NODE_ENV !== 'production'
+      && url.protocol === 'http:'
+      && localHosts.has(hostname);
+    if ((url.protocol !== 'https:' && !localDevelopmentHttp) ||
+        url.username || url.password || url.search || url.hash) return null;
+    return { baseUrl: url.toString(), token };
+  } catch {
+    return null;
+  }
+}
+
 function blocked(res: Response, status: number, code: string, message: string) {
   res.setHeader('Cache-Control', 'no-store');
   res.status(status).json({ success: false, status: 'BLOCKED', code, message });
 }
 
-router.get('/status', (req, res) => {
+router.get('/status', async (req, res) => {
   const tenant = tenantId(req);
   if (!tenant) return blocked(res, 401, 'AUTHENTICATED_TENANT_REQUIRED', 'An authenticated SolveX tenant session is required.');
-  const runtime = getLocalInferenceRuntime().getInfo();
-  const nodes = NodeRegistry.getInstance().getAllNodes();
-  res.setHeader('Cache-Control', 'no-store');
-  res.json({
-    status: runtime.ready ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED',
-    inference: {
-      chatEnabled: runtime.ready,
-      state: runtime.ready ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED_MODEL_OR_ENGINE_MISSING',
-      runtimeId: runtime.runtimeId,
-      modelId: runtime.modelId,
-      modelVersion: runtime.modelVersion,
-      offlineCapable: false,
-    },
-    systemInstruction: { available: null, source: 'DAISY_FOUNDATIONAL_SYSTEM_INSTRUCTION.md' },
-    brain: {
-      registeredNodeDefinitions: nodes.length,
-      nodeExecutionRunByThisRequest: false,
-      tetherTopology: 'NOT_ASSERTED_BY_THIS_ENDPOINT',
-    },
-  });
+  try {
+    const runtime = getLocalInferenceRuntime();
+    const [instruction, info] = await Promise.all([
+      loadCanonicalInstruction(),
+      runtime.probe(),
+    ]);
+    const nodes = NodeRegistry.getInstance().getAllNodes();
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({
+      status: info.ready && instruction ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED',
+      inference: {
+        chatEnabled: Boolean(info.ready && instruction),
+        state: !instruction ? 'BLOCKED_INSTRUCTION_UNAVAILABLE'
+          : info.ready ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED_MODEL_OR_ENGINE_MISSING',
+        runtimeId: info.runtimeId,
+        modelId: info.modelId,
+        modelVersion: info.modelVersion,
+        offlineCapable: false,
+      },
+      systemInstruction: {
+        available: Boolean(instruction),
+        sha256: instruction?.sha256 ?? null,
+        source: instruction ? 'repository-file' : 'unavailable',
+      },
+      discovery: {
+        reviewConfigured: Boolean(discoveryConfig()),
+        sourceSearchAvailable: false,
+        resultPolicy: 'WITHHELD_ONLY',
+        connectionChecked: false,
+      },
+      brain: {
+        registeredNodeDefinitions: nodes.length,
+        nodeExecutionRunByThisRequest: false,
+        tetherTopology: 'NOT_ASSERTED_BY_THIS_ENDPOINT',
+      },
+    });
+  } catch {
+    return blocked(res, 503, 'DAISY_STATUS_UNAVAILABLE', 'Daisy runtime status could not be verified.');
+  }
 });
 
 router.post('/chat', async (req, res) => {
@@ -141,6 +181,38 @@ router.post('/chat', async (req, res) => {
     });
   } catch {
     return blocked(res, 503, 'FIRST_PARTY_INFERENCE_FAILED', 'First-party Daisy inference failed. No simulated reply was generated.');
+  }
+});
+
+router.post('/discovery/review', async (req, res) => {
+  const tenant = tenantId(req);
+  if (!tenant) return blocked(res, 401, 'AUTHENTICATED_TENANT_REQUIRED', 'An authenticated SolveX tenant session is required.');
+  if (!allowRequest(tenant)) return blocked(res, 429, 'TENANT_RATE_LIMITED', 'The Daisy request limit has been reached.');
+  if (Buffer.byteLength(JSON.stringify(req.body ?? {}), 'utf8') > 60_000) {
+    return blocked(res, 400, 'INVALID_DISCOVERY_ASSERTION', 'The discovery assertion exceeds the allowed request size.');
+  }
+  const parsed = DiscoveryAssertionRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return blocked(res, 400, 'INVALID_DISCOVERY_ASSERTION', 'The discovery assertion is invalid or incomplete.');
+  }
+  const config = discoveryConfig();
+  if (!config) {
+    return blocked(res, 503, 'DISCOVERY_NOT_CONFIGURED', 'Withheld-only Discover-Engine review is not configured. No outbound request was made.');
+  }
+  try {
+    const result = await submitAssertion(config.baseUrl, config.token, parsed.data);
+    res.setHeader('Cache-Control', 'no-store');
+    if (!result.review) {
+      return blocked(res, 503, 'DISCOVERY_REVIEW_UNAVAILABLE', 'Discover-Engine did not return a valid withheld-only review.');
+    }
+    return res.status(200).json({
+      status: 'WITHHELD',
+      publishable: false,
+      withheld: true,
+      review: result.review,
+    });
+  } catch {
+    return blocked(res, 503, 'DISCOVERY_REVIEW_FAILED', 'Discover-Engine review failed. No assertion was published.');
   }
 });
 
