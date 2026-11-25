@@ -17,14 +17,19 @@ This workstream creates a Daisy-specific checkpoint by supervised fine-tuning th
 
 Place the approved corpus at `data/daisy_train.jsonl` on the training worker, or set `DAISY_TRAIN_FILE`. Each JSONL line is one record. See `dataset.schema.json` for the record contract. Do not commit private or sensitive training records to Git.
 
+### Current LOC source collection status
+
+The six-book Library of Congress collection has been checksum-verified and prepared as 847 quarantined text chunks (1,406,668 characters; dataset SHA-256 `44fe084e2f14cfad5428fef48ad1ee0dbf5d590493285db0e8d6d65201eb053d`). Its manifest and every chunk remain `PENDING_REVIEW` / `training_eligible: false`. This raw-text quarantine JSONL is intentionally **not** the conversational SFT schema above. The training gate is tested to reject it before importing training dependencies, downloading the foundation model, or creating a training output directory. Do not relabel or convert it to eligible data until the source-level rights review and a separate human review of any derived records are complete.
+
 ## Run
 
-Use a dedicated GPU-capable worker with Python 3.10/3.11 and enough memory for full fine-tuning. Render's currently connected service is the Discovery Engine (free Node service), not a GPU training worker; do not run training there.
+Use a dedicated GPU-capable worker with Python 3.10/3.11 and enough memory for full fine-tuning. PyTorch is an explicit runtime dependency. `DAISY_REQUIRE_CUDA` defaults to `true`; without a CUDA device the trainer stops before model download and output creation. Render's currently connected service is the Discovery Engine (free Node service), not a GPU training worker; do not run training there.
 
 ```bash
 python -m venv .venv
 . .venv/bin/activate
 pip install -r training/daisy-smollm2/requirements.txt
+export DAISY_REQUIRE_CUDA=true  # default; blocks before model download if CUDA is unavailable
 export DAISY_TRAIN_FILE=/secure-data/daisy_train.jsonl
 export DAISY_OUTPUT_DIR=/secure-artifacts/daisy-smollm2-135m-run
 export DAISY_MODEL_ID=HuggingFaceTB/SmolLM2-135M-Instruct
