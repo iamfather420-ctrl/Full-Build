@@ -91,6 +91,41 @@ test('invalid discovery assertions are rejected before any outbound request', as
   assert.equal(body.code, 'INVALID_DISCOVERY_ASSERTION');
 });
 
+
+test('valid discovery assertions remain blocked without configuration and make no outbound request', async () => {
+  const previousUrl = process.env.DAISY_DISCOVER_ENGINE_URL;
+  const previousToken = process.env.DAISY_DISCOVER_ENGINE_TOKEN;
+  delete process.env.DAISY_DISCOVER_ENGINE_URL;
+  delete process.env.DAISY_DISCOVER_ENGINE_TOKEN;
+  const url = 'https://arxiv.org/abs/2401.00001';
+  const response = await fetch(`${baseUrl}/api/daisy/discovery/review`, {
+    method: 'POST',
+    headers: { ...authenticated, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      discovery: {
+        id: 'source-1', source: 'arxiv', title: 'A source title', abstract: 'Evidence sentence.',
+        year: 2024, url, field: 'computer science', lens: 'verification',
+        keywords: [], metrics: [], citations: 0, type: 'paper',
+      },
+      claim: {
+        id: 'claim-1', text: 'A descriptive claim.', kind: 'descriptive',
+        sourceId: 'source-1', sourceUrl: url, sourceTitle: 'A source title',
+        locator: { kind: 'abstract_sentence', sentenceIndex: 0, quote: 'Evidence sentence.' },
+        quantitativeTokens: [], corroboratingSourceIds: [],
+        corroborationStatus: 'candidate_only_unassessed',
+        reviewStatus: 'human_review_required',
+        evidenceGrade: 'metadata_verified_abstract_only', limitations: [],
+      },
+    }),
+  });
+  if (previousUrl !== undefined) process.env.DAISY_DISCOVER_ENGINE_URL = previousUrl;
+  if (previousToken !== undefined) process.env.DAISY_DISCOVER_ENGINE_TOKEN = previousToken;
+  assert.equal(response.status, 503);
+  const body = await response.json() as { code: string; status: string };
+  assert.equal(body.status, 'BLOCKED');
+  assert.equal(body.code, 'DISCOVERY_NOT_CONFIGURED');
+});
+
 test('local inference child environment excludes application credentials', () => {
   const childEnvironment = createInferenceChildEnvironment({
     PATH: '/usr/bin',
