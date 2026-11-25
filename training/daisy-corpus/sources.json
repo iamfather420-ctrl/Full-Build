@@ -158,5 +158,153 @@
         "reading-comprehension"
       ]
     }
+  ],
+  "works": [
+    {
+      "id": "PG-14006",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "An English Grammar",
+      "authors": [
+        "William Malone Baskervill",
+        "James Witt Sewell"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/14006",
+      "language": "en",
+      "subjects": [
+        "English grammar"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    },
+    {
+      "id": "PG-11615",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "The Grammar of English Grammars",
+      "authors": [
+        "Goold Brown"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/11615",
+      "language": "en",
+      "subjects": [
+        "English grammar"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    },
+    {
+      "id": "PG-14070",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "English Grammar in Familiar Lectures",
+      "authors": [
+        "Samuel Kirkham"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/14070",
+      "language": "en",
+      "subjects": [
+        "English grammar",
+        "punctuation",
+        "parsing",
+        "exercises"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    },
+    {
+      "id": "PG-22577",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "Practical Grammar and Composition",
+      "authors": [
+        "Thomas Wood"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/22577",
+      "language": "en",
+      "subjects": [
+        "English grammar",
+        "composition",
+        "writing"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    },
+    {
+      "id": "PG-7188",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "Higher Lessons in English: A work on English grammar and composition",
+      "authors": [
+        "Alonzo Reed",
+        "Brainerd Kellogg"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/7188",
+      "language": "en",
+      "subjects": [
+        "English grammar",
+        "composition"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    },
+    {
+      "id": "PG-15097",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "A Grammar of the English Tongue",
+      "authors": [
+        "Samuel Johnson"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/15097",
+      "language": "en",
+      "subjects": [
+        "English grammar",
+        "orthography",
+        "etymology",
+        "syntax",
+        "prosody"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    },
+    {
+      "id": "PG-30036",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "Word Study and English Grammar",
+      "authors": [
+        "Frederick W. Hamilton"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/30036",
+      "language": "en",
+      "subjects": [
+        "word study",
+        "grammar",
+        "word relations"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    },
+    {
+      "id": "PG-37134",
+      "sourceId": "PROJECT_GUTENBERG",
+      "title": "The Elements of Style",
+      "authors": [
+        "William Strunk"
+      ],
+      "url": "https://www.gutenberg.org/ebooks/37134",
+      "language": "en",
+      "subjects": [
+        "rhetoric",
+        "style",
+        "grammar",
+        "composition",
+        "report writing"
+      ],
+      "rightsStatus": "PROJECT_GUTENBERG_MARKED_PUBLIC_DOMAIN_USA",
+      "acquisitionStatus": "NOT_YET_DOWNLOADED",
+      "priority": "HIGH"
+    }
   ]
 }
