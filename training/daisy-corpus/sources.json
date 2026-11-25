@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "1.0.0",
+  "corpus": "DAISY_OPEN_LANGUAGE_CORPUS",
+  "purpose": "Language foundations and educational text for Daisy Haminja",
+  "policy": {
+    "defaultDecision": "HOLD_FOR_DOCUMENT_LEVEL_REVIEW",
+    "commercialTrainingRequired": true,
+    "requireExplicitLicenseEvidence": true,
+    "requireDocumentLevelProvenance": true,
+    "excludeUnclearRights": true,
+    "excludeNonCommercial": true,
+    "excludeNoDerivatives": true,
+    "excludeThirdPartyEmbeddedContentUnlessSeparatelyCleared": true,
+    "rawTextIsNotSftConversation": true,
+    "derivedExamplesRequireHumanReview": true
+  },
+  "sources": [
+    {
+      "id": "VOA_LEARNING_ENGLISH",
+      "name": "Voice of America Learning English",
+      "url": "https://learningenglish.voanews.com/",
+      "rightsPolicyUrl": "https://learningenglish.voanews.com/p/6861.html",
+      "category": "government_language_instruction",
+      "status": "PRIORITY_CANDIDATE",
+      "licenseBasis": "VOA states its own Learning English texts, audio, photos and videos are public domain; attribution requested.",
+      "allowCommercialUse": true,
+      "attributionRequired": true,
+      "includeOnly": "Original VOA Learning English-produced lessons, transcripts, Everyday Grammar, and Let’s Learn English materials.",
+      "exclude": "AP, Reuters, AFP and all other third-party text, images, audio, video, graphics, and embedded assets.",
+      "skills": [
+        "vocabulary",
+        "grammar",
+        "reading-comprehension",
+        "listening",
+        "writing",
+        "dialogue",
+        "pronunciation"
+      ]
+    },
+    {
+      "id": "US_FSI_LANGUAGE_COURSES",
+      "name": "U.S. Foreign Service Institute language courses",
+      "url": "https://www.livelingua.com/project/fsi",
+      "category": "government_language_instruction",
+      "status": "DOCUMENT_LEVEL_REVIEW_REQUIRED",
+      "licenseBasis": "Government-origin course materials may be public domain where created by federal employees; verify provenance and third-party components per file.",
+      "allowCommercialUse": null,
+      "attributionRequired": "VERIFY_PER_FILE",
+      "includeOnly": "Files with verifiable U.S. government authorship and no uncleared third-party components.",
+      "exclude": "Unverified scans, publisher-added annotations, third-party recordings, and materials with unclear ownership.",
+      "skills": [
+        "phonetics",
+        "vocabulary",
+        "grammar",
+        "dialogue",
+        "multilingual-comparison",
+        "translation"
+      ]
+    },
+    {
+      "id": "PROJECT_GUTENBERG",
+      "name": "Project Gutenberg",
+      "url": "https://www.gutenberg.org/",
+      "rightsPolicyUrl": "https://www.gutenberg.org/policy/permission.html",
+      "category": "public_domain_books",
+      "status": "DOCUMENT_LEVEL_REVIEW_REQUIRED",
+      "licenseBasis": "Many works are public domain in the United States; rights status must be checked for each title and jurisdiction.",
+      "allowCommercialUse": "VERIFY_PER_TITLE",
+      "attributionRequired": "VERIFY_PER_TITLE",
+      "includeOnly": "U.S. public-domain works with clear title-level metadata, prioritizing grammar, rhetoric, composition, dictionaries, readers, and language instruction.",
+      "exclude": "Works not verified as public domain for intended use and any third-party additions.",
+      "skills": [
+        "grammar",
+        "syntax",
+        "morphology",
+        "vocabulary",
+        "semantics",
+        "composition",
+        "reading-comprehension"
+      ]
+    },
+    {
+      "id": "OPENSTAX",
+      "name": "OpenStax",
+      "url": "https://openstax.org/subjects",
+      "category": "open_educational_textbooks",
+      "status": "DOCUMENT_LEVEL_REVIEW_REQUIRED",
+      "licenseBasis": "OpenStax books use book-specific open licenses; verify the license displayed for each book and its included components.",
+      "allowCommercialUse": "VERIFY_PER_BOOK",
+      "attributionRequired": "VERIFY_PER_BOOK",
+      "includeOnly": "Books or sections under licenses permitting commercial adaptation, with required attribution and share-alike terms honored.",
+      "exclude": "Non-commercial, no-derivatives, excluded third-party figures/media, and unclear components.",
+      "skills": [
+        "writing",
+        "composition",
+        "reading-comprehension",
+        "communication",
+        "linguistics"
+      ]
+    },
+    {
+      "id": "LIBRETEXTS",
+      "name": "LibreTexts",
+      "url": "https://libretexts.org/",
+      "category": "open_educational_textbooks",
+      "status": "DOCUMENT_LEVEL_REVIEW_REQUIRED",
+      "licenseBasis": "Individual pages carry varying licenses; admit only page-level public domain, CC BY, CC BY-SA, or another explicitly approved commercial-use license.",
+      "allowCommercialUse": "VERIFY_PER_PAGE",
+      "attributionRequired": "VERIFY_PER_PAGE",
+      "includeOnly": "Language, linguistics, ESL, grammar, writing, and communication pages with page-level rights metadata.",
+      "exclude": "CC BY-NC, CC BY-ND, unclear license pages, and embedded third-party content.",
+      "skills": [
+        "grammar",
+        "linguistics",
+        "syntax",
+        "semantics",
+        "pragmatics",
+        "writing",
+        "language-teaching"
+      ]
+    },
+    {
+      "id": "PLEIAS_COMMON_CORPUS",
+      "name": "PleIAs Common Corpus",
+      "url": "https://huggingface.co/datasets/PleIAs/common_corpus",
+      "category": "document_level_provenance_dataset",
+      "status": "DISCOVERY_ONLY",
+      "licenseBasis": "Dataset describes document-level license and provenance metadata; inspect each record and source conditions before use.",
+      "allowCommercialUse": "VERIFY_PER_RECORD",
+      "attributionRequired": "VERIFY_PER_RECORD",
+      "includeOnly": "Records with accessible source provenance and rights metadata affirmatively permitting commercial model training.",
+      "exclude": "Records with absent, ambiguous, incompatible, or non-commercial rights metadata.",
+      "skills": [
+        "multilingual",
+        "reading-comprehension",
+        "vocabulary",
+        "semantics",
+        "general-language"
+      ]
+    },
+    {
+      "id": "ENGLISH_PUBLIC_DOMAIN_BOOKS",
+      "name": "PleIAs English Public Domain Books",
+      "url": "https://huggingface.co/datasets/PleIAs/English-PD",
+      "category": "public_domain_books",
+      "status": "DISCOVERY_ONLY",
+      "licenseBasis": "Dataset describes a conservative title selection methodology; verify the original title and source rights before use.",
+      "allowCommercialUse": "VERIFY_PER_TITLE",
+      "attributionRequired": "VERIFY_PER_TITLE",
+      "includeOnly": "Individual titles with independently verifiable U.S. public-domain status and traceable original metadata.",
+      "exclude": "Untraceable titles, uncertain author/death/publication data, or conflicting rights evidence.",
+      "skills": [
+        "grammar",
+        "vocabulary",
+        "narrative",
+        "syntax",
+        "composition",
+        "reading-comprehension"
+      ]
+    }
+  ]
+}
