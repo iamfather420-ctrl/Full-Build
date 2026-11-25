@@ -1,3 +1,4 @@
+// CI entrypoint for the pinned LOC corpus; output remains quarantined pending human rights review.
 #!/usr/bin/env node
 /**
  * Prepare the LOC English grammar collection for human review.
