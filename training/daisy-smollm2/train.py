@@ -115,6 +115,16 @@ def main() -> int:
         print(f"BLOCKED: training dependencies unavailable: {exc}", file=sys.stderr)
         return 2
 
+    require_cuda_raw = os.environ.get("DAISY_REQUIRE_CUDA", "true").lower()
+    if require_cuda_raw not in {"true", "false"}:
+        print("BLOCKED: DAISY_REQUIRE_CUDA must be 'true' or 'false'", file=sys.stderr)
+        return 2
+    require_cuda = require_cuda_raw == "true"
+    if require_cuda and (not torch.cuda.is_available() or torch.cuda.device_count() < 1):
+        print("BLOCKED: CUDA-capable training device is required; no model download or output creation performed", file=sys.stderr)
+        return 2
+    device_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"
+
     output_dir.mkdir(parents=True, exist_ok=False)
     tokenizer = AutoTokenizer.from_pretrained(model_id, revision=model_revision)
     if tokenizer.pad_token is None:
@@ -188,6 +198,7 @@ def main() -> int:
         "learning_rate": learning_rate,
         "seed": 420,
         "device": "cuda" if torch.cuda.is_available() else "cpu",
+        "device_name": device_name,
         "train_metrics": result.metrics,
         "evaluation_metrics": evaluation,
         "completed_at": datetime.now(timezone.utc).isoformat(),
