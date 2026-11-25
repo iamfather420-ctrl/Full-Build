@@ -1,0 +1,4 @@
+[submodule "data/training_sources/public_domain/english"]
+	path = data/training_sources/public_domain/english
+	url = https://github.com/Solvex-Paradox-Box/loc-english-grammar-source-collection.git
+	branch = main
