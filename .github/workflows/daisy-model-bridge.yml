@@ -1,0 +1,131 @@
+name: Daisy Model Bridge and Release
+
+on:
+  workflow_run:
+    workflows: ["Daisy LOC Grammar Language Training"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Successful Daisy LOC training workflow run ID to convert
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: daisy-model-bridge
+  cancel-in-progress: false
+
+jobs:
+  convert-validate-release:
+    if: >-
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id }}
+      LLAMA_CPP_COMMIT: c74c71a6f7a0b06df30f979520e5d9a86a4d60ad
+    steps:
+      - name: Checkout Full-Build
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download the exact successful training artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: daisy-loc-grammar-cpu-checkpoint
+          path: artifacts/daisy-hf
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+
+      - name: Locate and validate the Hugging Face checkpoint
+        id: checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHECKPOINT="$(find artifacts/daisy-hf -type f \( -name 'model.safetensors' -o -name 'pytorch_model.bin' \) -printf '%h\n' | head -n1)"
+          test -n "$CHECKPOINT"
+          test -s "$CHECKPOINT/config.json"
+          test -s "$CHECKPOINT/tokenizer_config.json" || test -s "$CHECKPOINT/tokenizer.json"
+          echo "path=$CHECKPOINT" >> "$GITHUB_OUTPUT"
+          python - "$CHECKPOINT" <<'PY'
+          import json, pathlib, sys
+          p=pathlib.Path(sys.argv[1])
+          cfg=json.loads((p/'config.json').read_text())
+          print("Checkpoint architecture:", cfg.get("architectures"))
+          print("Model type:", cfg.get("model_type"))
+          if not cfg.get("architectures") or not cfg.get("model_type"):
+              raise SystemExit("BLOCKED: missing model architecture metadata")
+          PY
+
+      - name: Checkout pinned llama.cpp converter and runtime
+        uses: actions/checkout@v4
+        with:
+          repository: ggml-org/llama.cpp
+          ref: ${{ env.LLAMA_CPP_COMMIT }}
+          path: .build/llama.cpp
+
+      - name: Build the CPU inference executable and quantizer
+        run: |
+          cmake -S .build/llama.cpp -B .build/llama.cpp/build -DGGML_NATIVE=OFF -DGGML_OPENMP=ON
+          cmake --build .build/llama.cpp/build --config Release --target llama-cli llama-quantize -j2
+
+      - name: Install pinned converter dependencies
+        run: python -m pip install --upgrade pip torch numpy sentencepiece protobuf transformers gguf
+
+      - name: Convert Hugging Face checkpoint to GGUF and quantize
+        env:
+          HF_CHECKPOINT: ${{ steps.checkpoint.outputs.path }}
+        run: |
+          set -euo pipefail
+          python .build/llama.cpp/convert_hf_to_gguf.py "$HF_CHECKPOINT" --outfile artifacts/daisy-model-f16.gguf --outtype f16
+          .build/llama.cpp/build/bin/llama-quantize artifacts/daisy-model-f16.gguf artifacts/daisy-model.gguf Q4_K_M
+          test -s artifacts/daisy-model.gguf
+          rm artifacts/daisy-model-f16.gguf
+
+      - name: Load the converted model and verify real generation
+        run: |
+          set -euo pipefail
+          .build/llama.cpp/build/bin/llama-cli -m artifacts/daisy-model.gguf -p "Answer with the word READY." -n 12 --temp 0 --no-display-prompt > artifacts/model-smoke-test.txt 2>&1
+          test -s artifacts/model-smoke-test.txt
+          grep -qi "READY" artifacts/model-smoke-test.txt
+
+      - name: Create checksum manifest
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, pathlib
+          p=pathlib.Path("artifacts/daisy-model.gguf")
+          h=hashlib.sha256(p.read_bytes()).hexdigest()
+          manifest={
+            "schema":"daisy-gguf-release/v1",
+            "status":"CONVERTED_AND_GENERATION_TESTED",
+            "model_id":"HuggingFaceTB/SmolLM2-135M-Instruct",
+            "source_training_run_id":os.environ["SOURCE_RUN_ID"],
+            "llama_cpp_commit":os.environ["LLAMA_CPP_COMMIT"],
+            "format":"GGUF",
+            "quantization":"Q4_K_M",
+            "file":"daisy-model.gguf",
+            "bytes":p.stat().st_size,
+            "sha256":h,
+            "smoke_test":"PASS",
+            "activation_authorized":False
+          }
+          pathlib.Path("artifacts/daisy-model-manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
+          print(json.dumps(manifest,indent=2))
+          PY
+
+      - name: Publish immutable model release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="daisy-model-${SOURCE_RUN_ID}"
+          gh release create "$TAG" artifacts/daisy-model.gguf artifacts/daisy-model-manifest.json artifacts/model-smoke-test.txt \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Daisy model from training run ${SOURCE_RUN_ID}" \
+            --notes "Converted from the successful Full-Build training artifact. GGUF Q4_K_M. Release manifest includes SHA-256. Model generation smoke test passed. This release does not authorize production activation."
