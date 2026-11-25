@@ -1,0 +1,35 @@
+name: Daisy SmolLM2 Training Gate
+
+on:
+  pull_request:
+    paths:
+      - "training/daisy-smollm2/**"
+      - ".github/workflows/daisy-smollm2-validation.yml"
+  push:
+    branches:
+      - "feat/daisy-smollm2-local-training"
+    paths:
+      - "training/daisy-smollm2/**"
+      - ".github/workflows/daisy-smollm2-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-training-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile trainer
+        run: python -m py_compile training/daisy-smollm2/train.py
+      - name: Verify missing corpus blocks before model download
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(DAISY_TRAIN_FILE=/tmp/daisy-corpus-must-not-exist.jsonl DAISY_OUTPUT_DIR=/tmp/daisy-output-must-not-exist python training/daisy-smollm2/train.py 2>&1 || true)"
+          printf '%s\n' "$output"
+          grep -q "BLOCKED: verified training corpus not found" <<< "$output"
+          test ! -e /tmp/daisy-output-must-not-exist

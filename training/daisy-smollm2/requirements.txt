@@ -1,0 +1,4 @@
+transformers==4.48.3
+datasets==3.2.0
+accelerate==1.2.1
+safetensors>=0.4.5,<1
