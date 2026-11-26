@@ -80,8 +80,8 @@ export const DaisyChatPanel: React.FC = () => {
       setGenerationVerified(true);
       setMessages((previous): ChatMessage[] => [
         ...previous,
-        { role: 'user', content: text },
-        { role: 'assistant', content: body.text.trim() },
+        { role: 'user' as const, content: text },
+        { role: 'assistant' as const, content: body.text.trim() },
       ].slice(-20));
     } catch (error: unknown) {
       setPrompt(text);
