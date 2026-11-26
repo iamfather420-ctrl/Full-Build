@@ -1,6 +1,7 @@
 import { access, constants, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
+import { verifyDaisyModelFile, VERIFIED_DAISY_GGUF } from './verifiedDaisyModel';
 import {
   DEFAULT_INFERENCE_TIMEOUT_MS,
   InferenceRequest,
@@ -11,17 +12,6 @@ import {
   MAX_MESSAGE_CHARS,
   MAX_PROMPT_CHARS,
 } from './InferenceRuntime';
-
-async function isNonEmptyReadableFile(filePath: string): Promise<boolean> {
-  try {
-    const info = await stat(filePath);
-    if (!info.isFile() || info.size <= 0) return false;
-    await access(filePath, constants.R_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 async function isExecutableFile(filePath: string): Promise<boolean> {
   try {
@@ -34,8 +24,21 @@ async function isExecutableFile(filePath: string): Promise<boolean> {
   }
 }
 
+function extractCompletion(stdout: string, prompt: string): string {
+  const timingAt = stdout.search(/\n\[ Prompt:/);
+  const body = timingAt >= 0 ? stdout.slice(0, timingAt) : stdout;
+  const marker = `> ${prompt}`;
+  const at = body.lastIndexOf(marker);
+  const generated = (at >= 0 ? body.slice(at + marker.length) : '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && line !== '>' && !line.startsWith('build ') && !line.startsWith('model ') && !line.startsWith('ftype ') && !line.includes('/'))
+    .join('\n')
+    .trim();
+  return generated;
+}
 export function createInferenceChildEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-  const allowed = ['PATH', 'HOME', 'TMPDIR', 'TEMP', 'TMP', 'LANG', 'LC_ALL', 'SystemRoot', 'WINDIR'];
+  const allowed = ['PATH', 'HOME', 'TMPDIR', 'TEMP', 'TMP', 'LANG', 'LC_ALL', 'SystemRoot', 'WINDIR', 'LD_LIBRARY_PATH', 'DAISY_LLAMA_CLI'];
   const child: NodeJS.ProcessEnv = {};
   for (const key of allowed) {
     const value = source[key];
@@ -87,6 +90,9 @@ export class LocalInferenceRuntime implements InferenceRuntime {
   private readonly modelVersion: string | null;
   private ready = false;
   private probed = false;
+  private checksumOk = false;
+  private loadState: 'UNAVAILABLE' | 'CHECKSUM_MISMATCH' | 'LOADABLE' | 'READY' | 'INFERENCE_FAILED' = 'UNAVAILABLE';
+  private observedSha256: string | null = null;
 
   constructor(options?: {
     modelPath?: string | null;
@@ -114,8 +120,35 @@ export class LocalInferenceRuntime implements InferenceRuntime {
       ready: this.ready,
       offlineCapable: false,
       notes: this.ready
-        ? 'Local model and engine paths are present; generative calls use the first-party engine only. Network isolation is not enforced by this runtime, so offline capability is not attested.'
-        : 'Model weights and/or inference engine are not configured. Generative inference remains BLOCKED. Network isolation is not enforced by this runtime, so offline capability is not attested. Formal verification and deterministic logic are separate subsystems.',
+        ? 'This process generated text from the pinned Daisy GGUF. Network isolation is not enforced here.'
+        : `Load state ${this.loadState}. READY requires a non-empty completion from ${VERIFIED_DAISY_GGUF.release}.`,
+    };
+  }
+
+  canAttempt(): boolean {
+    return this.checksumOk;
+  }
+
+  publicStatus(): Omit<InferenceRuntimeInfo, 'modelPath' | 'enginePath'> & {
+    loadState: 'UNAVAILABLE' | 'CHECKSUM_MISMATCH' | 'LOADABLE' | 'READY' | 'INFERENCE_FAILED';
+    modelSha256: string | null;
+    expectedSha256: string;
+    release: string;
+    activationAuthorized: false;
+  } {
+    const info = this.getInfo();
+    return {
+      runtimeId: info.runtimeId,
+      modelId: info.modelId,
+      modelVersion: info.modelVersion,
+      ready: info.ready,
+      offlineCapable: false,
+      notes: info.notes,
+      loadState: this.loadState,
+      modelSha256: this.observedSha256,
+      expectedSha256: VERIFIED_DAISY_GGUF.sha256,
+      release: VERIFIED_DAISY_GGUF.release,
+      activationAuthorized: false,
     };
   }
 
@@ -126,15 +159,23 @@ export class LocalInferenceRuntime implements InferenceRuntime {
   /** Probe filesystem once (or again after configuration change). */
   async probe(): Promise<InferenceRuntimeInfo> {
     this.probed = true;
+    const previouslyReady = this.ready;
     this.ready = false;
-    if (!this.modelPath || !this.enginePath) {
+    this.checksumOk = false;
+    this.observedSha256 = null;
+    this.loadState = 'UNAVAILABLE';
+    if (!this.modelPath || !this.enginePath) return this.getInfo();
+    const engineOk = await isExecutableFile(path.resolve(this.enginePath));
+    const check = await verifyDaisyModelFile(path.resolve(this.modelPath));
+    this.observedSha256 = check.sha256;
+    if (!check.ok) {
+      if (engineOk && check.code === 'CHECKSUM_MISMATCH') this.loadState = 'CHECKSUM_MISMATCH';
       return this.getInfo();
     }
-    // Readability alone is not proof of a usable model/engine: directories,
-    // empty files, and non-executable engine files must not report READY.
-    const modelOk = await isNonEmptyReadableFile(path.resolve(this.modelPath));
-    const engineOk = await isExecutableFile(path.resolve(this.enginePath));
-    this.ready = modelOk && engineOk;
+    if (!engineOk) return this.getInfo();
+    this.checksumOk = true;
+    this.ready = previouslyReady;
+    this.loadState = previouslyReady ? 'READY' : 'LOADABLE';
     return this.getInfo();
   }
 
@@ -155,15 +196,17 @@ export class LocalInferenceRuntime implements InferenceRuntime {
       };
     }
 
-    if (!this.ready || !this.modelPath || !this.enginePath) {
+    if (!this.checksumOk || !this.modelPath || !this.enginePath) {
       return {
-        status: 'MODEL_UNAVAILABLE',
+        status: this.loadState === 'CHECKSUM_MISMATCH' ? 'BLOCKED' : 'MODEL_UNAVAILABLE',
         runtimeId: 'daisy-local-inference/v1',
         modelId: this.modelId,
         modelVersion: this.modelVersion,
         durationMs: Date.now() - started,
-        error: 'First-party model weights or inference engine are not available. No simulated reply was generated.',
-        code: 'FIRST_PARTY_MODEL_UNAVAILABLE',
+        error: this.loadState === 'CHECKSUM_MISMATCH'
+          ? 'Model file does not match the verified Daisy GGUF checksum. No completion was generated.'
+          : 'First-party model weights or inference engine are not available. No simulated reply was generated.',
+        code: this.loadState === 'CHECKSUM_MISMATCH' ? 'CHECKSUM_MISMATCH' : 'FIRST_PARTY_MODEL_UNAVAILABLE',
       };
     }
 
@@ -185,8 +228,10 @@ export class LocalInferenceRuntime implements InferenceRuntime {
       .join('\n\n');
 
     try {
-      const text = await this.runEngine(prompt, timeoutMs, request.signal);
+      const text = extractCompletion(await this.runEngine(prompt, timeoutMs, request.signal), prompt);
       if (!text.trim()) {
+        this.ready = false;
+        this.loadState = 'INFERENCE_FAILED';
         return {
           status: 'BLOCKED',
           runtimeId: 'daisy-local-inference/v1',
@@ -197,6 +242,8 @@ export class LocalInferenceRuntime implements InferenceRuntime {
           code: 'EMPTY_LOCAL_COMPLETION',
         };
       }
+      this.ready = true;
+      this.loadState = 'READY';
       return {
         status: 'OK',
         text: text.trim(),
@@ -206,6 +253,8 @@ export class LocalInferenceRuntime implements InferenceRuntime {
         durationMs: Date.now() - started,
       };
     } catch (err: unknown) {
+      this.ready = false;
+      this.loadState = 'INFERENCE_FAILED';
       const message = err instanceof Error ? err.message : 'Local inference failed.';
       const status =
         message.includes('TIMEOUT') ? 'TIMEOUT'
