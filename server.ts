@@ -2,7 +2,7 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'node:path';
-import { existsSync, readFileSync, statSync, accessSync, constants } from 'node:fs';
+import { readFileSync, statSync, accessSync, constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import apiRouter from './src/server/apiRouter';
 
