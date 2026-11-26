@@ -1,0 +1,28 @@
+name: Daisy Public-Domain Grammar Book Acquisition
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Acquire and verify source notices
+        run: python training/daisy-corpus/acquire_gutenberg.py artifacts/daisy-gutenberg-batch
+      - name: Upload raw texts and provenance manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: daisy-gutenberg-grammar-books-001
+          path: artifacts/daisy-gutenberg-batch/
+          if-no-files-found: error
+          retention-days: 30

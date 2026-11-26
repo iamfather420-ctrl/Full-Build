@@ -1,0 +1,31 @@
+name: Daisy Corpus Source Registry Validation
+
+on:
+  pull_request:
+    paths:
+      - "training/daisy-corpus/**"
+      - ".github/workflows/daisy-corpus-source-validation.yml"
+  push:
+    branches:
+      - main
+      - "training/daisy-open-language-corpus-*"
+    paths:
+      - "training/daisy-corpus/**"
+      - ".github/workflows/daisy-corpus-source-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-source-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate source registry
+        run: python training/daisy-corpus/validate_sources.py
