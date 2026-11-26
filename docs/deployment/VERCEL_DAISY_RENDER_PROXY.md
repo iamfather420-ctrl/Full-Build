@@ -9,7 +9,7 @@ The public Full-Build website remains on Vercel. Browser requests stay same-orig
 
 The existing Vercel API handler resolves the existing OIDC session and active signed tenant membership. It forwards the short-lived signed tenant token to the dedicated Full-Build Render service, together with a separate service-to-service secret. The Render internal route verifies both before calling the existing Daisy backend router.
 
-The Render service URL is never accepted from the browser. The upstream hostname is pinned by server-side environment configuration and must match exactly.
+The Render service URL is never accepted from the browser. The upstream hostname is pinned by server-side environment configuration and must match exactly. The Vercel catch-all API function has a 90-second maximum duration, while proxy chat requests are capped at 70 seconds and the existing Render inference runtime is capped at 60 seconds.
 
 ## Required server-side environment
 
