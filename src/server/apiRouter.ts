@@ -7,13 +7,14 @@ import { logger } from '../../artifacts/api-server/src/lib/logger';
 import { SovereignApiRouter } from '../api/ApiRouter';
 import { readLiveRegistry } from '../registry/liveRegistry.mjs';
 import daisyBackendRouter from '../api/DaisyBackendRouter';
+import daisyInternalProxyRouter from '../api/DaisyInternalProxyRouter';
 
 const router = express.Router();
 const authBoundary: express.RequestHandler = (req, res, next) => {
   Promise.resolve(authMiddleware(req, res, next)).catch(next);
 };
 
-// Keep the same-origin OIDC boundary shared by the Node server and Vercel functions.
+// Internal Vercel-to-Render calls require a service secret and a freshly verified signed tenant token.\nrouter.use('/daisy-internal', daisyInternalProxyRouter);\n\n// Keep the same-origin OIDC boundary shared by the Node server and Vercel functions.
 // Daisy endpoints are mounted only after the shared middleware has resolved the session.
 router.use('/', pinoHttp({ logger }), cookieParser(), authBoundary, authRouter);
 router.use('/daisy', daisyBackendRouter);
