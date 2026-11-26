@@ -62,6 +62,8 @@ jobs:
         run: bunx tsx --test scripts/test_inference_output_parser.ts
       - name: Daisy authenticated API and withheld-only discovery regression tests
         run: bun run test:daisy-ai-api
+      - name: Vercel API rewrite does not hide Daisy routes
+        run: bunx tsx --test scripts/test_vercel_api_rewrite.ts
       - name: Daisy Vercel proxy host-pinning and same-origin security tests
         run: bunx tsx --test src/api/DaisyVercelProxyRouter.test.ts
       - name: System 46 release-guard regression tests
