@@ -19,6 +19,7 @@ export const DaisyChatPanel: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [prompt, setPrompt] = useState('');
   const [sending, setSending] = useState(false);
+  const [generationVerified, setGenerationVerified] = useState(false);
   const [requestError, setRequestError] = useState('');
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export const DaisyChatPanel: React.FC = () => {
     : statusError
       ? 'Status unavailable'
       : chatEnabled
-        ? 'Configured · generation not yet verified'
+        ? generationVerified ? 'Generation verified this session' : 'Configured · generation not yet verified'
         : 'Blocked · model or engine unavailable';
 
   const sendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -76,6 +77,7 @@ export const DaisyChatPanel: React.FC = () => {
       if (!response.ok || body.success !== true || typeof body.text !== 'string' || !body.text.trim()) {
         throw new Error(body.message || body.code || 'First-party Daisy inference did not return a verified completion.');
       }
+      setGenerationVerified(true);
       setMessages((previous) => [
         ...previous,
         { role: 'user', content: text },
