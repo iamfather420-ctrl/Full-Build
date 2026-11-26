@@ -1,5 +1,5 @@
-# Dedicated Render image for Full-Build's existing Daisy API + local inference runtime.
-# llama.cpp is pinned to the verified b12678 release commit.
+# Dedicated Render image for the Full-Build server, Daisy API, and local inference runtime.
+# llama.cpp is pinned so the CLI and GGUF conversion toolchain use the same revision.
 FROM oven/bun:1.3.14-slim
 
 ARG LLAMA_CPP_COMMIT=c74c71a6f7a0b06df30f979520e5d9a86a4d60ad
@@ -10,6 +10,10 @@ ENV DAISY_INFERENCE_ENGINE=/app/scripts/daisy-infer.sh
 ENV DAISY_LLAMA_CLI=/usr/local/bin/llama-cli
 ENV DAISY_MODEL_ID=HuggingFaceTB/SmolLM2-135M-Instruct
 ENV DAISY_MODEL_VERSION=loc-grammar-q4_k_m
+ENV DAISY_MODEL_RELEASE_TAG=daisy-model-45661493760
+ENV DAISY_MODEL_MANIFEST_SHA256=2df0edee400b7c5dce5f8ad2062de60a63876228c23edb3f42b4a331fbf4fc64
+ENV DAISY_MODEL_SHA256=d158c64ff056f3c76fbbc6f4824c53e5ffd5de94931f71db5a418cb1df9e50fd
+ENV DAISY_MODEL_BYTES=105454176
 
 WORKDIR /app
 RUN apt-get update -qq && apt-get install --no-install-recommends -y \
@@ -24,9 +28,11 @@ RUN git clone https://github.com/ggml-org/llama.cpp.git /tmp/llama.cpp \
     && rm -rf /tmp/llama.cpp
 
 COPY . .
-RUN rm -f bun.lock && bun install
+# The committed Bun lockfile uses a newer lockfile schema than Bun 1.3.14 can parse.
+# Match the verified Vercel behavior: resolve from package.json, then build the frontend.
+RUN rm -f bun.lock && bun install && bun run build
 
-RUN chmod +x /app/render-daisy-entrypoint.sh \
+RUN chmod +x /app/render-daisy-entrypoint.sh /app/scripts/daisy-infer.sh \
     && mkdir -p /opt/daisy
 
 EXPOSE 10000
