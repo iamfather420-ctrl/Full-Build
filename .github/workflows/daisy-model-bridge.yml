@@ -30,9 +30,9 @@ jobs:
       - name: Verify source training run identity
         id: source
         env:
-          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: \${{ github.repository }}
-          SOURCE_RUN_ID: \${{ inputs.source_run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
         run: |
           set -euo pipefail
           gh api "repos/\${REPOSITORY}/actions/runs/\${SOURCE_RUN_ID}" > "$RUNNER_TEMP/daisy-source-run.json"
@@ -163,10 +163,10 @@ jobs:
 
       - name: Create checksum manifest
         env:
-          SOURCE_TRAINING_COMMIT: \${{ steps.source.outputs.head_sha }}
-          DATASET_SHA256: \${{ steps.checkpoint.outputs.dataset_sha256 }}
-          MODEL_REVISION: \${{ steps.checkpoint.outputs.model_revision }}
-          CHECKPOINT_MANIFEST_SHA256: \${{ steps.checkpoint.outputs.checkpoint_manifest_sha256 }}
+          SOURCE_TRAINING_COMMIT: ${{ steps.source.outputs.head_sha }}
+          DATASET_SHA256: ${{ steps.checkpoint.outputs.dataset_sha256 }}
+          MODEL_REVISION: ${{ steps.checkpoint.outputs.model_revision }}
+          CHECKPOINT_MANIFEST_SHA256: ${{ steps.checkpoint.outputs.checkpoint_manifest_sha256 }}
         run: |
           python - <<'PY'
           import hashlib, json, os, pathlib
