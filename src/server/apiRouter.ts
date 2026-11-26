@@ -14,6 +14,12 @@ const authBoundary: express.RequestHandler = (req, res, next) => {
   Promise.resolve(authMiddleware(req, res, next)).catch(next);
 };
 
+// Public liveness endpoint: deliberately mounted before OIDC/session middleware.
+// It reports only process health and never exposes configuration or secrets.
+router.get('/healthz', (_req, res) => {
+  res.status(200).json({ status: 'ok', payments_enabled: false });
+});
+
 // Internal Vercel-to-Render calls require a service secret and a freshly verified signed tenant token.
 router.use('/daisy-internal', daisyInternalProxyRouter);
 
@@ -21,11 +27,6 @@ router.use('/daisy-internal', daisyInternalProxyRouter);
 // Daisy endpoints are mounted only after the shared middleware has resolved the session.
 router.use('/', pinoHttp({ logger }), cookieParser(), authBoundary, authRouter);
 router.use('/daisy', daisyVercelProxyRouter);
-
-const healthHandler: express.RequestHandler = (_req, res) => {
-  res.status(200).json({ status: 'ok', payments_enabled: false });
-};
-router.get('/healthz', healthHandler);
 
 router.get('/registry', async (_req, res, next) => {
   try {
