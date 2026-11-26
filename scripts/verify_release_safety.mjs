@@ -13,11 +13,16 @@ const inferenceRouter = read('src/inference/InferenceRouter.ts');
 const firstPartyVerifier = read('scripts/verify_first_party_runtime.mjs');
 const stage14Oracle = read('src/security/IndependentModelOracle.ts');
 const firstPartyOnlySources = [nativeDaisy, inferenceRouter, firstPartyVerifier, stage14Oracle].join('\n');
-assert.doesNotMatch(firstPartyOnlySources, /GoogleGenAI|@google\\/genai|GEMINI_API_KEY|ALLOW_EXTERNAL_MODEL_PROVIDER|gemini-[0-9]|gpt-4o-mini|full-build\\.fly\\.dev|solvex-oracle-signer-isolated/i,
-  'Daisy inference and Stage 14 must not call or enable third-party AI providers');
-assert.match(stage14Oracle, /FIRST_PARTY_ORACLE_UNAVAILABLE/,
+for (const forbidden of [
+  'GoogleGenAI', '@google/genai', 'GEMINI_API_KEY', 'ALLOW_EXTERNAL_MODEL_PROVIDER',
+  'gemini-', 'gpt-4o-mini', 'full-build.fly.dev', 'solvex-oracle-signer-isolated'
+]) {
+  assert.equal(firstPartyOnlySources.includes(forbidden), false,
+    'Daisy inference and Stage 14 must not contain third-party AI provider code: ' + forbidden);
+}
+assert.ok(stage14Oracle.includes('FIRST_PARTY_ORACLE_UNAVAILABLE'),
   'Stage 14 must remain explicitly blocked until a first-party independent oracle is implemented');
-assert.doesNotMatch(stage14Oracle, /\\bfetch\\s*\\(/,
+assert.equal(stage14Oracle.includes('fetch('), false,
   'Stage 14 must not make remote evaluator or signer requests');
 assert.equal(packageJson.dependencies?.['@google/genai'], undefined,
   'the unused third-party Gemini SDK must not remain a direct runtime dependency');
