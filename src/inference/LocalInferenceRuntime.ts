@@ -130,7 +130,7 @@ export class LocalInferenceRuntime implements InferenceRuntime {
   }
 
   publicStatus(): Omit<InferenceRuntimeInfo, 'modelPath' | 'enginePath'> & {
-    loadState: typeof this.loadState;
+    loadState: 'UNAVAILABLE' | 'CHECKSUM_MISMATCH' | 'LOADABLE' | 'READY' | 'INFERENCE_FAILED';
     modelSha256: string | null;
     expectedSha256: string;
     release: string;
