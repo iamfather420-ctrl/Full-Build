@@ -114,6 +114,7 @@ async function callRender(req: Request, res: Response, endpoint: 'status' | 'cha
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${identity.token}`,
+        'x-daisy-proxy-key': process.env.DAISY_RENDER_PROXY_SECRET ?? '',
         ...(endpoint === 'chat' ? { 'Content-Type': 'application/json' } : {}),
       },
       ...(endpoint === 'chat' ? { body: JSON.stringify(body) } : {}),
