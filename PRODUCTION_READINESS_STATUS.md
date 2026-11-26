@@ -2,7 +2,40 @@
 
 **Release verdict: NOT PRODUCTION-READY.** This file contains historical working-archive notes as well as the current canonical-main status. Do not treat the historical section below as proof that those features exist in the current `main` tree or are deployed.
 
-## Current canonical `main` status — 2026-10-27
+## Current canonical `main` status — 2026-11-26
+
+**Current source commit:** `1ebbf8dbeb413bfeec5857c6aa0f9cee1072dcbb` (signed commit; 2026-11-26 22:04:30 UTC).
+
+This section supersedes the 2026-10-27 snapshot below. It records the latest commit-bound CI evidence inspected on 2026-11-26. It does **not** authorize production activation.
+
+### Verified on this commit
+
+- Build and Enterprise CI run **45902383069** completed successfully. Its single validation job passed every listed step, including Bun dependency installation, build, TypeScript, Lean, Coq, Isabelle, security and auth-boundary tests, disposable Neon tenant-isolation tests, OIDC tenant-claim lifecycle tests, proof closure, and the local authoritative gate sequence.
+- Authoritative 120-case verification run **45902383096** completed successfully: 88/88 DFRL cases, 32/32 DH contracts, 120/120 expected solver matches, 120/120 replays, and adversarial mutation/fault/tamper checks passed. This is formal-corpus verification, not permission to activate Daisy.
+- The final local gate artifact from run 45902383069 is bound to this exact commit. It records **45/45 sequential gates PASSED** and the separate local GATE-46 closure as **PASSED**.
+- The final `execution-gates.json` records **15/15 authoritative pre-production gates passed** and `pre_production_passed: true`. Its production verdict is `NOT_EVALUATED_PREPRODUCTION`, not `PRODUCTION_VERIFIED`.
+- The final 54-node execution artifact records 54/54 registered, instantiated, reachable, executed, output-asserted, and evidence-generated nodes. Verdict accounting is **42 FUNCTIONALLY_PASSED, 3 SAFETY_PASSED, 1 PROHIBITED_BY_POLICY, 8 PROVIDER_REQUIRED, 0 NOT_VERIFIED**. Therefore `all_passed` is false; execution coverage is not functional verification of all 54 nodes.
+- The eight provider-required nodes are DN-05, DN-11, DN-29, DN-30, DN-37, DN-39, DN-49, and DN-51. DN-05/11/29/30 depend on Stage 14 oracle attestation; DN-37 and DN-39 lack authenticated external gateway configuration; DN-49 lacks a trusted signing key/verified solution authorization; DN-51 lacks HSM connection and signed device attestation. DN-36 remains an explicit policy interlock, not a failed node.
+
+### Important scope and evidence distinction
+
+The `verify:120` step itself also ran an isolated 46-gate diagnostic before the later authoritative gate step. In that invocation, DN-11 was `FAIL_CLOSED` because `SOLVEX_NODE_EXTERNAL_PROBES` was not enabled for that step; the diagnostic reported 44/46 and GATE-14/GATE-46 failed, and the Daisy activation artifact was written as `BLOCKED`. The later authoritative 45-gate step explicitly enabled the external probes and disposable-Neon scope; DN-11 then correctly reported `PROVIDER_REQUIRED`, not success, and the 45-gate local pre-production sequence passed. These are different execution scopes. Neither result establishes production readiness, and the blocked activation artifact must not be overwritten or described as a production pass.
+
+### Remaining enterprise-readiness work
+
+1. **Stage 14 must be reconciled with the first-party-only AI policy.** The current `src/security/IndependentModelOracle.ts` uses an OpenAI evaluator through the Fly Stage 14 gateway and a separately hosted Ed25519 signer. The signer README explicitly describes a single OpenAI evaluator model. This is not approved under the project requirement to avoid third-party AI APIs. Keep this route blocked; replace it with an approved first-party/local independent verification design and a separately governed trust root before treating DN-05/11/29/30 as complete. Do not add OpenAI credentials or enable the external evaluator.
+2. **DN-37 and DN-39 remain provider-required.** Coinbase Commerce and Ethereum EVM escrow integrations are not authenticated or proven. Do not enable live settlement or connect payment/chain providers without separate owner authorization.
+3. **DN-49 and DN-51 remain provider-required.** Trusted license signing and HSM attestation are not configured. Do not invent keys, self-assert trust, or substitute ephemeral test keys for production trust.
+4. **Production lifecycle remains unverified.** The current run is LOCAL/CI scope. Verified production identity, signed tenant claims, deployed-target lifecycle execution, and current deployment/source/domain reconciliation have not been established by these CI results.
+5. **Native Android release remains separate from web/CI closure.** The Android APK PR #149 is still open, draft, and non-mergeable; its own Android SDK/Gradle build and unit-test validation are not established on current `main`.
+6. **Open PRs are not completion evidence.** PR #157's shared-registry trace changes overlap a more developed implementation now on current `main`; do not merge it as a duplicate. PR #153 remains draft and its body reports an 80-commit stale base; reimplement only still-needed proof-boundary changes against current `main`, preserving later work. PR #154 leaves the license choice unresolved; no license may be selected without the owner's decision. Do not merge stale branches.
+7. **Operational release evidence remains outstanding.** Production deployment, secret custody, TLS, monitoring/alerting, backup/restore, rollback, incident response, and production-target tenant-isolation evidence must be independently verified. CI success does not substitute for those drills.
+
+**Release verdict: NOT PRODUCTION-READY.** Payments remain disabled. No production deployment, live payment activation, production database mutation, or production authority change is authorized by these test results.
+
+---
+
+## Historical canonical `main` status — 2026-10-27 (superseded by the current snapshot above)
 
 Verified source and CI evidence:
 
