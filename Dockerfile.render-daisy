@@ -1,5 +1,5 @@
-# Dedicated Render image for Full-Build's existing Daisy API + local inference runtime.
-# llama.cpp is pinned to the verified b12678 release commit.
+# Dedicated Render image for the Full-Build server, Daisy API, and local inference runtime.
+# llama.cpp is pinned so the CLI and GGUF conversion toolchain use the same revision.
 FROM oven/bun:1.3.14-slim
 
 ARG LLAMA_CPP_COMMIT=c74c71a6f7a0b06df30f979520e5d9a86a4d60ad
@@ -24,9 +24,10 @@ RUN git clone https://github.com/ggml-org/llama.cpp.git /tmp/llama.cpp \
     && rm -rf /tmp/llama.cpp
 
 COPY . .
-RUN rm -f bun.lock && bun install
+# Keep dependency resolution reproducible and build the frontend served by server.ts.
+RUN bun install --frozen-lockfile && bun run build
 
-RUN chmod +x /app/render-daisy-entrypoint.sh \
+RUN chmod +x /app/render-daisy-entrypoint.sh /app/scripts/daisy-infer.sh \
     && mkdir -p /opt/daisy
 
 EXPOSE 10000
