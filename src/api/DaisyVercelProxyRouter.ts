@@ -103,6 +103,8 @@ async function callRender(req: Request, res: Response, endpoint: 'status' | 'cha
   if (endpoint === 'chat' && !hasSameOrigin(req)) {
     return sendBlocked(res, 403, 'SAME_ORIGIN_REQUIRED', 'Cross-origin Daisy requests are not accepted.');
   }
+  const proxySecret = process.env.DAISY_RENDER_PROXY_SECRET?.trim();
+  if (!proxySecret || proxySecret.length < 32) return sendBlocked(res, 503, 'DAISY_RENDER_PROXY_SECRET_MISSING', 'The Daisy service-to-service credential is not configured.');
   const baseUrl = resolveDaisyRenderBaseUrl();
   if (!baseUrl) return sendBlocked(res, 503, 'DAISY_RENDER_PROXY_NOT_CONFIGURED', 'The first-party Daisy Render endpoint is not configured.');
   const target = new URL(`/api/daisy-internal/${endpoint}`, baseUrl);
@@ -114,7 +116,7 @@ async function callRender(req: Request, res: Response, endpoint: 'status' | 'cha
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${identity.token}`,
-        'x-daisy-proxy-key': process.env.DAISY_RENDER_PROXY_SECRET ?? '',
+        'x-daisy-proxy-key': proxySecret,
         ...(endpoint === 'chat' ? { 'Content-Type': 'application/json' } : {}),
       },
       ...(endpoint === 'chat' ? { body: JSON.stringify(body) } : {}),
