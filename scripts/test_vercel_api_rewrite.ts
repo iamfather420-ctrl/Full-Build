@@ -13,11 +13,18 @@ test('API routes are not rewritten to the static frontend', () => {
   assert.ok(health >= 0 && spa > health, 'the index.html rewrite must not come before /healthz');
 });
 
-test('Daisy Preview paths are explicit function entrypoints', () => {
+test('Daisy Preview paths call the shared proxy without the bracketed entry', () => {
   const root = new URL('../api/', import.meta.url);
-  for (const rel of ['healthz.ts', 'daisy/status.ts', 'daisy/chat.ts']) {
+  const health = readFileSync(new URL('healthz.ts', root), 'utf8');
+  assert.match(health, /payments_enabled: false/);
+  assert.doesNotMatch(health, /\[\.\.\.path\]/);
+  for (const rel of ['daisy/status.ts', 'daisy/chat.ts']) {
     const source = readFileSync(new URL(rel, root), 'utf8');
-    assert.match(source, /export default function handler/);
-    assert.match(source, /\/api\/(?:healthz|daisy\/(?:status|chat))/);
+    assert.match(source, /_daisy-app\.js/);
+    assert.match(source, /\/api\/daisy\/(?:status|chat)/);
+    assert.doesNotMatch(source, /\[\.\.\.path\]/);
   }
+  const shared = readFileSync(new URL('_daisy-app.ts', root), 'utf8');
+  assert.match(shared, /DaisyVercelProxyRouter\.js/);
+  assert.match(shared, /authMiddleware\.js/);
 });

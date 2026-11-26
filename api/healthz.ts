@@ -1,9 +1,9 @@
-import type { Request, Response } from 'express';
-import app from './[...path]';
-
-// Exact file so /api/healthz is a filesystem function, not one segment of the catch-all.
-export default function handler(req: Request, res: Response) {
-  const url = new URL(req.url ?? '/', 'http://localhost');
-  req.url = `/api/healthz${url.search}`;
-  return app(req, res);
+export default function handler(
+  _req: unknown,
+  res: { statusCode: number; setHeader: (name: string, value: string) => void; end: (body: string) => void },
+) {
+  res.statusCode = 200;
+  res.setHeader('content-type', 'application/json; charset=utf-8');
+  res.setHeader('cache-control', 'no-store');
+  res.end(JSON.stringify({ status: 'ok', payments_enabled: false }));
 }

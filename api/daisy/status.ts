@@ -1,8 +1,8 @@
 import type { Request, Response } from 'express';
-import app from '../[...path]';
+import handler from '../_daisy-app.js';
 
-export default function handler(req: Request, res: Response) {
+export default function status(req: Request, res: Response) {
   const url = new URL(req.url ?? '/', 'http://localhost');
   req.url = `/api/daisy/status${url.search}`;
-  return app(req, res);
+  return handler(req, res);
 }
