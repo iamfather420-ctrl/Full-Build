@@ -4,10 +4,20 @@ import { test } from 'node:test';
 
 const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
 
-test('API routes are preserved before the static frontend rewrite', () => {
+test('API routes are not rewritten to the static frontend', () => {
   const rewrites = config.rewrites as Array<{ source: string; destination: string }>;
-  const api = rewrites.findIndex((rule) => rule.source === '/api/(.*)' && rule.destination === '/api/$1');
-  const spa = rewrites.findIndex((rule) => rule.source === '/(.*)' && rule.destination === '/index.html');
-  assert.ok(api >= 0, 'missing explicit /api rewrite');
-  assert.ok(spa > api, 'the index.html rewrite must not come before the API rewrite');
+  const spa = rewrites.findIndex((rule) => rule.destination === '/index.html');
+  const health = rewrites.findIndex((rule) => rule.source === '/healthz' && rule.destination === '/api/healthz');
+  assert.equal(rewrites[spa]?.source, '/((?!api/).*)');
+  assert.equal(rewrites.some((rule) => rule.source === '/(.*)' || rule.source === '/api/(.*)'), false);
+  assert.ok(health >= 0 && spa > health, 'the index.html rewrite must not come before /healthz');
+});
+
+test('Daisy Preview paths are explicit function entrypoints', () => {
+  const root = new URL('../api/', import.meta.url);
+  for (const rel of ['healthz.ts', 'daisy/status.ts', 'daisy/chat.ts']) {
+    const source = readFileSync(new URL(rel, root), 'utf8');
+    assert.match(source, /export default function handler/);
+    assert.match(source, /\/api\/(?:healthz|daisy\/(?:status|chat))/);
+  }
 });
