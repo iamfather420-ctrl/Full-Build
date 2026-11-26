@@ -8,6 +8,19 @@ const api = read('src/api/ApiRouter.ts');
 const runtime = read('scripts/verify_production_runtime.ts');
 const workflow = read('.github/workflows/verify-authoritative.yml');
 const packageJson = JSON.parse(read('package.json'));
+const nativeDaisy = read('Solvex-core/server_native.ts');
+const inferenceRouter = read('src/inference/InferenceRouter.ts');
+const firstPartyVerifier = read('scripts/verify_first_party_runtime.mjs');
+const stage14Oracle = read('src/security/IndependentModelOracle.ts');
+const firstPartyOnlySources = [nativeDaisy, inferenceRouter, firstPartyVerifier, stage14Oracle].join('\n');
+assert.doesNotMatch(firstPartyOnlySources, /GoogleGenAI|@google\\/genai|GEMINI_API_KEY|ALLOW_EXTERNAL_MODEL_PROVIDER|gemini-[0-9]|gpt-4o-mini|full-build\\.fly\\.dev|solvex-oracle-signer-isolated/i,
+  'Daisy inference and Stage 14 must not call or enable third-party AI providers');
+assert.match(stage14Oracle, /FIRST_PARTY_ORACLE_UNAVAILABLE/,
+  'Stage 14 must remain explicitly blocked until a first-party independent oracle is implemented');
+assert.doesNotMatch(stage14Oracle, /\\bfetch\\s*\\(/,
+  'Stage 14 must not make remote evaluator or signer requests');
+assert.equal(packageJson.dependencies?.['@google/genai'], undefined,
+  'the unused third-party Gemini SDK must not remain a direct runtime dependency');
 
 assert.match(auth, /createSignedToken[\s\S]*throw new Error\('BLOCKED:/,
   'local token creation must fail closed');
