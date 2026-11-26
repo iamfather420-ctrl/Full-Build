@@ -110,7 +110,7 @@ async function callRender(req: Request, res: Response, endpoint: 'status' | 'cha
   if (!baseUrl) return sendBlocked(res, 503, 'DAISY_RENDER_PROXY_NOT_CONFIGURED', 'The first-party Daisy Render endpoint is not configured.');
   const target = new URL(`/api/daisy-internal/${endpoint}`, baseUrl);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), endpoint === 'chat' ? 65_000 : 10_000);
+  const timeout = setTimeout(() => controller.abort(), endpoint === 'chat' ? 70_000 : 10_000);
   try {
     const upstream = await fetch(target, {
       method: endpoint === 'status' ? 'GET' : 'POST',
