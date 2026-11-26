@@ -6,7 +6,6 @@ import { authMiddleware } from '../../artifacts/api-server/src/middlewares/authM
 import { logger } from '../../artifacts/api-server/src/lib/logger';
 import { SovereignApiRouter } from '../api/ApiRouter';
 import { readLiveRegistry } from '../registry/liveRegistry.mjs';
-import daisyBackendRouter from '../api/DaisyBackendRouter';
 import daisyVercelProxyRouter from '../api/DaisyVercelProxyRouter';
 
 const router = express.Router();
