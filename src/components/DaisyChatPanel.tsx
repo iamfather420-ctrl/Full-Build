@@ -51,7 +51,7 @@ export const DaisyChatPanel: React.FC = () => {
 
   const chatEnabled = status?.inference?.chatEnabled === true;
   const statusLabel = statusLoading
-    ? 'Checking local runtime…'
+    ? 'Checking Daisy inference service…'
     : statusError
       ? 'Status unavailable'
       : chatEnabled
@@ -96,7 +96,7 @@ export const DaisyChatPanel: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-white">Daisy Haminja · First-party inference</h3>
-          <p className="mt-1 text-xs text-slate-400">Authenticated chat through Full-Build’s local inference runtime. No simulated or external-provider replies.</p>
+          <p className="mt-1 text-xs text-slate-400">Authenticated chat from the Vercel website to Full-Build’s dedicated first-party inference service. No simulated or external-provider replies.</p>
         </div>
         <span className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-[11px] font-mono ${chatEnabled ? 'border-amber-800 bg-amber-950/30 text-amber-200' : 'border-slate-700 bg-slate-950 text-slate-300'}`}>
           {statusLabel}
