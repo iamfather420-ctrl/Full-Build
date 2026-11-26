@@ -30,7 +30,7 @@ export function resolveDaisyRenderBaseUrl(env: ProxyEnvironment = process.env): 
   try {
     const url = new URL(raw);
     const hostname = url.hostname.toLowerCase();
-    const normalizedHostname = hostname.replace(/^\\[|\\]$/g, '');
+    const normalizedHostname = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname;
     if (url.protocol !== 'https:' || url.username || url.password ||
         url.pathname !== '/' || url.search || url.hash ||
         hostname !== allowedHost || isIP(normalizedHostname) !== 0 ||
