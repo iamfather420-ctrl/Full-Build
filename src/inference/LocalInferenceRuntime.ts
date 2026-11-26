@@ -24,18 +24,21 @@ async function isExecutableFile(filePath: string): Promise<boolean> {
   }
 }
 
-function extractCompletion(stdout: string, prompt: string): string {
+export function extractCompletion(stdout: string, prompt: string): string {
+  // llama-cli is invoked with --no-display-prompt, so valid output normally
+  // contains only the completion. Retain compatibility with engines that echo
+  // the prompt, but do not discard prompt-hidden llama.cpp completions.
   const timingAt = stdout.search(/\n\[ Prompt:/);
   const body = timingAt >= 0 ? stdout.slice(0, timingAt) : stdout;
   const marker = `> ${prompt}`;
   const at = body.lastIndexOf(marker);
-  const generated = (at >= 0 ? body.slice(at + marker.length) : '')
+  const completion = at >= 0 ? body.slice(at + marker.length) : body;
+  return completion
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0 && line !== '>' && !line.startsWith('build ') && !line.startsWith('model ') && !line.startsWith('ftype ') && !line.includes('/'))
     .join('\n')
     .trim();
-  return generated;
 }
 export function createInferenceChildEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
   const allowed = ['PATH', 'HOME', 'TMPDIR', 'TEMP', 'TMP', 'LANG', 'LC_ALL', 'SystemRoot', 'WINDIR', 'LD_LIBRARY_PATH', 'DAISY_LLAMA_CLI'];
