@@ -32,7 +32,7 @@ const verifyProxyAndTenant: (req: Request, res: Response, next: NextFunction) =>
       const userId = claims?.user_id;
       const tenantId = claims?.tenant_id;
       const role = claims?.role;
-      if (typeof userId !== 'string' || !userId ||
+      if (!claims || typeof userId !== 'string' || !userId ||
           typeof tenantId !== 'string' || !tenantId ||
           !['OWNER', 'ADMIN', 'VERIFIER', 'CUSTOMER'].includes(String(role))) {
         res.setHeader('Cache-Control', 'no-store');
