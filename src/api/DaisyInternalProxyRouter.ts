@@ -7,7 +7,10 @@ const router = Router();
 
 function equalSecret(received: string | undefined, expected: string | undefined): boolean {
   if (!received || !expected || expected.length < 32 || received.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(received, 'utf8'), Buffer.from(expected, 'utf8'));
+  const actualBytes = Buffer.from(received, 'utf8');
+  const expectedBytes = Buffer.from(expected, 'utf8');
+  if (actualBytes.length !== expectedBytes.length) return false;
+  return timingSafeEqual(actualBytes, expectedBytes);
 }
 
 const verifyProxyAndTenant: (req: Request, res: Response, next: NextFunction) => Promise<void> =
