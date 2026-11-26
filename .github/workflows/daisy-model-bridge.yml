@@ -35,7 +35,7 @@ jobs:
           SOURCE_RUN_ID: ${{ inputs.source_run_id }}
         run: |
           set -euo pipefail
-          gh api "repos/\${REPOSITORY}/actions/runs/\${SOURCE_RUN_ID}" > "$RUNNER_TEMP/daisy-source-run.json"
+          gh api "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}" > "$RUNNER_TEMP/daisy-source-run.json"
           python - "$RUNNER_TEMP/daisy-source-run.json" <<'PY'
           import json, os, re, sys
           run=json.load(open(sys.argv[1], encoding="utf-8"))
