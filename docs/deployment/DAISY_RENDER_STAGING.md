@@ -21,6 +21,7 @@ Set these in the Render service's secret/environment settings. Never commit valu
 | `OIDC_ISSUER_URL` | Exact issuer URL used by the existing Full-Build OIDC integration. |
 | `OIDC_CLIENT_ID` | OIDC client ID registered for this deployment. |
 | `OIDC_RESOURCE_URL` | Protected SolveX API resource identifier required by the login flow. |
+| `DAISY_PROXY_SHARED_SECRET` | Random secret of at least 32 characters, matching Vercel `DAISY_RENDER_PROXY_SECRET`; server-side only. |
 | `NODE_ENV` | Set to `production`. |
 | `PORT` | Let Render inject this value. |
 
