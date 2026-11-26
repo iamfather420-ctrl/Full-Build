@@ -198,7 +198,7 @@ jobs:
           print(json.dumps({k:manifest[k] for k in ("status","sha256","bytes","generation_observed","activation_authorized")}, indent=2))
           PY
 
-      - name: Publish immutable model release
+      - name: Publish versioned model release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
