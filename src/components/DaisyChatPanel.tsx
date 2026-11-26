@@ -78,7 +78,7 @@ export const DaisyChatPanel: React.FC = () => {
         throw new Error(body.message || body.code || 'First-party Daisy inference did not return a verified completion.');
       }
       setGenerationVerified(true);
-      setMessages((previous) => [
+      setMessages((previous): ChatMessage[] => [
         ...previous,
         { role: 'user', content: text },
         { role: 'assistant', content: body.text.trim() },
