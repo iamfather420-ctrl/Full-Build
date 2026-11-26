@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Cpu, CheckCircle2, Shield, Network, Zap, Coins, AlertTriangle } from 'lucide-react';
 import { DaisyBrain, CompleteBrainState } from '../brain/DaisyBrain';
 import { NodeRegistry, NodeEntity } from '../nodes/NodeRegistry';
+import { DaisyChatPanel } from './DaisyChatPanel';
 
 export const DaisyBrainView: React.FC = () => {
   const brain = DaisyBrain.getInstance();
@@ -39,6 +40,8 @@ export const DaisyBrainView: React.FC = () => {
           <span className="text-white">STATUS: {brainState.claim_scope || brainState.status}</span>
         </div>
       </div>
+
+      <DaisyChatPanel />
 
       {/* 4 Truth Pillars */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

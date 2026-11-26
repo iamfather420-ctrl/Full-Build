@@ -27,6 +27,35 @@ jobs:
       - name: Checkout this bridge commit
         uses: actions/checkout@v4
 
+      - name: Verify source training run identity
+        id: source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}" > "$RUNNER_TEMP/daisy-source-run.json"
+          python - "$RUNNER_TEMP/daisy-source-run.json" <<'PY'
+          import json, os, re, sys
+          run=json.load(open(sys.argv[1], encoding="utf-8"))
+          expected_path=".github/workflows/daisy-loc-grammar-training.yml"
+          if run.get("name") != "Daisy LOC Grammar Language Training":
+              raise SystemExit("BLOCKED: source run is not the Daisy LOC grammar training workflow")
+          if not str(run.get("path", "")).startswith(expected_path):
+              raise SystemExit("BLOCKED: source run workflow path does not match the LOC trainer")
+          if run.get("status") != "completed" or run.get("conclusion") != "success":
+              raise SystemExit("BLOCKED: source training run has not completed successfully")
+          if run.get("head_repository", {}).get("full_name") != os.environ["REPOSITORY"]:
+              raise SystemExit("BLOCKED: source training run is not from this repository")
+          sha=run.get("head_sha", "")
+          if not re.fullmatch(r"[a-f0-9]{40}", sha):
+              raise SystemExit("BLOCKED: source training commit SHA is invalid")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"head_sha={sha}\n")
+          print(json.dumps({"source_run_id":run["id"],"workflow":run["name"],"head_sha":sha,"conclusion":run["conclusion"]}))
+          PY
+
       - name: Download the exact successful training artifact
         uses: actions/download-artifact@v4
         with:
@@ -36,24 +65,64 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ env.SOURCE_RUN_ID }}
 
-      - name: Locate and validate the Hugging Face checkpoint
+      - name: Validate checkpoint provenance and every checkpoint file hash
         id: checkpoint
         shell: bash
         run: |
           set -euo pipefail
-          CHECKPOINT="$(find artifacts/daisy-hf -type f \( -name 'model.safetensors' -o -name 'pytorch_model.bin' \) -printf '%h\n' | head -n1)"
+          CHECKPOINT="$(find artifacts/daisy-hf -type f -name 'model.safetensors' -printf '%h\n' | head -n1)"
           test -n "$CHECKPOINT"
           test -s "$CHECKPOINT/config.json"
           test -s "$CHECKPOINT/tokenizer.json" || test -s "$CHECKPOINT/tokenizer_config.json"
+          MANIFEST="$(find artifacts/daisy-hf -type f -name 'run-manifest.json' -printf '%p\n' | head -n1)"
+          test -n "$MANIFEST"
           echo "path=$CHECKPOINT" >> "$GITHUB_OUTPUT"
-          python - "$CHECKPOINT" <<'PY'
-          import json, pathlib, sys
-          p=pathlib.Path(sys.argv[1])
-          cfg=json.loads((p/'config.json').read_text())
-          print("Checkpoint architecture:", cfg.get("architectures"))
-          print("Model type:", cfg.get("model_type"))
+          python - "$CHECKPOINT" "$MANIFEST" <<'PY'
+          import hashlib, json, os, pathlib, sys
+          checkpoint=pathlib.Path(sys.argv[1]).resolve()
+          manifest_path=pathlib.Path(sys.argv[2]).resolve()
+          manifest=json.loads(manifest_path.read_text(encoding="utf-8"))
+          expected_dataset="79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7"
+          expected_model="HuggingFaceTB/SmolLM2-135M-Instruct"
+          expected_revision="eba0825ddc7730d24a88685a6c0a078cf919b383"
+          if manifest.get("status") != "TRAINING_COMPLETED":
+              raise SystemExit("BLOCKED: checkpoint manifest does not record completed training")
+          if manifest.get("training_mode") != "plain_text_causal_language_modeling":
+              raise SystemExit("BLOCKED: checkpoint training mode is not the approved LOC causal-LM mode")
+          if manifest.get("model_id") != expected_model or manifest.get("model_revision") != expected_revision:
+              raise SystemExit("BLOCKED: foundation model identity or immutable revision mismatch")
+          if manifest.get("dataset_sha256") != expected_dataset:
+              raise SystemExit("BLOCKED: training dataset SHA-256 does not match the approved LOC corpus")
+          if manifest.get("activation_authorized") is not False:
+              raise SystemExit("BLOCKED: training artifact must not assert activation authorization")
+          if not manifest.get("train_records") or not manifest.get("validation_records"):
+              raise SystemExit("BLOCKED: training manifest has empty train or validation split")
+          entries=manifest.get("checkpoint_files")
+          if not isinstance(entries,list) or not entries:
+              raise SystemExit("BLOCKED: checkpoint file inventory is missing")
+          verified=set()
+          for entry in entries:
+              rel=pathlib.PurePosixPath(str(entry.get("path","")))
+              if rel.is_absolute() or ".." in rel.parts:
+                  raise SystemExit("BLOCKED: unsafe checkpoint file path in manifest")
+              path=(checkpoint / pathlib.Path(*rel.parts)).resolve()
+              if not path.is_relative_to(checkpoint) or not path.is_file():
+                  raise SystemExit(f"BLOCKED: checkpoint file missing or outside checkpoint: {rel}")
+              digest=hashlib.sha256(path.read_bytes()).hexdigest()
+              if path.stat().st_size != entry.get("bytes") or digest != entry.get("sha256"):
+                  raise SystemExit(f"BLOCKED: checkpoint file hash/size mismatch: {rel}")
+              verified.add(rel.as_posix())
+          if "model.safetensors" not in verified:
+              raise SystemExit("BLOCKED: verified manifest does not cover model.safetensors")
+          cfg=json.loads((checkpoint/"config.json").read_text(encoding="utf-8"))
           if not cfg.get("architectures") or not cfg.get("model_type"):
               raise SystemExit("BLOCKED: missing model architecture metadata")
+          manifest_sha=hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
+              out.write(f"dataset_sha256={expected_dataset}\n")
+              out.write(f"model_revision={expected_revision}\n")
+              out.write(f"checkpoint_manifest_sha256={manifest_sha}\n")
+          print(json.dumps({"checkpoint_files_verified":len(verified),"dataset_sha256":expected_dataset,"model_id":expected_model,"model_revision":expected_revision,"manifest_sha256":manifest_sha,"activation_authorized":False}))
           PY
 
       - name: Checkout pinned llama.cpp converter and runtime
@@ -68,8 +137,10 @@ jobs:
           cmake -S .build/llama.cpp -B .build/llama.cpp/build -DGGML_NATIVE=OFF -DGGML_OPENMP=ON
           cmake --build .build/llama.cpp/build --config Release --target llama-cli llama-quantize -j2
 
-      - name: Install pinned converter dependencies
-        run: python -m pip install --upgrade pip torch numpy sentencepiece protobuf transformers gguf
+      - name: Install converter dependencies using the training-compatible Transformers pin
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r training/daisy-smollm2/requirements.txt sentencepiece protobuf gguf
 
       - name: Convert Hugging Face checkpoint to GGUF and quantize
         env:
@@ -91,6 +162,11 @@ jobs:
           test -s artifacts/model-smoke-test.txt
 
       - name: Create checksum manifest
+        env:
+          SOURCE_TRAINING_COMMIT: ${{ steps.source.outputs.head_sha }}
+          DATASET_SHA256: ${{ steps.checkpoint.outputs.dataset_sha256 }}
+          MODEL_REVISION: ${{ steps.checkpoint.outputs.model_revision }}
+          CHECKPOINT_MANIFEST_SHA256: ${{ steps.checkpoint.outputs.checkpoint_manifest_sha256 }}
         run: |
           python - <<'PY'
           import hashlib, json, os, pathlib
@@ -104,8 +180,10 @@ jobs:
             "status":"CONVERTED_AND_GENERATION_OBSERVED",
             "model_id":"HuggingFaceTB/SmolLM2-135M-Instruct",
             "source_training_run_id":os.environ["SOURCE_RUN_ID"],
-            "source_training_commit":"133cd82c23563e7b13ab636ef12d117db05ccf16",
-            "dataset_sha256":"79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7",
+            "source_training_commit":os.environ["SOURCE_TRAINING_COMMIT"],
+            "dataset_sha256":os.environ["DATASET_SHA256"],
+            "model_revision":os.environ["MODEL_REVISION"],
+            "checkpoint_manifest_sha256":os.environ["CHECKPOINT_MANIFEST_SHA256"],
             "llama_cpp_commit":os.environ["LLAMA_CPP_COMMIT"],
             "format":"GGUF",
             "quantization":"Q4_K_M",
@@ -120,7 +198,7 @@ jobs:
           print(json.dumps({k:manifest[k] for k in ("status","sha256","bytes","generation_observed","activation_authorized")}, indent=2))
           PY
 
-      - name: Publish immutable model release
+      - name: Publish versioned model release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

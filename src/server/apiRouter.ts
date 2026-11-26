@@ -7,16 +7,25 @@ import { logger } from '../../artifacts/api-server/src/lib/logger';
 import { SovereignApiRouter } from '../api/ApiRouter';
 import { readLiveRegistry } from '../registry/liveRegistry.mjs';
 import daisyVercelProxyRouter from '../api/DaisyVercelProxyRouter';
+import daisyBackendRouter from '../api/DaisyBackendRouter';
+import daisyInternalProxyRouter from '../api/DaisyInternalProxyRouter';
 
 const router = express.Router();
 const authBoundary: express.RequestHandler = (req, res, next) => {
   Promise.resolve(authMiddleware(req, res, next)).catch(next);
 };
 
+// Vercel serves the authenticated proxy. Render keeps the local runtime and the
+// service-to-service entry. The same file must not make Render proxy to itself.
+const onVercel = process.env.VERCEL === '1';
+if (!onVercel) {
+  router.use('/daisy-internal', daisyInternalProxyRouter);
+}
+
 // Keep the same-origin OIDC boundary shared by the Node server and Vercel functions.
 // Daisy endpoints are mounted only after the shared middleware has resolved the session.
 router.use('/', pinoHttp({ logger }), cookieParser(), authBoundary, authRouter);
-router.use('/daisy', daisyVercelProxyRouter);
+router.use('/daisy', onVercel ? daisyVercelProxyRouter : daisyBackendRouter);
 
 const healthHandler: express.RequestHandler = (_req, res) => {
   res.status(200).json({ status: 'ok', payments_enabled: false });
