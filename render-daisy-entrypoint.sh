@@ -4,7 +4,7 @@ set -euo pipefail
 export DAISY_MODEL_PATH="${DAISY_MODEL_PATH:-/opt/daisy/model.gguf}"
 export DAISY_INFERENCE_ENGINE="${DAISY_INFERENCE_ENGINE:-/app/scripts/daisy-infer.sh}"
 export DAISY_MODEL_ID="${DAISY_MODEL_ID:-HuggingFaceTB/SmolLM2-135M-Instruct}"
-export DAISY_MODEL_VERSION="${DAISY_MODEL_VERSION:-loc-grammar-q4_k_m}"
+export DAISY_MODEL_VERSION="${DAISY_MODEL_VERSION:-d158c64ff056f3c76fbbc6f4824c53e5ffd5de94931f71db5a418cb1df9e50fd}"
 
 chmod +x /app/scripts/daisy-infer.sh
 python3 /app/scripts/fetch_daisy_model_release.py

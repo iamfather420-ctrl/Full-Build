@@ -24,18 +24,41 @@ async function isExecutableFile(filePath: string): Promise<boolean> {
   }
 }
 
-function extractCompletion(stdout: string, prompt: string): string {
-  const timingAt = stdout.search(/\n\[ Prompt:/);
-  const body = timingAt >= 0 ? stdout.slice(0, timingAt) : stdout;
+export function extractCompletion(stdout: string, prompt: string): string {
+  // llama-cli may hide the prompt, echo it, or wrap it in a startup banner.
+  // Only the text after the prompt echo, and before the timing line, is a completion.
+  const withoutControls = stdout.replace(/\u001b\[[0-9;]*[A-Za-z]/g, '').replace(/\u0008/g, '');
+  const timingAt = withoutControls.search(/\n?\[ Prompt:/);
+  const body = timingAt >= 0 ? withoutControls.slice(0, timingAt) : withoutControls;
   const marker = `> ${prompt}`;
-  const at = body.lastIndexOf(marker);
-  const generated = (at >= 0 ? body.slice(at + marker.length) : '')
+  const markerAt = body.lastIndexOf(marker);
+  let region = markerAt >= 0 ? body.slice(markerAt + marker.length) : body;
+  if (markerAt < 0) {
+    const lines = body.split('\n');
+    let lastPrompt = -1;
+    for (let index = 0; index < lines.length; index += 1) {
+      if (lines[index].trim().startsWith('>')) lastPrompt = index;
+    }
+    if (lastPrompt >= 0) region = lines.slice(lastPrompt + 1).join('\n');
+  }
+  return region
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => line.length > 0 && line !== '>' && !line.startsWith('build ') && !line.startsWith('model ') && !line.startsWith('ftype ') && !line.includes('/'))
+    .filter((line) => line.length > 0
+      && line !== '>'
+      && !line.startsWith('>')
+      && !line.startsWith('[ Prompt:')
+      && !line.startsWith('build ')
+      && !line.startsWith('model ')
+      && !line.startsWith('ftype ')
+      && !line.startsWith('modalities ')
+      && !/^loading model/i.test(line)
+      && !/^available commands/i.test(line)
+      && !/^exiting\.\.\.$/i.test(line)
+      && !line.includes('/')
+      && !/[▄▀█]/.test(line))
     .join('\n')
     .trim();
-  return generated;
 }
 export function createInferenceChildEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
   const allowed = ['PATH', 'HOME', 'TMPDIR', 'TEMP', 'TMP', 'LANG', 'LC_ALL', 'SystemRoot', 'WINDIR', 'LD_LIBRARY_PATH', 'DAISY_LLAMA_CLI'];

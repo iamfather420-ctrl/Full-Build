@@ -58,6 +58,8 @@ jobs:
         run: bun run verify:daisy-safety
       - name: First-party inference fail-closed tests
         run: bun run test:local-inference
+      - name: Daisy llama.cpp output parser regression tests
+        run: bunx tsx --test scripts/test_inference_output_parser.ts
       - name: Daisy authenticated API and withheld-only discovery regression tests
         run: bun run test:daisy-ai-api
       - name: Daisy Vercel proxy host-pinning and same-origin security tests
