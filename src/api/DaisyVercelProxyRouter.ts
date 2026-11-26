@@ -30,10 +30,11 @@ export function resolveDaisyRenderBaseUrl(env: ProxyEnvironment = process.env): 
   try {
     const url = new URL(raw);
     const hostname = url.hostname.toLowerCase();
+    const normalizedHostname = hostname.replace(/^\\[|\\]$/g, '');
     if (url.protocol !== 'https:' || url.username || url.password ||
         url.pathname !== '/' || url.search || url.hash ||
-        hostname !== allowedHost || isIP(hostname) !== 0 ||
-        hostname === 'localhost' || hostname.endsWith('.local')) return null;
+        hostname !== allowedHost || isIP(normalizedHostname) !== 0 ||
+        normalizedHostname === 'localhost' || normalizedHostname.endsWith('.local')) return null;
     return url;
   } catch {
     return null;
