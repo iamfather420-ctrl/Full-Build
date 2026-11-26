@@ -10,6 +10,10 @@ ENV DAISY_INFERENCE_ENGINE=/app/scripts/daisy-infer.sh
 ENV DAISY_LLAMA_CLI=/usr/local/bin/llama-cli
 ENV DAISY_MODEL_ID=HuggingFaceTB/SmolLM2-135M-Instruct
 ENV DAISY_MODEL_VERSION=loc-grammar-q4_k_m
+ENV DAISY_MODEL_RELEASE_TAG=daisy-model-45661493760
+ENV DAISY_MODEL_MANIFEST_SHA256=2df0edee400b7c5dce5f8ad2062de60a63876228c23edb3f42b4a331fbf4fc64
+ENV DAISY_MODEL_SHA256=d158c64ff056f3c76fbbc6f4824c53e5ffd5de94931f71db5a418cb1df9e50fd
+ENV DAISY_MODEL_BYTES=105454176
 
 WORKDIR /app
 RUN apt-get update -qq && apt-get install --no-install-recommends -y \
