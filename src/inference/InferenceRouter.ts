@@ -27,9 +27,9 @@ export class InferenceRouter {
     await this.local.probe();
     const info = this.local.getInfo();
 
-    if (this.local.isReady()) {
+    if (this.local.canAttempt()) {
       const result = await this.local.generate(request);
-      return { result, source: 'first_party_local', runtime: info };
+      return { result, source: result.status === 'OK' ? 'first_party_local' : 'none', runtime: this.local.getInfo() };
     }
 
     // Do not call external providers from this router. The HTTP layer may
