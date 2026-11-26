@@ -20,7 +20,6 @@
         "./src/*"
       ]
     },
-    "types": ["node", "vite/client"],
     "noEmit": true
   },
   "include": [
