@@ -228,9 +228,11 @@ app.post('/api/github/unify', (_req, res) => {
 // Inference status for operators (no secrets).
 app.get('/api/inference/status', async (_req, res) => {
   const { getLocalInferenceRuntime } = await import('../src/inference/LocalInferenceRuntime');
+  const { DAISY_LOC_GRAMMAR_EVIDENCE } = await import('../src/inference/daisyLocGrammarEvidence');
   const info = await getLocalInferenceRuntime().probe();
   return res.json({
     first_party: info,
+    language_model_training: DAISY_LOC_GRAMMAR_EVIDENCE,
     external_provider_opt_in: allowExternalModelProvider,
     external_provider_configured: Boolean(ai),
     foundational_instruction_loaded: Boolean(foundationalSystemInstruction),
