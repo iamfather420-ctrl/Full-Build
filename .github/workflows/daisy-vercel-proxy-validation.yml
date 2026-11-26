@@ -1,6 +1,8 @@
 name: Daisy Vercel Proxy Security Tests
 
 on:
+  push:
+    branches: [feat/vercel-daisy-render-proxy-20261126]
   pull_request:
     branches: [main]
     paths:
