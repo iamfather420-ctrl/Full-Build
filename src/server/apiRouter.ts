@@ -14,7 +14,10 @@ const authBoundary: express.RequestHandler = (req, res, next) => {
   Promise.resolve(authMiddleware(req, res, next)).catch(next);
 };
 
-// Internal Vercel-to-Render calls require a service secret and a freshly verified signed tenant token.\nrouter.use('/daisy-internal', daisyInternalProxyRouter);\n\n// Keep the same-origin OIDC boundary shared by the Node server and Vercel functions.
+// Internal Vercel-to-Render calls require a service secret and a freshly verified signed tenant token.
+router.use('/daisy-internal', daisyInternalProxyRouter);
+
+// Keep the same-origin OIDC boundary shared by the Node server and Vercel functions.
 // Daisy endpoints are mounted only after the shared middleware has resolved the session.
 router.use('/', pinoHttp({ logger }), cookieParser(), authBoundary, authRouter);
 router.use('/daisy', daisyBackendRouter);
