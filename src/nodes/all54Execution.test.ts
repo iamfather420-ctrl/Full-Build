@@ -14,6 +14,10 @@ test('every canonical node is executed and fiat settlement stays prohibited', as
   const dn06 = report.results.find((node) => node.node_id === 'DN-06');
   assert.equal(dn06?.evidence.ledger_type, 'LINEAR_HASH_CHAIN_NOT_MERKLE');
   assert.equal(dn06?.evidence.signed, false);
+  const dn11 = report.results.find((node) => node.node_id === 'DN-11');
+  assert.equal(dn11?.status, 'PROVIDER_REQUIRED',
+    'the local pipeline must run and preserve its external-oracle boundary without making a third-party AI call');
+  assert.equal(dn11?.evidence.external_provider_required, true);
   const dn05 = report.results.find((node) => node.node_id === 'DN-05');
   assert.equal(dn05?.status, 'PROVIDER_REQUIRED',
     'missing independent oracle trust must remain provider-required, never a false verification or generic failure');
