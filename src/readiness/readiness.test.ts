@@ -370,3 +370,17 @@ test("the context probe does not retune the original held-out set", () => {
   assert.equal(review.recordsDiscovered, 22);
   assert.equal(review.recordsAdmitted, 0);
 });
+
+test("the approval queue is unsigned and admits nothing", () => {
+  const queue = JSON.parse(readFileSync(new URL("./artifacts/approval-queue-2026-11-27.json", import.meta.url), "utf8")) as {
+    pushDoesNotApprove: boolean;
+    sourcesSigned: number;
+    sourcesAdmitted: number;
+    sources: { signature: string | null; admitted: boolean; recommendedDecision: string }[];
+  };
+  assert.equal(queue.pushDoesNotApprove, true);
+  assert.equal(queue.sources.length, 22);
+  assert.equal(queue.sourcesSigned, 0);
+  assert.equal(queue.sourcesAdmitted, 0);
+  assert.equal(queue.sources.every((source) => source.signature === null && source.admitted === false && source.recommendedDecision === "DO_NOT_ADMIT"), true);
+});

@@ -1,0 +1,492 @@
+{
+  "status": "AWAITING_OWNER_SIGNATURE",
+  "pushDoesNotApprove": true,
+  "approver": "Solvex-Paradox-Box",
+  "preparedBy": "iamfather420-ctrl",
+  "repository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+  "manifestChange": "NOT_APPLIED",
+  "modelTrainingAuthorized": false,
+  "sourcesReadyForDecision": 22,
+  "sourcesSigned": 0,
+  "sourcesAdmitted": 0,
+  "sources": [
+    {
+      "id": "princeton-wordnet-3.1",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "copyrighted_license_attachment_for_3_1_unverified",
+      "decisionOnRecord": "excluded_not_verified_public_domain_or_cc0",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "ud-english-ewt",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "cc_by_sa_annotations_but_underlying_texts_unresolved",
+      "decisionOnRecord": "metadata_only_mixed_source_text_rights",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "cmudict",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "permissive_copyrighted_material",
+      "decisionOnRecord": "excluded_open_copyright_license_not_public_domain",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "berkeley-framenet-1.7",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "no_primary_pd_cc0_or_complete_commercial_training_grant_verified",
+      "decisionOnRecord": "metadata_only_rights_and_component_scope_unresolved",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "nist-ai-rmf-glossary",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "no_blanket_pd_or_cc0_grant_for_live_glossary_verified",
+      "decisionOnRecord": "metadata_only_mixed_source_components",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "openstax-principles-management",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "cc_by_nc_sa_4_0_with_title_specific_prior_written_permission_requirement",
+      "decisionOnRecord": "excluded_noncommercial_and_ai_permission_required",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "openstax-principles-accounting-v1-v2",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "cc_by_nc_sa_4_0; prior_written_ai_permission_required",
+      "decisionOnRecord": "excluded_not_pd_cc0_and_ai_permission_required",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "sba-business-guide",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "generic_public_domain_policy_but_contributed_or_licensed_material_may_be_excluded",
+      "decisionOnRecord": "metadata_only_exact_page_scope_unresolved",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "nasa-systems-engineering-handbook",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "public_use_permitted_metadata_but_contractor_and_third_party_rights_unresolved",
+      "decisionOnRecord": "metadata_only_rights_not_pd_cc0_cleared",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "nist-ssdf-sp800-218-v1-1",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "us_copyright_statement_does_not_clear_all_global_or_third_party_rights",
+      "decisionOnRecord": "metadata_only_territorial_and_contributor_rights_unresolved",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "openstax-introductory-statistics-2e",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "cc_by_nc_sa_4_0_with_prior_written_permission_requirement_for_ai_ingestion",
+      "decisionOnRecord": "excluded_not_pd_cc0_and_ai_permission_required",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "census-naics-2022",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "no_exact_pd_or_cc0_grant_verified_for_full_manual_and_definitions",
+      "decisionOnRecord": "metadata_only_joint_and_component_rights_unresolved",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "irs-small-business-tax-terms",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "general_irs_content_policy_does_not_clear_unspecified_resource_components",
+      "decisionOnRecord": "metadata_only_exact_resource_not_bounded",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "census-bureau-glossary",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "no_exact_glossary_pd_or_cc0_statement_verified",
+      "decisionOnRecord": "metadata_only_rights_and_revision_unspecified",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "nist-csrc-glossary",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "no_blanket_pd_or_cc0_grant_for_all_aggregated_definitions_verified",
+      "decisionOnRecord": "metadata_only_mixed_source_definitions",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "noaa-nws-glossary",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "public_domain_candidate_for_observed_official_glossary_text_only_not_cc0",
+      "decisionOnRecord": "public_domain_candidate_scope_check_incomplete",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "usgs-water-science-glossary",
+      "path": "manifests/source-candidate-register-2026-11-27.json",
+      "documentType": "candidate-register-metadata",
+      "license": null,
+      "licenseEvidence": "no_complete_pd_or_cc0_scope_verified_for_all_credited_content",
+      "decisionOnRecord": "metadata_only_mixed_source_contributions_unresolved",
+      "integrity": null,
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "No acquired file bytes; register decision excludes the candidate."
+      ]
+    },
+    {
+      "id": "onet-database-31.0-selected-tables",
+      "path": "data/industry/onet/31.0/NOTICE.md",
+      "documentType": "acquired-source",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "Checksum-matched license or notice file data/industry/onet/31.0/NOTICE.md. Training suitability was not reviewed.",
+      "decisionOnRecord": "not_evaluated",
+      "integrity": "all 4 recorded file hashes matched",
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "CC-BY attribution and scope have not been accepted by the owner.",
+        "training_status is not_evaluated."
+      ]
+    },
+    {
+      "id": "gsa-plain-language-guidelines-markdown",
+      "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/CONTRIBUTING.md",
+      "documentType": "acquired-source",
+      "license": "CC0-1.0",
+      "licenseEvidence": "Checksum-matched license or notice file data/communication/plain-language/gsa-plainlanguage-49d50c9/LICENSE.md. Training suitability was not reviewed.",
+      "decisionOnRecord": "not_evaluated",
+      "integrity": "all 54 recorded file hashes matched",
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "training_status is not_evaluated."
+      ]
+    },
+    {
+      "id": "fankserver-llm-glossary-markdown",
+      "path": "data/technical-language/llm-glossary-c8483b3/LICENSE",
+      "documentType": "acquired-source",
+      "license": "CC0-1.0",
+      "licenseEvidence": "Checksum-matched license or notice file data/technical-language/llm-glossary-c8483b3/LICENSE. Training suitability was not reviewed.",
+      "decisionOnRecord": "not_evaluated",
+      "integrity": "all 19 recorded file hashes matched",
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "training_status is not_evaluated."
+      ]
+    },
+    {
+      "id": "wikidata-lexemes-2026-11-18",
+      "path": "data/semantic-knowledge/wikidata/lexemes-2026-11-18/SOURCE.md",
+      "documentType": "acquired-source",
+      "license": "CC0-1.0",
+      "licenseEvidence": "Checksum-matched license or notice file data/semantic-knowledge/wikidata/lexemes-2026-11-18/SOURCE.md. Training suitability was not reviewed.",
+      "decisionOnRecord": "not_evaluated",
+      "integrity": "all 2 recorded file hashes matched",
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "training_status is not_evaluated."
+      ]
+    },
+    {
+      "id": "loc-english-grammar-six-books",
+      "path": "data/training_sources/public_domain/english",
+      "documentType": "preserved-collection",
+      "license": null,
+      "licenseEvidence": "PENDING_REVIEW",
+      "decisionOnRecord": "PENDING_REVIEW",
+      "integrity": "bdbaf8143e396ed868ecbc5a61a4e5f5c12a63c6d8a8cd52168d745a69504085",
+      "packetStatus": "READY_FOR_OWNER_DECISION",
+      "recommendedDecision": "DO_NOT_ADMIT",
+      "signature": null,
+      "admitted": false,
+      "approver": "Solvex-Paradox-Box",
+      "missingBeforeAdmission": [
+        "No owner signature.",
+        "training_eligible is false.",
+        "Training extract was not produced.",
+        "Rights remain PENDING_REVIEW.",
+        "Six raw PDFs were not re-hashed in this pass."
+      ],
+      "extractedTextChecksums": {
+        "matched": 6,
+        "checked": 6,
+        "files": [
+          {
+            "path": "data/training_sources/public_domain/english/extracted_text/marks-english-grammar-1923.txt",
+            "bytes": 138775,
+            "match": true
+          },
+          {
+            "path": "data/training_sources/public_domain/english/extracted_text/hart-elementary-grammar-1878.txt",
+            "bytes": 178127,
+            "match": true
+          },
+          {
+            "path": "data/training_sources/public_domain/english/extracted_text/lewis-applied-grammar-1902.txt",
+            "bytes": 412903,
+            "match": true
+          },
+          {
+            "path": "data/training_sources/public_domain/english/extracted_text/vickroy-english-grammar-beginners-1870.txt",
+            "bytes": 176730,
+            "match": true
+          },
+          {
+            "path": "data/training_sources/public_domain/english/extracted_text/harvey-english-grammar-1870.txt",
+            "bytes": 472466,
+            "match": true
+          },
+          {
+            "path": "data/training_sources/public_domain/english/extracted_text/bullions-principles-grammar-1862.txt",
+            "bytes": 55699,
+            "match": true
+          }
+        ]
+      }
+    }
+  ]
+}
