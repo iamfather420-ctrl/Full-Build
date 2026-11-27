@@ -10,6 +10,7 @@ import type { InferenceMessage } from '../inference/InferenceRuntime';
 import { DiscoveryAssertionRequestSchema } from '../discovery/DiscoverEngineContract';
 import { submitAssertion } from '../discovery/DiscoverEngineClient';
 import { attestGeneratedReply, buildConversationMessages } from '../brain/DaisyConversationProtocol';
+import { DAISY_LOC_GRAMMAR_EVIDENCE } from '../inference/daisyLocGrammarEvidence';
 
 const router = Router();
 const inference = new InferenceRouter(getLocalInferenceRuntime());
@@ -108,17 +109,32 @@ router.get('/status', async (req, res) => {
       runtime.probe(),
     ]);
     const nodes = NodeRegistry.getInstance().getAllNodes();
+    const modelLoadable = runtime.canAttempt();
+    const runtimeEvidence = runtime.publicStatus();
     res.setHeader('Cache-Control', 'no-store');
     return res.json({
-      status: info.ready && instruction ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED',
+      status: modelLoadable && instruction ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED',
       inference: {
-        chatEnabled: Boolean(info.ready && instruction),
+        chatEnabled: Boolean(modelLoadable && instruction),
         state: !instruction ? 'BLOCKED_INSTRUCTION_UNAVAILABLE'
-          : info.ready ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED_MODEL_OR_ENGINE_MISSING',
+          : runtimeEvidence.loadState === 'LOADABLE' ? 'LOADABLE_NOT_YET_INFERRED'
+            : runtimeEvidence.loadState === 'READY' ? 'READY_AFTER_REAL_INFERENCE'
+              : 'BLOCKED_MODEL_OR_ENGINE_MISSING',
         runtimeId: info.runtimeId,
         modelId: info.modelId,
         modelVersion: info.modelVersion,
+        loadState: runtimeEvidence.loadState,
+        modelSha256: runtimeEvidence.modelSha256,
+        expectedSha256: runtimeEvidence.expectedSha256,
         offlineCapable: false,
+      },
+      languageTraining: {
+        trainingStatus: DAISY_LOC_GRAMMAR_EVIDENCE.training_status,
+        trainingRunId: DAISY_LOC_GRAMMAR_EVIDENCE.workflow_run_id,
+        datasetSha256: DAISY_LOC_GRAMMAR_EVIDENCE.dataset_sha256,
+        inferenceStatus: DAISY_LOC_GRAMMAR_EVIDENCE.inference_status,
+        modelLoaded: runtimeEvidence.loadState === 'READY',
+        activationAuthorized: DAISY_LOC_GRAMMAR_EVIDENCE.activation_authorized,
       },
       systemInstruction: {
         available: Boolean(instruction),
