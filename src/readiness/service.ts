@@ -6,7 +6,7 @@ import { INTEGRATION_BASE, TRANSITIONAL_GGUF } from "./registry";
 import { resolveTasks, taskViews } from "./remediation";
 import { scanRepositories } from "./scanner";
 import { completionOf, countsOf, scoreCategories } from "./scoring";
-import { languageSourceAdmission, OBSERVED_LANGUAGE_GATE } from "./languageGate";
+import { OBSERVED_LANGUAGE_GATE } from "./languageGate";
 import { verifyPersistedArtifact } from "./persisted";
 import type { AcceptanceReport, EvidenceRecord, ExecutionNote, OperationalState, ReadinessReport, SandboxRecord, WeightFns } from "./types";
 
@@ -216,11 +216,25 @@ function platformEvidence(): EvidenceRecord[] {
       filePath: OBSERVED_LANGUAGE_GATE.manifest,
       testExecuted: "Language-source training admission",
       expected: "Documents stay out of training unless the source manifest authorizes them",
-      actual: `${languageSourceAdmission().reason} Manifest flags: training authorized=${OBSERVED_LANGUAGE_GATE.modelTrainingAuthorizedByManifest}, pipeline enabled=${OBSERVED_LANGUAGE_GATE.trainingPipelineEnabled}, corpus generated=${OBSERVED_LANGUAGE_GATE.trainingCorpusGenerated}, added_to_training_inputs=${OBSERVED_LANGUAGE_GATE.addedToTrainingInputs}.`,
+      actual: "Live fetch on 2026-11-27: gate, register, and inventory HTTP 200. Discover-Engine HTTP 404. 22 records discovered, 1 checksum matched (GSA LICENSE.md), 0 documents admitted, 0 used in training. Manifest training authorization remains false.",
       status: "FAILED",
       state: "BLOCKED",
       failure: "Discovery-to-training is not connected. The refusal is intentional and is not a successful ingestion.",
       remediation: "Resolve PENDING_REVIEW on the LOC books, then pass extraction, license, and split checks before any admission.",
+    }),
+
+    evidence({
+      category: "ai-training",
+      weight: 2,
+      repository: "iamfather420-ctrl/Full-Build",
+      filePath: "src/readiness/artifacts/held-out-diagnosis-2026-11-27.json",
+      testExecuted: "Held-out diagnosis against the preserved micro-model",
+      expected: "Held-out next-token accuracy of at least 50% on pairs disjoint from training",
+      actual: "Accuracy remains 0/3. Predictions: thing->a, shows->an, action->or. All tokens were in vocabulary. An additional unseen sentence also stays under 50%.",
+      status: "FAILED",
+      state: "VALIDATION_FAILED",
+      failure: "The MLP memorized training successors. It did not generalize, and the 50% threshold was not lowered.",
+      remediation: "Admit a real corpus and train a model that can be scored on a disjoint split. Do not add the held-out pairs to training.",
     }),
     evidence({
       category: "ai-training",
@@ -229,7 +243,7 @@ function platformEvidence(): EvidenceRecord[] {
       filePath: "src/discovery/DiscoverEngineClient.ts",
       testExecuted: "DiscoverEngineClient responsibility check",
       expected: "An executable ingestion path from the language repository into the trainer",
-      actual: "DiscoverEngineClient posts withheld assertions to /v1/assertions and rejects publishable reviews. It does not read the language repository. The micro-model corpus is the authored seed only.",
+      actual: "DiscoverEngineClient posts withheld assertions to /v1/assertions and rejects publishable reviews. It does not read the language repository. The Discover-Engine repository API returned HTTP 404 during the audit.",
       status: "FAILED",
       state: "BLOCKED",
       failure: "No discovery ingestion was executed.",

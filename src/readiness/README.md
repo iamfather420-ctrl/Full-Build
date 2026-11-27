@@ -10,7 +10,7 @@ Blocked and unverified checks stay in the score denominator. Not-applicable chec
 
 ## Daisy
 
-The authorized micro-run writes `artifacts/daisy-next-token-micro.weights.json`. A scan recomputes the SHA-256 and held-out score from those tensors. It does not trust the status fields alone. The language-source manifest does not authorize training, so no document from that repository is in the artifact.
+The authorized micro-run writes `artifacts/daisy-next-token-micro.weights.json`. A scan recomputes the SHA-256 and held-out score from those tensors. It does not trust the status fields alone. Held-out accuracy on the preserved artifact is 0 percent: the model predicts the memorized training successor, and the 50 percent threshold was not lowered. The language-source manifest does not authorize training. A live audit discovered 22 records, verified one checksum, and admitted none.
 
 The chat runtime in `src/inference` still identifies the transitional GGUF recorded in `verifiedDaisyModel.ts`. `replace-temporary` refuses to remove it. `FirstPartyInferenceRuntime` is left unchanged.
 

@@ -15,6 +15,8 @@ import {
 } from "./daisyPipeline";
 import { admitCorpus } from "./languageGate";
 import { readPersistedFiles } from "./persisted";
+import { scorePairs, summarizeScores, inferLoadedToken } from "./evaluation";
+import { admitDocument, REAL_MANIFEST_GATE, selectTrainingDocuments, sha256Hex, type SourceDocument } from "./corpusAdmission";
 import type { GitHubClient, GitHubResponse } from "./github";
 import { completionOf } from "./scoring";
 import { resolveTasks } from "./remediation";
@@ -176,4 +178,134 @@ test("a second SGD run reproduces the persisted artifact", () => {
   assert.equal(measured.heldOutAccuracy, persisted.report.heldOutAccuracy);
   assert.equal(measured.generatedText, persisted.report.generatedText);
   assert.ok(Math.abs(measured.trainLoss - persisted.report.trainLossAfter) < 1e-9);
+});
+
+test("held-out failure is memorization, not an unknown-token bug", () => {
+  const persisted = readPersistedFiles();
+  const trainPairs = pairsFrom(AUTHORED_SEED);
+  const vocab = [...new Set(trainPairs.flatMap((pair) => [pair.previous, pair.next]))].sort();
+  const scored = scorePairs(persisted.model, pairsFrom(HELD_OUT), vocab);
+  assert.equal(scored.scored, 3);
+  assert.equal(scored.unscored, 0);
+  assert.equal(scored.accuracy, 0);
+  assert.equal(scored.legacyAccuracy, 0);
+  assert.deepEqual(
+    scored.predictions.map((item) => [item.previous, item.expected, item.predicted]),
+    [
+      ["thing", "shows", "a"],
+      ["shows", "action", "an"],
+      ["action", "state", "or"],
+    ],
+  );
+  const extra = ["subject needs verb state"];
+  assertNoLeakage(AUTHORED_SEED, extra);
+  const extraScore = scorePairs(persisted.model, pairsFrom(extra), vocab);
+  assert.equal(extraScore.accuracy < 0.5, true);
+});
+
+test("unknown tokens are unscored and cannot manufacture a pass", () => {
+  const summary = summarizeScores([
+    { previous: "shows", expected: "an", predicted: "an", inVocabulary: true, correct: true },
+    { previous: "missing", expected: "token", predicted: null, inVocabulary: false, correct: false },
+  ]);
+  assert.equal(summary.accuracy, 1);
+  assert.equal(summary.legacyAccuracy, 0.5);
+  assert.equal(summary.unscored, 1);
+  const empty = summarizeScores([
+    { previous: "missing", expected: "token", predicted: null, inVocabulary: false, correct: false },
+  ]);
+  assert.equal(empty.accuracy, 0);
+  assert.equal(empty.scored, 0);
+});
+
+function admittedFixture(bytes: Uint8Array): SourceDocument {
+  const digest = sha256Hex(bytes);
+  return {
+    id: "synthetic-admitted-fixture",
+    path: "fixtures/not-a-repository-document.txt",
+    license: "CC0-1.0",
+    reviewStatus: "APPROVED",
+    trainingEligible: true,
+    trainingStatus: "approved",
+    sha256: digest,
+    byteLength: bytes.length,
+    observedSha256: digest,
+    text: "A noun names a person. This fixture is not a Library of Congress document and is used only to test the open gate.",
+    extractionError: null,
+  };
+}
+
+test("real manifest blocks CC0 and pending documents, including a checksum match", () => {
+  const bytes = new TextEncoder().encode("plain language guideline text that is long enough to pass extraction checks.");
+  const digest = sha256Hex(bytes);
+  const documents: SourceDocument[] = [
+    {
+      id: "gsa-plain-language-guidelines-markdown",
+      path: "data/communication/plain-language/gsa-plainlanguage-49d50c9/LICENSE.md",
+      license: "CC0-1.0",
+      reviewStatus: "NOT_EVALUATED",
+      trainingEligible: false,
+      trainingStatus: "not_evaluated",
+      sha256: digest,
+      byteLength: bytes.length,
+      observedSha256: digest,
+      text: "License text that matches its digest but is not an approved training document.",
+      extractionError: null,
+    },
+    {
+      id: "loc-english-grammar-six-books",
+      path: "data/training_sources/public_domain/english/",
+      license: null,
+      reviewStatus: "PENDING_REVIEW",
+      trainingEligible: false,
+      trainingStatus: "not_approved",
+      sha256: null,
+      byteLength: null,
+      observedSha256: null,
+      text: null,
+      extractionError: "PDF extraction was not run.",
+    },
+  ];
+  const selected = selectTrainingDocuments(documents, REAL_MANIFEST_GATE);
+  assert.equal(selected.admitted.length, 0);
+  assert.equal(selected.results.every((result) => result.state === "BLOCKED"), true);
+});
+
+test("an approved document is admitted only when the manifest allows it", () => {
+  const document = admittedFixture(new TextEncoder().encode("fixture-bytes"));
+  const closed = admitDocument(document, REAL_MANIFEST_GATE, null);
+  assert.equal(closed.state, "BLOCKED");
+  const open = admitDocument(document, { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false }, null);
+  assert.equal(open.state, "ADMITTED");
+  const corrupt = { ...document, observedSha256: "0".repeat(64), text: "short" };
+  const failed = admitDocument(corrupt, { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false }, null);
+  assert.equal(failed.state, "BLOCKED");
+  assert.equal(failed.reasons.some((reason) => reason.includes("Integrity")), true);
+});
+
+test("duplicate digests are not both admitted", () => {
+  const document = admittedFixture(new TextEncoder().encode("same-bytes"));
+  const copy = { ...document, id: "synthetic-duplicate", path: "fixtures/copy.txt" };
+  const selected = selectTrainingDocuments([document, copy], {
+    modelTrainingAuthorized: true,
+    trainingPipelineEnabled: false,
+    trainingCorpusGenerated: false,
+  });
+  assert.equal(selected.admitted.length, 1);
+  assert.equal(selected.results.find((result) => result.id === "synthetic-duplicate")?.state, "BLOCKED");
+});
+
+test("micro-model inference fail-closes when the digest changes", () => {
+  const persisted = readPersistedFiles();
+  const trainPairs = pairsFrom(AUTHORED_SEED);
+  const vocab = [...new Set(trainPairs.flatMap((pair) => [pair.previous, pair.next]))].sort();
+  const loaded = inferLoadedToken(persisted.model, persisted.report.artifactSha256, "a", vocab);
+  assert.equal(loaded.ok, true);
+  assert.equal(loaded.token, "verb");
+  const tampered = structuredClone(persisted.model);
+  tampered.tensors[0].data[0] += 1;
+  const rejected = inferLoadedToken(tampered, persisted.report.artifactSha256, "a", vocab);
+  assert.equal(rejected.ok, false);
+  assert.equal(rejected.code, "DIGEST_MISMATCH");
+  assert.equal(rejected.token, null);
 });
