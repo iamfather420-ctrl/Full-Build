@@ -49,6 +49,10 @@ test('status reports the existing runtime without exposing host paths or claimin
   assert.equal(response.status, 200);
   const body = await response.json() as Record<string, any>;
   assert.equal(body.inference.offlineCapable, false);
+  assert.equal(body.languageTraining.trainingStatus, 'PASS');
+  assert.equal(body.languageTraining.inferenceStatus, 'NOT_RUN');
+  assert.equal(body.languageTraining.modelLoaded, false);
+  assert.equal(body.languageTraining.activationAuthorized, false);
   assert.equal('modelPath' in body.inference, false);
   assert.equal('enginePath' in body.inference, false);
   assert.equal(body.brain.nodeExecutionRunByThisRequest, false);
