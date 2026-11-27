@@ -1,3 +1,4 @@
+import type { ConsensusCertificate } from './IndependentUnanimousConsensus';
 export type DaisyActivationStatus = 'INACTIVE' | 'ACTIVE' | 'BLOCKED';
 
 export interface DaisyActivationAuthorization {
@@ -6,6 +7,7 @@ export interface DaisyActivationAuthorization {
   source_commit_sha: string;
   verification_root_sha256: string;
   run_evidence_sha256: string;
+  consensus_certificate_sha256: string;
   signature_base64: string;
 }
 
@@ -64,7 +66,8 @@ export class DaisyActivationGate {
     runEvidence: string
   ): boolean {
     const publicKey = typeof process !== 'undefined' ? process.env?.SOLVEX_ACTIVATION_ROOT_PUBLIC_KEY : undefined;
-    if (!authorization || !publicKey || !authorization.authorized_by?.trim()) return false;
+    if (!authorization || !publicKey || !authorization.authorized_by?.trim() ||
+        !/^[a-f0-9]{64}$/.test(authorization.consensus_certificate_sha256 || '')) return false;
     if (authorization.source_commit_sha?.toLowerCase() !== sourceCommit.toLowerCase() ||
       authorization.verification_root_sha256 !== verificationRoot ||
       authorization.run_evidence_sha256 !== runEvidence) return false;
@@ -84,7 +87,8 @@ export class DaisyActivationGate {
         issued_at: authorization.issued_at,
         source_commit_sha: sourceCommit.toLowerCase(),
         verification_root_sha256: verificationRoot,
-        run_evidence_sha256: runEvidence
+        run_evidence_sha256: runEvidence,
+        consensus_certificate_sha256: authorization.consensus_certificate_sha256
       });
       return crypto.verify(
         null,
@@ -158,9 +162,12 @@ export class DaisyActivationGate {
       Object.values(adversarial).some(value => value !== true)) return false;
 
     const isSha256 = (value: string) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+    const consensusHash = record.consensus_authorization?.certificate_sha256;
     return isSha256(record.verification_root_sha256)
       && record.corpus_root_sha256 === record.verification_root_sha256
       && isSha256(record.run_evidence_sha256)
+      && isSha256(consensusHash || '')
+      && record.activation_authorization?.consensus_certificate_sha256 === consensusHash
       && this.verifyAuthorization(
         record.activation_authorization,
         record.source_commit_sha,
