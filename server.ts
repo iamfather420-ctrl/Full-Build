@@ -5,11 +5,12 @@ import path from 'node:path';
 import { readFileSync, statSync, accessSync, constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import apiRouter from './src/server/apiRouter';
+import { NeonStore } from './src/database/NeonPersistence';
 
 dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function daisyReadiness() {
+async function daisyReadiness() {
   const modelPath = process.env.DAISY_MODEL_PATH || '/opt/daisy/model.gguf';
   const enginePath = process.env.DAISY_LLAMA_CLI || '/usr/local/bin/llama-cli';
   let modelStatus = 'MODEL_DOWNLOAD_PENDING';
@@ -36,11 +37,21 @@ function daisyReadiness() {
     process.env.DATABASE_URL || process.env.NEON_DATABASE_URL ||
     process.env.Database_url || process.env.DATABASE_URL_FALLBACK
   );
+  // Configuration is not connection evidence. Probe Neon with a real SELECT 1
+  // before advertising readiness; connection errors remain fail-closed.
+  let databaseConnected = false;
+  if (databaseConfigured) {
+    try {
+      databaseConnected = await NeonStore.getInstance().connect();
+    } catch {
+      databaseConnected = false;
+    }
+  }
   const modelVerified = modelStatus === 'MODEL_FILE_VERIFIED' &&
     modelBytes === Number(process.env.DAISY_MODEL_BYTES || 105454176);
   return {
-    status: databaseConfigured && modelVerified && engineAvailable ? 'ready' : 'not_ready',
-    databaseConfigured,
+    status: databaseConnected && modelVerified && engineAvailable ? 'ready' : 'not_ready',
+    database: { configured: databaseConfigured, connected: databaseConnected },
     model: { status: modelStatus, verified: modelVerified, bytes: modelBytes },
     inferenceEngine: { available: engineAvailable },
   };
@@ -57,8 +68,8 @@ async function startServer() {
     status: 'ok',
     payments_enabled: false,
   }));
-  app.get('/readyz', (_req, res) => {
-    const readiness = daisyReadiness();
+  app.get('/readyz', async (_req, res) => {
+    const readiness = await daisyReadiness();
     res.setHeader('Cache-Control', 'no-store');
     res.status(readiness.status === 'ready' ? 200 : 503).json(readiness);
   });
