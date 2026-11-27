@@ -25,7 +25,7 @@ This document records implementation evidence without treating a passing CI job 
 
 1. Configure `DAISY_MODEL_PATH` to the exact verified GGUF and `DAISY_INFERENCE_ENGINE` to the approved local executable.
 2. Confirm `GET /api/daisy/status` reports `LOADABLE_NOT_YET_INFERRED`, the expected model digest matches the observed digest, and the foundational instruction is available.
-3. Run `npm run verify:daisy-conversation` in the staging runtime to execute four real first-party local generation scenarios (greeting, contextual follow-up, grammar correction, and software-development explanation). The command fails closed if model assets or the local engine are unavailable and emits digest-only prompt/reply evidence.
+3. The Daisy Render image-validation workflow starts the built image, downloads and verifies the pinned GGUF, and executes `bun scripts/verify_daisy_conversation.ts` inside the container. This performs four real first-party local generation scenarios (greeting, contextual follow-up, grammar correction, and software-development explanation) and emits reply previews plus digest evidence. It fails closed if model assets or the local engine are unavailable.
 4. Submit an authenticated `POST /api/daisy/chat` request with a simple greeting and empty history.
 5. Require HTTP 200, `success: true`, `runtime.source: first_party_local`, non-empty `text`, and `replyEvidence.sha256` matching the exact returned text.
 6. Submit a follow-up request with the first user/assistant turn in history. Verify that the answer uses that context.
