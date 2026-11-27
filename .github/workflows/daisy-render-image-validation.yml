@@ -50,7 +50,7 @@ jobs:
           container="daisy-pr-smoke-${GITHUB_RUN_ID}"
           cleanup() { docker logs "$container" || true; docker rm -f "$container" >/dev/null 2>&1 || true; }
           trap cleanup EXIT
-          docker run --detach --name "$container" -p 10000:10000 solvex-daisy-render:pr-validation
+          docker run --detach --name "$container" -e DAISY_INFERENCE_SMOKE_ONLY=true -p 10000:10000 solvex-daisy-render:pr-validation
           verified=0
           for attempt in $(seq 1 120); do
             if ! docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null | grep -q true; then
