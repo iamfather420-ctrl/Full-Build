@@ -1,8 +1,10 @@
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DaisyActivationGate, DaisyActivationGateRecord } from '../src/brain/DaisyActivationGate';
+import { DaisyActivationGate } from '../src/brain/DaisyActivationGate';
+import type { DaisyActivationGateRecord } from '../src/brain/DaisyActivationGate';
 import { verifyDaisyConsensusCertificate } from '../src/brain/DaisyConsensusCertificateVerifier';
-import { NeonDaisyConsensusStore, DaisyConsensusCertificateStore } from '../src/brain/NeonDaisyConsensusStore';
+import { NeonDaisyConsensusStore } from '../src/brain/NeonDaisyConsensusStore';
+import type { DaisyConsensusCertificateStore } from '../src/brain/NeonDaisyConsensusStore';
 import { canonicalJson } from '../src/brain/IndependentUnanimousConsensus';
 
 export interface ProductionConsensusGateDependencies {
