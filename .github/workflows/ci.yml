@@ -201,6 +201,8 @@ jobs:
         run: bunx tsx --test --test-concurrency=1 src/brain/CognitiveMilestone.test.ts src/brain/SecurityRepairs.test.ts src/brain/DaisyTrainingEvidence.test.ts src/security/RangeProof.test.ts src/proofs/ExternalProver.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts src/nodes/distributedProtocolModels.test.ts
       - name: 3-of-3 independent model consensus and Neon replay-store tests
         run: bun run test:consensus
+      - name: Production deployment requires fresh 3-of-3 consensus certificate
+        run: bun run test:production-consensus
       - name: Enterprise invariants
         run: bun run verify:enterprise
       - name: Formal verification corpus
