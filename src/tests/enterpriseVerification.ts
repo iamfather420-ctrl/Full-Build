@@ -122,6 +122,7 @@ export async function runEnterpriseVerification() {
   });
 
   // 5. Verify persisted-record tamper detection without claiming cross-restart durability.
+  // A local SQLite mutation test is not evidence of a persistent Render volume or restart survival.
   runTest('Audit Record Tamper Detection & Append Blocking (Durability Unverified)', 'AUDIT', () => {
     const store = DurableStore.getInstance();
     const sqlite = SqliteStore.getInstance();
