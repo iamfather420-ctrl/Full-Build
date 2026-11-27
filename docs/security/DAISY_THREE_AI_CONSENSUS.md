@@ -50,7 +50,7 @@ The additive migration is packages/db/migrations/0003_daisy_consensus_storage.sq
 The package build command now invokes scripts/verify-production-consensus.ts before Vite. Preview and local builds skip the production-only gate. A Vercel production build requires:
 
 1. a fresh ACTIVE activation record bound to VERCEL_GIT_COMMIT_SHA;
-2. all existing 120-corpus, adversarial, and 67 activation-gate checks to pass with zero provider-required gates;
+2. all existing 120-corpus, adversarial, and 46 system-gate checks to pass with zero provider-required gates;
 3. a valid root-signed three-model policy and three distinct signed approvals;
 4. proposal binding to the exact source commit, verification root, evidence hash, and rollback plan;
 5. a human-root activation signature binding the consensus certificate hash;
