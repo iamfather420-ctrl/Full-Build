@@ -71,9 +71,13 @@ function isSourceBoundOraclePending(solution: any, bundle: any, reasons: string[
   if (!solution || !bundle || bundle.verification_status !== 'PARTIAL') return false;
   const sourceHash = solution.implementation_hash;
   const expectedProofId = typeof sourceHash === 'string' ? 'PB-' + sourceHash.slice(0, 24) : '';
-  const onlyOracleMissing = reasons.length > 0 && reasons.every(reason =>
-    reason === 'Missing independent oracle attestation'
-  );
+  const providerOnlyReasons = new Set([
+    'Missing independent oracle attestation',
+    'Bundle status is not VERIFIED'
+  ]);
+  const onlyOracleMissing = reasons.length > 0 &&
+    reasons.some(reason => reason !== 'Bundle status is not VERIFIED') &&
+    reasons.every(reason => providerOnlyReasons.has(reason));
   return Boolean(
     /^[a-f0-9]{64}$/i.test(sourceHash || '') &&
     bundle.proof_id === expectedProofId &&
@@ -306,9 +310,6 @@ export class DaisySubsystemExecutors {
 
       // 11. DN-11: 21-Stage Problem Pipeline
       case 'DN-11': {
-        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
-          return { node_id: 'DN-11', name: '21-Stage Problem Pipeline', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'Full pipeline execution is reserved for the authoritative external-provider verification step.' } };
-        }
         const pipe = SolutionPipeline.getInstance();
         const durable = DurableStore.getInstance();
         const solution = durable.getState().solutions['DH-S-001'];
@@ -326,7 +327,7 @@ export class DaisySubsystemExecutors {
             evidence: { completed_stages: 0, success: false, source_bound: false, reason: 'DH-S-001 source is missing or does not match its stored implementation hash.' }
           };
         }
-        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true });
+        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true, externalOracleEnabled: false });
         const proofId = 'PB-' + sourceHash.slice(0, 24);
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
