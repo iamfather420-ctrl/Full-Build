@@ -8,6 +8,7 @@ import { SovereignApiRouter } from '../api/ApiRouter';
 import { readLiveRegistry } from '../registry/liveRegistry.mjs';
 import daisyVercelProxyRouter from '../api/DaisyVercelProxyRouter';
 import daisyInternalProxyRouter from '../api/DaisyInternalProxyRouter';
+import { executeRouter, scanRouter } from '../readiness/http';
 
 const router = express.Router();
 const authBoundary: express.RequestHandler = (req, res, next) => {
@@ -20,6 +21,8 @@ router.get('/healthz', (_req, res) => {
   res.status(200).json({ status: 'ok', payments_enabled: false });
 });
 
+router.use('/readiness', scanRouter);
+
 // Internal Vercel-to-Render calls require a service secret and a freshly verified signed tenant token.
 router.use('/daisy-internal', daisyInternalProxyRouter);
 
@@ -27,6 +30,7 @@ router.use('/daisy-internal', daisyInternalProxyRouter);
 // Daisy endpoints are mounted only after the shared middleware has resolved the session.
 router.use('/', pinoHttp({ logger }), cookieParser(), authBoundary, authRouter);
 router.use('/daisy', daisyVercelProxyRouter);
+router.use('/readiness', executeRouter);
 
 router.get('/registry', async (_req, res, next) => {
   try {

@@ -1,0 +1,12 @@
+-- DRAFT ONLY. Do not apply.
+-- Full-Build still has two migration ledgers and NeonPersistence blocks generic writes.
+-- This file is intentionally outside migrations/ so it is not auto-applied.
+
+-- create table if not exists readiness_audit (
+--   id text primary key,
+--   repository text not null,
+--   commit_sha text,
+--   status text not null,
+--   evidence jsonb not null,
+--   recorded_at timestamptz not null default now()
+-- );
