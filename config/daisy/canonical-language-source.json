@@ -2,9 +2,10 @@
   "schema": "solvex-daisy-canonical-learning-source/v1",
   "canonical_repository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
   "canonical_ref": "main",
-  "canonical_commit": "f05574caa02c9962f5ad14491fc0459116e733c2",
+  "canonical_commit": "b17b18bdf9366f0e245fe1f870bc05889d344dcf",
   "consumer_repository": "iamfather420-ctrl/Full-Build",
   "source_checkout_path": ".sources/loc-english-grammar-source-collection",
+  "learning_engine_gate": "manifests/learning-engine-gate-2026-11-27.json",
   "policy": {
     "require_immutable_commit": true,
     "require_source_hash_validation": true,
