@@ -279,12 +279,10 @@ export class LocalInferenceRuntime implements InferenceRuntime {
     }
 
     const timeoutMs = request.timeoutMs ?? DEFAULT_INFERENCE_TIMEOUT_MS;
-    const prompt = request.messages
-      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-      .join('\n\n');
+    const prompt = formatMessagesAsChatML(request.messages);
 
     try {
-      const text = extractCompletion(await this.runEngine(prompt, timeoutMs, request.signal), prompt);
+      const text = extractCompletion(await this.runEngine(prompt, timeoutMs, request.maxOutputTokens ?? 64, request.temperature ?? 0, request.signal), prompt);
       if (!text.trim()) {
         this.ready = false;
         this.loadState = 'INFERENCE_FAILED';
@@ -329,13 +327,13 @@ export class LocalInferenceRuntime implements InferenceRuntime {
     }
   }
 
-  private runEngine(prompt: string, timeoutMs: number, signal?: AbortSignal): Promise<string> {
+  private runEngine(prompt: string, timeoutMs: number, maxOutputTokens: number, temperature: number, signal?: AbortSignal): Promise<string> {
     return new Promise((resolve, reject) => {
       const engine = path.resolve(this.enginePath!);
       const model = path.resolve(this.modelPath!);
       // Generic CLI contract: engine --model <path> --prompt <text>
       // Operators may wrap llama.cpp / similar behind a thin adapter script.
-      const child = spawn(engine, ['--model', model, '--prompt', prompt], {
+      const child = spawn(engine, ['--model', model, '--prompt', prompt, '--max-tokens', String(maxOutputTokens), '--temperature', String(temperature)], {
         stdio: ['ignore', 'pipe', 'pipe'],
         env: createInferenceChildEnvironment(),
       });
