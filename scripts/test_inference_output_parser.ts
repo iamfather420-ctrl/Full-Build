@@ -47,12 +47,13 @@ test('does not treat timing-only output as a completion', () => {
 });
 
 
+
 test('extracts completion when a full ChatML prompt is echoed', () => {
   const prompt = formatMessagesAsChatML([
     { role: 'system', content: 'Be concise.' },
     { role: 'user', content: 'Explain a noun.' },
   ]);
-  const output = `${prompt}A noun names a person, place, thing, or idea.\\n\\n[ Prompt: 12.3 t/s ]`;
+  const output = \`\${prompt}A noun names a person, place, thing, or idea.\n\n[ Prompt: 12.3 t/s ]\`;
   assert.equal(extractCompletion(output, prompt), 'A noun names a person, place, thing, or idea.');
 });
 
@@ -72,11 +73,11 @@ test('serializes prior turns with correct ChatML role boundaries', () => {
       { role: 'assistant', content: 'Hello there.' },
       { role: 'user', content: 'Continue.' },
     ]),
-    '<|im_start|>system\\nFollow the system instruction.<|im_end|>\\n'
-      + '<|im_start|>user\\nHello.<|im_end|>\\n'
-      + '<|im_start|>assistant\\nHello there.<|im_end|>\\n'
-      + '<|im_start|>user\\nContinue.<|im_end|>\\n'
-      + '<|im_start|>assistant\\n',
+    '<|im_start|>system\nFollow the system instruction.<|im_end|>\n'
+      + '<|im_start|>user\nHello.<|im_end|>\n'
+      + '<|im_start|>assistant\nHello there.<|im_end|>\n'
+      + '<|im_start|>user\nContinue.<|im_end|>\n'
+      + '<|im_start|>assistant\n',
   );
 });
 
