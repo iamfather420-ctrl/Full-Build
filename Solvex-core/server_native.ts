@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import { existsSync, readFileSync, statSync } from 'node:fs';
-import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import { InferenceRouter } from '../src/inference/InferenceRouter';
 
@@ -31,23 +30,9 @@ for (const instructionPath of instructionPaths) {
   }
 }
 
-// External model providers are disabled by default. Daisy must not send prompts
-// to a third party unless the creator explicitly opts in at runtime.
-const apiKey = process.env.GEMINI_API_KEY;
-const allowExternalModelProvider = process.env.ALLOW_EXTERNAL_MODEL_PROVIDER === 'true';
-let ai: GoogleGenAI | null = null;
+// First-party-only policy: external AI providers are not supported by this runtime.
 const inferenceRouter = new InferenceRouter();
-
-if (apiKey && allowExternalModelProvider) {
-  ai = new GoogleGenAI({
-    apiKey,
-    httpOptions: { headers: { 'User-Agent': 'solvex-sovereign-core' } }
-  });
-} else {
-  console.warn(
-    'External model provider is disabled by default. Configure a first-party inference runtime, or explicitly set ALLOW_EXTERNAL_MODEL_PROVIDER=true to authorize the existing Gemini adapter.'
-  );
-}
+const externalProviderPolicy = 'DISABLED_BY_FIRST_PARTY_ONLY_REQUIREMENT';
 
 // Read-only Paradox Ledger evidence API. Reads persisted artifacts only; no web request
 // runs a verifier or upgrades stale records into proof.
@@ -220,11 +205,8 @@ app.post('/api/github/unify', (_req, res) => {
   });
 });
 
-// Daisy uses the canonical foundational instruction and fails closed if either
-// that instruction or the configured model provider is unavailable. No fake AI
-// replies, purchase-intent directives, or simulated operational success are returned.
-// Daisy: foundational instruction required. Prefer first-party local inference.
-// External Gemini only if explicitly opted in. Never invent successful intelligence.
+// Daisy uses the canonical foundational instruction and first-party local inference only.
+// External AI providers are prohibited by project policy. Never invent successful intelligence.
 // Inference status for operators (no secrets).
 app.get('/api/inference/status', async (_req, res) => {
   const { getLocalInferenceRuntime } = await import('../src/inference/LocalInferenceRuntime');
@@ -234,8 +216,9 @@ app.get('/api/inference/status', async (_req, res) => {
   return res.json({
     first_party: runtime.publicStatus(),
     language_model_training: DAISY_LOC_GRAMMAR_EVIDENCE,
-    external_provider_opt_in: allowExternalModelProvider,
-    external_provider_configured: Boolean(ai),
+    external_provider_opt_in: false,
+    external_provider_configured: false,
+    external_provider_policy: externalProviderPolicy,
     foundational_instruction_loaded: Boolean(foundationalSystemInstruction),
     filesystem_paths_exposed: false,
     activation_authorized: false,
@@ -284,38 +267,7 @@ app.post('/api/chat', async (req, res) => {
     });
   }
 
-  // 2) Optional external provider (explicit opt-in only)
-  if (ai) {
-    try {
-      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = history.map((msg: any) => ({
-        role: msg.sender === 'user' ? 'user' : 'model',
-        parts: [{ text: String(msg.text).slice(0, 8000) }],
-      }));
-      contents.push({ role: 'user', parts: [{ text: prompt }] });
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents,
-        config: { systemInstruction: foundationalSystemInstruction, temperature: 0.1 },
-      });
-      const replyText = response.text?.trim();
-      if (!replyText) {
-        return res.status(502).json({
-          success: false,
-          code: 'EMPTY_MODEL_RESPONSE',
-          status: 'BLOCKED',
-          error: 'The configured external model returned no response.',
-        });
-      }
-      return res.json({ success: true, text: replyText, source: 'configured_external_model' });
-    } catch {
-      return res.status(502).json({
-        success: false,
-        code: 'MODEL_REQUEST_FAILED',
-        status: 'BLOCKED',
-        error: 'The configured external model request failed. No simulated response was generated.',
-      });
-    }
-  }
+  // No external model fallback is permitted. The local runtime is the only inference path.
 
   // 3) Fail closed — report the first-party blocker honestly
   return res.status(503).json({
@@ -323,7 +275,7 @@ app.post('/api/chat', async (req, res) => {
     code: localOutcome.result.code || 'FIRST_PARTY_MODEL_UNAVAILABLE',
     status: 'BLOCKED',
     error: localOutcome.result.error
-      || 'External model providers are disabled. No prompt was sent to a third party; no first-party inference runtime is currently connected.',
+      || 'First-party local inference is unavailable. External AI providers are prohibited by policy; no prompt was sent to a third party.',
     runtime: localOutcome.runtime,
   });
 });
