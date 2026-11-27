@@ -216,7 +216,7 @@ function platformEvidence(): EvidenceRecord[] {
       filePath: OBSERVED_LANGUAGE_GATE.manifest,
       testExecuted: "Language-source training admission",
       expected: "Documents stay out of training unless the source manifest authorizes them",
-      actual: "Live fetch on 2026-11-27: gate, register, and inventory HTTP 200. Discover-Engine HTTP 404. 22 records discovered, 1 checksum matched (GSA LICENSE.md), 0 documents admitted, 0 used in training. Manifest training authorization remains false.",
+      actual: "Live review of 22 records: 79 of 79 acquired-file checksums matched, 0 documents admitted, 0 trained. The manifest authorization flag was not changed. A proposal is recorded and not applied. Solvex-Paradox-Box/Discover-Engine returned HTTP 404. iamfather420-ctrl/Discover-Engine is a different public repository and does not read this language collection.",
       status: "FAILED",
       state: "BLOCKED",
       failure: "Discovery-to-training is not connected. The refusal is intentional and is not a successful ingestion.",

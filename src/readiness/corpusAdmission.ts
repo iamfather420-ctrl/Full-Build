@@ -60,9 +60,70 @@ export function duplicateIds(documents: readonly Pick<SourceDocument, "id" | "sh
   return duplicates;
 }
 
-export function admitDocument(document: SourceDocument, manifest: ManifestGate, duplicateOf: string | null): AdmissionResult {
+export interface DocumentApproval {
+  documentId: string;
+  approver: string;
+  scope: "document" | "repository";
+  issuedAt: string;
+  expiresAt: string;
+  revokedAt: string | null;
+}
+
+export interface AdmissionEvent {
+  documentId: string;
+  at: string;
+  action: "BLOCKED" | "APPROVED" | "REVOKED";
+  actor: string;
+  reason: string;
+}
+
+export const ADMISSION_STAGES = [
+  "DISCOVERED",
+  "INTEGRITY_VERIFIED",
+  "LICENSE_VERIFIED",
+  "EXTRACTED",
+  "QUALITY_VERIFIED",
+  "REVIEWED",
+  "AUTHORIZED",
+  "ADMITTED",
+] as const;
+
+export type AdmissionStage = (typeof ADMISSION_STAGES)[number];
+
+export function appendAdmissionEvent(history: readonly AdmissionEvent[], event: AdmissionEvent): AdmissionEvent[] {
+  return [...history, { ...event }];
+}
+
+export function stageIndex(stage: AdmissionStage): number {
+  return ADMISSION_STAGES.indexOf(stage);
+}
+
+/** A later stage is not reached by skipping. ADMITTED is the only trainable stage. */
+export function canTrainAtStage(stage: AdmissionStage): boolean {
+  return stage === "ADMITTED";
+}
+
+export function approvalRefusal(approval: DocumentApproval | null, documentId: string, now: string): string | null {
+  if (!approval) return "No document-specific approval.";
+  if (approval.scope !== "document") return "A repository-level permission does not authorize this file.";
+  if (approval.documentId !== documentId) return "The approval names a different document.";
+  if (!approval.approver.trim()) return "The approval has no human approver.";
+  if (approval.revokedAt && approval.revokedAt <= now) return "The approval was revoked.";
+  if (approval.expiresAt <= now) return "The approval is expired.";
+  if (approval.issuedAt > now) return "The approval is not yet in force.";
+  return null;
+}
+export function admitDocument(
+  document: SourceDocument,
+  manifest: ManifestGate,
+  duplicateOf: string | null,
+  approval: DocumentApproval | null = null,
+  now = "2026-11-27T23:59:00.000Z",
+): AdmissionResult {
   const reasons: string[] = [];
   if (!manifest.modelTrainingAuthorized) reasons.push("Repository manifest does not authorize model training.");
+  const approvalReason = approvalRefusal(approval, document.id, now);
+  if (approvalReason) reasons.push(approvalReason);
   if (document.reviewStatus === "PENDING_REVIEW") reasons.push("Review status is PENDING_REVIEW.");
   if (!document.trainingEligible) reasons.push("training_eligible is not true.");
   if (document.trainingStatus !== "approved") reasons.push(`training_status is ${document.trainingStatus}, not approved.`);
@@ -80,12 +141,25 @@ export function admitDocument(document: SourceDocument, manifest: ManifestGate, 
   return { id: document.id, state: "ADMITTED", reasons: [] };
 }
 
-export function selectTrainingDocuments(documents: readonly SourceDocument[], manifest: ManifestGate): {
+export function selectTrainingDocuments(
+  documents: readonly SourceDocument[],
+  manifest: ManifestGate,
+  approvals: readonly DocumentApproval[] = [],
+  now = "2026-11-27T23:59:00.000Z",
+): {
   admitted: SourceDocument[];
   results: AdmissionResult[];
 } {
   const duplicates = duplicateIds(documents);
-  const results = documents.map((document) => admitDocument(document, manifest, duplicates.get(document.id) ?? null));
+  const results = documents.map((document) =>
+    admitDocument(
+      document,
+      manifest,
+      duplicates.get(document.id) ?? null,
+      approvals.find((item) => item.documentId === document.id) ?? null,
+      now,
+    ),
+  );
   const admittedIds = new Set(results.filter((result) => result.state === "ADMITTED").map((result) => result.id));
   return { admitted: documents.filter((document) => admittedIds.has(document.id)), results };
 }

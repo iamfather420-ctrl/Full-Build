@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { validateWeights } from "../../packages/daisy-weight-engine/src/assembler.js";
@@ -16,7 +17,10 @@ import {
 import { admitCorpus } from "./languageGate";
 import { readPersistedFiles } from "./persisted";
 import { scorePairs, summarizeScores, inferLoadedToken } from "./evaluation";
-import { admitDocument, REAL_MANIFEST_GATE, selectTrainingDocuments, sha256Hex, type SourceDocument } from "./corpusAdmission";
+import { admitDocument, appendAdmissionEvent, canTrainAtStage, REAL_MANIFEST_GATE, selectTrainingDocuments, sha256Hex, type DocumentApproval, type SourceDocument } from "./corpusAdmission";
+import { assessDiscoveryInterface } from "./discoveryLink";
+import { runContextProbe } from "./contextProbe";
+import { FINAL_LANGUAGE_EVALUATION } from "./evaluationSets";
 import type { GitHubClient, GitHubResponse } from "./github";
 import { completionOf } from "./scoring";
 import { resolveTasks } from "./remediation";
@@ -271,26 +275,52 @@ test("real manifest blocks CC0 and pending documents, including a checksum match
   assert.equal(selected.results.every((result) => result.state === "BLOCKED"), true);
 });
 
-test("an approved document is admitted only when the manifest allows it", () => {
+function validApproval(documentId: string, overrides: Partial<DocumentApproval> = {}): DocumentApproval {
+  return {
+    documentId,
+    approver: "human-reviewer-fixture",
+    scope: "document",
+    issuedAt: "2026-11-27T00:00:00.000Z",
+    expiresAt: "2026-12-27T00:00:00.000Z",
+    revokedAt: null,
+    ...overrides,
+  };
+}
+
+test("an approved document is admitted only when the manifest and a document approval allow it", () => {
   const document = admittedFixture(new TextEncoder().encode("fixture-bytes"));
-  const closed = admitDocument(document, REAL_MANIFEST_GATE, null);
+  const now = "2026-11-27T12:00:00.000Z";
+  const openManifest = { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false };
+  const closed = admitDocument(document, REAL_MANIFEST_GATE, null, validApproval(document.id), now);
   assert.equal(closed.state, "BLOCKED");
-  const open = admitDocument(document, { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false }, null);
+  const missingApproval = admitDocument(document, openManifest, null, null, now);
+  assert.equal(missingApproval.state, "BLOCKED");
+  const open = admitDocument(document, openManifest, null, validApproval(document.id), now);
   assert.equal(open.state, "ADMITTED");
   const corrupt = { ...document, observedSha256: "0".repeat(64), text: "short" };
-  const failed = admitDocument(corrupt, { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false }, null);
+  const failed = admitDocument(corrupt, openManifest, null, validApproval(document.id), now);
   assert.equal(failed.state, "BLOCKED");
   assert.equal(failed.reasons.some((reason) => reason.includes("Integrity")), true);
+  const repositoryScope = admitDocument(document, openManifest, null, validApproval(document.id, { scope: "repository" }), now);
+  assert.equal(repositoryScope.state, "BLOCKED");
+  const expired = admitDocument(document, openManifest, null, validApproval(document.id, { expiresAt: "2026-11-01T00:00:00.000Z" }), now);
+  assert.equal(expired.state, "BLOCKED");
+  const revoked = admitDocument(document, openManifest, null, validApproval(document.id, { revokedAt: "2026-11-27T01:00:00.000Z" }), now);
+  assert.equal(revoked.state, "BLOCKED");
+  const history = appendAdmissionEvent([], { documentId: document.id, at: now, action: "BLOCKED", actor: "gate", reason: "revoked" });
+  assert.equal(history.length, 1);
+  assert.equal(canTrainAtStage("LICENSE_VERIFIED"), false);
+  assert.equal(canTrainAtStage("ADMITTED"), true);
 });
 
 test("duplicate digests are not both admitted", () => {
   const document = admittedFixture(new TextEncoder().encode("same-bytes"));
   const copy = { ...document, id: "synthetic-duplicate", path: "fixtures/copy.txt" };
-  const selected = selectTrainingDocuments([document, copy], {
-    modelTrainingAuthorized: true,
-    trainingPipelineEnabled: false,
-    trainingCorpusGenerated: false,
-  });
+  const selected = selectTrainingDocuments(
+    [document, copy],
+    { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false },
+    [validApproval(document.id), validApproval(copy.id)],
+  );
   assert.equal(selected.admitted.length, 1);
   assert.equal(selected.results.find((result) => result.id === "synthetic-duplicate")?.state, "BLOCKED");
 });
@@ -308,4 +338,35 @@ test("micro-model inference fail-closes when the digest changes", () => {
   assert.equal(rejected.ok, false);
   assert.equal(rejected.code, "DIGEST_MISMATCH");
   assert.equal(rejected.token, null);
+});
+
+test("discovery fails closed when the interface cannot read the language repository", () => {
+  const missing = assessDiscoveryInterface({
+    repository: "Solvex-Paradox-Box/Discover-Engine",
+    httpStatus: 404,
+    routes: [],
+    readsLanguageRepository: false,
+  });
+  assert.equal(missing.state, "BLOCKED");
+  const academic = assessDiscoveryInterface({
+    repository: "iamfather420-ctrl/Discover-Engine",
+    httpStatus: 200,
+    routes: ["/v1/assertions", "/projects"],
+    readsLanguageRepository: false,
+  });
+  assert.equal(academic.state, "BLOCKED");
+  assert.match(academic.reason, /language repository/i);
+});
+
+test("the context probe does not retune the original held-out set", () => {
+  const probe = runContextProbe({ loadKernel, applySgd, evaluate, validateWeights });
+  assert.equal(probe.originalHeldOutAccuracy, 0);
+  assert.equal(probe.locDocumentsUsed, 0);
+  assert.equal(probe.finalSetUsedForTuning, false);
+  assert.equal(probe.finalUnseenAccuracy < 0.5, true);
+  assert.equal(probe.oneTokenFinalAccuracy === probe.finalUnseenAccuracy, false);
+  assertNoLeakage(AUTHORED_SEED, [...FINAL_LANGUAGE_EVALUATION]);
+  const review = JSON.parse(readFileSync(new URL("./artifacts/source-review-2026-11-27.json", import.meta.url), "utf8")) as { recordsAdmitted: number; recordsDiscovered: number };
+  assert.equal(review.recordsDiscovered, 22);
+  assert.equal(review.recordsAdmitted, 0);
 });

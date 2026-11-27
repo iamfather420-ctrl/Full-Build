@@ -10,7 +10,7 @@ Blocked and unverified checks stay in the score denominator. Not-applicable chec
 
 ## Daisy
 
-The authorized micro-run writes `artifacts/daisy-next-token-micro.weights.json`. A scan recomputes the SHA-256 and held-out score from those tensors. It does not trust the status fields alone. Held-out accuracy on the preserved artifact is 0 percent: the model predicts the memorized training successor, and the 50 percent threshold was not lowered. The language-source manifest does not authorize training. A live audit discovered 22 records, verified one checksum, and admitted none.
+The language-source manifest still does not authorize training. A later review hashed 79 acquired files and admitted none. The required manifest change is a proposal in `artifacts/proposed-manifest-change-2026-11-27.json` and has not been applied. Discover-Engine under `Solvex-Paradox-Box` returned HTTP 404; the public `iamfather420-ctrl/Discover-Engine` repository does not read this collection.
 
 The chat runtime in `src/inference` still identifies the transitional GGUF recorded in `verifiedDaisyModel.ts`. `replace-temporary` refuses to remove it. `FirstPartyInferenceRuntime` is left unchanged.
 
