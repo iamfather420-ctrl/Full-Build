@@ -24,7 +24,8 @@ type AuditChainVerification = {
   valid: boolean;
   total_records: number;
   source: 'SQLITE' | 'MEMORY';
-  durable: boolean;
+  disk_backed: boolean;
+  durable: false;
   signed: false;
   reason?: string;
 };
@@ -103,7 +104,7 @@ export class DurableStore {
       .sort((a, b) => a.index_num - b.index_num);
     const source: 'SQLITE' | 'MEMORY' = persisted.length > 0 ? 'SQLITE' : 'MEMORY';
     const chain = persisted.length > 0 ? persisted : this.state.audit_chain;
-    const base = { total_records: chain.length, source, durable: sqlite.isDiskBacked(), signed: false as const };
+    const base = { total_records: chain.length, source, disk_backed: sqlite.isDiskBacked(), durable: false as const, signed: false as const };
 
     if (persisted.length > 0 && this.state.audit_chain.length > 0) {
       if (persisted.length !== this.state.audit_chain.length) {
