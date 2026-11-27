@@ -10,7 +10,7 @@ async function main() {
   const runtime = getLocalInferenceRuntime();
   await runtime.probe();
   if (!runtime.canAttempt()) {
-    throw new Error('BLOCKED: verified first-party model weights or local inference engine are unavailable.');
+    throw new Error(`BLOCKED: verified first-party model weights or local inference engine are unavailable. Runtime: ${JSON.stringify(runtime.publicStatus())}`);
   }
 
   const evidence: Array<Record<string, unknown>> = [];
@@ -27,7 +27,13 @@ async function main() {
     const messages = buildConversationMessages(instruction, history, prompt);
     const result = await runtime.generate({ messages, timeoutMs: 60_000, maxOutputTokens: 512, temperature: 0 });
     if (result.status !== 'OK') {
-      throw new Error(`BLOCKED at conversation scenario ${index + 1}: ${result.code ?? result.status}. No substitute response was generated.`);
+      const diagnostic = {
+        status: result.status,
+        code: result.code ?? null,
+        error: (result.error ?? 'No diagnostic supplied').slice(0, 1_200),
+        runtime: runtime.publicStatus(),
+      };
+      throw new Error(`BLOCKED at conversation scenario ${index + 1}: ${JSON.stringify(diagnostic)}. No substitute response was generated.`);
     }
     const reply = attestGeneratedReply(result.text);
     evidence.push({
