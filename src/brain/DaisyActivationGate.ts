@@ -51,6 +51,7 @@ export interface DaisyActivationGateRecord {
   source_commit_sha: string;
   generated_at: string;
   activation_authorization?: DaisyActivationAuthorization;
+  consensus_authorization?: ConsensusCertificate;
 }
 
 let inMemoryRecord: DaisyActivationGateRecord | null = null;
