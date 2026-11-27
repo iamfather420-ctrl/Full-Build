@@ -1,0 +1,26 @@
+{
+  "schema": "solvex-daisy-canonical-learning-source/v1",
+  "canonical_repository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+  "canonical_ref": "main",
+  "canonical_commit": "f05574caa02c9962f5ad14491fc0459116e733c2",
+  "consumer_repository": "iamfather420-ctrl/Full-Build",
+  "source_checkout_path": ".sources/loc-english-grammar-source-collection",
+  "policy": {
+    "require_immutable_commit": true,
+    "require_source_hash_validation": true,
+    "require_source_specific_training_approval": true,
+    "never_train_not_evaluated_sources": true,
+    "never_treat_redistribution_permission_as_training_approval": true,
+    "require_gpu_training_runner_for_transformer_finetuning": true
+  },
+  "pipeline": [
+    "canonical_source_sync",
+    "provenance_and_checksum_validation",
+    "rights_and_training_eligibility_gate",
+    "approved_corpus_construction",
+    "tokenizer_and_dataset_validation",
+    "first_party_model_weight_training",
+    "held_out_evaluation_and_model_integrity",
+    "artifact_packaging_and_local_inference_compatibility"
+  ]
+}
