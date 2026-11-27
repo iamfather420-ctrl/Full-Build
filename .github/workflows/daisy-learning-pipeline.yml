@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Solvex-Paradox-Box/loc-english-grammar-source-collection
-          ref: f05574caa02c9962f5ad14491fc0459116e733c2
+          ref: b17b18bdf9366f0e245fe1f870bc05889d344dcf
           path: .sources/loc-english-grammar-source-collection
           fetch-depth: 1
           persist-credentials: false
@@ -51,10 +51,20 @@ jobs:
           set -euo pipefail
           python3 scripts/daisy_learning_pipeline.py \
             --source-root .sources/loc-english-grammar-source-collection \
-            --expected-commit f05574caa02c9962f5ad14491fc0459116e733c2 \
+            --expected-commit b17b18bdf9366f0e245fe1f870bc05889d344dcf \
+            --learning-engine-gate manifests/learning-engine-gate-2026-11-27.json \
             --output artifacts/daisy-learning-pipeline/preflight.json
           status="$(python3 -c 'import json; print(json.load(open("artifacts/daisy-learning-pipeline/preflight.json"))["status"])')"
           echo "status=$status" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          import json
+          d=json.load(open("artifacts/daisy-learning-pipeline/preflight.json", encoding="utf-8"))
+          with open(__import__("os").environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"training_authorized={str(d.get('training_authorized') is True).lower()}\n")
+              out.write(f"approved_source_count={d.get('approved_source_count', 0)}\n")
+              out.write(f"source_inventory_sha256={d.get('source_inventory_sha256', '')}\n")
+              out.write(f"learning_engine_gate_sha256={d.get('learning_engine_gate_sha256', '')}\n")
+          PY
 
       - name: Upload source-to-learning pipeline evidence
         uses: actions/upload-artifact@v4
