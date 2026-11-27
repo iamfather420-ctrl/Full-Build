@@ -82,7 +82,7 @@ export class DaisyActivationGate {
         (typeof require === 'function' ? require('node:crypto') : null);
       if (!crypto || !/^[A-Za-z0-9+/]+={0,2}$/.test(authorization.signature_base64)) return false;
       const payload = JSON.stringify({
-        schema: 'SOLVEX_DAISY_ACTIVATION_AUTHORIZATION_V1',
+        schema: 'SOLVEX_DAISY_ACTIVATION_AUTHORIZATION_V2',
         authorized_by: authorization.authorized_by.trim(),
         issued_at: authorization.issued_at,
         source_commit_sha: sourceCommit.toLowerCase(),
@@ -217,7 +217,7 @@ export class DaisyActivationGate {
   public static assertActive(): DaisyActivationGateRecord {
     const record = this.read();
     if (!record || !this.isFreshAndComplete(record)) {
-      throw new Error('DAISY_BRAIN_FAIL_CLOSED: fresh 120-case, adversarial, 67-gate evidence for this source revision is not ACTIVE');
+      throw new Error('DAISY_BRAIN_FAIL_CLOSED: fresh 120-case, adversarial, 67-gate, human-root, and 3-of-3 consensus evidence for this source revision is not ACTIVE');
     }
     return record;
   }
