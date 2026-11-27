@@ -34,7 +34,7 @@ function createFakePool() {
   const calls: Array<{ sql: string; values?: unknown[] }> = [];
   const nonces = new Set<string>();
   const certificates = new Map<string, ConsensusCertificate>();
-  const client: ConsensusPgClient = {
+  const client = {
     async query(sql: string, values: unknown[] = []) {
       calls.push({ sql, values });
       if (sql.startsWith('INSERT INTO public.daisy_consensus_nonces')) {
@@ -57,7 +57,7 @@ function createFakePool() {
       return { rows: [], rowCount: 0 };
     },
     release() {}
-  };
+  } as unknown as ConsensusPgClient;
   const pool: ConsensusPgPool = {
     async connect() { return client; },
     async end() {}
