@@ -71,6 +71,16 @@ export const ReadinessConsole: React.FC = () => {
         <Metric label="Daisy gates" value={percent(report?.daisyCompletion ?? 0)} />
         <Metric label="Passed / failed / blocked" value={`${report?.counts.passed ?? 0} / ${report?.counts.failed ?? 0} / ${report?.counts.blocked ?? 0}`} />
       </div>
+      {report?.acceptance ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Object.entries(report.acceptance).map(([key, value]) => (
+            <div key={key} className="rounded-xl border border-slate-800 bg-slate-950 px-4 py-3">
+              <p className="text-xs text-slate-500">{key}</p>
+              <p className="mt-1 font-mono text-sm text-slate-100">{String(value)}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
           <h3 className="font-semibold text-white">Completion center</h3>

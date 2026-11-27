@@ -10,7 +10,7 @@ Blocked and unverified checks stay in the score denominator. Not-applicable chec
 
 ## Daisy
 
-`packages/daisy-weight-engine` trains `daisy-next-token-micro`, an MLP next-token classifier, on an authored four-sentence instructional seed. The Library of Congress repository `Solvex-Paradox-Box/loc-english-grammar-source-collection` is discovered as a source candidate and is not copied into that training set.
+The authorized micro-run writes `artifacts/daisy-next-token-micro.weights.json`. A scan recomputes the SHA-256 and held-out score from those tensors. It does not trust the status fields alone. The language-source manifest does not authorize training, so no document from that repository is in the artifact.
 
 The chat runtime in `src/inference` still identifies the transitional GGUF recorded in `verifiedDaisyModel.ts`. `replace-temporary` refuses to remove it. `FirstPartyInferenceRuntime` is left unchanged.
 

@@ -7,10 +7,14 @@ import {
   AUTHORED_SEED,
   HELD_OUT,
   assertNoLeakage,
+  artifactDigest,
   forwardLast,
+  measureLoaded,
   pairsFrom,
   runDaisyPipeline,
 } from "./daisyPipeline";
+import { admitCorpus } from "./languageGate";
+import { readPersistedFiles } from "./persisted";
 import type { GitHubClient, GitHubResponse } from "./github";
 import { completionOf } from "./scoring";
 import { resolveTasks } from "./remediation";
@@ -148,4 +152,28 @@ test("complete-outstanding expands dependencies without destructive tasks", () =
 
 test("held-out pairs are not an empty fabricated success", () => {
   assert.ok(pairsFrom(HELD_OUT).length >= 3);
+});
+
+test("language repository documents are not admitted", () => {
+  const decision = admitCorpus("loc-english-grammar-source-collection");
+  assert.equal(decision.admitted, false);
+  assert.equal(decision.state, "BLOCKED");
+  assert.equal(decision.documentsAdmitted, 0);
+});
+
+test("a second SGD run reproduces the persisted artifact", () => {
+  const first = runDaisyPipeline({ loadKernel, applySgd, evaluate, validateWeights });
+  const second = runDaisyPipeline({ loadKernel, applySgd, evaluate, validateWeights });
+  assert.equal(first.artifactSha256, second.artifactSha256);
+  assert.notEqual(first.initSha256, first.artifactSha256);
+  assert.equal(first.weightsChanged, true);
+  const persisted = readPersistedFiles();
+  assert.equal(artifactDigest(persisted.model), first.artifactSha256);
+  assert.equal(persisted.report.artifactSha256, first.artifactSha256);
+  assert.equal(persisted.report.documentsAdmitted, 0);
+  assert.equal(persisted.report.proprietaryConversationalModel, "NOT_COMPLETE");
+  const measured = measureLoaded(persisted.model, { loadKernel, applySgd, evaluate, validateWeights });
+  assert.equal(measured.heldOutAccuracy, persisted.report.heldOutAccuracy);
+  assert.equal(measured.generatedText, persisted.report.generatedText);
+  assert.ok(Math.abs(measured.trainLoss - persisted.report.trainLossAfter) < 1e-9);
 });

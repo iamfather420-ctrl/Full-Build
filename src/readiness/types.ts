@@ -113,6 +113,18 @@ export interface ExecutionNote {
   results: Array<{ taskId: string; state: OperationalState; detail: string }>;
 }
 
+export interface AcceptanceReport {
+  trainingExecution: "PASS" | "FAIL" | "BLOCKED";
+  weightGeneration: "PASS" | "FAIL" | "BLOCKED";
+  artifactIntegrity: "PASS" | "FAIL" | "BLOCKED";
+  heldOutEvaluation: "PASS" | "FAIL" | "BLOCKED";
+  microInference: "PASS" | "FAIL" | "BLOCKED";
+  productionInferenceRouter: "BLOCKED";
+  discoveryIntegration: "BLOCKED";
+  languageCorpusAdmission: "BLOCKED";
+  proprietaryConversationalModel: "NOT_COMPLETE";
+}
+
 export interface ReadinessReport {
   generatedAt: string;
   integrationBase: string;
@@ -143,6 +155,7 @@ export interface ReadinessReport {
   evidence: EvidenceRecord[];
   sandbox: SandboxRecord | null;
   execution: ExecutionNote | null;
+  acceptance: AcceptanceReport;
   limitations: string[];
   historyDepth: number;
 }

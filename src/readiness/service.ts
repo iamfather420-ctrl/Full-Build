@@ -6,7 +6,9 @@ import { INTEGRATION_BASE, TRANSITIONAL_GGUF } from "./registry";
 import { resolveTasks, taskViews } from "./remediation";
 import { scanRepositories } from "./scanner";
 import { completionOf, countsOf, scoreCategories } from "./scoring";
-import type { EvidenceRecord, ExecutionNote, OperationalState, ReadinessReport, SandboxRecord, WeightFns } from "./types";
+import { languageSourceAdmission, OBSERVED_LANGUAGE_GATE } from "./languageGate";
+import { verifyPersistedArtifact } from "./persisted";
+import type { AcceptanceReport, EvidenceRecord, ExecutionNote, OperationalState, ReadinessReport, SandboxRecord, WeightFns } from "./types";
 
 const history = createAuditLog();
 let weightFns: WeightFns | null = null;
@@ -18,6 +20,42 @@ export function configureWeightEngine(fns: WeightFns): void {
 
 export function lastDaisyRun(): DaisyRun | null {
   return lastDaisy;
+}
+
+function acceptanceOf(run: DaisyRun | null): AcceptanceReport {
+  const gate = (id: string) => run?.gates.find((item) => item.id === id);
+  const status = (id: string): "PASS" | "FAIL" | "BLOCKED" => {
+    const item = gate(id);
+    if (!item) return "BLOCKED";
+    if (item.state === "BLOCKED") return "BLOCKED";
+    return item.passed ? "PASS" : "FAIL";
+  };
+  const load = status("load");
+  const infer = status("inference");
+  const micro = load === "PASS" && infer === "PASS" ? "PASS" : load === "BLOCKED" || infer === "BLOCKED" ? "BLOCKED" : "FAIL";
+  return {
+    trainingExecution: status("training-engine"),
+    weightGeneration: status("weights"),
+    artifactIntegrity: status("integrity"),
+    heldOutEvaluation: status("evaluation"),
+    microInference: micro,
+    productionInferenceRouter: "BLOCKED",
+    discoveryIntegration: "BLOCKED",
+    languageCorpusAdmission: "BLOCKED",
+    proprietaryConversationalModel: "NOT_COMPLETE",
+  };
+}
+
+function resolvedDaisy(explicit: DaisyRun | null | undefined): DaisyRun | null {
+  if (explicit !== undefined && explicit !== null) return explicit;
+  if (explicit === null) return null;
+  if (lastDaisy) return lastDaisy;
+  if (!weightFns) return null;
+  try {
+    return verifyPersistedArtifact(weightFns);
+  } catch {
+    return null;
+  }
 }
 
 function requireWeights(): WeightFns {
@@ -170,6 +208,33 @@ function platformEvidence(): EvidenceRecord[] {
       failure: "The readiness unit tests do not compile the whole Full-Build app.",
       remediation: "Run the repository build on the readiness branch and attach its log.",
     }),
+
+    evidence({
+      category: "integration-wiring",
+      weight: 2,
+      repository: "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+      filePath: OBSERVED_LANGUAGE_GATE.manifest,
+      testExecuted: "Language-source training admission",
+      expected: "Documents stay out of training unless the source manifest authorizes them",
+      actual: `${languageSourceAdmission().reason} Manifest flags: training authorized=${OBSERVED_LANGUAGE_GATE.modelTrainingAuthorizedByManifest}, pipeline enabled=${OBSERVED_LANGUAGE_GATE.trainingPipelineEnabled}, corpus generated=${OBSERVED_LANGUAGE_GATE.trainingCorpusGenerated}, added_to_training_inputs=${OBSERVED_LANGUAGE_GATE.addedToTrainingInputs}.`,
+      status: "FAILED",
+      state: "BLOCKED",
+      failure: "Discovery-to-training is not connected. The refusal is intentional and is not a successful ingestion.",
+      remediation: "Resolve PENDING_REVIEW on the LOC books, then pass extraction, license, and split checks before any admission.",
+    }),
+    evidence({
+      category: "ai-training",
+      weight: 2,
+      repository: "iamfather420-ctrl/Full-Build",
+      filePath: "src/discovery/DiscoverEngineClient.ts",
+      testExecuted: "DiscoverEngineClient responsibility check",
+      expected: "An executable ingestion path from the language repository into the trainer",
+      actual: "DiscoverEngineClient posts withheld assertions to /v1/assertions and rejects publishable reviews. It does not read the language repository. The micro-model corpus is the authored seed only.",
+      status: "FAILED",
+      state: "BLOCKED",
+      failure: "No discovery ingestion was executed.",
+      remediation: "Do not mark discovery complete from the client filename.",
+    }),
     evidence({
       category: "documentation",
       repository: "iamfather420-ctrl/Full-Build",
@@ -228,7 +293,7 @@ export async function buildReport(options?: {
   resetEvidenceSequence();
   const client = options?.client ?? liveGitHubClient();
   const env = options?.env ?? nodeEnv();
-  const daisy = options?.daisy === undefined ? lastDaisy : options.daisy;
+  const daisy = resolvedDaisy(options?.daisy);
   let remote;
   try {
     remote = await scanRepositories(client);
@@ -306,13 +371,14 @@ export async function buildReport(options?: {
     evidence: records,
     sandbox: options?.sandbox ?? null,
     execution: options?.execution ?? null,
+    acceptance: acceptanceOf(daisy),
     limitations,
     historyDepth: history.depth(),
   };
 }
 
 export async function scan(client?: GitHubClient): Promise<ReadinessReport> {
-  return buildReport({ client, daisy: lastDaisy });
+  return buildReport(lastDaisy ? { client, daisy: lastDaisy } : { client });
 }
 
 export async function execute(taskIds: readonly string[], approved: boolean, client?: GitHubClient): Promise<ReadinessReport> {
