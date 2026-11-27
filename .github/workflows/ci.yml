@@ -1,6 +1,7 @@
 name: Build and Enterprise CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [main, fix/46-gate-baseline-lifecycle-sandbox]
