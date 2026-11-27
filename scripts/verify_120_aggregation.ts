@@ -373,6 +373,9 @@ async function main() {
     gatesTotal === 46 &&
     gatesPassed === 46 &&
     gatesFailed === 0 &&
+    (gatesReport?.blocked_count ?? 0) === 0 &&
+    (gatesReport?.external_provider_required_count ?? 0) === 0 &&
+    (gatesReport?.failed_count ?? 0) === 0 &&
     consensusAuthorizationValid &&
     activationAuthorizationValid;
 
