@@ -36,9 +36,11 @@ export async function createDaisyConsensusRuntime(env: NodeJS.ProcessEnv = proce
   });
   const runtime = new DaisyConsensusRuntime(
     config,
-    new DockerIsolatedEvaluatorRunner(),
     store,
-    executor
+    executor,
+    new DockerIsolatedEvaluatorRunner(),
+    Date.now,
+    env.DAISY_POLICY_ROOT_PUBLIC_KEY
   );
   return Object.freeze({ runtime, store });
 }
