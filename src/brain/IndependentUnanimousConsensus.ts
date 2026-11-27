@@ -63,6 +63,16 @@ export interface ConsensusResult {
   blockers: string[];
 }
 
+export interface ConsensusCertificate {
+  protocol: 'SOLVEX_DAISY_INDEPENDENT_UNANIMOUS_CONSENSUS_V1';
+  proposal: ConsensusProposal;
+  policy_sha256: string;
+  input_bundle_sha256: string;
+  votes: SignedEvaluatorVote[];
+  generated_at: string;
+  certificate_sha256: string;
+}
+
 /** Canonical JSON for deterministic hashes and signature payloads. */
 export function canonicalJson(value: unknown): string {
   if (value === null || typeof value === 'string' || typeof value === 'boolean') {
