@@ -32,7 +32,8 @@ export function extractCompletion(stdout: string, prompt: string): string {
     .replace(/\r/g, '');
   const timingAt = normalized.search(/\n?\[ Prompt:/);
   const body = (timingAt >= 0 ? normalized.slice(0, timingAt) : normalized).trim();
-  const candidates = ['> ' + prompt, prompt];
+  const normalizedPrompt = prompt.trimEnd();
+  const candidates = ['> ' + normalizedPrompt, normalizedPrompt];
   let echoAt = -1;
   let echoLength = 0;
   for (const candidate of candidates) {
@@ -66,6 +67,8 @@ export function extractCompletion(stdout: string, prompt: string): string {
       && !line.startsWith('model ')
       && !line.startsWith('ftype ')
       && !line.startsWith('modalities ')
+      && !line.startsWith('/exit')
+      && !line.startsWith('/help')
       && !/^loading model/i.test(line)
       && !/^available commands/i.test(line)
       && !/^exiting\.\.\.$/i.test(line)
