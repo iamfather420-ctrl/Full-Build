@@ -53,8 +53,8 @@ export interface SubsystemExecutionResult extends RawNodeExecutionResult {
 }
 
 function isExternalProviderUnavailable(reason: string | undefined): boolean {
-  if (!reason) return false;
-  return /external probes are disabled|requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
+  if (!reason || isFirstPartyOracleUnavailable(reason)) return false;
+  return /external probes are disabled|requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \\(HTTP (?:404|408|429|5\\d\\d)\\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
 }
 
 function isFirstPartyOracleUnavailable(reason: string | undefined): boolean {
