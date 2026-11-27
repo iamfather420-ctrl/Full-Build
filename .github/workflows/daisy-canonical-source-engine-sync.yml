@@ -22,12 +22,12 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout Full-Build engine configuration
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
 
       - name: Checkout SolveX Paradox Box canonical language repository at immutable commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Solvex-Paradox-Box/loc-english-grammar-source-collection
           ref: f05574caa02c9962f5ad14491fc0459116e733c2

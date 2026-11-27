@@ -30,7 +30,7 @@ jobs:
       DAISY_MODEL_VERSION: ${{ vars.DAISY_MODEL_VERSION }}
     steps:
       - name: Checkout selected revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify runtime prerequisites without exposing secrets
         shell: bash

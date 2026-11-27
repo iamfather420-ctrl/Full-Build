@@ -25,7 +25,7 @@ jobs:
       LLAMA_CPP_COMMIT: c74c71a6f7a0b06df30f979520e5d9a86a4d60ad
     steps:
       - name: Checkout this bridge commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify source training run identity
         id: source
@@ -126,7 +126,7 @@ jobs:
           PY
 
       - name: Checkout pinned llama.cpp converter and runtime
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ggml-org/llama.cpp
           ref: ${{ env.LLAMA_CPP_COMMIT }}
