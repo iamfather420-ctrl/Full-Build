@@ -59,7 +59,7 @@ jobs:
           DAISY_BATCH_SIZE: "1"
         run: python training/daisy-smollm2/train_text.py
       - name: Upload checkpoint, metrics, and hash manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: daisy-loc-grammar-cpu-checkpoint
           path: artifacts/daisy-smollm2-loc-grammar/

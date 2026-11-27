@@ -38,7 +38,7 @@ jobs:
         run: node scripts/prepare_loc_english_corpus.mjs
 
       - name: Upload review-only corpus and audit
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: loc-english-quarantined-corpus
           path: artifacts/training/loc-english/

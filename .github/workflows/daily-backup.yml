@@ -104,7 +104,7 @@ jobs:
           echo "DUMP=$DUMP" >> "$GITHUB_ENV"
 
       - name: Upload code backup
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solvex-code-backup-${{ github.run_id }}
           path: solvex-backup-*.tar.gz
@@ -112,7 +112,7 @@ jobs:
           retention-days: 30
 
       - name: Upload verified Neon database dump
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solvex-neon-backup-${{ github.run_id }}
           path: neon-dump-*.dump

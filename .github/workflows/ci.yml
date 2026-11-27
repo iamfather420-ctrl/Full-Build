@@ -242,7 +242,7 @@ jobs:
           bun run verify:46-closure || node scripts/ci_nonproduction_gate_policy.mjs 46
       - name: Upload separate 45-gate and GATE-46 evidence
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solvex-45-gates-and-separate-46-closure-${{ github.sha }}
           path: |

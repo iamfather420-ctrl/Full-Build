@@ -99,7 +99,7 @@ jobs:
           } | tee stage6-build-evidence.txt
 
       - name: Upload Stage 6 build evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stage6-sandbox-build-evidence
           path: stage6-build-evidence.txt
