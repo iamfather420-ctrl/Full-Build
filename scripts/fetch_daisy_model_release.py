@@ -29,11 +29,17 @@ API = f"https://api.github.com/repos/{REPOSITORY}/releases/tags/{urllib.parse.qu
 
 
 def request(url: str):
-    req = urllib.request.Request(url, headers={
+    headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": "Daisy-First-Party-Model-Loader/1",
         "X-GitHub-Api-Version": "2022-11-28",
-    })
+    }
+    # Use the workflow's short-lived token only for GitHub API requests.
+    # Never forward credentials to release-asset or third-party hosts.
+    token = os.environ.get("GITHUB_TOKEN")
+    if token and urllib.parse.urlparse(url).hostname == "api.github.com":
+        headers["Authorization"] = f"Bearer {token}"
+    req = urllib.request.Request(url, headers=headers)
     return urllib.request.urlopen(req, timeout=60)
 
 
