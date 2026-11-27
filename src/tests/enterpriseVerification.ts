@@ -409,20 +409,44 @@ export async function runEnterpriseVerification() {
     if (!pp) throw new Error('DN-35 PayPal adapter missing from inventory');
   });
 
-  // 20. Crystal Clear Box projects only evidence that is actually persisted.
+  // 20. Crystal Clear Box projects only persisted, integrity-verified evidence.
   runTest('Crystal Clear Box Redaction Uses Persisted Evidence Only', 'AUDIT', () => {
     const engine = ProofEngine.getInstance();
+    const sqlite = SqliteStore.getInstance();
+    const persisted = sqlite.findAllRecords<any>('proof_bundles');
     const bundles = engine.getAllBundles();
+    const persistedIds = new Set(persisted.map(bundle => bundle.id));
+    if (bundles.length !== persisted.length ||
+        bundles.some(bundle => !persistedIds.has(bundle.proof_id))) {
+      throw new Error('Proof engine registry diverges from persisted SQLite proof records');
+    }
+
     for (const bundle of bundles) {
+      const integrity = engine.verifyBundleIntegrity(bundle);
+      if (bundle.verification_status !== 'VERIFIED' || !integrity.verified) {
+        // Invalid, incomplete, or untrusted evidence must be rejected, not
+        // silently projected or upgraded to a customer-visible proof.
+        let rejected = false;
+        try { CrystalClearBox.projectCustomerEvidence(bundle); }
+        catch { rejected = true; }
+        if (!rejected) throw new Error('Unverified or untrusted persisted proof was exposed to a customer');
+        continue;
+      }
+
       const customerView = CrystalClearBox.projectCustomerEvidence(bundle);
       if (!customerView.proprietary_weights_redacted) throw new Error('Proprietary weights not marked redacted');
       if (!customerView.internal_reasoning_redacted) throw new Error('Internal reasoning not marked redacted');
       if (!customerView.public_audit_token || customerView.public_audit_token.length !== 64) {
         throw new Error('Customer public audit token invalid');
       }
+      if (customerView.evidence_statements.length !== 0 ||
+          customerView.claim !== bundle.claim ||
+          customerView.claim_hash !== bundle.claim_hash) {
+        throw new Error('Customer projection included non-allowlisted or non-source-bound evidence');
+      }
     }
-    // An empty evidence store is valid; the test must not create a fake proof to make itself pass.
-    if (bundles.length === 0 && Object.keys(DurableStore.getInstance().getState().proof_bundles).length !== 0) {
+    // An empty evidence store is valid; never create a fake proof to satisfy this invariant.
+    if (bundles.length === 0 && persisted.length !== 0) {
       throw new Error('Proof engine failed to load persisted proof records');
     }
   });
