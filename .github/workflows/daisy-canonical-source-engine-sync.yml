@@ -1,0 +1,83 @@
+name: Daisy Canonical SolveX Source Engine Sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "feat/daisy-canonical-source-engine-wiring-*"
+    paths:
+      - ".github/workflows/daisy-canonical-source-engine-sync.yml"
+      - "config/daisy/canonical-language-source.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daisy-canonical-source-engine-sync
+  cancel-in-progress: false
+
+jobs:
+  discover-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Full-Build engine configuration
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Checkout SolveX Paradox Box canonical language repository at immutable commit
+        uses: actions/checkout@v4
+        with:
+          repository: Solvex-Paradox-Box/loc-english-grammar-source-collection
+          ref: f05574caa02c9962f5ad14491fc0459116e733c2
+          path: .sources/loc-english-grammar-source-collection
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify canonical source identity and inventory
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git -C .sources/loc-english-grammar-source-collection rev-parse HEAD)"
+          expected="f05574caa02c9962f5ad14491fc0459116e733c2"
+          test "$actual" = "$expected"
+          python .sources/loc-english-grammar-source-collection/scripts/validate_sources.py \
+            > artifacts-source-validation.json
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path(".sources/loc-english-grammar-source-collection/manifests/source-inventory.json")
+          inventory=json.loads(p.read_text(encoding="utf-8"))
+          policy=inventory.get("policy", {})
+          if policy.get("no_automatic_training") is not True:
+              raise SystemExit("BLOCKED: canonical source policy does not prohibit automatic training")
+          if policy.get("source_specific_license_assessment_required") is not True:
+              raise SystemExit("BLOCKED: source-specific license assessment requirement missing")
+          for source in inventory.get("acquired_sources", []):
+              if source.get("training_status") != "not_evaluated" or source.get("training_pipeline_enabled") is not False:
+                  raise SystemExit(f"BLOCKED: source training quarantine changed: {source.get('source_id')}")
+          loc=inventory.get("preserved_collections", [])
+          if len(loc) != 1 or loc[0].get("source_count") != 6:
+              raise SystemExit("BLOCKED: original six-book LOC collection identity changed")
+          print(json.dumps({
+              "status":"SOURCE_DISCOVERY_AND_PROVENANCE_VALIDATED",
+              "repository":"Solvex-Paradox-Box/loc-english-grammar-source-collection",
+              "commit":"f05574caa02c9962f5ad14491fc0459116e733c2",
+              "acquired_sources":len(inventory["acquired_sources"]),
+              "new_sources_training_enabled":0,
+              "original_loc_books_preserved":6,
+              "model_training_started":False,
+              "reason":"All four acquired source subsets remain not_evaluated; no automatic training is permitted."
+          },indent=2))
+          PY
+          cat artifacts-source-validation.json
+
+      - name: Upload source verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: daisy-canonical-source-verification
+          path: |
+            artifacts-source-validation.json
+          if-no-files-found: error
+          retention-days: 30
