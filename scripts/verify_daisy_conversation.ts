@@ -34,6 +34,7 @@ async function main() {
       scenario: index + 1,
       promptSha256: createHash('sha256').update(prompt).digest('hex'),
       reply: reply.evidence,
+      replyPreview: reply.text.slice(0, 1_000),
       runtimeId: result.runtimeId,
       modelId: result.modelId,
       modelVersion: result.modelVersion,
