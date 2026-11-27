@@ -26,6 +26,7 @@ EXPECTED_MODEL_ID = "HuggingFaceTB/SmolLM2-135M-Instruct"
 EXPECTED_LLAMA_CPP_COMMIT = "c74c71a6f7a0b06df30f979520e5d9a86a4d60ad"
 DESTINATION = pathlib.Path(os.environ.get("DAISY_MODEL_PATH", "/opt/daisy/model.gguf"))
 API = f"https://api.github.com/repos/{REPOSITORY}/releases/tags/{urllib.parse.quote(RELEASE_TAG, safe='')}"
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN') or os.environ.get('GH_TOKEN')
 
 
 def request(url: str):
@@ -34,6 +35,8 @@ def request(url: str):
         "User-Agent": "Daisy-First-Party-Model-Loader/1",
         "X-GitHub-Api-Version": "2022-11-28",
     })
+    if GITHUB_TOKEN:
+        req.add_header('Authorization', f'Bearer {GITHUB_TOKEN}')
     return urllib.request.urlopen(req, timeout=60)
 
 
