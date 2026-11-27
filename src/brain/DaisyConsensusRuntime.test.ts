@@ -235,8 +235,8 @@ test('tampered root-signed policy configuration is rejected at construction', ()
   );
 });
 
-test('durable nonce store refuses the in-memory SQLite fallback', () => {
-  assert.rejects(
+test('Neon consensus store refuses missing connection and tenant configuration', async () => {
+  await assert.rejects(
     () => NeonDaisyConsensusStore.fromEnvironment({}),
     /DATABASE_URL_EXPECTED_HOST_TENANT_ID_AND_SOLVEX_ENV_REQUIRED/
   );
