@@ -153,12 +153,19 @@ export class DaisyConsensusRuntime {
     const modelIds = new Set<string>();
     const modelWeights = new Set<string>();
     const runtimeCodes = new Set<string>();
+    const imageDigests = new Set<string>();
     for (const evaluator of config.evaluators) {
+      if (!/^[a-f0-9]{64}$/.test(evaluator.model_weights_sha256) ||
+          !/^[a-f0-9]{64}$/.test(evaluator.runtime_code_sha256) ||
+          !/^[a-f0-9]{64}$/.test(evaluator.image_digest)) fail('EVALUATOR_MODEL_LINEAGE_INVALID');
       if (modelIds.has(evaluator.model_id) || modelWeights.has(evaluator.model_weights_sha256) ||
-          runtimeCodes.has(evaluator.runtime_code_sha256)) fail('EVALUATOR_MODEL_LINEAGES_MUST_BE_DISTINCT');
+          runtimeCodes.has(evaluator.runtime_code_sha256) || imageDigests.has(evaluator.image_digest)) {
+        fail('EVALUATOR_MODEL_LINEAGES_MUST_BE_DISTINCT');
+      }
       modelIds.add(evaluator.model_id);
       modelWeights.add(evaluator.model_weights_sha256);
       runtimeCodes.add(evaluator.runtime_code_sha256);
+      imageDigests.add(evaluator.image_digest);
       if (!isPinnedEvaluatorImage(evaluator.image) || evaluator.image.slice(evaluator.image.lastIndexOf('sha256:') + 7) !== evaluator.image_digest) fail('EVALUATOR_IMAGE_NOT_IMMUTABLY_PINNED');
       if (evaluatorImages.has(evaluator.image)) fail('EVALUATOR_IMAGES_MUST_BE_DISTINCT');
       evaluatorImages.add(evaluator.image);
