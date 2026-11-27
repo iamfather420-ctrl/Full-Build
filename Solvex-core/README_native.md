@@ -1,20 +1,32 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# SolveX Core Native Server
 
-# Run and deploy your AI Studio app
+The native server entrypoint is governed by the first-party-only inference boundary. It uses the repository's local InferenceRouter; it does not call a third-party AI API or accept an external model-provider key.
 
-This contains everything you need to run your app locally.
+## Runtime requirements
 
-View your app in AI Studio: https://ai.studio/apps/15869ceb-5af7-4e0d-83f0-01fa3292a4cc
+- Node.js 22 or the repository-pinned runtime
+- A verified local model artifact
+- An executable local inference engine configured on the host
 
-## Run Locally
+Configure the server with the verified local runtime paths and identity:
 
-**Prerequisites:**  Node.js
+- DAISY_MODEL_PATH
+- DAISY_INFERENCE_ENGINE
+- DAISY_MODEL_ID
+- DAISY_MODEL_VERSION
 
+A model file or engine path is not proof that inference works. The runtime must pass its checksum, execution, and output-validation checks. If the local runtime or foundational instruction is unavailable, Daisy returns an explicit BLOCKED result. No remote AI fallback or simulated reply is used.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Repository commands
+
+Run commands from the repository root so the committed Bun lockfile and root package scripts remain authoritative:
+
+- bun run test:local-inference
+- bun run verify:release-safety
+- bun run build
+
+The retained package_native.json is not a standalone package-manager lockfile. Do not run an independent install in this subdirectory.
+
+## Release boundary
+
+This documentation does not authorize production deployment, model activation, payment activation, or changes to the human root of trust.

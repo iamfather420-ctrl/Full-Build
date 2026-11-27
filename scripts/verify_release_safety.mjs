@@ -12,10 +12,20 @@ const nativeDaisy = read('Solvex-core/server_native.ts');
 const inferenceRouter = read('src/inference/InferenceRouter.ts');
 const firstPartyVerifier = read('scripts/verify_first_party_runtime.mjs');
 const stage14Oracle = read('src/security/IndependentModelOracle.ts');
-const firstPartyOnlySources = [nativeDaisy, inferenceRouter, firstPartyVerifier, stage14Oracle].join('\n');
+const outreachGateway = read('artifacts/api-server/src/outreach-index.ts');
+const outreachEngine = read('artifacts/api-server/src/lib/outreach.ts');
+const envExample = read('.env.example');
+const nativePackage = JSON.parse(read('Solvex-core/package_native.json'));
+const nativeReadme = read('Solvex-core/README_native.md');
+const firstPartyOnlySources = [
+  nativeDaisy, inferenceRouter, firstPartyVerifier, stage14Oracle,
+  outreachGateway, outreachEngine, envExample, JSON.stringify(nativePackage), nativeReadme
+].join('\n');
 for (const forbidden of [
   'GoogleGenAI', '@google/genai', 'GEMINI_API_KEY', 'ALLOW_EXTERNAL_MODEL_PROVIDER',
-  'gemini-', 'gpt-4o-mini', 'full-build.fly.dev', 'solvex-oracle-signer-isolated'
+  'ALLOW_EXTERNAL_OUTREACH_PROVIDER', 'OPENAI_API_KEY', 'SOLVEX_FLY',
+  'api.openai.com', 'generativelanguage.googleapis.com', 'gemini-', 'gpt-4o-mini',
+  'full-build.fly.dev', 'solvex-oracle-signer-isolated'
 ]) {
   assert.equal(firstPartyOnlySources.includes(forbidden), false,
     'Daisy inference and Stage 14 must not contain third-party AI provider code: ' + forbidden);
@@ -26,6 +36,20 @@ assert.equal(stage14Oracle.includes('fetch('), false,
   'Stage 14 must not make remote evaluator or signer requests');
 assert.equal(packageJson.dependencies?.['@google/genai'], undefined,
   'the unused third-party Gemini SDK must not remain a direct runtime dependency');
+assert.match(outreachGateway, /app\.post\(["']\/api\/stage14\/evaluate["'][\s\S]*?res\.status\(410\)/,
+  'the server-side Stage 14 evaluator endpoint must be explicitly disabled');
+assert.doesNotMatch(outreachGateway, /api\.openai\.com|OPENAI_API_KEY|solvex-single-openai-evaluator-v1/,
+  'the Stage 14 gateway must not retain a remote AI evaluator');
+assert.match(outreachEngine, /BLOCKED: Daisy first-party outreach inference is unavailable/,
+  'outreach must fail closed when local inference is unavailable');
+assert.doesNotMatch(outreachEngine, /api\.openai\.com|OPENAI_API_KEY|ALLOW_EXTERNAL_OUTREACH_PROVIDER|SOLVEX_FLY/,
+  'outreach must not contain an external AI fallback');
+assert.doesNotMatch(envExample, /GEMINI_API_KEY|OPENAI_API_KEY|ALLOW_EXTERNAL_MODEL_PROVIDER|ALLOW_EXTERNAL_OUTREACH_PROVIDER|SOLVEX_FLY/,
+  'the environment template must not advertise third-party AI provider credentials');
+assert.equal(nativePackage.dependencies?.['@google/genai'], undefined,
+  'the native subproject manifest must not reintroduce a third-party AI SDK');
+assert.doesNotMatch(nativeReadme, /GEMINI_API_KEY|OPENAI_API_KEY|GoogleGenAI|Gemini|OpenAI/,
+  'native server documentation must describe the local-only runtime');
 
 assert.match(auth, /createSignedToken[\s\S]*throw new Error\('BLOCKED:/,
   'local token creation must fail closed');
@@ -71,4 +95,4 @@ assert.match(migrationMethod, /BLOCKED: generic Neon migrations are disabled/);
 assert.match(genericWriteMethod, /BLOCKED: generic Neon writes are disabled/);
 assert.doesNotMatch(neon, /CREATE TABLE IF NOT EXISTS|ALTER TABLE|INSERT INTO/,
   'legacy generic Neon persistence must not mutate or write to the incompatible schema');
-console.log('PASS: fail-closed security and payments; frozen Bun install; workflow commands match package scripts.');
+console.log('PASS: fail-closed security, payments, and first-party-only AI paths; frozen Bun install; workflow commands match package scripts.');
