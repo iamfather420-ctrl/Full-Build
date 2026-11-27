@@ -16,8 +16,10 @@ assert.match(instruction, /Evidence comes before claims/);
 assert.match(entrypoint, /import ['\"]\.\/server_native['\"]/);
 assert.match(server, /readFileSync/);
 assert.match(server, /DISABLED_BY_FIRST_PARTY_ONLY_REQUIREMENT/);
-assert.doesNotMatch(server, /GoogleGenAI|@google\\/genai|GEMINI_API_KEY|ALLOW_EXTERNAL_MODEL_PROVIDER|generateContent/,
-  'Daisy must not contain an external AI provider path or environment opt-in.');
+for (const forbidden of ['GoogleGenAI', '@google/genai', 'GEMINI_API_KEY', 'ALLOW_EXTERNAL_MODEL_PROVIDER', 'generateContent']) {
+  assert.equal(server.includes(forbidden), false,
+    'Daisy must not contain an external AI provider path or environment opt-in: ' + forbidden);
+}
 assert.match(server, /role: 'system' as const, content: foundationalSystemInstruction/,
   'The canonical instruction must be passed to the first-party local runtime as the system message.');
 assert.match(server, /FOUNDATIONAL_INSTRUCTION_UNAVAILABLE/);
