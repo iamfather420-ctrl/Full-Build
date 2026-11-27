@@ -46,7 +46,7 @@ export class SolutionPipeline {
     'Stage 11: Z3 SMT Formal Theorem Verification',
     'Stage 12: Machine-Checked Proof Certificate Generation',
     'Stage 13: Deterministic Cleanroom Test Suite Execution',
-    'Stage 14: External Model Oracle Attestation',
+    'Stage 14: Independent First-Party Oracle Attestation',
     'Stage 15: Bitrot & Replay Divergence Validation',
     'Stage 16: Defensible Pricing Formula v1.4 Execution',
     'Stage 17: Redacted Customer Evidence Generation',
@@ -94,7 +94,7 @@ export class SolutionPipeline {
     return SolutionPipeline.instance;
   }
 
-  public async runPipeline(paradoxCode: string, codeSolution: string, options: { continueAfterFailure?: boolean; continueAfterProviderRequired?: boolean } = {}): Promise<PipelineExecutionResult> {
+  public async runPipeline(paradoxCode: string, codeSolution: string, options: { continueAfterFailure?: boolean; continueAfterProviderRequired?: boolean; externalOracleEnabled?: boolean } = {}): Promise<PipelineExecutionResult> {
     const traces: PipelineExecutionResult['stage_traces'] = [];
     const started = Date.now();
     const normalizedCode = typeof codeSolution === 'string' ? codeSolution.replace(/\r\n/g, '\n').trim() : '';
@@ -226,6 +226,12 @@ export class SolutionPipeline {
         : fail('Normalized source replay diverged.');
     });
     await runStage(14, async () => {
+      if (options.externalOracleEnabled !== true) {
+        return block('Independent oracle provider is required; external probes are disabled.', {
+          independent_oracle_count: 0,
+          external_provider_required: true
+        });
+      }
       try {
         const attestation = await IndependentModelOracle.verify({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode });
         oracleAttestation = attestation;
@@ -291,7 +297,7 @@ export class SolutionPipeline {
         } else {
           const oracleStage = traces.find(stage => stage.stage === 14);
           const providerUnavailable = oracleStage?.status === 'BLOCKED' &&
-            /Pinned external signer identity and Ed25519 public key are required|requires GitHub Actions OIDC permission|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|signer self-test endpoint/i.test(oracleStage.reason ?? '');
+            /independent oracle provider is required|external probes are disabled|Pinned external signer identity and Ed25519 public key are required|requires GitHub Actions OIDC permission|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|signer self-test endpoint/i.test(oracleStage.reason ?? '');
           builder.addLimitation(providerUnavailable
             ? 'Independent oracle attestation is unavailable; this bundle is not VERIFIED.'
             : 'Independent oracle attestation did not complete successfully; this bundle remains unverified.');

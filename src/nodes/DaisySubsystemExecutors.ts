@@ -54,7 +54,7 @@ export interface SubsystemExecutionResult extends RawNodeExecutionResult {
 
 function isExternalProviderUnavailable(reason: string | undefined): boolean {
   if (!reason) return false;
-  return /requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
+  return /independent oracle provider is required|external probes are disabled|requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
 }
 
 function hasMeaningfulEvidence(value: unknown): boolean {
@@ -71,9 +71,14 @@ function isSourceBoundOraclePending(solution: any, bundle: any, reasons: string[
   if (!solution || !bundle || bundle.verification_status !== 'PARTIAL') return false;
   const sourceHash = solution.implementation_hash;
   const expectedProofId = typeof sourceHash === 'string' ? 'PB-' + sourceHash.slice(0, 24) : '';
-  const onlyOracleMissing = reasons.length > 0 && reasons.every(reason =>
-    reason === 'Missing independent oracle attestation'
-  );
+  const providerOnlyReasons = new Set([
+    'Missing independent oracle attestation',
+    'Bundle status is not VERIFIED',
+    'Oracle signatures require verification against configured trusted keys'
+  ]);
+  const onlyOracleMissing = reasons.length > 0 &&
+    reasons.some(reason => reason !== 'Bundle status is not VERIFIED') &&
+    reasons.every(reason => providerOnlyReasons.has(reason));
   return Boolean(
     /^[a-f0-9]{64}$/i.test(sourceHash || '') &&
     bundle.proof_id === expectedProofId &&
@@ -181,7 +186,7 @@ export class DaisySubsystemExecutors {
         const bundle = expectedProofId ? engine.getBundle(expectedProofId) : undefined;
         const integrity = bundle ? engine.verifyBundleIntegrity(bundle) : { verified: false, reasons: ['No source-bound proof candidate is attached to DH-S-001.'] };
         const providerRequired = isSourceBoundOraclePending(solution, bundle, integrity.reasons);
-        const projection = bundle ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
+        const projection = bundle && integrity.verified ? CrystalClearBox.projectCustomerEvidence(bundle) : null;
         const passed = Boolean(integrity.verified && projection && projection.verification_verdict === 'VERIFIED' && projection.proprietary_weights_redacted && projection.internal_reasoning_redacted);
         return {
           node_id: 'DN-05',
@@ -204,52 +209,66 @@ export class DaisySubsystemExecutors {
         };
       }
 
-      // 6. DN-06: Linear SHA-256 Merkle Ledger
+      // 6. DN-06: Linear SHA-256 Audit Hash Chain (unsigned; not a Merkle tree)
       case 'DN-06': {
         const store = DurableStore.getInstance();
-        const rec = store.appendAudit('TENANT_ROOT', 'DN-06', 'CHAIN_TEST', 'LEDGER', 'REC_01', { payload: 'merkle_link' });
-        const valid = store.verifyChain().valid;
+        const rec = store.appendAudit('TENANT_ROOT', 'DN-06', 'CHAIN_TEST', 'LEDGER', 'REC_01', { payload: 'audit_chain_link' });
+        const verification = store.verifyChain();
         return {
           node_id: 'DN-06',
-          name: 'Linear SHA-256 Merkle Ledger',
+          name: 'Linear SHA-256 Audit Hash Chain',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: valid ? 'SUCCESS' : 'FAIL_CLOSED',
+          status: verification.valid ? 'SUCCESS' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { record_hash: rec.record_hash, chain_valid: valid }
+          evidence: {
+            record_hash: rec.record_hash,
+            chain_valid: verification.valid,
+            source: verification.source,
+            disk_backed: verification.disk_backed,
+            durable_across_restart_verified: verification.durable,
+            signed: verification.signed,
+            ledger_type: 'LINEAR_HASH_CHAIN_NOT_MERKLE'
+          }
         };
       }
 
-      // 7. DN-07: Anti-Tamper Sentinel Monitor
+      // 7. DN-07: Persistent Audit Record Tamper Detection
       case 'DN-07': {
         const store = DurableStore.getInstance();
-        const chain = store.getState().audit_chain;
-        if (chain.length > 0) {
-          const orig = chain[chain.length - 1].payload_hash;
-          chain[chain.length - 1].payload_hash = 'deadbeef'.repeat(8);
-          const detected = !store.verifyChain().valid;
-          chain[chain.length - 1].payload_hash = orig;
-          return {
-            node_id: 'DN-07',
-            name: 'Anti-Tamper Sentinel Monitor',
-            category: 'AUDIT',
-            executed: true,
-            claim_scope: 'LOCAL',
-            status: detected ? 'SUCCESS' : 'FAIL_CLOSED',
-            duration_ms: performance.now() - start,
-            evidence: { mutation_alarm_tripped: detected }
-          };
+        const sqlite = SqliteStore.getInstance();
+        if (store.getState().audit_chain.length === 0) {
+          store.appendAudit('TENANT_SENTINEL', 'DN-07', 'SENTINEL_SEED', 'AUDIT', 'SENTINEL_01', { seed: true });
         }
+        const target = store.getState().audit_chain[store.getState().audit_chain.length - 1];
+        const originalHash = target.payload_hash;
+        const changed = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+          payload_hash: 'deadbeef'.repeat(8)
+        });
+        const tamperDetected = changed === 1 && !store.verifyChain().valid;
+        const restored = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+          payload_hash: originalHash
+        });
+        const chainRestored = restored === 1 && store.verifyChain().valid;
+        const diskBacked = sqlite.isDiskBacked();
         return {
           node_id: 'DN-07',
-          name: 'Anti-Tamper Sentinel Monitor',
+          name: 'Persistent Audit Record Tamper Detection',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: 'SUCCESS',
+          status: tamperDetected && chainRestored ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { sentinel: 'ACTIVE' }
+          evidence: {
+            persistent_record_mutation: changed === 1,
+            mutation_alarm_tripped: tamperDetected,
+            original_record_restored: chainRestored,
+            disk_backed_store: diskBacked,
+            durable_across_restart_verified: false,
+            persistence_provider_required: true,
+            signed: false
+          }
         };
       }
 
@@ -306,9 +325,6 @@ export class DaisySubsystemExecutors {
 
       // 11. DN-11: 21-Stage Problem Pipeline
       case 'DN-11': {
-        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
-          return { node_id: 'DN-11', name: '21-Stage Problem Pipeline', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'Full pipeline execution is reserved for the authoritative external-provider verification step.' } };
-        }
         const pipe = SolutionPipeline.getInstance();
         const durable = DurableStore.getInstance();
         const solution = durable.getState().solutions['DH-S-001'];
@@ -326,7 +342,7 @@ export class DaisySubsystemExecutors {
             evidence: { completed_stages: 0, success: false, source_bound: false, reason: 'DH-S-001 source is missing or does not match its stored implementation hash.' }
           };
         }
-        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true });
+        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true, externalOracleEnabled: process.env.SOLVEX_NODE_EXTERNAL_PROBES === 'true' });
         const proofId = 'PB-' + sourceHash.slice(0, 24);
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };

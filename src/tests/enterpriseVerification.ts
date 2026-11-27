@@ -121,22 +121,35 @@ export async function runEnterpriseVerification() {
     }
   });
 
-  // 5. Anti-Tamper Sentinel Detection
-  runTest('Anti-Tamper Sentinel Active Tamper Detection', 'AUDIT', () => {
+  // 5. Verify persisted-record tamper detection without claiming cross-restart durability.
+  // A local SQLite mutation test is not evidence of a persistent Render volume or restart survival.
+  runTest('Audit Record Tamper Detection & Append Blocking (Durability Unverified)', 'AUDIT', () => {
     const store = DurableStore.getInstance();
-    const chain = store.getState().audit_chain;
-    if (chain.length < 2) {
+    const sqlite = SqliteStore.getInstance();
+    if (store.getState().audit_chain.length === 0) {
       store.appendAudit('TENANT_SENTINEL', 'SENTINEL', 'GENERATE_BLOCK', 'ENTITY', 'ID_SENTINEL', {});
     }
-    const targetIdx = chain.length - 1;
-    const originalHash = chain[targetIdx].payload_hash;
-    // Inject subtle byte mutation
-    chain[targetIdx].payload_hash = 'f'.repeat(64);
-    const tamperCheck = store.verifyChain();
-    // Restore original immediately
-    chain[targetIdx].payload_hash = originalHash;
-    if (tamperCheck.valid) {
-      throw new Error('Tampered block failed to trigger cryptographic validation alarm!');
+    const target = store.getState().audit_chain[store.getState().audit_chain.length - 1];
+    const originalHash = target.payload_hash;
+    const changed = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+      payload_hash: 'f'.repeat(64)
+    });
+    const tamperCheck = changed === 1 ? store.verifyChain() : { valid: true, reason: 'No persisted record changed' };
+    const appendRejected = (() => {
+      try {
+        store.appendAudit('TENANT_SENTINEL', 'SENTINEL', 'SHOULD_REJECT', 'ENTITY', 'ID_AFTER_TAMPER', {});
+        return false;
+      } catch { return true; }
+    })();
+    const restored = sqlite.updateTenantRecord('audit_records', target.tenant_id, target.id, {
+      payload_hash: originalHash
+    });
+    const restoredCheck = store.verifyChain();
+    if (changed !== 1 || tamperCheck.valid || !appendRejected || restored !== 1 || !restoredCheck.valid) {
+      throw new Error('Persisted tamper was not detected, append was not blocked, or restoration failed');
+    }
+    if (restoredCheck.durable !== false) {
+      throw new Error('Disk-backed SQLite must not be reported as verified cross-restart durability');
     }
   });
 
@@ -396,20 +409,47 @@ export async function runEnterpriseVerification() {
     if (!pp) throw new Error('DN-35 PayPal adapter missing from inventory');
   });
 
-  // 20. Crystal Clear Box projects only evidence that is actually persisted.
+  // 20. Crystal Clear Box projects only persisted, integrity-verified evidence.
   runTest('Crystal Clear Box Redaction Uses Persisted Evidence Only', 'AUDIT', () => {
     const engine = ProofEngine.getInstance();
+    const sqlite = SqliteStore.getInstance();
+    const persisted = sqlite.findAllRecords<any>('proof_bundles');
     const bundles = engine.getAllBundles();
+    if (bundles.length > 0 && !sqlite.isDiskBacked()) {
+      throw new Error('Customer proof records exist only in the in-memory SQLite fallback, not durable storage');
+    }
+    const persistedIds = new Set(persisted.map(bundle => bundle.id));
+    if (bundles.length !== persisted.length ||
+        bundles.some(bundle => !persistedIds.has(bundle.proof_id))) {
+      throw new Error('Proof engine registry diverges from persisted SQLite proof records');
+    }
+
     for (const bundle of bundles) {
+      const integrity = engine.verifyBundleIntegrity(bundle);
+      if (bundle.verification_status !== 'VERIFIED' || !integrity.verified) {
+        // Invalid, incomplete, or untrusted evidence must be rejected, not
+        // silently projected or upgraded to a customer-visible proof.
+        let rejected = false;
+        try { CrystalClearBox.projectCustomerEvidence(bundle); }
+        catch { rejected = true; }
+        if (!rejected) throw new Error('Unverified or untrusted persisted proof was exposed to a customer');
+        continue;
+      }
+
       const customerView = CrystalClearBox.projectCustomerEvidence(bundle);
       if (!customerView.proprietary_weights_redacted) throw new Error('Proprietary weights not marked redacted');
       if (!customerView.internal_reasoning_redacted) throw new Error('Internal reasoning not marked redacted');
       if (!customerView.public_audit_token || customerView.public_audit_token.length !== 64) {
         throw new Error('Customer public audit token invalid');
       }
+      if (customerView.evidence_statements.length !== 0 ||
+          customerView.claim !== bundle.claim ||
+          customerView.claim_hash !== bundle.claim_hash) {
+        throw new Error('Customer projection included non-allowlisted or non-source-bound evidence');
+      }
     }
-    // An empty evidence store is valid; the test must not create a fake proof to make itself pass.
-    if (bundles.length === 0 && Object.keys(DurableStore.getInstance().getState().proof_bundles).length !== 0) {
+    // An empty evidence store is valid; never create a fake proof to satisfy this invariant.
+    if (bundles.length === 0 && persisted.length !== 0) {
       throw new Error('Proof engine failed to load persisted proof records');
     }
   });
