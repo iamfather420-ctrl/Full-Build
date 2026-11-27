@@ -94,7 +94,7 @@ export class SolutionPipeline {
     return SolutionPipeline.instance;
   }
 
-  public async runPipeline(paradoxCode: string, codeSolution: string, options: { continueAfterFailure?: boolean; continueAfterProviderRequired?: boolean } = {}): Promise<PipelineExecutionResult> {
+  public async runPipeline(paradoxCode: string, codeSolution: string, options: { continueAfterFailure?: boolean; continueAfterProviderRequired?: boolean; externalOracleEnabled?: boolean } = {}): Promise<PipelineExecutionResult> {
     const traces: PipelineExecutionResult['stage_traces'] = [];
     const started = Date.now();
     const normalizedCode = typeof codeSolution === 'string' ? codeSolution.replace(/\r\n/g, '\n').trim() : '';
@@ -226,6 +226,12 @@ export class SolutionPipeline {
         : fail('Normalized source replay diverged.');
     });
     await runStage(14, async () => {
+      if (options.externalOracleEnabled !== true) {
+        return block('Independent oracle provider is required; external probes are disabled.', {
+          independent_oracle_count: 0,
+          external_provider_required: true
+        });
+      }
       try {
         const attestation = await IndependentModelOracle.verify({ paradox_code: paradoxCode, source_sha256: sourceHash, source: normalizedCode });
         oracleAttestation = attestation;
