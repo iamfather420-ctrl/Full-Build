@@ -11,7 +11,11 @@ test('every canonical node is executed and fiat settlement stays prohibited', as
   assert.equal(report.results.find((node) => node.node_id === 'DN-36')?.status, 'PROHIBITED_BLOCKED');
   assert.equal(report.results.find((node) => node.node_id === 'DN-01')?.status, 'SUCCESS');
   assert.equal(report.results.find((node) => node.node_id === 'DN-54')?.status, 'SUCCESS');
-  for (const nodeId of ['DN-05', 'DN-11', 'DN-29']) {
+  // DN-05 must not be promoted to success when its source-bound proof bundle
+  // fails strict integrity verification. The current fixture is fail-closed;
+  // provider-required is reserved for a bundle whose other integrity checks pass.
+  assert.equal(report.results.find((node) => node.node_id === 'DN-05')?.status, 'FAIL_CLOSED');
+  for (const nodeId of ['DN-11', 'DN-29']) {
     assert.equal(report.results.find((node) => node.node_id === nodeId)?.status, 'PROVIDER_REQUIRED',
       nodeId + ' must remain explicitly provider-required until independent oracle trust is available');
   }
