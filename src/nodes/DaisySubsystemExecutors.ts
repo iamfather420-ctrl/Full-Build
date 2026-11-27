@@ -71,9 +71,14 @@ function isSourceBoundOraclePending(solution: any, bundle: any, reasons: string[
   if (!solution || !bundle || bundle.verification_status !== 'PARTIAL') return false;
   const sourceHash = solution.implementation_hash;
   const expectedProofId = typeof sourceHash === 'string' ? 'PB-' + sourceHash.slice(0, 24) : '';
-  const onlyOracleMissing = reasons.length > 0 && reasons.every(reason =>
-    reason === 'Missing independent oracle attestation'
-  );
+  const providerOnlyReasons = new Set([
+    'Missing independent oracle attestation',
+    'Bundle status is not VERIFIED',
+    'Oracle signatures require verification against configured trusted keys'
+  ]);
+  const onlyOracleMissing = reasons.length > 0 &&
+    reasons.some(reason => reason !== 'Bundle status is not VERIFIED') &&
+    reasons.every(reason => providerOnlyReasons.has(reason));
   return Boolean(
     /^[a-f0-9]{64}$/i.test(sourceHash || '') &&
     bundle.proof_id === expectedProofId &&
