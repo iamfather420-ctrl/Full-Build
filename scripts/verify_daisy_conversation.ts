@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { attestGeneratedReply, buildConversationMessages } from '../src/brain/DaisyConversationProtocol';
@@ -31,7 +32,7 @@ async function main() {
     const reply = attestGeneratedReply(result.text);
     evidence.push({
       scenario: index + 1,
-      promptSha256: (await import('node:crypto')).createHash('sha256').update(prompt).digest('hex'),
+      promptSha256: createHash('sha256').update(prompt).digest('hex'),
       reply: reply.evidence,
       runtimeId: result.runtimeId,
       modelId: result.modelId,
