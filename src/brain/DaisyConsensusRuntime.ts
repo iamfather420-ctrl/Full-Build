@@ -42,7 +42,7 @@ export interface ActionExecutor {
 }
 
 export interface RuntimeResult {
-  status: 'APPROVED_AND_EXECUTED' | 'BLOCKED';
+  status: 'APPROVED_AND_HANDLER_COMPLETED' | 'BLOCKED';
   consensus?: ReturnType<typeof verifyUnanimousConsensus>;
   reason?: string;
   certificate?: ConsensusCertificate;
@@ -250,7 +250,7 @@ export class DaisyConsensusRuntime {
         expectedInputBundleSha256: inputBundleSha, expectedProposalSha256: consensus.proposal_sha256,
         expectedPolicySha256: consensus.policy_sha256, certificate
       });
-      return { status: 'APPROVED_AND_EXECUTED', consensus, certificate };
+      return { status: 'APPROVED_AND_HANDLER_COMPLETED', consensus, certificate };
     } catch (error) {
       return {
         status: 'BLOCKED',
