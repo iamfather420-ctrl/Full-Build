@@ -199,6 +199,8 @@ jobs:
           timeout --signal=TERM --kill-after=30s 15m bunx tsx -e 'import { verifyIsabelleProof } from "./src/proofs/ExternalProver.ts"; const result = verifyIsabelleProof(); console.log(JSON.stringify(result)); if (!result.prover_execution_verified || result.exit_code !== 0) process.exit(1);'
       - name: Daisy cognitive regression, including DN-25 and DN-45
         run: bunx tsx --test --test-concurrency=1 src/brain/CognitiveMilestone.test.ts src/brain/SecurityRepairs.test.ts src/brain/DaisyTrainingEvidence.test.ts src/security/RangeProof.test.ts src/proofs/ExternalProver.test.ts src/nodes/all54Execution.test.ts src/nodes/nodeVerdict.test.ts src/nodes/distributedProtocolModels.test.ts
+      - name: 3-of-3 independent model consensus and Neon replay-store tests
+        run: bun run test:consensus
       - name: Enterprise invariants
         run: bun run verify:enterprise
       - name: Formal verification corpus
