@@ -25,14 +25,13 @@ async function isExecutableFile(filePath: string): Promise<boolean> {
 }
 
 export function extractCompletion(stdout: string, prompt: string): string {
-  // Remove a full echoed prompt before accepting bytes as a model completion.
   const normalized = stdout
     .replace(/\u001b\[[0-9;]*[A-Za-z]/g, '')
     .replace(/\u0008/g, '')
     .replace(/\r/g, '');
   const timingAt = normalized.search(/\n?\[ Prompt:/);
   const body = (timingAt >= 0 ? normalized.slice(0, timingAt) : normalized).trim();
-  const candidates = [\`> \${prompt}\`, prompt];
+  const candidates = ['> ' + prompt, prompt];
   let echoAt = -1;
   let echoLength = 0;
   for (const candidate of candidates) {
@@ -78,14 +77,13 @@ export function formatMessagesAsChatML(messages: readonly InferenceMessage[]): s
   if (messages.length === 0) throw new Error('MESSAGES_REQUIRED');
   const serialized = messages.map((message) => {
     if (!message.content.trim()) throw new Error('EMPTY_MESSAGE_CONTENT');
-    // Message content is untrusted and cannot forge ChatML role boundaries.
     const content = message.content.replace(
       /<\|(?:im_start|im_end|im_sep)\|>/g,
       (token) => token.replace('<', '‹').replace('>', '›'),
     );
-    return \`<|im_start|>\${message.role}\n\${content}<|im_end|>\`;
+    return '<|im_start|>' + message.role + '\n' + content + '<|im_end|>';
   });
-  return \`\${serialized.join('\n')}\n<|im_start|>assistant\n\`;
+  return serialized.join('\n') + '\n<|im_start|>assistant\n';
 }
 
 export function createInferenceChildEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
