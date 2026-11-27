@@ -1,5 +1,6 @@
 import { ProofBundleEntity, computeSha256 } from '../database/DatabaseSchema';
 import { DurableStore } from '../database/DurableStore';
+import { SqliteStore } from '../database/SqliteStore';
 
 const SHA256_HEX = /^[a-f0-9]{64}$/i;
 
@@ -8,8 +9,19 @@ export class ProofEngine {
   private bundles: Map<string, ProofBundleEntity> = new Map();
 
   private constructor() {
-    const persisted = DurableStore.getInstance().getState().proof_bundles;
-    for (const [id, bundle] of Object.entries(persisted)) this.bundles.set(id, bundle);
+    // Customer-facing proof projections must originate from the SQLite proof
+    // record store, never from transient objects or browser-only state.
+    const sqlite = SqliteStore.getInstance();
+    const persisted = sqlite.findAllRecords<ProofBundleEntity & { id: string }>('proof_bundles');
+    for (const bundle of persisted) {
+      if (!bundle.id || bundle.id !== bundle.proof_id) {
+        throw new Error('Persisted proof record identity does not match its proof_id.');
+      }
+      this.bundles.set(bundle.proof_id, bundle);
+    }
+    // Keep the application state view synchronized with the persisted source.
+    const state = DurableStore.getInstance().getState();
+    state.proof_bundles = Object.fromEntries(this.bundles.entries());
   }
 
   public static getInstance(): ProofEngine {
@@ -29,6 +41,12 @@ export class ProofEngine {
     if (!bundle || typeof bundle.proof_id !== 'string' || !bundle.proof_id.trim()) {
       throw new Error('A proof bundle requires a non-empty proof_id.');
     }
+    // Persist first. If the storage write fails, do not expose the bundle
+    // through the in-memory customer evidence registry.
+    SqliteStore.getInstance().insertRecord('proof_bundles', {
+      ...bundle,
+      id: bundle.proof_id
+    });
     this.bundles.set(bundle.proof_id, bundle);
     const store = DurableStore.getInstance();
     store.getState().proof_bundles[bundle.proof_id] = bundle;
