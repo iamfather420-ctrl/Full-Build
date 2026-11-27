@@ -297,7 +297,7 @@ export class SolutionPipeline {
         } else {
           const oracleStage = traces.find(stage => stage.stage === 14);
           const providerUnavailable = oracleStage?.status === 'BLOCKED' &&
-            /Pinned external signer identity and Ed25519 public key are required|requires GitHub Actions OIDC permission|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|signer self-test endpoint/i.test(oracleStage.reason ?? '');
+            /independent oracle provider is required|external probes are disabled|Pinned external signer identity and Ed25519 public key are required|requires GitHub Actions OIDC permission|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|signer self-test endpoint/i.test(oracleStage.reason ?? '');
           builder.addLimitation(providerUnavailable
             ? 'Independent oracle attestation is unavailable; this bundle is not VERIFIED.'
             : 'Independent oracle attestation did not complete successfully; this bundle remains unverified.');
