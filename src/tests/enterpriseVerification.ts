@@ -415,6 +415,9 @@ export async function runEnterpriseVerification() {
     const sqlite = SqliteStore.getInstance();
     const persisted = sqlite.findAllRecords<any>('proof_bundles');
     const bundles = engine.getAllBundles();
+    if (bundles.length > 0 && !sqlite.isDiskBacked()) {
+      throw new Error('Customer proof records exist only in the in-memory SQLite fallback, not durable storage');
+    }
     const persistedIds = new Set(persisted.map(bundle => bundle.id));
     if (bundles.length !== persisted.length ||
         bundles.some(bundle => !persistedIds.has(bundle.proof_id))) {
