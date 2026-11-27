@@ -25,7 +25,7 @@ export function isPinnedEvaluatorImage(value: string): boolean {
   return /^[a-z0-9./_-]+@sha256:[a-f0-9]{64}$/i.test(value);
 }
 
-export function loadTrustedRuntimeConfig(env: NodeJS.ProcessEnv = process.env): SignedDaisyRuntimeConfig {
+export function loadTrustedConsensusPolicy(env: NodeJS.ProcessEnv = process.env): SignedDaisyRuntimeConfig {
   const encoded = env.DAISY_RUNTIME_CONFIG_JSON;
   const signature = env.DAISY_RUNTIME_CONFIG_SIGNATURE;
   const rootPem = env.DAISY_POLICY_ROOT_PUBLIC_KEY;
@@ -75,7 +75,6 @@ export function loadTrustedRuntimeConfig(env: NodeJS.ProcessEnv = process.env): 
         evaluator.image.slice(evaluator.image.lastIndexOf('sha256:') + 7) !== evaluator.image_digest) {
       fail('EVALUATOR_IMAGE_DIGEST_MISMATCH');
     }
-    if (!evaluator.signing_key_file) fail('EVALUATOR_SIGNING_KEY_FILE_MISSING');
     try {
       const key = createPublicKey(evaluator.public_key_pem);
       const fingerprint = createHash('sha256')
@@ -83,7 +82,19 @@ export function loadTrustedRuntimeConfig(env: NodeJS.ProcessEnv = process.env): 
         .digest('hex');
       if (keyFingerprints.has(fingerprint)) fail('EVALUATOR_PUBLIC_KEYS_MUST_BE_DISTINCT');
       keyFingerprints.add(fingerprint);
+    } catch {
+      fail('EVALUATOR_TRUST_MATERIAL_INVALID');
+    }
+  }
 
+  return Object.freeze({ ...parsed, signature_base64: signature });
+}
+
+export function loadTrustedRuntimeConfig(env: NodeJS.ProcessEnv = process.env): SignedDaisyRuntimeConfig {
+  const config = loadTrustedConsensusPolicy(env);
+  for (const evaluator of config.evaluators) {
+    if (!evaluator.signing_key_file) fail('EVALUATOR_SIGNING_KEY_FILE_MISSING');
+    try {
       const keyPath = realpathSync(evaluator.signing_key_file);
       const keyStat = statSync(keyPath);
       if (!keyStat.isFile() || keyStat.uid === 0 || (keyStat.mode & 0o077) !== 0 ||
@@ -92,9 +103,8 @@ export function loadTrustedRuntimeConfig(env: NodeJS.ProcessEnv = process.env): 
       }
     } catch (error) {
       if (error instanceof Error && error.message.startsWith('DAISY_RUNTIME_BLOCKED:')) throw error;
-      fail('EVALUATOR_TRUST_MATERIAL_INVALID');
+      fail('EVALUATOR_SIGNING_KEY_FILE_UNAVAILABLE');
     }
   }
-
-  return Object.freeze({ ...parsed, signature_base64: signature });
+  return config;
 }
