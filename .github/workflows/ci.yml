@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
   validate:
@@ -21,7 +22,7 @@ jobs:
       SOLVEX_NEON_TEST_TENANT_B: ${{ secrets.SOLVEX_NEON_TEST_TENANT_B }}
       NEON_DATABASE_URL: ${{ secrets.SOLVEX_NEON_ISOLATION_TEST_DATABASE_URL }}
       SOLVEX_MEMORY_LIMIT_BYTES: '2147483648'
-      # Stage 14 remains provider-required until a first-party independent oracle and trust root exist; no external AI evaluator is invoked.
+      # Stage 14's evaluator is first-party-only and makes no remote AI requests. GitHub OIDC remains for the separate tenant-claim lifecycle and non-AI signer tests.
     steps:
       - name: Checkout
         uses: actions/checkout@v4

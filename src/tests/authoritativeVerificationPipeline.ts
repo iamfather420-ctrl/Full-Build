@@ -900,7 +900,7 @@ ${entRes.results.map(r => `| ${r.test_number.toString().padStart(2, '0')} | ${r.
     if (gate12Local?.status !== 'PASSED') {
       preProductionBlockers.push('GATE-12 pre-production lifecycle authorization-boundary contract failed.');
     }
-    if (preProductionProviderRequirements.length > 0) productionBlockers.push(`External provider evidence remains required for Daisy nodes: ${preProductionProviderRequirements.join(', ')}.`);
+    if (preProductionProviderRequirements.length > 0) productionBlockers.push(`Provider/capability evidence remains required for Daisy nodes: ${preProductionProviderRequirements.join(', ')}.`);
     productionBlockers.push('GATE-12-PRODUCTION lifecycle execution requires verified identity and signed tenant claims on the deployed target.');
 
     // Production evaluation is intentionally separate from pre-production CI.

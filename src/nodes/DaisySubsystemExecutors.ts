@@ -57,6 +57,10 @@ function isExternalProviderUnavailable(reason: string | undefined): boolean {
   return /independent oracle provider is required|external probes are disabled|requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
 }
 
+function isFirstPartyOracleUnavailable(reason: string | undefined): boolean {
+  return typeof reason === 'string' && /FIRST_PARTY_ORACLE_UNAVAILABLE/i.test(reason);
+}
+
 function hasMeaningfulEvidence(value: unknown): boolean {
   if (value === null || value === undefined) return false;
   if (typeof value === 'string') return value.trim().length > 0;
@@ -755,9 +759,6 @@ export class DaisySubsystemExecutors {
 
       // 30. DN-30: Independent Oracle Attestor
       case 'DN-30': {
-        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
-          return { node_id: 'DN-30', name: 'Independent Oracle Attestor', category: 'AUDIT', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'External oracle attestation is reserved for the authoritative provider verification step.' } };
-        }
         const input = {
           paradox_code: 'DH-P-001',
           purpose: 'Independent verification of the canonical DH-S-001 bounded Zeno solution.',
@@ -766,42 +767,38 @@ export class DaisySubsystemExecutors {
         try {
           const attestation = await IndependentModelOracle.verify(input);
           return {
-            node_id: 'DN-30',
-            name: 'Independent Oracle Attestor',
-            category: 'AUDIT',
-            executed: true,
-            claim_scope: 'SANDBOX',
+            node_id: 'DN-30', name: 'Independent Oracle Attestor', category: 'AUDIT',
+            executed: true, claim_scope: 'SANDBOX',
             status: attestation.verdict === 'ACCEPT' ? 'SUCCESS' : 'FAIL_CLOSED',
             duration_ms: performance.now() - start,
             evidence: {
               independent_oracle_attestation_verified: true,
-              oracle_id: attestation.oracleId,
-              model_id: attestation.modelId,
-              verdict: attestation.verdict,
-              input_sha256: attestation.inputSha256,
-              rationale_sha256: attestation.rationaleSha256,
-              signature_verified: true
+              first_party_oracle_required: false,
+              external_provider_required: false,
+              oracle_id: attestation.oracleId, model_id: attestation.modelId,
+              verdict: attestation.verdict, input_sha256: attestation.inputSha256,
+              rationale_sha256: attestation.rationaleSha256, signature_verified: true
             }
           };
         } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error);
+          const firstPartyOracleRequired = isFirstPartyOracleUnavailable(reason);
+          const externalProviderRequired = !firstPartyOracleRequired && isExternalProviderUnavailable(reason);
           return {
-            node_id: 'DN-30',
-            name: 'Independent Oracle Attestor',
-            category: 'AUDIT',
-            executed: true,
-            claim_scope: 'SANDBOX',
-            status: isExternalProviderUnavailable(error instanceof Error ? error.message : String(error)) ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
+            node_id: 'DN-30', name: 'Independent Oracle Attestor', category: 'AUDIT',
+            executed: true, claim_scope: 'SANDBOX',
+            status: firstPartyOracleRequired || externalProviderRequired ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
             duration_ms: performance.now() - start,
             evidence: {
               independent_oracle_attestation_verified: false,
-              external_provider_required: isExternalProviderUnavailable(error instanceof Error ? error.message : String(error)),
-              reason: error instanceof Error ? error.message : String(error)
+              first_party_oracle_required: firstPartyOracleRequired,
+              external_provider_required: externalProviderRequired,
+              reason
             }
           };
         }
       }
 
-      // 31. DN-31: Sqlite Local Store Manager
       case 'DN-31': {
         const store = SqliteStore.getInstance();
         const raw = store.getRawDb();
