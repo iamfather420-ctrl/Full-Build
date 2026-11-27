@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /**
- * Build a plain-text causal-LM corpus from the six checksum-verified LOC books.
- * This does not synthesize conversations or alter the source manifest.
- * Eligibility is derived from LOC's explicit public-domain/free-reuse statement.
+ * Build a plain-text causal-LM corpus only after the canonical source inventory
+ * and learning-engine gate explicitly authorize the exact LOC source records.
+ * A public-domain statement alone is not training approval.
  */
 import { createHash } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const sourceRoot = path.join(root, "data/training_sources/public_domain/english");
+const sourceRoot = path.resolve(process.env.DAISY_SOURCE_ROOT || path.join(root, ".sources/loc-english-grammar-source-collection"));
 const collectionRoot = path.join(sourceRoot, "data/training_sources/public_domain/english");
 const manifestPath = path.join(collectionRoot, "provenance-manifest.json");
+const inventoryPath = path.join(sourceRoot, "manifests/source-inventory.json");
+const learningGatePath = path.join(sourceRoot, process.env.DAISY_LEARNING_ENGINE_GATE || "manifests/learning-engine-gate-2026-11-27.json");
+const expectedSourceCommit = process.env.DAISY_EXPECTED_SOURCE_COMMIT || "";
 const outputDir = path.join(root, "artifacts/training/loc-english");
 const chunkLimit = 1800;
 const validationSources = new Set(["24000690", "31022301"]);
@@ -51,14 +54,36 @@ function chunkText(value) {
 }
 
 async function main() {
+  if (!expectedSourceCommit) fail("Expected immutable canonical source commit is not configured.");
+  const { execFileSync } = await import("node:child_process");
+  const actualSourceCommit = execFileSync("git", ["-C", sourceRoot, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  if (actualSourceCommit !== expectedSourceCommit) fail("Canonical source commit does not match the pinned training source.");
   const rawManifest = await readFile(manifestPath, "utf8");
   const manifest = JSON.parse(rawManifest);
+  const rawInventory = await readFile(inventoryPath, "utf8");
+  const inventory = JSON.parse(rawInventory);
+  const rawLearningGate = await readFile(learningGatePath, "utf8");
+  const learningGate = JSON.parse(rawLearningGate);
+  const gateStatus = learningGate.status ?? {};
+  if (inventory.policy?.no_automatic_training !== true) fail("Canonical source inventory is missing its no-automatic-training policy.");
+  if (gateStatus.model_training_authorized_by_this_manifest !== true || gateStatus.training_pipeline_enabled !== true) {
+    fail("Canonical learning-engine gate does not authorize model training.");
+  }
+  const collection = (inventory.preserved_collections ?? []).find(item => item.collection_id === "loc-english-grammar-six-books");
+  if (!collection || collection.rights_status !== "APPROVED_FOR_TRAINING" || collection.training_eligible !== true) {
+    fail("LOC grammar collection is not explicitly approved for training in source-inventory.json.");
+  }
+  const sourceApprovals = new Map((collection.sources ?? []).map(item => [String(item.item_id), item]));
   if (!Array.isArray(manifest.sources) || manifest.sources.length !== 6) fail("Expected exactly six LOC source records.");
   const records = [];
   const auditSources = [];
   let characters = 0;
 
   for (const source of manifest.sources) {
+    const approval = sourceApprovals.get(String(source.item_id));
+    if (!approval || approval.rights_status !== "APPROVED_FOR_TRAINING" || approval.training_eligible !== true) {
+      fail(`LOC source ${source.item_id} is not explicitly approved for training in the canonical source inventory.`);
+    }
     if (source.status !== "VERIFIED") fail(`LOC source ${source.item_id} is not checksum-verified.`);
     const rights = String(source.loc_rights ?? "");
     if (!/books in this collection are in the public domain and are free to use and reuse/i.test(rights)) {
@@ -120,6 +145,9 @@ async function main() {
   const audit = {
     schema: "daisy-loc-language-model-corpus-audit/v1",
     sourceManifestSha256: sha256(rawManifest),
+    sourceInventorySha256: sha256(rawInventory),
+    learningEngineGateSha256: sha256(rawLearningGate),
+    sourceCommit: actualSourceCommit,
     datasetSha256: sha256(jsonl),
     sourceCount: auditSources.length,
     recordCount: records.length,
@@ -128,7 +156,7 @@ async function main() {
     totalCharacters: characters,
     splitPolicy: "Source-disjoint; validation sources are fixed by source ID",
     trainingMode: "Plain-text causal language modeling; no synthetic conversations",
-    eligibilityPolicy: "Use explicit source-level LOC public-domain/free-reuse declaration; do not require conversational annotation or human rights-review workflow flags",
+    eligibilityPolicy: "Require source-inventory item-level APPROVED_FOR_TRAINING and training_eligible=true plus the canonical learning-engine gate; the LOC public-domain statement is provenance, not training approval.",
     sources: auditSources
   };
   await writeFile(path.join(outputDir, "language-model-audit.json"), JSON.stringify(audit, null, 2) + "\n", "utf8");

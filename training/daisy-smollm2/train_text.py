@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Local plain-text causal-LM fine-tuning runner for Daisy."""
 from __future__ import annotations
-import hashlib, json, os, re, sys
+import hashlib, json, os, re, sys, subprocess
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +16,51 @@ def file_sha256(path: Path) -> str:
     with path.open("rb") as f:
         for block in iter(lambda: f.read(1024 * 1024), b""): h.update(block)
     return h.hexdigest()
+
+def verify_source_authorization() -> dict[str, Any]:
+    source_root = Path(os.environ.get("DAISY_SOURCE_ROOT", "")).resolve()
+    expected_commit = os.environ.get("DAISY_SOURCE_COMMIT", "")
+    expected_inventory_sha = os.environ.get("DAISY_SOURCE_INVENTORY_SHA256", "")
+    expected_gate_sha = os.environ.get("DAISY_LEARNING_ENGINE_GATE_SHA256", "")
+    if os.environ.get("DAISY_TRAINING_AUTHORIZED", "").lower() != "true":
+        raise RuntimeError("BLOCKED: training workflow did not provide an authorized learning-engine preflight.")
+    if not source_root.is_dir() or not re.fullmatch(r"[a-f0-9]{40}", expected_commit):
+        raise RuntimeError("BLOCKED: canonical source root or immutable source commit is missing.")
+    if not re.fullmatch(r"[a-f0-9]{64}", expected_inventory_sha) or not re.fullmatch(r"[a-f0-9]{64}", expected_gate_sha):
+        raise RuntimeError("BLOCKED: source inventory or learning-engine gate hash is missing.")
+    actual_commit = subprocess.check_output(["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True).strip()
+    if actual_commit != expected_commit:
+        raise RuntimeError("BLOCKED: canonical source checkout does not match the authorized commit.")
+    inventory_path = source_root / "manifests/source-inventory.json"
+    gate_path = source_root / "manifests/learning-engine-gate-2026-11-27.json"
+    if file_sha256(inventory_path) != expected_inventory_sha or file_sha256(gate_path) != expected_gate_sha:
+        raise RuntimeError("BLOCKED: source inventory or learning-engine gate changed after preflight.")
+    inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+    gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    status = gate.get("status", {})
+    if inventory.get("policy", {}).get("no_automatic_training") is not True:
+        raise RuntimeError("BLOCKED: canonical no-automatic-training policy is missing.")
+    if status.get("model_training_authorized_by_this_manifest") is not True or status.get("training_pipeline_enabled") is not True:
+        raise RuntimeError("BLOCKED: canonical learning-engine gate does not authorize training.")
+    approved_source_ids = set()
+    for collection in inventory.get("preserved_collections", []):
+        if collection.get("rights_status") == "APPROVED_FOR_TRAINING" and collection.get("training_eligible") is True:
+            for item in collection.get("sources", []):
+                if item.get("rights_status") == "APPROVED_FOR_TRAINING" and item.get("training_eligible") is True:
+                    approved_source_ids.add(str(item.get("item_id")))
+    for source in inventory.get("acquired_sources", []):
+        if (source.get("training_status") == "approved" and source.get("training_pipeline_enabled") is True and
+                source.get("license", {}).get("assessment_status") == "approved_for_training"):
+            approved_source_ids.add(str(source.get("source_id")))
+    if not approved_source_ids:
+        raise RuntimeError("BLOCKED: canonical source inventory contains no explicitly approved training sources.")
+    return {
+        "source_commit": actual_commit,
+        "source_inventory_sha256": expected_inventory_sha,
+        "learning_engine_gate_sha256": expected_gate_sha,
+        "approved_source_ids": sorted(approved_source_ids),
+        "training_authorized": True,
+    }
 
 def load_records(path: Path) -> tuple[list[dict[str, Any]], str]:
     if not path.is_file(): raise RuntimeError(f"BLOCKED: language-model corpus not found: {path}")
@@ -51,7 +96,12 @@ def main() -> int:
     revision = os.environ.get("DAISY_MODEL_REVISION", DEFAULT_REVISION)
     if not re.fullmatch(r"[a-fA-F0-9]{40}", revision):
         print("BLOCKED: model revision must be an immutable 40-character commit SHA", file=sys.stderr); return 2
-    try: records, dataset_hash = load_records(data_path)
+    try:
+        source_authorization = verify_source_authorization()
+        records, dataset_hash = load_records(data_path)
+        allowed = set(source_authorization["approved_source_ids"])
+        if any(str(row["sourceId"]) not in allowed for row in records):
+            raise RuntimeError("BLOCKED: training corpus contains a source absent from the approved canonical inventory.")
     except Exception as exc:
         print(str(exc), file=sys.stderr); return 2
 
@@ -107,6 +157,13 @@ def main() -> int:
         "record_count":len(records), "train_records":len(train_texts), "validation_records":len(val_texts),
         "max_length":max_length, "epochs":epochs, "batch_size":batch_size, "learning_rate":learning_rate,
         "seed":420, "device":device, "train_metrics":train_result.metrics, "evaluation_metrics":metrics,
+        "source_repository":"Solvex-Paradox-Box/loc-english-grammar-source-collection",
+        "source_commit":source_authorization["source_commit"],
+        "source_inventory_sha256":source_authorization["source_inventory_sha256"],
+        "learning_engine_gate_sha256":source_authorization["learning_engine_gate_sha256"],
+        "approved_source_ids":source_authorization["approved_source_ids"],
+        "training_authorized":source_authorization["training_authorized"],
+        "training_workflow_commit":os.environ.get("DAISY_TRAINING_WORKFLOW_COMMIT", ""),
         "completed_at":datetime.now(timezone.utc).isoformat(),
         "checkpoint_files":[{"path":str(p.relative_to(checkpoint)),"bytes":p.stat().st_size,"sha256":file_sha256(p)} for p in files],
         "activation_authorized":False

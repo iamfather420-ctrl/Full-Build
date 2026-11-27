@@ -27,6 +27,37 @@ jobs:
       - name: Checkout this bridge commit
         uses: actions/checkout@v4
 
+      - name: Checkout immutable canonical language source
+        uses: actions/checkout@v4
+        with:
+          repository: Solvex-Paradox-Box/loc-english-grammar-source-collection
+          ref: b17b18bdf9366f0e245fe1f870bc05889d344dcf
+          path: .sources/loc-english-grammar-source-collection
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Revalidate canonical training authorization before model release
+        id: learning_gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/daisy_learning_pipeline.py \
+            --source-root .sources/loc-english-grammar-source-collection \
+            --expected-commit b17b18bdf9366f0e245fe1f870bc05889d344dcf \
+            --learning-engine-gate manifests/learning-engine-gate-2026-11-27.json \
+            --output artifacts/daisy-learning-pipeline/preflight.json
+          python3 - <<'PY'
+          import json, os
+          d=json.load(open("artifacts/daisy-learning-pipeline/preflight.json", encoding="utf-8"))
+          if d.get("training_authorized") is not True or "loc-english-grammar-six-books" not in d.get("eligible_source_ids", []):
+              raise SystemExit("BLOCKED: the LOC collection is not explicitly authorized for model release.")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"source_commit={d['source_commit']}\n")
+              out.write(f"source_inventory_sha256={d['source_inventory_sha256']}\n")
+              out.write(f"learning_engine_gate_sha256={d['learning_engine_gate_sha256']}\n")
+          print(json.dumps({k:d[k] for k in ("training_authorized","approved_source_count","source_commit","source_inventory_sha256","learning_engine_gate_sha256")}, indent=2))
+          PY
+
       - name: Verify source training run identity
         id: source
         env:
@@ -59,7 +90,7 @@ jobs:
       - name: Download the exact successful training artifact
         uses: actions/download-artifact@v4
         with:
-          name: daisy-loc-grammar-cpu-checkpoint
+          name: daisy-loc-grammar-gpu-checkpoint
           path: artifacts/daisy-hf
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
@@ -68,6 +99,11 @@ jobs:
       - name: Validate checkpoint provenance and every checkpoint file hash
         id: checkpoint
         shell: bash
+        env:
+          SOURCE_TRAINING_COMMIT: ${{ steps.source.outputs.head_sha }}
+          EXPECTED_SOURCE_COMMIT: ${{ steps.learning_gate.outputs.source_commit }}
+          EXPECTED_SOURCE_INVENTORY_SHA256: ${{ steps.learning_gate.outputs.source_inventory_sha256 }}
+          EXPECTED_LEARNING_ENGINE_GATE_SHA256: ${{ steps.learning_gate.outputs.learning_engine_gate_sha256 }}
         run: |
           set -euo pipefail
           CHECKPOINT="$(find artifacts/daisy-hf -type f -name 'model.safetensors' -printf '%h\n' | head -n1)"
@@ -93,6 +129,20 @@ jobs:
               raise SystemExit("BLOCKED: foundation model identity or immutable revision mismatch")
           if manifest.get("dataset_sha256") != expected_dataset:
               raise SystemExit("BLOCKED: training dataset SHA-256 does not match the approved LOC corpus")
+          if manifest.get("source_commit") != os.environ["EXPECTED_SOURCE_COMMIT"]:
+              raise SystemExit("BLOCKED: training artifact source commit differs from the current canonical source pin")
+          if manifest.get("source_inventory_sha256") != os.environ["EXPECTED_SOURCE_INVENTORY_SHA256"]:
+              raise SystemExit("BLOCKED: training artifact source-inventory hash differs from the current canonical inventory")
+          if manifest.get("learning_engine_gate_sha256") != os.environ["EXPECTED_LEARNING_ENGINE_GATE_SHA256"]:
+              raise SystemExit("BLOCKED: training artifact learning-engine gate hash differs from the current canonical gate")
+          if manifest.get("training_authorized") is not True:
+              raise SystemExit("BLOCKED: training artifact does not carry explicit canonical training authorization")
+          if manifest.get("source_repository") != "Solvex-Paradox-Box/loc-english-grammar-source-collection":
+              raise SystemExit("BLOCKED: training artifact source repository identity mismatch")
+          if not isinstance(manifest.get("approved_source_ids"), list) or not manifest.get("approved_source_ids"):
+              raise SystemExit("BLOCKED: training artifact has no approved source IDs")
+          if manifest.get("training_workflow_commit") != os.environ["SOURCE_TRAINING_COMMIT"]:
+              raise SystemExit("BLOCKED: training artifact is not bound to the selected workflow run commit")
           if manifest.get("activation_authorized") is not False:
               raise SystemExit("BLOCKED: training artifact must not assert activation authorization")
           if not manifest.get("train_records") or not manifest.get("validation_records"):
@@ -164,6 +214,9 @@ jobs:
       - name: Create checksum manifest
         env:
           SOURCE_TRAINING_COMMIT: ${{ steps.source.outputs.head_sha }}
+          EXPECTED_SOURCE_COMMIT: ${{ steps.learning_gate.outputs.source_commit }}
+          EXPECTED_SOURCE_INVENTORY_SHA256: ${{ steps.learning_gate.outputs.source_inventory_sha256 }}
+          EXPECTED_LEARNING_ENGINE_GATE_SHA256: ${{ steps.learning_gate.outputs.learning_engine_gate_sha256 }}
           DATASET_SHA256: ${{ steps.checkpoint.outputs.dataset_sha256 }}
           MODEL_REVISION: ${{ steps.checkpoint.outputs.model_revision }}
           CHECKPOINT_MANIFEST_SHA256: ${{ steps.checkpoint.outputs.checkpoint_manifest_sha256 }}
@@ -181,6 +234,10 @@ jobs:
             "model_id":"HuggingFaceTB/SmolLM2-135M-Instruct",
             "source_training_run_id":os.environ["SOURCE_RUN_ID"],
             "source_training_commit":os.environ["SOURCE_TRAINING_COMMIT"],
+            "canonical_source_commit":os.environ["EXPECTED_SOURCE_COMMIT"],
+            "source_inventory_sha256":os.environ["EXPECTED_SOURCE_INVENTORY_SHA256"],
+            "learning_engine_gate_sha256":os.environ["EXPECTED_LEARNING_ENGINE_GATE_SHA256"],
+            "training_authorized":True,
             "dataset_sha256":os.environ["DATASET_SHA256"],
             "model_revision":os.environ["MODEL_REVISION"],
             "checkpoint_manifest_sha256":os.environ["CHECKPOINT_MANIFEST_SHA256"],
