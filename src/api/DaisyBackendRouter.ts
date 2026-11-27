@@ -9,6 +9,7 @@ import { getLocalInferenceRuntime } from '../inference/LocalInferenceRuntime';
 import type { InferenceMessage } from '../inference/InferenceRuntime';
 import { DiscoveryAssertionRequestSchema } from '../discovery/DiscoverEngineContract';
 import { submitAssertion } from '../discovery/DiscoverEngineClient';
+import { attestGeneratedReply, buildConversationMessages } from '../brain/DaisyConversationProtocol';
 
 const router = Router();
 const inference = new InferenceRouter(getLocalInferenceRuntime());
@@ -150,15 +151,16 @@ router.post('/chat', async (req, res) => {
   const instruction = await loadCanonicalInstruction();
   if (!instruction) return blocked(res, 503, 'FOUNDATIONAL_INSTRUCTION_UNAVAILABLE', 'The canonical Daisy instruction is unavailable. No response was generated.');
 
-  const messages: InferenceMessage[] = [
-    { role: 'system', content: instruction.text },
-    ...parsed.data.history.map((item) => ({ role: item.role, content: item.content } as InferenceMessage)),
-    { role: 'user', content: parsed.data.prompt },
-  ];
+  let messages: InferenceMessage[];
+  try {
+    messages = buildConversationMessages(instruction.text, parsed.data.history, parsed.data.prompt);
+  } catch {
+    return blocked(res, 400, 'INVALID_CONVERSATION_CONTEXT', 'The conversation context is invalid. No inference request was made.');
+  }
   try {
     const outcome = await inference.resolveChat({ messages, timeoutMs: 60_000, maxOutputTokens: 2_048 });
     res.setHeader('Cache-Control', 'no-store');
-    if (outcome.result.status !== 'OK' || typeof outcome.result.text !== 'string' || !outcome.result.text.trim()) {
+    if (outcome.result.status !== 'OK') {
       return res.status(503).json({
         success: false,
         status: 'MODEL_UNAVAILABLE',
@@ -166,10 +168,17 @@ router.post('/chat', async (req, res) => {
         message: 'First-party Daisy inference is unavailable. No simulated reply was generated.',
       });
     }
+    let reply: ReturnType<typeof attestGeneratedReply>;
+    try {
+      reply = attestGeneratedReply(outcome.result.text);
+    } catch {
+      return blocked(res, 503, 'INVALID_MODEL_COMPLETION', 'The local model returned an invalid completion. No reply was delivered.');
+    }
     return res.json({
       success: true,
       status: 'OK',
-      text: outcome.result.text,
+      text: reply.text,
+      replyEvidence: reply.evidence,
       runtime: {
         source: outcome.source,
         runtimeId: outcome.result.runtimeId,
