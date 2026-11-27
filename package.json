@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
+    "build": "tsx scripts/verify-production-consensus.ts && vite build",
     "start": "tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
@@ -50,7 +50,8 @@
     "verify:46-closure": "tsx scripts/verify_46_closure_artifact.ts",
     "trace:registry": "tsx scripts/trace_shared_registry.ts",
     "test:creative-integrity": "tsx --test src/creative/CreativeIntegrityProtocol.test.ts daisy-ai-os/src/native-os/system-tools/SystemTools.test.ts",
-    "test:consensus": "tsx --test --test-concurrency=1 src/brain/IndependentUnanimousConsensus.test.ts src/brain/DaisyConsensusRuntime.test.ts src/brain/NeonDaisyConsensusStore.test.ts"
+    "test:consensus": "tsx --test --test-concurrency=1 src/brain/IndependentUnanimousConsensus.test.ts src/brain/DaisyConsensusRuntime.test.ts src/brain/NeonDaisyConsensusStore.test.ts",
+    "test:production-consensus": "tsx --test --test-concurrency=1 scripts/verify-production-consensus.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
