@@ -133,6 +133,13 @@ export class NeonDaisyConsensusStore implements DaisyConsensusCertificateStore {
         }
       }
 
+      const role = await client.query<{ rolbypassrls: boolean; rolsuper: boolean }>(
+        'SELECT rolbypassrls, rolsuper FROM pg_roles WHERE rolname = current_user'
+      );
+      if (role.rows.length !== 1 || role.rows[0].rolbypassrls || role.rows[0].rolsuper) {
+        blocked('DATABASE_ROLE_MUST_NOT_BYPASS_ROW_LEVEL_SECURITY');
+      }
+
       const posture = await client.query<{
         table_name: string;
         rls_enabled: boolean;
@@ -145,9 +152,10 @@ export class NeonDaisyConsensusStore implements DaisyConsensusCertificateStore {
         [Object.keys(required)]
       );
       for (const table of Object.keys(required)) {
-        const row = posture.rows.find(item => item.table_name === table);
+        const expectedPolicy = table + '_tenant_isolation';
+        const row = posture.rows.find(item => item.table_name === table && item.policy_name === expectedPolicy);
         if (!row || row.rls_enabled !== true || row.rls_forced !== true ||
-            !row.policy_name || !row.policy_qual?.includes("current_setting('app.tenant_id'") ||
+            !row.policy_qual?.includes("current_setting('app.tenant_id'") ||
             !row.policy_check?.includes("current_setting('app.tenant_id'")) {
           blocked('FORCED_TENANT_RLS_POLICY_MISSING:' + table);
         }
