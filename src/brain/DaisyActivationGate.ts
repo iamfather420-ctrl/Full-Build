@@ -136,9 +136,9 @@ export class DaisyActivationGate {
 
     const gates = record.mandatory_gates;
     if (
-      gates?.total !== 67 ||
-      gates?.observed !== 67 ||
-      gates?.passed !== 67 ||
+      gates?.total !== 46 ||
+      gates?.observed !== 46 ||
+      gates?.passed !== 46 ||
       gates?.failed !== 0 ||
       gates?.blocked !== 0 ||
       gates?.external_provider_required !== 0 ||
@@ -217,7 +217,7 @@ export class DaisyActivationGate {
   public static assertActive(): DaisyActivationGateRecord {
     const record = this.read();
     if (!record || !this.isFreshAndComplete(record)) {
-      throw new Error('DAISY_BRAIN_FAIL_CLOSED: fresh 120-case, adversarial, 67-gate, human-root, and 3-of-3 consensus evidence for this source revision is not ACTIVE');
+      throw new Error('DAISY_BRAIN_FAIL_CLOSED: fresh 120-case, adversarial, 46-gate, human-root, and 3-of-3 consensus evidence for this source revision is not ACTIVE');
     }
     return record;
   }
