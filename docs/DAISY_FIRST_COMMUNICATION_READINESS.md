@@ -25,9 +25,10 @@ This document records implementation evidence without treating a passing CI job 
 
 1. Configure `DAISY_MODEL_PATH` to the exact verified GGUF and `DAISY_INFERENCE_ENGINE` to the approved local executable.
 2. Confirm `GET /api/daisy/status` reports `LOADABLE_NOT_YET_INFERRED`, the expected model digest matches the observed digest, and the foundational instruction is available.
-3. Submit an authenticated `POST /api/daisy/chat` request with a simple greeting and empty history.
-4. Require HTTP 200, `success: true`, `runtime.source: first_party_local`, non-empty `text`, and `replyEvidence.sha256` matching the exact returned text.
-5. Submit a follow-up request with the first user/assistant turn in history. Verify that the answer uses that context.
-6. Preserve request/response evidence with secrets and personal content excluded. Do not activate production authority based solely on conversational output.
+3. Run `npm run verify:daisy-conversation` in the staging runtime to execute four real first-party local generation scenarios (greeting, contextual follow-up, grammar correction, and software-development explanation). The command fails closed if model assets or the local engine are unavailable and emits digest-only prompt/reply evidence.
+4. Submit an authenticated `POST /api/daisy/chat` request with a simple greeting and empty history.
+5. Require HTTP 200, `success: true`, `runtime.source: first_party_local`, non-empty `text`, and `replyEvidence.sha256` matching the exact returned text.
+6. Submit a follow-up request with the first user/assistant turn in history. Verify that the answer uses that context.
+7. Preserve request/response evidence with secrets and personal content excluded. Do not activate production authority based solely on conversational output.
 
 If any model, engine, instruction, identity, or inference check fails, the result remains BLOCKED and no synthetic response is substituted.
