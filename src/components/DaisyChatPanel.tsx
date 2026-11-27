@@ -82,17 +82,18 @@ export const DaisyChatPanel: React.FC = () => {
       const body = await response.json().catch(() => ({})) as DaisyChatResponse & { message?: string; code?: string };
       const reply = typeof body.text === 'string' ? body.text.trim() : '';
       const evidence = body.replyEvidence;
+      const expectedSha256 = evidence?.sha256;
       if (!response.ok || body.success !== true || !reply ||
           body.runtime?.source !== 'first_party_local' ||
           evidence?.protocol !== 'daisy-conversation/v1' ||
-          !/^[a-f0-9]{64}$/i.test(evidence.sha256 ?? '') ||
+          typeof expectedSha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(expectedSha256) ||
           evidence.characterCount !== reply.length ||
           !Number.isInteger(evidence.sentenceCount) || (evidence.sentenceCount ?? 0) < 1) {
         throw new Error(body.message || body.code || 'First-party Daisy inference did not return complete reply evidence.');
       }
       const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(reply));
       const observedSha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
-      if (observedSha256 !== evidence.sha256.toLowerCase()) {
+      if (observedSha256 !== expectedSha256.toLowerCase()) {
         throw new Error('Daisy reply evidence does not match the returned text.');
       }
       setGenerationVerified(true);
