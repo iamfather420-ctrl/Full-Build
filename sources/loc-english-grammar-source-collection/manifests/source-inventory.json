@@ -1,0 +1,770 @@
+{
+  "schema_version": "1.0",
+  "generated_on": "2026-11-25",
+  "repository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+  "purpose": "Inventory of preserved source records and newly acquired, scope-limited reference resources; not a training corpus.",
+  "policy": {
+    "no_automatic_training": true,
+    "source_specific_license_assessment_required": true,
+    "redistribution_permission_is_not_training_approval": true,
+    "synthetic_records_added": 0,
+    "generated_term_records_added": 0
+  },
+  "preserved_collections": [
+    {
+      "collection_id": "loc-english-grammar-six-books",
+      "path": "data/training_sources/public_domain/english",
+      "source_provider": "Library of Congress",
+      "source_count": 6,
+      "provenance_manifest": "data/training_sources/public_domain/english/provenance-manifest.json",
+      "provenance_manifest_sha256": "bdbaf8143e396ed868ecbc5a61a4e5f5c12a63c6d8a8cd52168d745a69504085",
+      "checksum_manifest": "data/training_sources/public_domain/english/SHA256SUMS.txt",
+      "rights_status": "PENDING_REVIEW",
+      "training_eligible": false,
+      "sources": [
+        {
+          "item_id": "24000690",
+          "slug": "marks-english-grammar-1923",
+          "title": "English Grammar",
+          "author": "L. E. Marks",
+          "publication_date": "1923",
+          "source_url": "https://www.loc.gov/item/24000690/",
+          "pdf_path": "data/training_sources/public_domain/english/raw/marks-english-grammar-1923.pdf",
+          "pdf_size_bytes": 20020566,
+          "pdf_sha256": "dff9fdb24a67f0e148ef5c5c9feae6fbb1d91c943d861f33accf94ef3f361b50",
+          "text_path": "data/training_sources/public_domain/english/extracted_text/marks-english-grammar-1923.txt",
+          "text_size_bytes": 138775,
+          "text_sha256": "638e9038cd91136d11b2bf7f46a6f8086a751d976f36bf234fd13afef99f3a61",
+          "rights_status": "PENDING_REVIEW",
+          "training_eligible": false
+        },
+        {
+          "item_id": "10033634",
+          "slug": "hart-elementary-grammar-1878",
+          "title": "An Elementary Grammar of the English Language",
+          "author": "John S. Hart",
+          "publication_date": "1878",
+          "source_url": "https://www.loc.gov/item/10033634/",
+          "pdf_path": "data/training_sources/public_domain/english/raw/hart-elementary-grammar-1878.pdf",
+          "pdf_size_bytes": 30297350,
+          "pdf_sha256": "38d2066595d11cbf05084e5977de2069d66273000b761e8e44bb923072909839",
+          "text_path": "data/training_sources/public_domain/english/extracted_text/hart-elementary-grammar-1878.txt",
+          "text_size_bytes": 178127,
+          "text_sha256": "a84800227b7b1db35c17c6ade9fbad35f97fefab4971201578a81850b6eb2104",
+          "rights_status": "PENDING_REVIEW",
+          "training_eligible": false
+        },
+        {
+          "item_id": "tmp96027691",
+          "slug": "lewis-applied-grammar-1902",
+          "title": "A Text-Book of Applied English Grammar",
+          "author": "Edwin Herbert Lewis",
+          "publication_date": "1902",
+          "source_url": "https://www.loc.gov/item/tmp96027691/",
+          "pdf_path": "data/training_sources/public_domain/english/raw/lewis-applied-grammar-1902.pdf",
+          "pdf_size_bytes": 81754711,
+          "pdf_sha256": "6b7d2fcb175edadd20cddb02333a6517da8e998984e80834e2c7aaab2e8746c9",
+          "text_path": "data/training_sources/public_domain/english/extracted_text/lewis-applied-grammar-1902.txt",
+          "text_size_bytes": 412903,
+          "text_sha256": "bb0fd67980beb6c8b7f7f4c91789822f839175ab9ac78298c81232248965bca5",
+          "rights_status": "PENDING_REVIEW",
+          "training_eligible": false
+        },
+        {
+          "item_id": "11018039",
+          "slug": "vickroy-english-grammar-beginners-1870",
+          "title": "An Introduction to the Study of English Grammar, for Beginners",
+          "author": "Thomas Rhys Vickroy",
+          "publication_date": "1870",
+          "source_url": "https://www.loc.gov/item/11018039/",
+          "pdf_path": "data/training_sources/public_domain/english/raw/vickroy-english-grammar-beginners-1870.pdf",
+          "pdf_size_bytes": 25910159,
+          "pdf_sha256": "d1273d026f54061850c600dc42353efabf3fcab4cc801353cda17441f6589b7b",
+          "text_path": "data/training_sources/public_domain/english/extracted_text/vickroy-english-grammar-beginners-1870.txt",
+          "text_size_bytes": 176730,
+          "text_sha256": "523ed9d3f2b2f0f3333196a56ccede922cccc67991194172f66769768f8f65dc",
+          "rights_status": "PENDING_REVIEW",
+          "training_eligible": false
+        },
+        {
+          "item_id": "40017591",
+          "slug": "harvey-english-grammar-1870",
+          "title": "Harvey's English Grammar",
+          "author": "Thomas W. Harvey",
+          "publication_date": "1870",
+          "source_url": "https://www.loc.gov/item/40017591/",
+          "pdf_path": "data/training_sources/public_domain/english/raw/harvey-english-grammar-1870.pdf",
+          "pdf_size_bytes": 66059059,
+          "pdf_sha256": "5c674a15b2bb7083016a7cb5e01e42f5684d48920d5491dff05de8bd256750ac",
+          "text_path": "data/training_sources/public_domain/english/extracted_text/harvey-english-grammar-1870.txt",
+          "text_size_bytes": 472466,
+          "text_sha256": "eff8a209e8539a0c593770be148da1d1160e5192064cee0f161ef0fc4659cc6c",
+          "rights_status": "PENDING_REVIEW",
+          "training_eligible": false
+        },
+        {
+          "item_id": "31022301",
+          "slug": "bullions-principles-grammar-1862",
+          "title": "The Principles of English Grammar",
+          "author": "Peter Bullions",
+          "publication_date": "1862",
+          "source_url": "https://www.loc.gov/item/31022301/",
+          "pdf_path": "data/training_sources/public_domain/english/raw/bullions-principles-grammar-1862.pdf",
+          "pdf_size_bytes": 60856212,
+          "pdf_sha256": "c836b1a4f719c235fb8d88e8e13a508794b3b19271f26c7bebdb57e8aa64cf51",
+          "text_path": "data/training_sources/public_domain/english/extracted_text/bullions-principles-grammar-1862.txt",
+          "text_size_bytes": 55699,
+          "text_sha256": "3a466bbe1e6df1c3dbb16ec1c222ffb16e9d799253069702b863b795c15b36d6",
+          "rights_status": "PENDING_REVIEW",
+          "training_eligible": false
+        }
+      ]
+    }
+  ],
+  "acquired_sources": [
+    {
+      "source_id": "onet-database-31.0-selected-tables",
+      "name": "O*NET Database 31.0 selected CSV tables",
+      "revision": "Database 31.0 (August 2026)",
+      "acquired_on": "2026-11-25",
+      "upstream_urls": [
+        "https://www.onetcenter.org/dl_files/database/db_31_0_csv/occupation_data.csv",
+        "https://www.onetcenter.org/dl_files/database/db_31_0_csv/job_titles.csv",
+        "https://www.onetcenter.org/dl_files/database/db_31_0_csv/sample_of_reported_titles.csv"
+      ],
+      "license": {
+        "identifier": "CC-BY-4.0",
+        "name": "Creative Commons Attribution 4.0 International",
+        "license_url": "https://creativecommons.org/licenses/by/4.0/",
+        "evidence_url": "https://www.onetcenter.org/license_db.html",
+        "assessment_status": "assessed_for_named_subset",
+        "redistribution_scope": "Three named downloadable Database 31.0 tables only; no broader O*NET content is covered by this record.",
+        "conditions_and_caveats": [
+          "Provide O*NET attribution and indicate changes.",
+          "Do not imply O*NET endorsement; observe O*NET trademark guidance.",
+          "Title-source heterogeneity and underlying individual-content claims remain caveats in the assessment."
+        ]
+      },
+      "local_files": [
+        {
+          "path": "data/industry/onet/31.0/NOTICE.md",
+          "size_bytes": 1256,
+          "sha256": "40601d5ca4b49d3a09dbbe545e9aa8ed2c095abab750a44edad4a9529046cf34"
+        },
+        {
+          "path": "data/industry/onet/31.0/job_titles.csv",
+          "size_bytes": 4504432,
+          "sha256": "75a3b46d6edc5996117c10c9ed488c9a06f7495d02969e9d12873ab14a21540c"
+        },
+        {
+          "path": "data/industry/onet/31.0/occupation_data.csv",
+          "size_bytes": 268030,
+          "sha256": "a09eae1d6609686e44e05b7290993a1c8b523d8ca224bc0eedc194c855c3ee02"
+        },
+        {
+          "path": "data/industry/onet/31.0/sample_of_reported_titles.csv",
+          "size_bytes": 601127,
+          "sha256": "5d76040b7b0602ea217660648f8363e7980edd1870f96574a2eeaa6a822d2666"
+        }
+      ],
+      "training_status": "not_evaluated",
+      "training_pipeline_enabled": false,
+      "row_counts_excluding_header": {
+        "occupation_data.csv": 1016,
+        "job_titles.csv": 54269,
+        "sample_of_reported_titles.csv": 8189
+      }
+    },
+    {
+      "source_id": "gsa-plain-language-guidelines-markdown",
+      "name": "Federal Plain Language Guidelines Markdown subset",
+      "revision": "GSA/plainlanguage.gov commit 49d50c968f46e5218f7ee0313b313fd44de2bd73",
+      "acquired_on": "2026-11-25",
+      "upstream_urls": [
+        "https://github.com/GSA/plainlanguage.gov/tree/49d50c968f46e5218f7ee0313b313fd44de2bd73/_pages/guidelines",
+        "https://github.com/GSA/plainlanguage.gov/blob/49d50c968f46e5218f7ee0313b313fd44de2bd73/LICENSE.md"
+      ],
+      "license": {
+        "identifier": "CC0-1.0",
+        "name": "Creative Commons CC0 1.0 Universal",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "evidence_url": "https://github.com/GSA/plainlanguage.gov/blob/49d50c968f46e5218f7ee0313b313fd44de2bd73/LICENSE.md",
+        "assessment_status": "assessed_for_named_subset",
+        "redistribution_scope": "Markdown under the pinned _pages/guidelines/ subtree only; the historical PDF and media were excluded.",
+        "conditions_and_caveats": [
+          "Keep the upstream repository commit, paths, and license notice.",
+          "The Markdown snapshot is not asserted to be a separately verified publisher-hosted edition."
+        ]
+      },
+      "local_files": [
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/CONTRIBUTING.md",
+          "size_bytes": 458,
+          "sha256": "a2a8a1308b1cc8a0d302cc5dd9dc271159799c77c97af6bb65ecbec840804aca"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/LICENSE.md",
+          "size_bytes": 1353,
+          "sha256": "30fd3d756ccb4bd0a88297a597f747a8430adde7d413847ae3446ba80fe3d8e0"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/README.md",
+          "size_bytes": 4204,
+          "sha256": "cee4b206b5dd69a0ffc20681e572a3e96badd3127fafb96b3ca3d5288c91634c"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/SOURCE.md",
+          "size_bytes": 1180,
+          "sha256": "4ebd4531c879f4c64166072e0008caca5cf8cf2b34501dd768a5fff7393b7976"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/audience/address-separate-audiences-separately.md",
+          "size_bytes": 3094,
+          "sha256": "b4d692f7f874d16eb362a6537925f816b56137e0d721f177450d6f3321dea16b"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/audience/address-the-user.md",
+          "size_bytes": 6186,
+          "sha256": "2a16d00440b6a28da0df4de01271a9e5b26e7330d39c35bbe1ffdcd298097de7"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/audience/do-your-research.md",
+          "size_bytes": 1401,
+          "sha256": "33a10feb8d06337c17e8c85aa1be313750984d1e5f10aa83008cd51fbc92f49c"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/audience/index.md",
+          "size_bytes": 2646,
+          "sha256": "29d32349be372bf644fe76a71c13e6988f489e31df016d1c0d0afbb18b805d1e"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/concise/index.md",
+          "size_bytes": 4889,
+          "sha256": "57a5e94428252e04d32da1294bb83161246c9b4f4c76a84ff8d5f46caaf364e5"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/concise/keep-the-subject-verb-and-object-close-together.md",
+          "size_bytes": 2942,
+          "sha256": "28c4b51b0d78566051bb6636e1772ae76a988e1f03d85ce1c41c86496c53baf2"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/concise/use-positive-language.md",
+          "size_bytes": 3507,
+          "sha256": "799120444d0dd1a099c77f35ac56314f50c560693ed186d3d5be9c3d3eda3094"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/concise/write-short-paragraphs.md",
+          "size_bytes": 6405,
+          "sha256": "ea59928c0562ce6b8e3909d6a52b19e99e789babfe35854e64aeedb86c406c0d"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/concise/write-short-sections.md",
+          "size_bytes": 4000,
+          "sha256": "92ee72d12ada8e79a3dd854742cd32da66998f5b26e8d2bd1380c8bb7534bae5"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/concise/write-short-sentences.md",
+          "size_bytes": 4065,
+          "sha256": "c2a1f7d3bef6987fc88f74ea66b8875f3cfc961935cf8ba731b40f045fed7ca5"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/dont-use-slashes.md",
+          "size_bytes": 1028,
+          "sha256": "dc719a49ad7b62982fed6af3c59b72481bcc83b8d8ab2f04e6f077d31613a9d3"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/index.md",
+          "size_bytes": 384,
+          "sha256": "f8d381bbaf56ec4143f03f1712ac3d94c9b7528c8bcc403ff7df734dc4f951f3"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/shall-and-must.md",
+          "size_bytes": 2760,
+          "sha256": "87c812a50c26f2e26a0c43a2a14b4aca1875fe66ae183df42ecff53e5145c8b7"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/use-active-voice.md",
+          "size_bytes": 3711,
+          "sha256": "f1f45e977f2f1ada94c429344d966df622bfe39cc1b0e23a91c7384857ee2d7b"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/use-contractions.md",
+          "size_bytes": 1891,
+          "sha256": "bd8b884039801145e3e64299a74a1e4980487381d725e6b53a2cbbc4edb2c4b4"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/use-examples.md",
+          "size_bytes": 2407,
+          "sha256": "24216fee5769f81744a86693f14a08a39b48cf09b4a3197872a847f7f6a89bc5"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/use-must-to-indicate-requirements.md",
+          "size_bytes": 3657,
+          "sha256": "17cc75696ca23a269bc2ffd0f7a89180cf3e181f38d2d578cf4dd48ebae5195b"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/conversational/use-the-present-tense.md",
+          "size_bytes": 1668,
+          "sha256": "4c6e7d55e866c0973dcca5add6fae60de6b4ada0d60f9514b3c4020c930ea7b9"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/design/consider-using-visuals.md",
+          "size_bytes": 1665,
+          "sha256": "3052a940019fc30d1c28592b9f87e430526b2207eb3566674814d48b562a3ed5"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/design/highlight-important-concepts.md",
+          "size_bytes": 1130,
+          "sha256": "6006673f1aa0c2e6a2fe1c74f3e575610b1dbd2fdc9bd2c247ee916629b082e9"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/design/index.md",
+          "size_bytes": 3589,
+          "sha256": "5f6a2e917f094c7319944bb1f156daea72ecd481d5b0661bccd549397285724e"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/design/minimize-cross-references.md",
+          "size_bytes": 9377,
+          "sha256": "90c46fbd8b2264bba0b19dc737f7c22a3612e3c5f15e7750ae578f254c2195df"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/design/use-tables-to-make-complex-material-easier-to-understand.md",
+          "size_bytes": 5467,
+          "sha256": "b34a65668ac8b557decc62e65da098bd103537c364834fbfecaa7d513856cf9a"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/index.md",
+          "size_bytes": 2146,
+          "sha256": "2fcc4cf6924920f7fb03289804aa8283965cac78df4c25bf81d366e4105d1a86"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/add-useful-headings.md",
+          "size_bytes": 4508,
+          "sha256": "71473eba6a50bf7241a9c99bff2d2912c55aff9539a8c77bfc3dccd451c67f0a"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/effective-headings.md",
+          "size_bytes": 5406,
+          "sha256": "22eea79923763da6d79c49846dbd89b98634b8169c9217c8db62386e0449e7fa"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/have-a-topic-sentence.md",
+          "size_bytes": 1497,
+          "sha256": "95299dd5461266160e3c821f263ec71885f9b85b59f20a1746a6461395c36450"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/index.md",
+          "size_bytes": 436,
+          "sha256": "80f22cf65641291a092c1e997cb6a02ed834856d50630862c8a883222f6e5ad9"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/make-it-easy-to-follow.md",
+          "size_bytes": 5025,
+          "sha256": "7b074aa559555979e5db4fcf2997c4cd51ef30a25ba0c378072cb133c56eead2"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/place-the-main-idea-before-exceptions-and-conditions.md",
+          "size_bytes": 6766,
+          "sha256": "456829b9a7e7cadcd717ec7f4343a94ee7bd844db0050eb4fcf04cb05d2f100b"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/use-lists.md",
+          "size_bytes": 4203,
+          "sha256": "7023d83ab1e14faadd006ac61105d04c5a221849249111b755b8c26d9efc0aed"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/organize/use-transition-words.md",
+          "size_bytes": 2682,
+          "sha256": "86c1c582979af6d1e26144aa19b086097f82d5a2e2777b4c077dae42b812f282"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/test/controlled-comparative-studies.md",
+          "size_bytes": 2761,
+          "sha256": "ca2108e25fa40efe37e7ad3b89108adebf4a418ee7f5e3f4314ed65973dacb6c"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/test/index.md",
+          "size_bytes": 2699,
+          "sha256": "4b52f76a8cb1bfa664b4bf493c39dbbac8a1f86f0e0fde7c9aa185a538e89634"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/test/paraphrase-testing.md",
+          "size_bytes": 5134,
+          "sha256": "16175542d6ec3a6dcec2ad4e46ceed83f5621f7a77f14e04655ef6da809eafa1"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/test/usability-testing.md",
+          "size_bytes": 6336,
+          "sha256": "be7b9a3ed2fdf3e97624a81f249e7352630a403026ac0cc34e38e1071870581c"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/web/avoid-faqs.md",
+          "size_bytes": 3736,
+          "sha256": "42d29cbfe439d0dc55087a3ae73d25f376ad7379538d4949fde7f89411c593c9"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/web/avoid-pdf-overload.md",
+          "size_bytes": 1330,
+          "sha256": "e4f0701078411355f07a9b8166c6b4ab1d8e2cea1e9d6720bfbb8c488279380f"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/web/index.md",
+          "size_bytes": 3376,
+          "sha256": "2d3341f8a3bb2110fb92fa903bbd3a6a90ecfc9268cd553844a27508628e2512"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/web/repurpose-print-material.md",
+          "size_bytes": 1554,
+          "sha256": "8ede90706df4fc7671b6bce67e3911ed3ef26789c2ae9e1fcbe2bc48d18ca0f7"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/web/write-effective-links.md",
+          "size_bytes": 1867,
+          "sha256": "670dff99f478574a1f3c158eccbef477239f8193406e1da92cffa5e4aae14716"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/avoid-hidden-verbs.md",
+          "size_bytes": 3323,
+          "sha256": "a34728ab16edf90209a17e641873c797aadfde0894c7da9de8a327fec60144f4"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/avoid-jargon.md",
+          "size_bytes": 4590,
+          "sha256": "36c9c953fb1730f63055bd906465b819a7f1b2d7d7dfb23aff796bc3bbc965b9"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/avoid-noun-strings.md",
+          "size_bytes": 2217,
+          "sha256": "afd19dceefc3d8da064fb38ace2e98eca4a256447d907cb382f72b88b0dab6a5"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/index.md",
+          "size_bytes": 2305,
+          "sha256": "2a97ae1851c6bb051cf38d1bb028b4a7e2bed379ad06fc6ff10fb37893239ac1"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/minimize-abbreviations.md",
+          "size_bytes": 3467,
+          "sha256": "cc9a8158334f764518f693fdef55a83706bf55159643201feecefbac90ab135e"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/minimize-definitions.md",
+          "size_bytes": 6215,
+          "sha256": "abe828724c67ffad59d72eded749e90e1f5c6204da8284f2b50ffff4363e8205"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/place-words-carefully.md",
+          "size_bytes": 2591,
+          "sha256": "b0d54b10576cd122279217925af105774eed3544862f5ba8fb1d1393d28a5db5"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/use-simple-words-phrases.md",
+          "size_bytes": 6204,
+          "sha256": "cede672a89387c9041ad755e8b1241ec769388103fe012a2d40abc1cd341c452"
+        },
+        {
+          "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/_pages/guidelines/words/use-the-same-terms-consistently.md",
+          "size_bytes": 847,
+          "sha256": "cdedce076b46477d6bc8abb198c700d7644dca355245b5cbfb3911ed4e3ee26f"
+        }
+      ],
+      "training_status": "not_evaluated",
+      "training_pipeline_enabled": false,
+      "guideline_markdown_files": 50
+    },
+    {
+      "source_id": "fankserver-llm-glossary-markdown",
+      "name": "LLM Technical Glossary Markdown subset",
+      "revision": "fankserver/llm-glossary commit c8483b3c3f7fe6b02b8051bd6eb1238bd96c3c44",
+      "acquired_on": "2026-11-25",
+      "upstream_urls": [
+        "https://github.com/fankserver/llm-glossary/tree/c8483b3c3f7fe6b02b8051bd6eb1238bd96c3c44/src/content/docs",
+        "https://github.com/fankserver/llm-glossary/blob/c8483b3c3f7fe6b02b8051bd6eb1238bd96c3c44/LICENSE"
+      ],
+      "license": {
+        "identifier": "CC0-1.0",
+        "name": "Creative Commons CC0 1.0 Universal",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "evidence_url": "https://github.com/fankserver/llm-glossary/blob/c8483b3c3f7fe6b02b8051bd6eb1238bd96c3c44/LICENSE",
+        "assessment_status": "assessed_for_named_subset",
+        "redistribution_scope": "Markdown under src/content/docs/ at the pinned commit only; site code and dependencies were excluded.",
+        "conditions_and_caveats": [
+          "Keep original paths and inline source URLs.",
+          "The assessment notes possible third-party verbatim material and recommends source-specific review if identified.",
+          "The pinned commit was reported unsigned/unverified."
+        ]
+      },
+      "local_files": [
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/LICENSE",
+          "size_bytes": 7048,
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/README.md",
+          "size_bytes": 2212,
+          "sha256": "ab0f5be9f3fa0b8e4c7db2f12e65c46585054fdf6c3a3cf9e38e06731b953aa7"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/SOURCE.md",
+          "size_bytes": 1174,
+          "sha256": "a9b4b9b285271f622dff32de735f6919911c81e6b5a761579e8928f66e8809ba"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/embeddings-rag.md",
+          "size_bytes": 1371,
+          "sha256": "70b60d41fa6982d99e8b1c31415208ea10bc5032497e90af5edf1b55caf91830"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/finetunes-and-model-names.md",
+          "size_bytes": 6757,
+          "sha256": "8f5fd51b88f54fa0389c3345bdbc542958016f69f5bdc57b77d40c0ce729c71d"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/gpu-hardware.md",
+          "size_bytes": 4540,
+          "sha256": "3da7ffb9002a7f8c7b0cad855b477f588e30e7a30060783e5cebd48e903abfdc"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/index.md",
+          "size_bytes": 990,
+          "sha256": "ad89675e772c00916da2e994411a053d7d384337638c2cb4298d74755124429f"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/inference.md",
+          "size_bytes": 5456,
+          "sha256": "68e6ab0a5eb4c8fb39a81e612a8e9f3c2ccc2374454c9dab44d8659529dcd97a"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/llm-basics.md",
+          "size_bytes": 3748,
+          "sha256": "66a5c3cf01b58fbaf41f54c1685ab5c9882b6b954474a22013db2d5b75f63d9a"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/model-architecture.md",
+          "size_bytes": 14044,
+          "sha256": "adef42043cb3f9b010aa7e163624a1be5f22c21d70cf715995b90139abc42de6"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/monitoring-benchmarking.md",
+          "size_bytes": 2032,
+          "sha256": "c1b35b2d7fa4ee66669a436a9f067f3abb2183200982813218527cf1dc67e9d3"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/parallelism.md",
+          "size_bytes": 1472,
+          "sha256": "cfd637487551738e019d0f226a19c27cd6f94152573abce58998c4498e923f83"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/platform.md",
+          "size_bytes": 2809,
+          "sha256": "1c4e0c17a8b773279dbd33ffa99710ba7fe4e5b7073719904c418bec4c908e2f"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/quantization.md",
+          "size_bytes": 8357,
+          "sha256": "abd8b198a31302950d9e95720ca357e1850cd791d9d7c170e7352db243db2bef"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/serving-engines.md",
+          "size_bytes": 2180,
+          "sha256": "f55d332c97ed62ec5fc1d3fcdeeba9c4fbc6a81c9bde12f1c38465dfc8a10ef3"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/speculative-decoding.md",
+          "size_bytes": 3199,
+          "sha256": "49ac2b39806a46414104bd7824de1ce9ad99696f29424152a6929e0f4f8c4a26"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/speech.md",
+          "size_bytes": 2920,
+          "sha256": "d94340e440cc0e12bd020e2a58a67b113b94958173c5852e63b956e1f36ab938"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/tokens-templates-parsing.md",
+          "size_bytes": 2651,
+          "sha256": "139cc7066dcccc7a03a2c5fa67f8b8095beeb469b3caa747d65b194e177b4415"
+        },
+        {
+          "path": "data/technical-language/llm-glossary-c8483b3/src/content/docs/vllm-flags.md",
+          "size_bytes": 1445,
+          "sha256": "5bed27906714f77d061672849fa54d3d983ecfabef79688e5239d61c4c034d2d"
+        }
+      ],
+      "training_status": "not_evaluated",
+      "training_pipeline_enabled": false,
+      "markdown_files": 16
+    },
+    {
+      "source_id": "wikidata-lexemes-2026-11-18",
+      "name": "Wikidata Lexemes JSON snapshot",
+      "revision": "2026-11-18 Wikidata entities dump; Lexemes component",
+      "acquired_on": "2026-11-25",
+      "upstream_urls": [
+        "https://dumps.wikimedia.org/wikidatawiki/entities/20261118/wikidata-20261118-lexemes.json.bz2"
+      ],
+      "license": {
+        "identifier": "CC0-1.0",
+        "name": "Creative Commons CC0 1.0 Universal",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "evidence_url": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+        "assessment_status": "assessed_for_named_subset",
+        "redistribution_scope": "Structured data in the Wikidata Lexeme namespace; this does not generalize to media, arbitrary text, privacy/publicity rights, or every upstream contribution.",
+        "conditions_and_caveats": [
+          "Preserve Lexeme, Form, and Sense IDs, language codes, statements, and source references.",
+          "A concrete third-party claim must be escalated rather than assumed clear.",
+          "Publisher checksum-listing endpoint returned HTTP 403; the local SHA-256 is not cross-checked against that listing."
+        ]
+      },
+      "local_files": [
+        {
+          "path": "data/semantic-knowledge/wikidata/lexemes-2026-11-18/SOURCE.md",
+          "size_bytes": 1463,
+          "sha256": "f3053ee28ca5ee83271c3be7bcbc96920053f6705917e11e6f2bd045f8d41dc9"
+        },
+        {
+          "path": "data/semantic-knowledge/wikidata/lexemes-2026-11-18/wikidata-20261118-lexemes.json.bz2.sha256",
+          "size_bytes": 101,
+          "sha256": "7d7d8ac24428d1d4bd98ed2e246d6c11d2b71e3d6caed07992a6fea703c2c36d"
+        }
+      ],
+      "training_status": "not_evaluated",
+      "training_pipeline_enabled": false,
+      "release_asset": {
+        "filename": "wikidata-20261118-lexemes.json.bz2",
+        "download_url": "https://github.com/Solvex-Paradox-Box/loc-english-grammar-source-collection/releases/download/wikidata-lexemes-2026-11-18/wikidata-20261118-lexemes.json.bz2",
+        "upstream_url": "https://dumps.wikimedia.org/wikidatawiki/entities/20261118/wikidata-20261118-lexemes.json.bz2",
+        "size_bytes": 494932541,
+        "sha256": "75499b8ce9ff7d9e8c2d9a0f6403301170dad053d1547d14fc87ac18f185ea00",
+        "compression_integrity": "bzip2 -t passed before release",
+        "publisher_checksum_crosscheck": "unavailable; checksum-listing request returned HTTP 403"
+      }
+    }
+  ],
+  "candidate_assessments": [
+    {
+      "candidate_id": "princeton-wordnet-3.1",
+      "name": "Princeton WordNet 3.1",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Exact 3.1 database archive license attachment and obligations unclear.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/01-wordnet.md"
+    },
+    {
+      "candidate_id": "ud-english-ewt",
+      "name": "Universal Dependencies English-EWT",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Underlying source-text redistribution rights unresolved despite annotation/database licensing.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/02-ud-english-ewt.md"
+    },
+    {
+      "candidate_id": "cmudict",
+      "name": "CMU Pronouncing Dictionary",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "README data-use statement and repository license mapping to the exact data file is unclear.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/04-cmudict.md"
+    },
+    {
+      "candidate_id": "berkeley-framenet-1.7",
+      "name": "Berkeley FrameNet",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Berkeley licensing workflow conflicts with a third-party catalog label; no written clearance.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/05-framenet.md"
+    },
+    {
+      "candidate_id": "nist-ai-rmf-glossary",
+      "name": "NIST AI RMF terminology glossary",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Mutable, mixed-source glossary lacks a spreadsheet-specific blanket license and per-definition review.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/06-nist-ai-rmf.md"
+    },
+    {
+      "candidate_id": "openstax-principles-management",
+      "name": "OpenStax Principles of Management",
+      "decision": "metadata_only",
+      "reason": "Noncommercial terms and title-specific written-permission requirement for LLM ingestion.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/08-openstax-management.md"
+    },
+    {
+      "candidate_id": "openstax-principles-accounting",
+      "name": "OpenStax Principles of Accounting, Volume 1",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Noncommercial terms and title-specific written-permission requirement for LLM ingestion.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/09-openstax-accounting.md"
+    },
+    {
+      "candidate_id": "sba-business-guide",
+      "name": "SBA Business Guide",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Live-page text boundaries and third-party contributed/licensed components need human review.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/10-sba-business-guide.md"
+    },
+    {
+      "candidate_id": "nasa-systems-engineering-handbook",
+      "name": "NASA Systems Engineering Handbook",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Contractor authorship, third-party components, and exact commercial reuse scope unresolved.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/11-nasa-se-handbook.md"
+    },
+    {
+      "candidate_id": "nist-ssdf-sp-800-218",
+      "name": "NIST SP 800-218 SSDF v1.1",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Worldwide commercial reuse and possible non-NIST/third-party rights require human review.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/12-nist-ssdf.md"
+    },
+    {
+      "candidate_id": "openstax-introductory-statistics-2e",
+      "name": "OpenStax Introductory Statistics 2e",
+      "decision": "blocked_pending_human_license_review",
+      "reason": "Noncommercial terms and title-specific written-permission requirement for LLM ingestion.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/14-openstax-statistics.md"
+    },
+    {
+      "candidate_id": "onet-database-31.0-selected-tables",
+      "name": "O*NET Database 31.0 selected tables",
+      "decision": "acquired_named_subset",
+      "reason": "See acquired source record, pinned source assessment, scope, and license caveats.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/13-onet.md"
+    },
+    {
+      "candidate_id": "gsa-plain-language-guidelines-markdown",
+      "name": "GSA Plain Language Guidelines Markdown",
+      "decision": "acquired_named_subset",
+      "reason": "See acquired source record, pinned source assessment, scope, and license caveats.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/15-plain-language.md"
+    },
+    {
+      "candidate_id": "fankserver-llm-glossary-markdown",
+      "name": "fankserver LLM glossary Markdown",
+      "decision": "acquired_named_subset",
+      "reason": "See acquired source record, pinned source assessment, scope, and license caveats.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/07-llm-glossary.md"
+    },
+    {
+      "candidate_id": "wikidata-lexemes-2026-11-18",
+      "name": "Wikidata Lexemes 2026-11-18 snapshot",
+      "decision": "acquired_named_subset",
+      "reason": "See acquired source record, pinned source assessment, scope, and license caveats.",
+      "assessment": "docs/audits/2026-11-25-source-candidates/03-wikidata.md"
+    }
+  ],
+  "downstream_compatibility": {
+    "consumer_repository": "iamfather420-ctrl/Full-Build",
+    "audited_commit": "133cd82c23563e7b13ab636ef12d117db05ccf16",
+    "submodule_path": "data/training_sources/public_domain/english",
+    "pinned_source_commit": "8d1710185c9a5bb393d699f05195eea453dcf926",
+    "active_training_run_id": 45661493760,
+    "active_training_run_status_at_audit": "in_progress",
+    "status_at_publication_check": "completed",
+    "conclusion_at_publication_check": "success",
+    "status_checked_at_utc": "2026-11-25T19:26:41Z",
+    "consumer_files_or_inputs_changed": false,
+    "new_sources_wired_into_training": false,
+    "compatibility_decision": "reference-only; no direct training/runtime adapter validated"
+  },
+  "notes": [
+    "The inventory is a source index, not an endorsement of every upstream assertion or a legal opinion.",
+    "Content quality, duplicate resolution, definition normalization, semantic indexing, and training suitability remain unreviewed.",
+    "The Wikidata archive is distributed as a GitHub Release asset; its local metadata and checksum sidecar are version-controlled."
+  ]
+}

@@ -1,0 +1,6655 @@
+—
+
+i
+XX
+N
+SS
+S
+ES
+R
+NS
+SS
+N
+WN
+
+SCOTT
+
+UMlitit?
+
+4
+7
+
+0
+
+Cz
+
+}
+
+ER
+
+We
+Wi
+
+Al
+
+OF
+
+~
+
+oF on
+
+is
+
+
+
+
+
+
+
+
+
+AN
+
+ELEMENTARY GRAMMAR
+
+OF THE
+
+ENGLISH LANGUAGE.
+
+*
+
+By JOHN S&S. HART, LL.D.,
+
+LATE PROFESSOR OF RHETORIC AND OF THE ENGLISH LANGUAGE AND LITERATURE IN
+THE COLLEGE OF NEW JERSEY, FORMERLY PRINCIPAL OF THE NEW JERSEY
+STATE NORMAL SCHOOL, AUTHOR OF A SERIES OF TEXT-BOOKS
+
+ON THE ENGLISH LANGUAGE, ETC., ETC. ;
+
+PHILADELPHIA:
+
+ELDREDGE & BROTHER,
+17 North Seventh Street.
+
+1878.
+
+A SERIES OF TEXT-BOOKS
+; ON
+
+THE ENGLISH LANGUAGE.
+
+By JOHN'S. HART, LL JD.
+1
+
+Language-Lessons for Beginners. a tt
+An Elementary English Grammar. \278
+English Grammar and Analysis.
+
+First Lessons in Composition.
+
+Composition and Rhetoric.
+
+A Short Course in Literature.
+
+A Manual of English Literature.
+
+A Manual of American Literature.
+
+A Class Book of Poetry.
+
+oie
+Entered, according to Act of Congress, in the year 1878, by
+
+hk
+! ELDREDGE & BROTHER,
+L in the Office of the Librarian of Congress, at Washington.
+
+‘
+ee
+vty J. FAGAN & SON,
+>? ELECTROTYPERS, PHILAD’A. vé
+
+CAXTON PRESS OF SHERMAN & CO.
+
+PREFACE.
+
+t —————vo02a400——
+
+In this volume the Author has selected from his larger Grammar
+those portions which are purely of an elementary character, and
+which are studied by beginners in first going over the subject. The
+_ whole of Prosody, all of the chapter on the Derivation of Words,
+and the fine print matter of the other portions, are omitted. On
+the other hand, copious explanations, and a complete series of
+practical exercises, are appended to the several definitions and rules.
+The knowledge of each rule and definition is thus thoroughly tested
+and impressed on the memory before the pupil is allowed to pro-
+ceed to more advanced knowledge.
+
+The work, as now offered, is the result of long experience in the
+class-room, and of no little reading and study. The English lan-
+guage and its literature have been for many years the main subjects
+of the author’s inquiry, and he has endeavored in this volume to
+give the results of his observations in the form which his experience
+as a teacher has convinced him to be the best adapted to the wants
+
+of the learner.
+
+A word as to the method pursued. The author has endeavored
+to bear in mind that he was writing, not a treatise for the learned,
+but a text-book for learners. For such a book,—
+
+The first and most imperative demand is CLEARNEsS,— clearness
+
+of arrangement, and clearness of expression.
+ili
+
+iv PREFACE.
+Next and hardly less imperative is the demand that the more and
+the less important should be carefully discriminated, and the differ-
+
+ence plainly set forth to the eye.
+
+A third imperative demand is that the rules, definitions; and
+other matter to be committed to memory, should be expressed with
+the utmost possible conciseness.
+
+A fourth requisite is that every rule and definition should be sup-
+ported and illustrated by a goodly array of apt practical examples.
+These are as necessary in teaching grammar as sums are in teaching
+arithmetic.
+
+How far these things have been secured is for the reader to judge.
+
+PAGE
+MPTP eS tec ge a ee a ee ee
+INTRODUCTION, se e e e e ° ° . e@ es es se s Z
+
+te ge well ly oa Lgl ee
+
+“sae g{raere—
+Peat.
+—059= 0o —_-
+BTY MOLOGY.
+ese aS UNC) id SL Baia el Tae eis Qed oa a ee
+Ee Fe OO iy ou Net clad bd atl ele | ping) witli gdelae eaten
+
+ADJECTIVES, . ‘ : P ‘ = : : : . 3 ° : ; 26
+PRONOUNS, AMA RMS ue es gt ee mie ae gree ey
+Eee te Ny ee Br he, eo aee 7
+hy TR a A a a Mo Ta A
+CONJUNCTIONS, . 5 : F , é r é 5 8 e . ‘ 74
+PREPOSITIONS, . : - ‘ aati ee 4 : a). as : Z - : ore
+INTERJECTIONS, . re : ° : : : ; 77
+WORDS USED AS DIFFERENT I PARTS | OF SPEECH, 5a Ord aM A as Gates
+
+1 y
+
+Vi CONTENTS.
+
+ParRTIIL
+
+—-059=00-——
+SYNTAX.
+PAGE
+SYNTAX, .. - E “ 5 . “ : = e e . ° , oe
+1. The Nowminanve : : 3 : : : 5 5 é : ; 81
+2. The Verb, s ; 3 ; A : : 2 ‘ 4 ee
+3. The Objective Case ana the Verb, ; é ‘ ; 5 2 : 87
+4. The Objective Case and the Preposition, : : é é : « 89
+5. The Possessive Case, era ee ar ge a
+6. Apposition, . : 5 é ; : : : ; - : oe
+7. Case after the Verb To tbe. 5 : : : : ; J : : 95
+8. The Pronoun, : : i : i ; : a : ‘ : <a
+9. The Article, ‘ : : : maar - ‘ , ; ; on Os
+10. The Adjective, . : : : ‘ : : : 2 : : . 104
+11. The Adjective Pronoun, . ‘ ; : : : : : é . “206
+12. The Participle, . : ; : Be oar : ; : : , . 108
+18. The Adverb, : : ‘ : ‘ : E ; : : mega (iE:
+14. The Infinitive Mond, : . : ; : : : : 2 : pee ©
+15. The Conjunction, . 4 : : : : : : : : 2 aly
+16. The Interjection, . . i ; : : ; 4 : : ; . 116
+REVIEW EXERCISES, . : : ‘ : : : ease!
+EXERCISES IN CORRECTION OF FALSE a ; ; 5 : : ee
+SELECTIONS FOR PARSING, ee ie Ma eT ne ee
+—_—oo0tg’0o——.
+
+NOTE TO TEACHERS.
+
+THE matter in this book is divided into three kinds, indicated by three
+varieties of type, and it is important that the object of this arrangement
+should be clearly understood.
+
+1. It is intended that the scholar should first go through the book, learn-
+ing the matter in the largest type only, with the declensions and conjuga-
+tions, and with such oral explanations from the teacher, and such portion
+of the Exercises, as may be found expedient.
+
+2. Having gone over the whole ground once, or perhaps twice, in this
+way, the scholar will be prepared to take up profitably the remaining por-
+_ tion of the Exercises, and the matter in the intermediate type. This in-
+termediate matter, however, is not intended to be committed to memory
+verbatim, like the rules and definitions in the largest type.
+
+3. The matter in the smallest type is intended mainly for explanation.
+
+AN ELEMENTARY
+
+ENGLISH GRAMMAR.
+
+—0 55 oo —.
+
+Grammar is the science which treats of Language.*
+
+Explanations. — We say that Arithmetic is the science which treats
+of numbers, Botany is the science which treats of plants, Astronomy is
+the science which treats of the stars. So, Grammar is the science which
+treats of language.
+
+Knowledge on any subject, arranged in some regular order, is called
+a Science.
+
+The words which a people use in speaking or writing are called a
+Language.
+
+The object of studying Grammar is to be able to understand, bee
+and write a language correctly.
+
+Grammar is divided into four parts; namely, OR-
+THOGRAPHY, ETYMOLOGY, SYNTAX, and PRosopy.
+
+Orthography treats of Letters, Etymology of
+Words, Syntax of Sentences, and Prosody of Verszji-
+cation.
+
+* See Note to Teachers on page 6.
+
+PurRst.PAST
+
+0.039300
+
+ORTHOGRAPHY.
+
+THE first part of Grammar is called ORTHOGRAPHY.
+Orthography treats of LETTERS. |
+
+Il LETTERS TAKEN SEPARATELY.
+Letters are written characters or signs used to rep-
+resent certain sounds of the human voice.
+
+A letter that is not sounded in speaking is called a silent letter.
+
+The letters of any Language are called its Alphabet.
+The English Alphabet contains twenty-six letters.
+Letters are divided into VOWELS and CONSONANTS.
+A Vowel may be fully sounded by itself.
+
+A Consonant cannot be fully sounded unless in
+connection with a vowel.
+
+Vowels.
+
+The VOWELS are a, e, 7, 0, wu, and sometimes w and
+
+y. All the other letters are CONSONANTS.
+| 8
+
+ORTHOGRAPHY. 9
+
+W and y are consonants when they precede a vowel sound in
+the same syllable; but are vowels in all other places.
+
+A Diphthong is the union of two vowels in one
+sound; as 02 1N voice.
+
+A Triphthong is the union of three vowels in one
+sound ; as, zew in adveu.
+
+The triphthongs are three in number, eau, teu, iew; as in beauty,
+lieutenant, review.
+
+U after g is never counted as part of a diphthong or of a
+triphthong.
+
+Exercises.— Which of the letters in the word Philadelphia
+are vowels? Which are consonants? Name the vowels, conso-
+nants, diphthongs, and triphthongs in the following words:
+
+Sounding Lieutenant Separation
+Abundant Loitering Boisterous
+
+Name (or write) three words in which w is used as a conso-
+nant, three in which y is used as a consonant, three in which w
+is used as a vowel, three in which y is used as a vowel.
+
+Name (or write) five words each containing a diphthong, five
+containing a triphthong.
+
+Note. — The teacher will add other examples until the scholar be-
+‘comes familiar with the classification.
+WORDS AND SYLLABLES.
+
+A Word is a collection of letters used together to
+represent some idea.
+
+A few words consist of only one letter each.
+A Syllable is so much of a word as can be pro-
+
+nounced by one impulse of the voice; as, con in con-
+tain.
+
+10 ELEMENTARY GRAMMAR.
+
+Spelling is putting letters together correctly so as
+to form syllables and words.
+
+A Sentence is a number of words put together so
+as to make complete sense; as, John wrote a letter.
+
+A word of one syllable is called a Monosyllable ;
+of two, a Dissyllable; of three, a Trisyllable; of
+more than three, a Polysyliable.
+
+Example,— Truth is a monosyliable ; truth-ful, a dissyllable ;
+truth-ful-ness, a trasyllable ; un-truth-ful-ness, a polysyllable.
+
+Exercise. — Name the class to which each of the following
+words belongs: nation, uprightness, incomprehensible, authority,
+frequent, plague, opportunity, horse, element, elementary, rob-
+ber, vowel, consonant.
+
+Name (or write) five monosyllables, five dissyllables, five tri-
+syllables, five polysyllables.
+
+Note.— The teacher may add other examples at will.
+
+——-0 95, 00—_—_
+
+RULES POR SPELLING,
+RULE I.—Y final.
+
+Part 1.— Y final, preceded by a consonant, is changed
+into 7 on taking a suffix; as, fanc-y, fanc-t-ful, (not
+fanc-y-ful.)
+
+A suffix is something added to the end of a word.
+
+Exception 1.—Before ous, y sometimes becomes ¢€; as, beaut-y,
+beaut-e-ous.
+
+Exception 2.—Before ing, y is not changed; as, tarr-y, tarr-
+Yy-ing.
+
+Part 2.—Y final, preceded by a vowel, is not
+changed on taking a suffix; as, play, play-er.
+
+ORTHOGRAPHY. GL |
+
+Exceptions. —Day, which makes daily ; lay, pay, and say,
+which make laid, paid, and said, together with various other
+derivatives and compounds, as mislaid, unpaid, unsaid, ete.
+
+Exercises. — Spell the words formed by adding ful to mercy,
+plenty, bounty, duty, pity ; by adding es and ing to cry, pry, try,
+apply, deny, rely ; by adding er and est to merry, sorry, saucy,
+holy.
+
+Correct any of the following which need correction, and give
+the Rule for each change: like-ly-hood, handy-craft, quarry-ed,
+journey-ed, beauty-ful, glory-ous, pity-ous, pity-ful, melody-es,
+melody-ous, gay-ety, gay-ly, witty-ly, witty-er, betray-er, journey-
+ing.
+
+Name (or write) five examples of y final changed to 7, under
+Part 1 of the Rule.
+
+Five examples of y final becoming e, under Exception 1.
+Five examples of y final not changed, under Exception 2.
+Five examples of y final not changed, under Part 2 of the Rule.
+
+RULE II.—E final, silent.
+
+Part 1.—/ final, silent, on taking a suffix begin-
+ning with a vowel, is dropped; as, care, car-ing.
+
+Exception 1.—Je, on taking the suffix ing, is changed into y ;
+as die, dy-ing.
+
+Exception 2.—Dye (to color), hoe, and shoe do not drop e on
+taking the suffix ing ; as, dye-ing, hoe-ing, shoe-ing.
+
+Exception 3.— Singe, swinge, and tinge do not drop é on tak-
+ing the suffix ing. This is to retain the soft sound of the g, and
+to distinguish them from the corresponding forms of sing, swing,
+ting. Thus: sing-ing, swing-ing, ting-ing ; singe-ing, swinge-ing,
+tinge-ing.
+
+Exception 4. — Ce and ge, on taking a suffix beginning with
+
+a, 0, or u, do not drop the e. This is to retain the soft sound of
+
+thee and g. Thus: service-able, not servic-able ; change-able, not
+chang-able.
+
+12 ELEMENTARY GRAMMAR.
+
+Part 2.—# final, silent, on taking a suffix beginning
+with aconsonant, is not dropped; as, care, care-ful.
+
+Exceptions. — Judgment, lodgment, abridgment, acknowledg-
+ment, argument; wisdom, nursling; duly, truly, awful, with
+some corresponding derivatives of due and true, such as duty,
+dutiful, truth, truthful, ete.
+
+Exercises. — Spell the words formed by adding ing to bite,
+Jorce, revive ; by adding able to admire, adore, deplore.
+
+Form the following compounds, and give the rule for each
+change : ripe-en, ripe-ness, smoke-ing, lie-ing, sphere-ical, dispute-
+ant, tire-some, tie-ing, tie-ed, pave-ment, pave-ing, serve-ice-able,
+defense-ible, defense-less, cure-able, marriage-able, trace-ing, trace-
+able, fame-ous, cowrage-ous, re-pulse-iwe-ness.
+
+Name (or write) five examples of e final dropped, under Part
+1 of the Rule.
+
+Five examples of ze changed to y, under Exception 1.
+
+Five examples of e final not dropped, under Part 2 of the Rule.
+
+RULE III.— Words ending in U0.
+
+Words ending in dd drop one 7 on taking a suffix
+beginning with a consonant; as, full, ful-ness; also
+sometimes on taking a prefix; as, full, hand-ful; tell,
+un-tol.
+
+Note.— Words ending in any other double letter are spelled in
+composition in the same manner as when alone; as, stiff, stiff-ness.
+
+Exercises, — Spell the words formed by adding to ali the
+words though, together; by combining wth and all; by com-
+bining arm and full.
+
+Form the following compounds, and give the Rule for each
+change: full-fill, tall-er, buze-ing, all-ways, well-come, use-full,
+all-most, puff-ing.
+
+Name (or write) five examples of 7 dropped on taking a suffix.
+
+Five examples of 7 dropped on taking a prefix.
+
+ORTHOGRAPHY. 13
+
+RULE IV.— Doubling the final consonant.
+
+In words accented on the last syllable, a final con-
+sonant, if single, and if preceded by a single vowel,
+is abled on taking a suffix beginning with a vowel;
+
+as, permit, permit-t-ing.
+
+Monosyllables, being always accented, come of course under this Rule.
+
+Note. — Here are four conditions: 1. The last syllable must
+have the accent; 2. It must end in a single consonant; 3. This
+single consonant must be preceded by a single vowel; 4. The
+suffix must begin with a vowel.
+
+Examples. — In offer-ing, the first condition is wanting; in
+torment-ing, the second condition; in appeal-ing, the third; in
+aver-ment, the fourth.
+
+Exercises. — Spell the words formed by adding ing and ed to
+remit, umpel ; ist to drug, machine, novel, natural; er to revel ;
+. ed to fulfil, rub, fail, refer ; ing to squat, sail, gallop, hum ; ant
+to assist ; ent to excel ; ine to adamant ; ate to alien, origin ; en
+to red, moist, fright; ar to consul; er to propel; ous to moun-
+tain; y to mud, meal, sleep ; ee to commit, absent, patent ; ard
+to slug, drunk. N.B.—In forming each combination, give the
+_ Rule applicable to it.
+
+Name (or write) five examples of doubling the final consonant
+under the Rule.
+
+Five examples in which the jirst condition only is wanting.
+
+Five, in which the second only is wanting.
+
+Five, in which the third only is wanting.
+
+Five, in which the fourth only is wanting.
+
+_ RULE V.—The terminations eive and ieve.
+
+In such words as receive, relieve, etc., ed is used if
+the letter c precedes; as, recedve, deceive; but te is used
+if any other letter precedes; as, relieve, believe.
+
+Exercise. — Correct the mistakes, if any, in the following
+words: retreive, perceive, acheive, concieve, beleive.
+2
+
+SECOND PART.
+
+——059400-—
+
+ETYMOLOGY.
+THE second part of Grammar is called EryMoLoey.
+Ktymology treats of Worps.
+
+CLASSIFICATION OF WORDS.
+
+The classes of words in English are nine; namely,
+Nouns, ARTICLES, ADJECTIVES, PRONOUNS, VERBS,
+ADVERBS, CONJUNCTIONS, PREPOSITIONS, and IN-
+TERJECTIONS.
+
+Note.—These classes of words are generally called the Parts
+of Speech.
+
+——2.059500-——
+
+I. NOUNS.
+
+A Noun is the name of any person, place, or thing;
+as, boy, school, book.
+
+What is your name? Give the names of five persons that you
+know. What is the name of the place in which you live? Give
+the names of five other places. Name five things that you can
+see. Name five things that you can think of but cannot see.
+
+All these names are nouns. :
+14
+
+‘
+/
+{
+
+j
+
+ETYMOLOGY. 15
+
+In the sentence, ‘‘ Charles went to Boston in the boat,” what
+part of speech is Charles? Why? Boston? Why? Boat?
+Why? ) .
+
+In the following sentences state which words are nouns, and
+why?
+
+In coming from Trenton to Philadelphia, I saw John on the
+boat with a satchel of books in his hands.
+
+The book had good covers, but bad print.
+
+The boy had a knife with a small blade.
+
+_ The horse in the stable has a good disposition.
+
+Temperance and industry promote health.
+
+Religion exalts a nation.
+
+Beauty is a fading flower.
+
+Note. — The teacher should repeat the foregoing exercises, and form
+
+others like them, until the learner becomes familiar with the subject,
+and can go through any sentence and indicate the nouns with facility.
+
+Name (or write) five nouns.
+
+I. CLASSIFICATION OF NOUNS.
+
+Nouns are divided into two general classes, PROPER
+and COMMON.
+
+A Proper noun is a name given to only one of a
+class of objects; as, John, London, Delaware.
+
+Note. — A Proper noun should always begin with a capital
+letter.
+
+A Common noun is a name given to any one of a
+class of objects; as, boy, city, river.
+
+Explanation.— There is a class of objects called “‘ boys.” The name
+“boy "ig given to any one of that class. It is common to them all.
+One particular boy is called “John.” That is his particular name.
+It is peculiar or proper to him. So “city” is a name given in common
+to any one of another class of objects. But “ London” is the name
+
+16 ELEMENTARY GRAMMAR.
+
+given to one particular city. It belongs peculiarly and properly to that
+city. Any one of a certain other class of objects is called a “river.”
+The name is common to all such objects. But one particular object of
+this kind is called “Delaware.” It belongs properly to that particular
+
+river. |
+A Collective noun is the name of a collection of
+
+objects considered as one; as, army, crowd.
+
+Exercises. — Which of the following nouns are Proper?
+which Common? and which Collective? james, isaiah, pro-
+phet, australia, island, regiment, plymouth, town, herd, wash-
+ington, england, county, flock, elizabeth, woman, class, table,
+chair, book, hudson.
+
+Which of the foregoing nouns should begin with a capital
+letter ?
+
+What is your own propername? What is your common name?
+
+Name (or write) six proper nouns, six common nouns, six
+collective nouns. |
+
+Il. ATTRIBUTES OF NOUNS.
+
+Nouns have the attributes of GENDER, NUMBER,
+
+PERSON, and CASE.
+| I. GENDER.
+
+Gender is the distinction of nouns in regard to
+SEX.
+
+Nouns have three genders, MASCULINE, FEMININE,
+and NEUTER.
+
+The Masculine denotes objects of THE MALE SEX;
+as, boy, man.
+
+The Feminine denotes objects of THE FEMALE SEX;
+as, girl, woman.
+
+The Neuter denotes objects WITHOUT SEX; as, book,
+river. :
+
+ETYMOLOGY.
+
+17
+
+Modes of Distinguishing Sex.
+
+There are three ways of distinguishing sex: 1. By the use of
+different words, as bachelor, maid; 2. By difference of termina-
+tion, as abbot, abbess; 3. By prefixing or affixing another word,
+as he-goat, she-goat ; landlord, landlady.
+
+Masculine.
+Bachelor
+Beau
+Boy
+Brother
+Bull
+Bullock
+Ox
+
+Steer
+Colt
+Earl
+Father
+Friar, monk
+Gander
+Horse
+Husband
+
+1. By different words.
+
+Feminine.
+maid
+belle
+girl
+sister
+
+COW
+or
+heifer
+
+filly
+countess
+mother
+nun
+goose
+mare
+wife
+
+and many others.
+
+Masculine.
+Abbot
+Actor
+Arbiter
+Author
+Baron
+Benefactor
+Count
+Deacon —
+Duke
+Editor
+Founder
+Giant
+
+9%
+
+Feminine.
+abbess
+actress
+arbitress
+authoress
+baroness
+benefactress
+countess
+deaconess
+duchess
+editress
+foundress
+giantess
+
+Masculine.
+King
+Lad
+Lord
+Male
+Man
+Master
+Nephew
+Papa
+Ram
+Sir
+Son
+Stag
+Swain
+Uncle ©
+
+Wizard
+
+Masculine.
+Heir
+Hero
+Lion
+Negro
+Poet
+Shepherd
+Tailor
+Testator
+Bridegroom
+Ozar
+Don
+Sultan
+
+B
+
+Feminine.
+queen
+lass
+lady
+female
+woman
+miss, mistress
+niece
+mamma
+ewe
+madam
+daughter
+hind
+nymph
+aunt
+witch
+
+2. By difference of termination.
+
+Feminine.
+heiress
+heroine
+lioness
+negress
+poetess
+
+_ shepherdess
+
+tailoress
+testatrix
+bride
+ezarina
+donna
+sultana
+
+18 ELEMENTARY GRAMMAR.
+
+8. By prefixing or affixing another word.
+
+Masculine. Feminine, Masculine. Feminine.
+Gentleman gentlewoman Male-child Semale-child
+Grandfather grandmother Man-servant  maid-servant
+He-goat she-goat Peacock peahen
+Landlord landlady Schoolmaster — schoolmistress
+
+Note.— Some nouns denote objects which may be either male
+or female; as, bird, parent. These are said to be of the Com-
+mon gender.
+
+Exercises. — Name all the nouns in the following sentences,
+state whether it is a proper noun or a common noun, and state
+the gender of each.
+
+The teacher explained the lesson to the boys and the girls.
+Mary made a fan of the feathers of a peacock.
+
+The hunter killed a deer and its fawn.
+
+The king and the queen were on the throne.
+
+The landlord turned the man, his wife, and their children out
+of the house.
+
+Mr. Dale bought a horse and a colt for two hundred dollars.
+The shepherdess kept watch over her sheep.
+
+John caught a fish in the lake.
+
+My uncle, aunt, and cousin have gone home.
+
+Name (or write) five nouns of the masculine gender, five of
+the feminine gender, five of the neuter gender, and five of the
+commen gender.
+
+II. NUMBER.
+
+Number is that attribute of Nouns which indicates
+whether ONE or MORE than ONE is meant.
+
+Nouns have two numbers; the SINGULAR and the
+PLURAL.
+
+The Singular denotes ONE, the Plural More
+THAN ONE.
+
+ETYMOLOGY. 19
+
+Modes of forming the Plural.
+1. Plural in S.
+
+Nouns generally are made Plural by adding s to
+the Singular; as, book, books.
+
+2. Plural in @S.
+
+Nouns ending in ch soft, s, sh, x, and z, are made
+Plural by adding es; as, church, churches; miss,
+misses ; lash, lashes ; box, boxes ; topaz, topazes.
+
+Note.—Nouns ending in o differ as to the mode of forming the
+plural. Some form the plural by adding es; as, cargo, cargoes.
+Others form the plural by adding simply s; as, canto, cantos.
+
+Exercise.—Spell the plural of negro, lynx, quiz, radish, patri-
+arch, peach, mass, rhombus, trio, motto, folio, halo.
+
+8. Plural in WeS.
+
+Nouns ending in single /, or in fe, are made Plural
+by changing / or fe into ves; as, loaf, loaves; life,
+lives.
+
+Note. — Nouns in double / follow the general rule; as, muff,
+muffs.
+Exercise. — Spell the plural of wharf, half, cuff, leaf, beef,
+calf, thief, wife.
+4. Plural in #es.
+
+Nouns ending in y after a consonant are made
+Plural by changing y into ies ; as, lady, ladies.
+
+Note.— Nouns ending in y after a vowel do not change y into
+aes, but form the plural by the general rule; as, day, days.
+
+Exercise.— Spell the plural of the following: Ray, toy, chim-
+ney, tray, artery, Monday, February, buoy, boy, attorney, valley,
+money.
+
+20 ELEMENTARY GRAMMAR.
+
+Note.— The exceptions to the rules for forming the plural of nouns
+will be found treated at large in Hart’s Grammar ce Analysis,
+page 30.
+
+5. Nouns irregular in the Plural.
+
+Singular. Plural. Singular. Plural.
+Man men Tooth teeth
+Woman women Goose geese
+Child children Mouse mice
+Foot feet Louse lice
+Ox oxen
+
+Exercises, — Change the following nouns into the plural, and
+give the Rule for each change:
+
+Sky, church, army, wolf, knife, leaf, wish, crucifix, fish, crutch,
+monarch, peach, patriarch, kiss, sex, pony, ox, calf, a leaf,
+radish, valley, turkey, half, money, thief.
+
+Name all the nouns in the following sentences, and state in re-
+gard to each (1) whether it is proper or common, (2) its gender,
+and (3) its number:
+
+James and his sister study their lesson in the same book.
+
+I learned the facts from Mary while going home.
+
+A great many pigeons were seen on the top of the house.
+
+Mice are great thieves; they exercise their nimble feet when
+they hear the cat coming.
+
+Name (or write) five nouns in the singular number, five in the
+plural number.
+III. PERSON.
+
+Person is the distinction of nouns in their relation
+to the speaker.
+Note. — Every noun must represent either the speaker, who is sup-
+
+posed to utter the sentence, the person spoken to, or some person or
+thing spoken of. Eos three relations of a noun are called Persons.
+
+Nouns have three persons, First, SECOND, and
+. PHIRD, ;
+
+ETYMOLOGY. 21
+
+The First Person is THE SPEAKER, the Second
+is THE ONE SPOKEN TO, the Third is THE ONE SPOKEN
+OF.
+
+Examples, — First person, ‘J, Paul, beseech you;” second
+
+person, ‘Children, obey your parents;” third person, “The
+children obey their parents.”
+
+Note.—The distinction of person pertains chiefly to pronouns. Nouns
+are very rarely in the first person.
+
+Exercises. —Indicate all the nouns in the following sentences,
+and state in regard to each (1) whether it is proper or common,
+(2) its gender, (3) its number, and (4) its person:
+
+I, the captain of this company, gave the order.
+
+John, take the slate into the next room.
+
+Parents are kind to their children.
+
+Parents, be kind to your children.
+
+Name (or write) five sentences containing nouns of the second
+person, five of the third person.
+
+IV. CASE.
+
+_ Case distinguishes the relation of a noun or pro-
+noun to other words.
+
+Nouns have three cases, NOMINATIVE, POSSESSIVE,
+and OBJECTIVE.
+
+The Nominative Case is that in which a noun Is
+THE SUBJECT OF A VERB; as, The gzr/ reads.
+
+The Possessive Case is that which DENOTES
+OWNERSHIP OR POSSESSION; as, Mary’s book.
+
+The Objective Case is that in which THE NOUN Is
+THE OBJECT OF SOME VERB OR PREPOSITION; as,
+“Mary wrote a letter.’ ‘“ William went into the
+street.”
+
+* At this point, it may be well for the teacher to explain so muchi of the na-
+ture of the verb as is given on pages 37 and 38.
+
+29 ELEMENTARY GRAMMAR.
+
+How to find the Nominative.—The subject of the verb may
+be found by putting ‘“‘who” or ‘‘ what” before the verb and
+
+asking the question. Example: ‘A nan bought a hat.” Who
+bought? Ans. Man. Therefore, ‘“‘man” is the subject of the
+verb ‘‘ bought,” and is in the nominative case.
+
+Exercises. — Name the subject of each verb in the following
+sentences :
+
+A butcher killed a calf.
+John hurt William.
+William hurt John.
+
+A horse kicked a man.
+
+A man kicked a horse.
+Idleness produces poverty.
+Poverty produces idleness.
+
+How to find the Objective. — The object of a verb or of a
+preposition may be found by putting ‘‘ whom” or ‘“ what” after
+the verb or the preposition and asking the question. Examples:
+‘“‘ William hurt his sister.’ Hurt whom? Ans. Sister. There-
+fore, “‘sister” is the object of the verb ‘‘hurt.” ‘* William went
+into the street.” Into what? Ans. Street. Therefore, “street”
+is the object of the preposition ‘ into.”
+
+Exercises.— Name the object of each verb and preposition in
+the following sentences :
+
+John lost his book in the street.
+
+Mary studied her lesson from the book.
+
+William gave a ball to John.
+
+The horse kicked the man.
+
+The butcher killed the calf.
+
+Lucy found a dollar on the floor.
+
+Name the object of each of the prepositions in the following
+sentence: |
+
+William placed his hat on the table in the parlor at the time
+of recess when the boys were at dinner.
+
+ETYMOLOGY. 23
+
+Name all the nouns in the following sentences, and tell in re-
+gard to each, (1) whether it is common or proper, (2) its gender,
+(3) its number, (4) its person, (5) its case:
+
+John’s dog caught a rabbit in the meadow.
+
+Samuel has a pencil in the pocket of his vest.
+
+Elizabeth saw a man in the field.
+
+The boys found a nest on a tree in the woods.
+
+Harry and his cousin caught a large fish in the lake.
+
+Mary’s brother lost his knife in the road.
+
+Charles rode in his brother’s carriage.
+
+The boys caught a squirrel in the hedge.
+
+John’s friend left his books in the car.
+
+Name (or write) five sentences containing a noun in the
+nominative case, five in the possessive case, five in the objective
+case in which the noun is the object of a verb, five in which the
+noun is the object of a preposition.
+
+Form of the Cases.
+
+The Nominative and Objective cases are alike in
+form.
+
+‘The Possessive Singular is formed from the nom1-
+native singular, by adding an apostrophe and s.
+
+The Possessive Plural is formed from the nomi-
+native plural, by adding an apostrophe only when
+the plural ends in s, and by adding both the apos-
+trophe and s when the plural does not end in s.
+
+Exercise. —Write (or spell) the following nouns in the pos-
+sessive case, singular: dog, man, baby, boy, James, Thomas, Jane.
+
+Write (or spell) the following nouns in the possessive case
+plural: attorney, lawyer, mother, beauty, ox, monarch, dandy,
+dray.
+
+Note.— To decline a word is to give its various cases and numbers.
+
+JA ELEMENTARY GRAMMAR.
+
+Declension of Nouns.
+
+Singular. Plural.
+
+Nom. Poss. Obj. Nom. Poss. Obj.
+Friend friend’s _ friend Friends friends’ friends
+Man man’s man Men men’s men
+Chureh  church’s’” church Churches churches’ churches
+Lady lady’s lady Ladies ladies’ ladies
+Jones Jones’s Jones Joneses Joneses’ Joneses
+
+Parsing.
+
+Note. — Parsing consists in stating the grammatical properties and
+relations of words, and the rules of syntax which properly belong to
+them. The parsing of a word cannot be complete until the rules of
+syntax relating to it are understood and applied. But a considerable
+part of parsing consists in stating the grammatical properties of a word
+by itself, as shown by etymology, and without reference to the other
+words in the sentence. The stating of these properties in regular order
+is called Etymological Parsing.
+
+Parsing Exercise.
+
+Parse ‘‘John” and “‘letter”’ in the sentence, ‘‘ John wrote a
+letter.”
+
+Model.—‘ John” (1) isa proper noun, (2) masculine gender,
+(3) singular number, (4) third person, (5) nominative case, subject
+of the verb “ wrote.”
+
+Note. — The figures in the model are not to be recited. They are
+inserted to show the order in which the several properties of the word
+are to be given. These five items must be given, and given in this
+order, in parsing every noun. The scholar in learning, and the teacher
+in hearing the recitation, by following the order of the figures may
+know that nothing is omitted.
+
+‘Letter’ is a common noun, neuter gender, singular number,
+third person, objective case, object of the verb ‘‘ wrote.”’
+Parse ‘‘ Mar y’s ” in the sentence, ‘‘ Mary’s book.”
+
+‘““Mary’s”’ is a proper noun, feminine gender, singular number,
+third person, possessive case.
+
+Parse ‘‘John” in the sentence, ‘‘ Mary gave her book to John.”
+
+ETYMOLOGY. o5
+
+“ John ” is a proper noun, masculine gender, singular number,
+third person, objective case, object of the preposition ‘‘ to.”
+
+Parse all the nouns in the following sentences:
+
+Mary’s dress.
+
+John’s knife.
+
+Mary lost a book in the street.
+
+John’s dog caught a rabbit in the woods.
+
+Mary’s kitten ran down the stairs.
+
+The boys caught a fish in the lake.
+
+John caught a squirrel in a trap.
+
+Lucy’s sister found a dollar on the floor.
+
+Henry’s cousin killed a snake in the meadow.
+
+Mary’s book was found by John in the street.
+
+Note.—The teacher should furnish examples until the pupil is familiar
+with the parsing of nouns.
+
+iH ARTICLES.
+
+An Article is a word placed before a noun to show
+whether the noun is used in a definite, or in an in-
+definite sense.
+
+The Articles are a and the.
+
+Explanation.—lIf I say,“‘ Bring me the book,” the meaning is definite.
+I ask for some particular book. But if I say, “ Bring me a book,” the
+meaning is indefinite, as if I had said, ‘‘ Bring me any book.”
+A is the INDEFINITE Article, the is the DEFINITE
+Article. |
+
+The Article a is written an before a word begin-
+ning with a vowel sound; as, a man, an old man, an
+
+honest man.
+3
+
+26 ELEMENTARY GRAMMAR.
+
+Note. — In determining whether to use a, or to use an, we
+should notice, not the letter, but the real sound, with which the
+next word begins.
+
+A or an means one, and is used only before the
+singular number; as, a man, an apple.
+
+The is used before both numbers; as, the man, the
+men.
+
+Exercise.—Use the indefinite article with the following words:
+inkstand, history, humble, arch, bird, army, unit, eulogy, onion,
+unicorn, heir, wonder, union, honor, herb, engine, yew, ewer,
+hunter.
+
+Parsing Exercise.
+Parse ‘‘an”’ in the sentence ‘‘ Give me an apple.”
+
+Model.—‘‘An” is the indefinite article, placed before the noun
+“apple,” to show that it is used in an indefinite sense.
+
+Parse ‘‘the” in the sentence ‘‘ Give me the book.”
+
+“The ” is the definite article, placed before the noun ‘‘ book,”
+to show that it is used in a definite sense.
+
+Parse ali the articles and nouns in the exercises on page 25.
+
+—_—o0f9300—.
+
+lll. ADJECTIVES
+
+An Adjective is a word used to qualify a Noun or
+a Pronoun; as, a good man; they are wise.
+
+Explanation.—To qualify means here to limit the meaning of a thing,
+to express some of its qualities. An adjective generally denotes some
+quality belonging to an object. It describes the object. It serves to
+show the difference between things having the same name, as good boy,
+bad boy ; sweet apple, sour apple, ete.
+
+Exercises.—You have a pretty book. What part of speech
+is book? What word is used here to qualify or describe your
+book? What part of speech is pretty ? What is an adjective?
+
+ETYMOLOGY. 27
+
+Name three other words that you can put before the word
+book, telling what kind of a book it is. |
+
+Put a qualifying word in the blank space before each of the
+nouns in the following sentence: I saw a boy with a
+knife cutting a —— stick. What are these three qualifying
+words? What is an adjective?
+
+Note. — The adjective does not always stand immediately before the
+noun which it qualifies or describes. Thus I may say, The studious
+girl, or, The girl is studious. In either case, the word ‘ studious”
+qualifies girl.
+
+What adjective is there in each of the following sentences:
+Jane has a new dress.
+
+The lesson is not difficult.
+
+They went home by the wrong road.
+
+The bird was thought to be beautiful.
+
+How hot you have made the fire.
+
+Note.—In each case, after the scholar has named the adjective,
+ask which word it qualifies, and then ask for the definition of an ad-
+jective.
+
+Name the nouns, articles, and adjectives in the following sen-
+tences :
+
+This new slate is broken into many pieces.
+
+T had a beautiful dream last night.
+
+Wicked men do not have good thoughts.
+
+A merry heart maketh a glad countenance.
+
+The old window is so dirty that you cannot see the new houses
+on the hill.
+
+Use the following adjectives to describe or qualify a noun or
+pronoun: fast, rich, bad, new, wise, black, first, clean, happy, old,
+beautiful, industrious, troublesome, soft, plentiful, hungry.
+
+Name (or write) five sentences each containing an article, an
+adjective, and a noun. :
+
+28 ELEMENTARY GRAMMAR. >
+
+Note 1.— Nouns become adjectives when they are used to ex-
+press some quality of another noun; as, gold ring, sea water.
+
+Note 2. — Adjectives are sometimes used as nouns, and admit
+of number and case; as, our superiors, his betters, by jifties, for
+twenty’s sake, etc.
+
+I. NUMERAL ADJECTIVES.
+
+Adjectives which express number are called Nu-
+merals. ,
+
+Numeral Adjectives are of three kinds, CARDINAL,
+ORDINAL, and MULTIPLICATIVE.
+
+The Cardinal Adjectives denote how many ; as,
+one, two, three, four, etc.
+
+The Ordinal Adjectives denote in what order; as,
+first, second, third, fourth, etc.
+
+The Multiplicatives denote how many fold; as
+single, double, triple, ete.
+
+Il. COMPARISON, OF ADJECTIVES:
+
+Adjectives are varied by COMPARISON.
+
+The Degrees of Comparison are three, POSITIVE,
+COMPARATIVE, and SUPERLATIVE.
+
+The Positive expresses the quality; as, small, wise.
+
+The Comparative expresses the quality in a higher
+or lower degree; as, smaller, wiser.
+
+' The Superlative expresses the quality in the high-
+
+est or lowest degree; as, smallest, wisest.
+
+Regular Gdinpareeee
+The Comparative is formed by adding ev, and the
+Superlative by adding est, to the Positive; as, great,
+greater, greatest.
+
+ETYMOLOGY. 29
+
+Adjectives of more than one syllable are generally
+compared by prefixing to the Positive the words more
+and most, less and least; as, numerous ; more numer-
+ous, most numerous ; less numerous, least numerous.
+
+Note 1. — Some adjectives form the Superlative by adding most
+to the end of the word; as, upper, uppermost.
+
+Note 2. — Dissyllables ending in y or e are generally compared
+by adding er and est; as, happy, happier, happiest ; able, abler,
+_ablest.
+
+Irregular Comparison.
+
+Positive. Comparative. 3 Superlative.
+Good better best
+Bad worse worst
+Little less least
+Much more most
+F farther ; farthest
+
+ar
+further furthest
+
+Compare the following adjectives: large, small, straight, high,
+long, wide, deep, heavy, happy, wealthy, lovely, lonely, beautiful,
+beloved, foolish, troublesome, unhappy, little, good, bad.
+
+Parsing Exercises.
+
+Parse ‘‘ wise ” in the sentence, ‘‘ Solomon was a wise king.”
+
+Model. — “‘ Wise (1) is an adjective, it is used to qualify the
+noun ‘king;’ (2) it is in the positive degree, compared ‘ wise,
+wiser, wisest.’ ”’
+
+Note.— In parsing a numeral adjective, you state (1) that it is an ad-
+jective, and what word it qualifies, and (2) that it is a numeral adjec-
+tive and not compared.
+
+Parse all the nouns, articles, and adjectives in the following
+sentences:
+
+A wise son maketh a glad father.
+
+William wanted a sweeter orange.
+
+A large vessel came to New York.
+3 ¥*
+
+30 ELEMENTARY GRAMMAR,
+
+The beautiful landscape resembles a bright picture.
+He gave a double eagle for a silk dress for his third daughter.
+Twenty large vessels sailed up the river in one day.
+
+—10 £@40-0--———.
+
+IV. PRONOUNS.
+
+A Pronoun is a word used instead of a noun; as,
+ee man 1s happy, because he is benevolent.”
+
+Explanation. —If we had no such words as pronouns, the nouns for
+which they stand would have to be repeated. Thus, in the example
+given, if there were no such word as “‘ he,’”’? we would have to say, “‘ The
+man is happy, because the man is benevolent.” In long sentences,
+containing a good many particulars, the repetition of the noun would
+become so frequent as to be very disagreeable. Thus, the sentence,
+“* William gave his penknife to Henry, and he lent it to Mary to sharpen
+her pencil with zt,” would become, ‘‘ William gave Willram’s penknife
+to Henry, and Henry lent the aes to Mary to sharpen Mary’s
+pencil with the penknife.”
+
+Pronouns are divided into three classes; PERSONAL,
+RELATIVE, and ADJECTIVE.
+
+I. PERSONAL PRONOUNS.
+
+The Personal Pronouns are five; J, thou, he, she,
+- with their plurals, we, you, they.
+
+it;
+
+They are called Personal Pronouns because they
+
+denote person by themselves, and without reference
+to any other word.
+
+Explanation. — In the sentence, ‘‘J wrote it,” we know at once what
+person the pronoun “I” is. This word by itself denotes the first per-
+son. It never denotes any other person. In the phrase, ‘“‘ Who wrote
+it,” the pronoun “ who” may, or may not, be first person. If the com-
+plete sentence be, ‘It was J who wrote it,” ‘‘who” would be the first
+person, because it refers to “I,” the person speaking. If the complete
+
+ETYMOLOGY. 31
+
+sentence be, ‘It was he who wrote it,” or ‘“‘the man who wrote it,”
+who” would be third person, because it refers to “he” or “‘ man.”
+
+Personal and Relative Pronouns have Gender, Number, Per-
+son, and Case. Adjective Pronouns have Number only.
+
+The pronoun if is sometimes used indefinitely, that is, without
+referring to any other word; as, Jt snows.
+
+Declension of the Personal Pronouns.
+
+First Person — Masc. or Fem.
+
+Singular. Plural.
+Nom. J Nom. we
+Poss. my, or mine Poss. our, or ours
+Obj. me Oby 4 as.
+
+Srconp Prrson — Mase. or Fem.
+
+Singular. F Plural.
+Nom. thou Nom. you
+Poss. thy, or thine Poss. your, or yours
+Obj. thee Obj. = you.
+
+THirp Prrson — Masculine.
+
+Singular. Plural.
+Nom. he : Nom. they
+Poss. his Poss. their, or theirs
+Obj. him Obj. them.
+
+TuirD PrERson — Feminine.
+
+Singular. . Plural.
+Nom. she Nom. they
+Poss. her, or hers. Poss. their, or theirs
+Obj. her Obj. them.
+
+THIRD PErrson — Neuter.
+
+Singular. Plural.
+Nom. it Nom. they
+Poss. its. Poss. their, or theirs
+
+Obj. it Obj. them.
+
+oe ELEMENTARY GRAMMAR,
+
+Note.—The first and second persons being always present to the view,
+their sex is supposed to be known. A separate form, therefore, is not
+needed to distinguish the sex, as it is in the third person, where the
+person or thing that is spoken of is, or may be, absent.
+
+Remarks on the Personal Pronouns.
+
+The person, gender, number, and case of a personal pronoun
+are generally known by its form.
+
+Exception 1.— In the first and second persons, however, the gender
+cannot be known by the form of the word. The pronoun will be of
+whatever gender the noun is, to which it refers. Thus, in the sentence,
+“Mary, will you bring me the book?” “you” is feminine, because it
+refers to Mary. If the noun referred to is not given, as, ‘‘ Will you
+bring me the book?” you say that the pronoun is either masculine or
+feminine.
+
+Exception 2.—So in the third person plural, “ they, theirs, them,”
+the gender cannot be known by the form of the pronoun, but must be
+found by referring to the noun for which it stands. Thus, in the sen-
+tences, ‘‘ The boys were here when you saw them,” ‘The girls were
+here when you saw them,” “The books were here when you saw them,”
+the pronoun “them” is masculine in the first sentence, feminine in the
+second, and neuter in the third.
+
+Exception 3.— In the second person plural, ‘‘ you,” and in the third
+person singular neuter, “it,” the nominative and objective cases have
+the same form. To find, therefore, in any particular instance, whether
+“you” and “it” are nominative or objective, you have to refer to the
+general meaning of the sentence, as you do in finding the case of a noun.
+(See Exercises, page 22.)
+
+Exception 4.—‘‘ You” and “yours” are always plural in form. But
+to know whether the meaning is singular, you must refer to the noun
+for which they stand. Thus, in the sentence, ‘‘ William, I heard you
+talking,” “you” is singular. But, in the sentence, “‘ Boys, I heard you
+talking,” “you” is plural.
+
+Parsing Exercises.
+
+Parse ‘‘he,” in the sentence, ‘‘ When John was at school, he
+wrote a letter to his father.”
+
+Model.—‘ He” is (1) a personal pronoun, (2) masculine gen-
+
+ETYMOLOGY. 30
+
+der, (3) singular number, (4) third person, (5) nominative case,
+subject of the verb ‘‘ wrote.”
+
+Parse ‘it’ in the sentence, ‘‘ /¢ snows.”
+
+“Tt is a personal pronoun, used indefinitely, (2) neuter gender,
+(8) singular number, (4) third person, (5) nominative case, subject
+of the verb “snows.” .
+
+Parse all the Personal Pronouns in the following examples:
+
+Mary lent her book to her cousin. ,
+
+John lost his knife in the grove.
+
+My cousin brought her books with her.
+
+The girls recited their lessons to the teacher.
+
+The teacher said to the boys of her class, “I wish you to take
+your slates and raise them quietly.”
+
+See how it rains. It is a dark night.
+
+i RELATIVE PRONOUNS.
+
+The Relative Pronouns are, who, which, what, and
+that.
+
+These are called Relative Pronouns because they
+relate to some word going before, called the ante-
+cedent; as, “Z’he boy who wishes to be learned must
+be studious.”
+
+Note.— A Relative Pronoun is always of the same gender,
+number, and person as its antecedent.
+
+Who is used in speaking of persons; as, “The gen-
+
+- tleman who called,” ‘The lady who called.”
+
+Which is used ordinarily in speaking of inferior
+animals, or of things without life; as, “The horse
+which was bought,” “The pencil which was given.”
+
+That is sometimes used instead of who or which.
+C
+
+34 ELEMENTARY GRAMMAR.
+
+What, as a relative, takes the place of which when-
+ever the antecedent is omitted.
+
+“This is [the thing] which I wanted.” If we omit the ante-
+cedent, the which must be changed to what. “This is [ |
+what I wanted.” Na reason can be given for this peculiarity,
+except that custom has made it so. It is alaw of thelanguage. —
+
+Who and which are alike in both numbers, and are
+thus declined :
+
+Sing. and Plur. Sing. and Plur.
+Nom. who Nom. which
+Poss. whose Poss. whose
+Obj. whom Obj. which.
+
+What and that are indeclinable.
+
+Compound Relatives.
+The Compound Relatives are six, namely, whoever,
+whosoever, whichever, whichsoever, whatever, whatsoever.
+They are formed by adding ever and soever to the
+relatives who, which, and what.
+Whosoever is regularly declined like who; thus,
+
+Sing. and Plur.
+Nom. whosoever
+Poss. whosesoever
+Obj.  whomsoever.
+
+The other Compound Relatives are indeclinable.
+
+Interrogatives and Responsives.
+In asking questions, who, which, and what are called
+Interrogatives. |
+In answering questions, who, which, and what are
+called Responsives. |
+
+ETYMOLOGY. 35
+
+Parsing Exercises.
+Parse “‘who,” in the sentence, ‘“‘John, who was at school,
+wrote a letter to his father.”’
+
+Model.—‘‘ Who” is (1) a relative pronoun, relating to “John”
+for its antecedent, (2) masculine gender, (3) singular number, (4)
+third person, to agree with “John,” and (5) it is in the nomina-
+tive case subject of the verb was.
+
+Note. — When the case of the pronoun is not determined by its form,
+it must be determined by inquiring whether it is the subject or the
+object of the verb, &c. (See Exercises, page 22.)
+
+Parse the Relative Pronouns in the following sentences:
+We should avoid all habits which injure the health.
+
+A thief, who stole a cow which belonged to a poor man, was
+caught in the trap which had been laid for him.
+
+Children, who fear the Lord, obey their parents.
+
+The man of whom I bought the knife, which I lost, gave a
+better knife to me in its place.
+
+The bird whose nest John robbed, uttered pitiful cries.
+
+Parse the nouns, articles, adjectives, and personal pronouns in
+the foregoing sentences.
+
+Ill ADJECTIVE PRONOUNS.
+
+The Adjective Pronouns are so called because they
+qualify or limit a noun, as an adjective does.
+
+The Adjective Pronouns are subdivided into three
+kinds or classes, viz.: Distributive, Demonstrative,
+and Indefinite.
+
+I. DISTRIBUTIVES.
+
+The Distributive Adjective Pronouns are each,
+
+every, either, neither.
+
+These are called Distributives, because they refer separately
+and singly to each person or thing of a number of persons or
+
+36 ELEMENTARY GRAMMAR.
+
+things. The Distributive Adjective Pronouns, therefore, are all
+in the singular number. |
+
+Fach is used when speaking of two or more. Example:
+“‘Hach of you must go directly home.” This would be correct
+whether it is addressed to two persons, or to more than two.
+
+Fhery is never used except when speaking of more than two.
+Example: ‘‘ Avery one of you must go directly home.” This
+would not be correct if addressed to only two persons.
+
+Each and every mean all that make up the number, although
+taken separately.
+
+Hither means one or the other, but not both. It is used, there-
+fore, when speaking of but two persons or things.
+
+Neither means not either.
+
+II. DEMONSTRATIVES. |
+The Demonstrative Adjective Pronouns are this
+and that, with their plurals, these and those.
+
+They are called Demonstratives, because they point out in a
+definite manner the objects to which they relate; as, ‘‘7his boy
+recited well, but that boy did not;” “These men are officers, but
+those men are privates.”
+
+Ill. INDEFINITES.
+
+The Indefinite Adjective Pronouns are any, all,
+such, some, both, one, none, other, another.
+
+They are called Indefinites, because they point out in an in-
+definite manner the objects to which they relate.
+
+One, other, another are sometimes used as nouns. When thus
+used, they are declined. Thus:
+
+Nom. One Nom. Other
+Sing. | Pow One’s Sing. ~ Poss. Other’s
+OD). “One Obj. * Othes
+‘( Nom. Ones Nom. Others
+Plur. } Pos Ones’ Plur. ~ Poss. Others’
+Obj. Ones. Obj. Others.
+
+ETYMOLOGY. f of
+
+Another is merely the article an and other, and is used only
+in the singular number, Nom. Another, Poss. Another’s, Obj.
+
+Another.
+Parsing Exercises.
+
+Parse ‘“‘ this,” in the sentence, ‘John wrote this letter.”
+
+Model. — ‘‘ This” (1) is a demonstrative adjective pronoun,
+(2) singular number, (8) and belongs to or limits the noun
+“letter.”
+
+Parse the Pronouns, Personal, Relative, and Adjective, in the
+-following sentences:
+
+Every person who receives these favors, should be thankful
+for them.
+
+Where is that book which I gave to you on Monday, and
+that other book which you received on Tuesday? Ans. I have
+both books; each is in its right place.
+
+The father said to his son, ‘‘Do you remember any of those
+stories which you heard in either of the lectures of last week?”
+
+Parse all the adjectives, nouns, and articles.
+
+—§_c0°g¢ 0o——_—
+
+mV ERE.
+
+A Verb is a word used to assert or affirm; as
+“ John strikes the table.”
+Explanation. — To assert or affirm means to speak or say something
+
+of a person or thing. The verb declares that something is, or some-
+thing is done.
+
+?
+
+Note.— The teacher should pause here, and use every expedient to
+teach the scholar to distinguish the Verb from the other words in a
+sentence, particularly from the Noun and the Adjective. When the
+scholar has learned to distinguish these three parts of speech, the Noun,
+the Adjective, and the Verb, he has really laid the foundation of Gram-
+mar. The rest of the superstructure is comparatively easy.
+
+Exercises.— Suppose I say, ‘‘ John walks; what do I assert
+or affirm of John? Ans. That he walks. What part of speech
+is walks? What is a verb?
+
+3 we
+
+38 ELEMENTARY GRAMMAR.
+
+In the following sentences, which words are verbs, and why?
+The man rode on a horse.
+
+The girl spoke to me.
+
+Clouds move over the earth.
+
+The man eats his dinner.
+
+The boy went to school early.
+
+The slate fell and broke.
+
+Water runs down hill.
+
+I heard a loud noise.
+
+Note. — That which the verb asserts or affirms is generally some ac-
+tion. Sometimes, however, that which the verb asserts or affirms is
+not exactly action, but rather a state of being; as, ‘‘ Henry is here,”
+“‘ Charles resembles his father.”
+
+_ In the following sentences, which words are verbs, and why?
+William looks sick.
+Charles is here.
+The horse was in the field.
+The fish are in the lake.
+John was in the boat.
+The boys were in the barn. |
+The girls are in the parlor.
+The horses were in the stable.
+
+A verb is necessary to make a finished sentence, that is, a sen-
+tence in which something is asserted or affirmed. In the follow-
+ing sentence, supply some word which will complete the sentence
+and make it affirm something: Susan into the house.
+What part of speech is the word 2 What isaverb? ©
+
+Supply a verb in each of the following sentences:
+The rain |
+
+upon the earth.
+
+I you there.
+They. him in the field.
+The cows in the meadow.
+
+ETYMOLOGY. 39
+
+Birds in the air.
+
+The boys in school.
+Summer — hotter than winter.
+The horse the wagon.
+
+I. ATTRIBUTES OF VERBS.
+
+Verbs have the attributes of Voice, Moon, TENSE,
+NUMBER, and PERSON.
+
+Certain parts of the verb also are called Parrict-
+PLES.
+I. VOICE.
+
+Voice is that attribute of the verb which denotes
+whether the subject or nominative of the verb acts,
+or zs acted upon.
+
+Verbs have two voices, the Active, and the Passive.
+
+The Active Voice is that form of the verb which
+denotes that the subject or nominative acts, or does
+the thing mentioned; as, “John strikes the table.”
+
+_ The Passive Voice is that form of the verb which
+denotes that the subject or nominative is acted upon;
+as, “The table zs struck by John.”
+
+Explanation. — Take the sentence, “‘ John strikes the table.”’ The
+subject or nominative of the verb is John, who performs the action.
+It is of him that the assertion is made. But suppose the same action
+to be expressed thus: “‘ The table is struck by John.” Here, the sub-
+ject or nominative of the verb is changed. It is of the table that the
+assertion is now made. In the first form of the sentence, the subject of
+the verb acts; in the second form, the subject is acted upon. That at-
+tribute of a verb by which it thus denotes whether the subject of the
+affirmation acts, or is acted upon, is called VOICE.
+
+in forming the Passive Voice of a verb, and in forming some of the
+Moods and Tenses, certain other words are used in connection with the
+verb, and make a part of it. Thus in the sentence, “The, table is
+
+40 ELEMENTARY GRAMMAR.
+
+struck,” “is” must be taken with “struck.” The verb is not “struck”
+by itself, nor “is” by itself, but ‘‘ is struck” taken together.
+
+Exercise.—Select all the verbs in the following sentences, and
+state which are in the Active Voice and which in the Passive
+Voice:
+
+Mary studies her lessons.
+
+The lessons were studied by Mary.
+
+Henry caught a fish in the lake.
+
+The squirrel was caught in the trap.
+
+The sheep were watched by the shepherd.
+
+The soldiers marched to the fort.
+
+The fish were caught in a net.
+
+The army is commanded by the general.
+
+Give (or write) three sentences containing a verb in the Ac-
+tive Voice. Three, containing a verb in the Passive Voice.
+
+II. MOOD.
+
+Mood is that attribute of a verb by which it de-
+notes the manner or way in which the assertion is
+expressed.
+
+Note.— Mood is only another form of the word ‘‘ mode,” and signifies ©
+
+manner, or way.
+*
+
+The assertion may be expressed in five different ways; thus, I
+write, If I write, I may write, Write, To write; therefore, Verbs
+have five Moods, the Indicative, the Subjunctive, the Potential,
+the Imperative, and the Infinitive.
+
+The Indicative Mood is that form of the verb in
+which the assertion is expressed directly and without
+limitation; as, He writes.
+
+Explanation. — When we affirm or assert a thing, as if we were cer-
+
+tain of it, then the verb will be in the Indicative mood; as, The sun
+shines. My mother loves me.
+
+[ee
+
+ETYMOLOGY. Al
+
+- Note.—The Indicative mood is also used in asking direct ques-
+tions; as, Does the sun shine? Does my mother love me? This
+is sometimes called the Interrogative form.
+
+The Subjunctive Mood is that form of the verb
+in which the assertion is expressed as an uncertainty ;
+
+as, If he write.
+
+Explanation.— When we affirm or assert a thing in a way that shows
+that it is not a certainty, as, If I live, the thing will be accomplished ;
+Though he slay me, yet will I trust him; Unless he come, he will lose
+his place: the verb will be in the Subjunctive mood.
+
+Note 1.— The Subjunctive mood is generally preceded by a
+conjunction, such as if, though, although, unless, except, whether,
+or lest.
+
+Note 2.— The Subjunctive mood is always accompanied by
+another verb in some other mood. Without this it cannot make
+complete sense. Thus, If he study diligently, he will improve.
+
+The Potential Mood is that form of the verb
+which expresses possibility, liberty, power, willing-
+ness, or obligation; as, he can write; he may write ;
+he must write.
+
+Explanation.— To say, A thing may be, or might be, expresses pos-
+sibility. To say, You may do it, or You might do it, is giving liberty
+to do it. To say, You can do it, or You could do it, shows that you
+have the power to doit. Tosay, You would do it, expresses a willing-
+ness to doit. To say, You must do it, expresses an obligation to do it.
+
+Note.—The Potential mood is also used in asking questions; as, May
+I write? Must I write? &e.
+
+A verb in the Potential mood is always accom-
+panied by some one of the words, may, can, must,
+might, could, would, should; and this accompanying
+
+word is considered a part of the verb.
+4X
+
+42, ELEMENTARY GRAMMAR.
+
+The Imperative Mood is that form of the verb
+which is used to command, exhort, entreat, or per-
+mit; as, Write the copy according to the directions;
+Father, forgive us.
+
+Examples.—“ Soldiers, march.” “March” is used to command.
+
+‘Pity the sorrows of a poor old man.” “ Pity” is used to entreat or
+beg. .
+
+“Fear God and keep his commandments, for this is the whole duty of
+man.” “Fear” and “keep” are used to exhort, or persuade, with a
+reason.
+
+“Sit near me, if you wish.” “Sit” is used to permit or allow.
+
+The nominative case of a verb in the Imperative mood will
+always be thou or you, but it will seldom be expressed. Ex-
+ample: ‘Sit still,” means “Zhou or you sit still.”
+
+The Infinitive Mood is that form of the verb
+which is not limited to a subject, or which has no
+subject; as, Zo wrete.
+
+Note. — The Infinitive mood usually has the preposition to
+
+before it, and the preposition in this case is considered a part
+of the verb.
+
+Example.—‘‘ He told me éo sié still, if I wished to hear.” ‘To sit”
+and “‘ to hear ”’ are in the Infinitive mood.
+
+Exercise.—In the following sentences select all the verbs, and
+state the voice and mood of each:
+
+Charles studies his lesson.
+
+The boys caught a rabbit in the woods.
+
+The rabbit was caught by the boys.
+
+The lesson was assigned by the teacher.
+
+If he study his lesson he will improve.
+
+Though he slay me yet I will trust him.
+
+If the lesson be recited properly, the class will be dismissed.
+
+ETYMOLOGY. 43
+
+Mary must return home when her task is finished.
+The letter may be returned by the postman.
+
+If I had a book I would study the lesson.
+Charles, bring me that book.
+
+Boys, study your lessons.
+
+God said, “ Children, obey your parents.” You should keep
+this commandment, if you wish to obtain the reward, which he
+promises, which is, that your days may be long in the land.
+
+The shepherd takes care of his sheep. If they wander near
+a precipice, he uses a crook to draw them away, for they are
+timid animals. If he ran towards them, they might fall over
+into the gulf.
+
+Listen to the merry bells. I listen to them with delight. You
+may listen to them without growing weary, if you delight to
+listen to sweet music.
+
+Give (or write) three sentences containing a verb in the In-
+dicative mood; three in each of the other Moods.
+
+III. TENSE.
+
+Tense is that attribute of a verb by which it ex-
+presses distinctions of TIME.
+
+There are six T'enses: the Present, the Past, the
+Future, the Present-Perfect, the Past-Perfect, and
+the Future-Perfect.
+
+Explanations.— The present time is that which is now, as “ to-day,”
+
+“this minute,” etc. The past time is that which is gone by, as “‘ yester-
+day,” “‘last year,” etc. Future time is that which is to come, as “ to-
+
+_morrow,” “ next year,” ete.
+
+The words here used to denote time are nouns, or a noun and an
+adjective. But a verb may be likewise used to denote the time of an
+event. Example: ‘He is sick.” The form of the verb “is” denotes
+that he is sick now. ‘He was sick.” The form of the verb “ was”
+
+‘denotes that he was sick at some time which is past. ‘ He will be sick.”
+
+The form of the verb “‘ will be” denotes that he will be sick in some
+Suture time.
+
+44 ELEMENTARY GRAMMAR.
+
+There are three principal distinctions of time, namely, present, past,
+and future. So there are three principal tenses, namely, the present,
+the past, and the future.
+
+The Present Tense is that form of the verb which
+denotes simply present time; as, I write.
+
+The Past Tense is that form of the verb which
+denotes simply past time; as, I wrote.
+
+The Future Tense is that form of the verb which
+denotes simply future time; as, I shall write.
+Note.—A verb in the Future tense is always accompanied by
+
+some one of the words shall, shalt, will, or wilt, and this ac-
+companying word is considered a part of the verb.
+
+The Present-Perfect Tense is that form of the
+verb which denotes what is past and finished, but,
+which is connected also with the present time; as, I
+have written.
+
+Explanation.— An event may be past and finished, when the period
+of time referred to is not all past, but comes down to the present
+moment. Example: ‘I have recited my lesson this morning.” Here,
+‘this morning ”’ is the period of time referred to, and this period is not
+all past yet. But the reciting of the lesson is finished. The thing then
+was done in a period of time of which the present time isa part. It is
+
+therefore a past and finished act, but connected also with the present
+time.
+
+That form of the verb which enables it to express this peculiar dis-
+tinction of past time, is called the Present-Perfect tense.
+
+Note.—A verb in the Present-Perfect tense is always accom-
+panied by one of the words have, hast, or has, and this accom-
+panying word is considered a part of the verb.
+
+The Past-Perfect Tense is that form of the verb
+which denotes what was past and finished, before
+some other event which is also past; as, 1 had written
+the letter, before it was called for.
+
+ETYMOLOGY. 45
+
+Explanation. — An event may have happened some time ago, and
+before another event which also happened some time ago. Example:
+“T had washed my hands when they called me to breakfast.”? Here
+the washing and the calling both occurred in past time, but the wash-
+ing occurred before the calling.
+
+That form of the verb which enables it to express this additional dis-
+tinction of past time is called the Past- Perfect tense.
+
+Note. — A verb in the Past-Perfect tense, in the Indicative
+mood, is always accompanied by one of the words Aad, or hadst,
+
+_ and this accompanying word is considered a part of the verb.
+
+The Future-Perfect Tense is that form of the
+verb which denotes a future time prior to some other
+time which is itself future; as, 1 shall have written
+
+the letter before it will be called for.
+
+Explanation. — Here, the writing of the letter and the calling for it
+are both future. They are both to take place hereafter. But the writ-
+ing will be done and finished before the calling for it.
+
+That form of the verb which enables it to express this peculiar dis-
+tinction of future time is called the Future-Perfect tense.
+
+Note. — A verb in the Future-Perfect tense is always accom-
+panied by two other words, namely, either shall have, shalt have,
+will have, or wilt have, and these accompanying words are con-
+sidered a part of the verb.
+
+Name (or write) five sentences containing a verb of the Pres-
+ent tense; five, of the Past tense; five, of the Future tense; five,
+of the Present-Perfect; five, of the Past-Perfect; five, of the
+Future-Perfect.
+
+IV. PARTICIPLES.
+
+A Participle is that form of the verb which par-
+takes of the nature both of a verb and of an ad-
+jective.
+
+Explanation.— “A man deserving blame, should be censured accord-
+
+ingly.” Here “deserving” is a form of the verb “deserve.” It ex-
+presses the same fact as the verb, only the assertion is under a sort of
+
+46 ELEMENTARY GRAMMAR.
+
+limitation, or in a state of suspense, as if we were to say, “If he de-
+serves blame,” or ‘‘ Since he deserves blame.” This form of the verb is
+capable also of denoting time, as verbs do. ‘“‘ Deserving blame” means
+doing it now. ‘“ Having deserved blame’”’ means having done it in
+some past time. It expresses action also, as verbs generally do. It
+partakes therefore of the nature of a verb.
+
+But suppose we say, ‘‘A man not meritorious in his conduct, should
+be censured.” “ Meritorious” is an adjective, belonging to “‘ man,” or
+qualifying “man.” In the same way, “deserving” belongs to or
+qualifies man. It partakes therefore of the nature of an adjective.
+
+The Participles are three, the Present, the Past or
+Perfect, and the Compound-Perfect.
+
+The Present Participle denotes that which is now
+in progress; as, going, being, living, working, ete.
+The Present participles all end in zing.
+
+The Past or Perfect Participle denotes that which
+is complete or finished ; as, written, stolen, added.
+
+The Compound-Perfect Participle denotes that
+which is finished before something else mentioned ;
+as, having written, having stolen, having added.*
+
+V. NUMBER AND PERSON.
+
+Verbs have variations of form, to correspond with
+the number and person of their subject. These
+variations are called the Numbers and Persons of the
+verb.
+
+Verbs have two numbers, Singular and Plural; and
+three Persons, First, Second, and Third. Thus:
+
+Singular. Plural.
+First Person. IT am. First Person. We are. —
+Second Person. Thou art. Second Person. You are.
+
+Third Person. He is. Third Person. They are.
+
+* For Exercises in Participles, see page 67,
+
+ETYMOLOGY. © AT
+
+II. CLASSES OF VERBS.
+
+Verbs are divided into the following classes:
+TRANSITIVE and INTRANSITIVE; REGULAR and IR-
+REGULAR; IMPERSONAL, DEFECTIVE, and AUXILIARY.
+
+I. TRANSITIVE AND INTRANSITIVE.
+
+A Transitive Verb is one which requires an ob-
+jective case to complete the meaning; as, James
+writes a letter.
+
+An Intransitive Verb is one which does not re-
+quire an objective case to complete the meaning; as,
+John sleeps.
+
+Explanation. — When we put “ what” after a verb and ask a ques-
+tion, if we can answer it by using some noun, it shows that the verb is
+transitive. Example: ‘‘ Mary broke a tumbler and cried bitterly.”
+Broke what? Ans. Atumbler. The verb “broke” is transitive. But,
+if we put “ what” after the other verb, and ask: Cried what? we could
+not answer such a question. The verb “cried ”’ therefore is intransitive.
+
+Exercise. —Which of the following verbs are transitive, and
+which are intransitive? Hurt, lift, walk, sit, believe, forget, say,
+rise, raise, fly, go, depart.
+
+Name (or write) five transitive verbs, five intransitive verbs.
+
+Note 1.— Some verbs are used both transitively and intransi-
+tively ; as, ‘‘ He reads well,” ‘“‘ He reads a story.”
+
+Note 2.—Intransitive verbs are not used in the Passive Voice.
+
+II. REGULAR AND IRREGULAR VERBS.
+
+A Regular Verb is one that forms its Past T'ense
+ard Past Participle by the addition of ed to its pres-
+ent tense; as, Present, love; Past, loved; Past Parti-
+ciple, loved.
+
+An Irregular Verb is one that does not form its
+
+Past Tense and Past Participle by the addition of ed
+
+48 ELEMENTARY GRAMMAR.
+
+to its present tense; as, Present, write; Past, wrote;
+Past Participle, written. ;
+
+Examples of Regular Verbs.
+
+Present Tense.
+Live,
+
+Love,
+Instruct,
+Portray,
+Walk,
+
+Past Tense.
+lived,
+loved,
+instructed,
+portrayed,
+walked,
+
+Name (or write) ten regular verbs.
+
+The Irregular Verbs.
+
+Present.
+Abide,
+Am, —lIs,
+Arise,
+Awake,
+Bear (to bring forth),
+Bear (to carry),
+Beat, .
+Begin,
+Bend,
+Bereave,
+Beseech,
+Bestride,
+Betide,
+Bid,
+
+Bind,
+Bite,
+Bleed,
+Blow,
+Break,
+Breed,
+Bring,
+Build,
+Burn,
+
+Past.
+abode,
+was,
+arose,
+awoke, awaked,
+bore, bare,
+bore,
+beat,
+began,
+bended, bent,
+bereaved, bereft,
+besought,
+bestrid, bestrode,
+betid, betided,
+bid, bade,
+bound,
+bit,
+bled,
+blew,
+broke,
+bred,
+brought,
+built, builded,
+burned, burnt,
+
+Past Participle.
+lived.
+loved.
+instructed.
+portrayed.
+walked.
+
+Past Part.
+abode.
+been.
+arisen.
+awaked.
+born.
+borne.
+beat, beaten.
+begun.
+
+bended, bent.
+bereaved, bereft.
+besought.
+bestrid, bestridden.
+betid.
+
+bid, bidden.
+bound.
+
+bitten, bit.
+
+bled.
+
+blown.
+
+broken.
+
+bred.
+
+brought.
+
+built, builded.
+burned, burnt.
+
+Present.
+Burst,
+Buy,
+Cast,
+Catch,
+Chide,
+Choose,
+Cleave (to split),
+Cling,
+Clothe,
+Come,
+Cost,
+Creep,
+Crow,
+Cut,
+Dare (to venture),
+Deal,
+Dig,
+Do,
+Draw,
+Dream,
+Drink,
+Drive,
+Dwell,
+Kat,
+Fall,
+Feed,
+Feel,
+Fight,
+Find,
+Flee,
+Fling,
+Fly,
+Forsake,
+Freeze,
+Get,
+Gild,
+- Gird,
+Give,
+
+5
+
+ETYMOLOGY.
+
+Past.
+burst,
+
+_ bought,
+
+cast,
+caught, catched,
+chid, |
+chose,
+cleft, clove,
+clung,
+clothed, clad,
+came,
+cost,
+crept,
+crew, crowed,
+cut,
+dared, durst,
+dealed, dealt,
+dug, digged,
+did,
+drew,
+dreamed, dreamt,
+drank,
+drove,
+dwelled, dwelt,
+eat, ate,
+fell,
+fed,
+felt,
+fought,
+found,
+fled,
+flung,
+flew,
+forsook,
+froze,
+got,
+gilded, gilt,
+girded, girt,
+gave,
+
+D
+
+Past Part.
+burst.
+bought.
+cast.
+caught, catched.
+
+~chid, chidden.
+
+chosen, chose.
+cleft, cloven.
+clung.
+clothed, clad.
+come.
+
+cost.
+
+crept.
+crowed.
+
+cut.
+
+dared.
+dealed, dealt.
+dug, digged.
+done.
+drawn.
+
+dreamed, dreamt.
+
+drunk.
+driven.
+dwelled, dwelt.
+eat, eaten.
+fallen.
+
+fed.
+
+felt.
+fought.
+found.
+
+fled.
+
+flung.
+flown.
+forsaken.
+frozen.
+
+got, gotten.
+gilded, gilt.
+girded, girt.
+
+given.
+
+49
+
+50
+
+Present.
+Go,
+Grave,
+Grind,
+Grow,
+Hang,
+Have,
+Hear,
+Heave,
+Hew,
+Hide,
+Hit,
+Hold,
+Hurt,
+Keep,
+Kneel,
+Knit,
+Know,
+Lade,
+Lay,
+Lead,
+Leave,
+Lend,
+Let,
+
+Lie (to recline),
+
+Light,
+Lose,
+Make,
+Mean,
+Meet,
+Mow,
+Pay,
+Pen (to coop),
+Put,
+Quit,
+Read,
+Rend,
+Rid,
+Ride,
+
+Past.
+went,
+graved,
+ground,
+grew,
+hanged, hung,
+had,
+heard,
+heaved, hove,
+hewed,
+hid,
+hit,
+held,
+hurt,
+kept,
+kneeled, knelt,
+
+_ knit, knitted,
+
+knew,
+laded,
+laid,
+
+led,
+
+left,
+
+lent,
+
+let,
+
+lay,
+lighted, lit,
+lost,
+
+made,
+meant,
+met,
+mowed,
+paid,
+penned, pent,
+put,
+
+quit, quitted,
+read,
+
+rent,
+
+rid, ridded,
+rode,
+
+ELEMENTARY GRAMMAR.
+
+Past Part.
+gone.
+graven, graved.
+ground.
+grown.
+hanged, hung.
+had.
+heard.
+heaved.
+hewed, hewn.
+hid, hidden.
+hit.
+held.
+hurt.
+kept.
+kneeled, knelt.
+knit, knitted.
+known.
+laded, laden.
+laid.
+led.
+left.
+lent.
+let.
+lain.
+lighted, lit.
+lost.
+made.
+meant.
+met.
+mowed, mown.
+paid.
+penned, pent.
+put.
+quit, quitted.
+read.
+rent.
+rid, ridded.
+
+ridden.
+
+ETYMOLOGY.
+
+Past.
+rang, rung,
+rose,
+rived,
+ran, run,
+said,
+sawed, ©
+saw,
+sought,
+seethed,
+sold,
+sent,
+set,
+shook,
+shaped,
+shaved,
+sheared,
+shed,
+shone, shined,
+shod,
+shot,
+showed,
+shred,
+shrunk,
+shut,
+sung, sang,
+sunk, sank,
+sat,
+slew,
+slept,
+slid,
+slung,
+slunk,.
+slit, slitted,
+
+smelled, smelt,
+
+smote,
+
+sowed,
+
+spoke, spake,
+sped, speeded,
+
+Past Part.
+rung.
+risen.
+rived, riven.
+run.
+said.
+sawed, sawn.
+seen.
+sought.
+seethed, sodden.
+sold.
+sent.
+set.
+shaken.
+shaped, shapen.
+shaved, shaven.
+sheared, shorn.
+shed.
+shone, shined.
+shod.
+shot.
+shown, showed.
+shred.
+shrunk.
+shut.
+sung.
+sunk.
+sat.
+slain.
+slept.
+slid, slidden.
+slung.
+slunk.
+slit, slitted.
+smelled, smelt.
+smitten, smit.
+sowed, sown.
+spoken.
+sped, speeded.
+
+a
+
+52
+
+Present.
+Spell,
+Spend,
+Spill,
+Spin,
+Spit,
+Split,
+Spoil,
+Spread,
+Spring,
+Stand,
+Stave,
+Stay,
+Steal,
+Stick,
+Sting,
+Stink,
+Strew,
+Stride,
+Strike,
+String,
+Strive,
+Swear,
+Sweat,
+Sweep,
+Swell,
+Swim,
+Swing,
+Take,
+Teach,
+Tear,
+Tell,
+Think,
+Thrive,
+Throw,
+Thrust,
+Tread,
+Wax,
+Wear,
+
+Past.
+spelled, spelt,
+spent,
+spiled, spilt,
+spun,
+spit, spat,
+split, splitted,
+spoiled, spoilt,
+spread,
+sprung, sprang,
+stood,
+staved, stove,
+stayed, staid,
+stole,
+stuck,
+stung,
+stunk,
+strewed,
+strid, strode,
+struck,
+strung,
+strove,
+swore,
+sweat, sweated,
+swept,
+swelled,
+swam, swum,
+swung,
+took,
+taught,
+tore,
+told,
+thought,
+thrived,
+threw,
+thrust,
+trod,
+waxed,
+wore,
+
+ELEMENTARY GRAMMAR.
+
+Past Part.
+spelled, spelt.
+spent.
+spilled, spilt.
+spun.
+spit.
+split, splitted.
+spoiled, spoilt.
+spread.
+sprung.
+stood.
+staved, stove.
+stayed, staid.
+stolen.
+stuck.
+stung.
+stunk.
+strewed, strewn.
+strid, stridden.
+struck, stricken.
+strung.
+striven.
+
+SWOrn.
+
+sweat, sweated.
+swept.
+
+swelled, swollen.
+swum.
+
+swung.
+
+taken.
+
+taught.
+
+torn.
+
+told.
+
+thought.
+thrived, thriven.
+thrown.
+
+thrust.
+
+trod, trodden.
+waxed, waxen.
+worn. ©
+
+ETYMOLOGY. 53
+
+Present. Past. Past Part.
+Weave, wove, woven, wove.
+Weep, wept, wept.
+
+Wet, wet, wetted, wet, wetted.
+Win, won, won.
+
+Wind, wound, wound.
+
+Work, worked, wrought, worked, wrought.
+Wring, wrung, wrung.
+
+Write, wrote, written.
+
+III. IMPERSONAL VERBS.
+
+An Impersonal Verb is one which is never used
+
+except with the pronoun 7 for its subject; as, “It
+snows.”
+
+Note.—We never say, ‘‘ I snow,” ‘‘ Thou snowest,” “‘ He snows,” etc.
+
+IV. DEFECTIVE VERBS.
+
+A Defective Verb is one that is not used in all
+the Moods and Tenses; as, must, ought, quoth, etc.
+
+V. AUXILIARY VERBS.
+
+An Auxiliary Verb is one which helps to form the
+Moods and Tenses of other verbs.
+
+The auxiliary verbs are, shall, may, can, must, be,
+do, have, and will.
+
+Remarks on the Auxiliary Verbs.
+
+1. These are called Auxiliary, or helping verbs, because by
+their help the other verbs form most of their moods and tenses.
+
+2. Be, do, have, and sometimes will, are also used as principal
+verbs; as, they may be here; they do nothing; they have noth-
+ing; they will it to be so. As principal verbs, they have all the
+moods and tenses which other verbs have.
+
+3. Be, as an Auxiliary, is used in all its moods, tenses, num-
+5*
+
+54
+
+ELEMENTARY GRAMMAR.
+
+bers, and persons, in forming the passive voice of other verbs;
+as, I am loved, I was loved, I have been loved, etc.
+
+Ill. CONJUGATION.
+
+The Conjugation of a verb is the orderly arrange-
+ment of its voices, moods, tenses, numbers, and per-
+SONS.
+
+Note. — The verb “To Be” is irregular and intransitive, and
+has no voice.
+
+9 BD b
+
+i)
+
+NS)
+
+bo
+
+Conjugation of the verb To Be,
+
+INDICATIVE MOOD.
+
+Present Tense.
+
+Singular. Plural.
+T am. 1. We are.
+. Thou art. 2. You are.
+. He is. 3. They are.
+Past Tense.
+
+Singular. Plural.
+. I was. 1. We were.
+. Thou wast. 2. You were.
+. He was. 3. They were.
+
+Future Tense.
+
+Singular. Plural.
+. I shall be. 1. We shall be.
+. Thou wilt be. 2. You will be.
+. He will be. - 3. They will be. ©
+
+Present-Perfect Tense.
+
+Singular. —. Plural.
+. I have been. | 1. We have been.
+. Thou hast been. | 2. You have been. —
+. He has been. 3. They have been.
+
+bo
+
+ETYMOLOGY.
+
+55
+
+Past-Perfect Tense.
+
+Singular. Plural.
+1. I had been. 1. We had been.
+2. Thou hadst been. 2. You had been.
+8. He had been. 3. They had been.
+Future-Perfect Tense.
+Singular. Plural.
+
+1. I shall have been. 1. We shall have been.
+. Thou wilt have been. 2. You will have been.
+38. He will have been. 3. They will have been.
+
+SUBJUNCTIVE MOOD.
+Present Tense.
+
+Singular. Plural.
+#2 1€ I be. 1. If we be.
+2. If thou be. 2. If you be.
+3. If he be. 3. If they be.
+
+Past Tense.
+
+Singular. Plural.
+1. If I were. 1. If we were. -
+2. If thou wert. 2. If you were.
+3. If he were. 3. If they were.
+
+POTENTIAL MOOD.
+Present Tense. .
+
+Singular. Plural.
+1. I may be. 1. We may be.
+2. Thou mayst be. 2. You may be.
+3. He may be. 3. They may be. .
+
+Past Tense.
+
+Singular. Plural.
+
+1. I might be. 1. We might be.
+
+2. Thou mightst be.
+3. He might be.
+
+2. You might be.
+3. They might be.
+
+56 ELEMENTARY GRAMMAR.
+
+Present-Perfect Tense.
+
+Singular. Plural.
+1. I may have been. 1. We may have been.
+2. Thou mayst have been. 2. You may have been.
+3. He may have been. 3. They may have been.
+Past-Perfect Tense.
+Singular. Plural.
+1. I might have been. 1. We might have been.
+2. Thou mightst have been. 2. You might have been.
+3. He might have been. 3. They might have been.
+IMPERATIVE MOOD.
+Present Tense.
+Singular. Plural.
+2. Be, or be thou. 2. Be, or be you.
+INFINITIVE MOOD.
+Present. To be. Present-Perfect. To have been.
+PARTICIPLES.
+Present. Being. Past or Perfect. Been.
+
+Compound-Perfect. Having been.
+
+Remarks on the Conjugation.
+
+1. In the formation of the Futures, we have two Auxiliaries,
+shall and will. For the expression of simple futurity, we use
+shall in the First Person, and wild in the Second and Third Per-
+sons, aS given in the table. On the other hand, by using will in
+the First Person, and shal/ in the Second and Third Persons, we
+express the various ideas of promise, command, obligation, ete.
+Thus: “I will be there” expresses a promise. ‘Thou shalt love
+the Lord thy God’? is acommand. “He shall do it” (z. e. I will
+make him) expresses obligation or necessity. 7
+
+2. The singular form, thow art, etc., is now used only in acts
+of worship, or on other solemn occasions. In ordinary discourse,
+
+ETYMOLOGY. 57
+
+in addressing one person, we say you are, you were, etc., the
+meaning being singular, but the form plural.
+
+8. In the third person, the nominative of the verb may be any
+of the personal pronouns, he, she, it, any of the relative pro-
+nouns, who, which, what, that, etc., or any noun. For conven-
+ience of recitation, one nominative only is inserted.
+
+4, In the Potential mood the auxiliary may be,
+
+In the Present tense, may, can, or must ;
+
+In the Past tense, might, could, would, or should ;
+
+In the Present-Perfect tense, may have, can have, or must have;
+
+In the Past-Perfect tense, might have, could have, would have,
+or should have.
+
+Conjugation of the verb To Love.
+I. ACTIVE VOICE.
+
+INDICATIVE MOOD.
+
+Present Tense.
+
+Singular. Plural.
+1. I love. 1. We love.
+2. Thou lovest. 2. Yon love.
+3. He loves. 8. They love.
+Past Tense.
+Singular. Plural.
+1. I loved. 1. We loved.
+2. Thou lovedst. 2. You loved.
+3. He loved. 3. They loved.
+| Future Tense.
+Singular. Plural.
+1. I shall love. 1. We shall love.
+2. Thou wilt love. 2. You will love.
+
+3. He will love.
+
+3. They will love.
+
+58
+
+Singular. Plural.
+1. I have loved. 1. We have loved.
+2. Thou hast loved. 2. You have loved.
+8. He has loved. 3. They have loved.
+
+Past-Perfect Tense.
+
+Singular. Plural.
+1. I had loved. 1. We had loved.
+2. Thou hadst loved. 2. You had loved.
+3. He had loved. 8. They had loved.
+
+Future-Perfect Tense.
+
+Singular. Plural.
+1. I shall have loved. 1. We shall have loved.
+2. Thou wilt have loved. 2. You will have loved.
+3. He will have loved. 3. They will have loved.
+
+SUBJUNCTIVE MOOD.
+Present Tense.
+
+Singular. Plural.
+1. If I love. 1. If we love.
+2. If thou love. 2. If you love.
+3. If he love. 3. If they love.
+
+Past Tense.
+
+Singular. Plural.
+1. If I loved. 1. If we loved.
+2. If thou loved. . 9. If you loved.
+3. If he loved. 8. If they loved.
+
+POTENTIAL MOOD.
+Present Tense.
+
+Singular. Plural.
+1. I may love. 1. We may love.
+2. Thou mayst love. 2. You may love.
+3. He may love. 8. They may love. -
+
+ELEMENTARY GRAMMAR.
+
+Present-Perfect Tense.
+
+ETYMOLOGY. 59
+
+Past Tense.
+Singular. Plural.
+. I might love. 1. We might love.
+. Thou mightst love. 2. You might love.
+3. He might love. 8. They might love.
+
+So
+
+Present-Perfect Tense.
+Singular. ; Plural.
+. I may have loved. 1. We may have loved.
+. Thou mayst have loved. 2. You may have loved.
+8. He may have loved. 8. They may have loved.
+
+bo
+
+Past-Perfect Tense.
+Singular. Plural.
+. I might have loved. 1. We might have loved.
+2. Thou mightst have loved. 2. You might have loved.
+He might have loved. 8. They might have loved.
+
+a
+
+-
+
+IMPERATIVE MOOD,
+
+Present Tense.
+Singular. Plural.
+
+Love, o7 love thou. Love, or love you.
+
+INFINITIVE MOOD.
+
+Present. To love. Present-Perfect. To have loved.
+
+PARTICIPLES.
+
+Present. Loving. Past or Perfect. Loved.
+Compound-Perfect. Having loved.
+
+II. PASSIVE VOICE.
+
+Note. — The Passive Voice of a verb is formed by placing
+before its Past Participle the various moods, tenses, numbers, and
+persons of the verb 70 be:
+
+Intransitive Verbs have no Passive Voice.
+
+bok
+
+we)
+
+Co bo
+
+bo
+
+60 ELEMENTARY GRAMMAR,
+
+INDICATIVE MOOD.
+
+Present Tense.
+
+Singular. Plural.
+1. I am loved. 1. We are loved.
+2. Thou art loved. 2. You are loved.
+8. He is loved. 8. They are loved.
+Past Tense.
+Singular. Plural.
+1. I was loved. 1. We were loved.
+2. Thou wast loved. 2. You were loved.
+8. He was loved. 3. They were loved.
+Future Tense.
+Singular. Plural.
+1. I shall be loved. 1. We shall be loved.
+2. Thou wilt be loved. 2. You will be loved.
+8. He will be loved. 8. They will be loved.
+Present-Perfect Tense.
+Singular. Plurat.
+. I have been loved. 1. We have been loved.
+. Thou hast been loved. 2. You have been loved.
+. He has been loved. 3. They have been loved.
+Past-Perfect Tense.
+Singular. Plural.
+. [had been loved. 1. We had been loved. |
+. Thou hadst been loved. 2. You had been loved.
+. He had been loved. 8. They had been loved.
+Future-Perfect Tense.
+Singular. Plural.
+. I shall have been loved. 1. We shall have been loved. -
+
+. Thou wilt have been loved. 2. You will have been loved.
+. He will have been loved. 3. They will have been loved.
+
+ho
+
+bo
+
+bo
+
+oo Nw =
+
+ETYMOLOGY. 61.
+
+SUBJUNCTIVE MOOD.
+
+Present Tense.
+
+Singular. Plural.
+. If I be loved. 1. If we be loved.
+. If thou be loved. 2. If you be loved.
+. If he be loved. 3. If they be loved.
+
+Past Tense.
+
+Simgular, Plural.
+. If I were loved. 1. If we were loved.
+. If thou wert loved. 2. If you were loved.
+. If he were loved. 3. If they were loved.
+
+POTENTIAL MOOD,
+Present Tense.
+
+Singular. Plural.
+. I may be loved. 1. We may be loved.
+. Thou mayst be loved. 2. You may be loved.
+. He may be loved. 3. They may be loved.
+
+Past Tense.
+
+Singular. Plural.
+. I might be loved. 1. We might be loved.
+. Thou mightst be loved. 2. You might be loved.
+. He might be loved. 3. They might be loved.
+
+Present-Perfect Tense.
+
+Singular. Plural.
+. I may have been loved. 1. We may have been loved.
+
+. Thou mayst have been loved. 2. You may have been loved.
+. He may have been loved. 8. They may have been loved.
+Past-Perfect Tense.
+
+Singular. Plural.
+. I might have been loved. 1. We might have been loved.
+. Thoumightst have beenloved. 2. You might have been loved.
+
+. He might have been loved. 38. They might have been loved.
+
+6
+
+62 ELEMENTARY GRAMMAR,
+
+IMPERATIVE MOOD.
+
+Present Tense.
+
+2. Be loved, ov be thou loved. 2. Be loved, or be you loved.
+
+INFINITIVE MOOD.
+
+Present. Tobeloved. Present-Perjfect. To have been loved.
+
+PARTICIPLES.
+
+Present. Being loved. Past or Perfect. Loved.
+Compound-Perfect. Having been loved.
+
+Exercises in Conjugation.
+
+Conjugate the verb
+
+Come, in the Active voice, Indicative mood, Present tensg.
+Do, in the Active voice, Potential mood, Present-Perfect tense.
+Walk, in the Active voice, Subjunctive mood, Future tense.
+Know, in the Passive voice, Indicative mood, Future-Perfect —
+
+tense.
+Leave, in the Passive voice, Potential mood, Past-Perfect tense.
+
+Tell, in the Passive voice, Subjunctive mood, Past tense.
+The teacher can furnish additional exercises at will.
+
+Name all the Participles of the verb come.
+
+Name in like manner all the Participles of each of the other
+verbs in the foregoing list.
+
+Note. — If the verb is Transitive, remember to name the Participles
+in the Passive Voice, as well as in the Active.
+lil. PROGRESSIVE FORM.
+
+The Progressive Form of a verb is that ne,
+represents the action as in progress, or incomplete.
+
+The Progressive form of any verb is made by placing before
+
+ETYMOLOGY. . 63
+
+its Present Participle the various moods, tenses, numbers, and
+persons of the verb Zo be.
+
+Example. — The Present tense of the Indicative mood of the
+verb to be is —
+
+T am. We are.
+Thou art. You are.
+He is. , They are.
+
+By placing- the above before the Present Participle of the
+verb to sing, which is singing, we have,
+
+T am singing,
+Thou art singing, &e.
+
+This is the Present tense, Indicative mood, Progressive form,
+of the verb fo sing.
+
+Exercises in the Progressive Form.
+Conjugate the verb “sing” through all the tenses of the In-
+dicative mood, in the Progressive form.
+Conjugate “learn” through the Subjunctive mood, Progressive
+form.
+
+Conjugate “write” through the Potential mood, Progressive
+form.
+
+Conjugate “stand” through the Imperative and Infinitive
+moods, Progressive form.
+
+Note. — A verb in the Progressive form is always in the Active voice.
+
+IVEMPHATIC FORM.
+
+The Emphatic Form of a verb is that in which
+the assertion is expressed with emphasis.
+
+The Emphatic Form of a verb is made by placing before it the
+verb do as an auxiliary.
+
+The Emphatic Form is used only in the Present and Past
+tenses of the Indicative and Subjunctive moods, Active voice,
+and in the Imperative mood, both Active and Passive.
+
+64
+
+ELEMENTARY GRAMMAR.
+
+Conjugation of the verb To Love, in the Em-
+
+phatic Form.
+
+INDICATIVE MOOD.
+
+Present Tense.
+
+Singular. Plurd.
+1. I do love. 1. We do love.
+2. Thou dost love. 2. You do love.
+3. He does love. 3. They do love.
+
+Past Tense.
+
+Singular. Plural.
+1. I did love. 1. We did love.
+2. Thou didst love. 2. You did love.
+3. He did love. 8. They did love.
+
+SUBJUNCTIVE MOOD.
+Present Tense.
+
+Singular. Plural.
+ir 1 do love. 1. If we do love.
+2. If thou do love. 2. If you do love.
+3. If he do love. 3. If they do love.
+
+Past Tense.
+
+Singular. Plural.
+1. If I did love. 1. If we did love.
+2. If thou did love. 2. If you did love.
+3. If he did love. 3. If they did love.
+
+IMPERATIVE.
+Active — Present Tense. |
+
+Singular. Do (thou) love. Plural. Do (you) love.
+
+Singular. Do (thou) be loved. Plural. Do (you) be loved.
+
+Passive — Present Tense.
+
+ETYMOLOGY. 65
+
+Parsing Exercises.
+
+Parse “writes” in the sentence, ‘‘ James writes a letter.”
+
+Model. —‘‘ Writes” (1) is a verb, it contains an assertion; (2)
+transitive, it requires an objective case after it; (3) irregular, it
+does not form its past tense and past participle by the addition
+ot ed (Pres. write, Past wrote, Past Part. written); (4) active
+voice, it denotes that the nominative ‘‘James” acts or does the
+thing mentioned; (5) indicative mood, the assertion is expressed
+directly and without limitation; (6) present tense, it denotes
+present time; (7) singular number, third person (1 write, thou
+writest, he writes, or James writes); (8) and has for its subject
+the noun James.
+
+Abbreviated Model.— “ Writes” is (1) a transitive verb, (2)
+irregular (Pres. write, Past wrote, Past Part. written), (3) active
+voice, (4) indicative mood, (5) present tense, (6) singular num-
+ber, third person, (7) and has for its subject the noun James.
+
+Parse “to win” in the sentence, ‘‘James expects to win the
+prize.”
+
+Model. — ‘‘To win” is (1) a transitive verb, (2) irregular
+(Pres. win, Past won, Past Part. won), (3) active voice, (4) infin-
+itive mood, (5) present tense.
+
+Note.—The Infinitive Mood has no subject, hence it has no number
+nor person.
+
+Parse “is writing” in the sentence, ‘“‘ James is writing a letter.”
+
+Model. — ‘‘Is writing” is (1) a transitive verb, (2) irregular
+(Pres. write, Past wrote, Past Part. written), (3) progressive
+form, (4) active voice, (5) indicative mood, (6) present tense,
+(7) singular number, third person, (8) and has for its subject the
+noun James.
+
+Parse “did write” in the sentence, ‘James did write the
+letter.”
+
+Model.—‘“ Did write” is (1) a transitive verb, (2) irregular
+(Pres. write, Past wrote, Past Part. written), (3) emphatic form,
+(4) active voice, (5) indicative mood, (6) past tense, (7) singular
+number, third person, (8) and has for its subject the noun James.
+
+Gt E
+
+66 ELEMENTARY GRAMMAR.
+
+Parse ‘‘ was written” in the sentence, ‘‘ The letter was written
+by John.”
+
+Model.—“ Was written” is (1) a transitive verb, (2) irregular
+(Pres. write, Past wrote, Past Part. written), (3) passive voice,
+(4) indicative mood, (5) past tense, (6) singular number, third
+person, (7) and has for its subject the noun letter.
+
+Note 1. — Intransitive Verbs are not used in the Passive Voice, hence,
+it will not be necessary to state the voice in parsing Intransitive Verbs.
+
+Note 2.— In parsing Regular Verbs, the Present, Past, and Past
+Participle forms of the verb need not be given.
+
+Parse all the verbs in the following sentences:
+
+Mary loves her mother.
+
+Charles lent his book to his brother,
+
+George has studied his lesson.
+
+Henry had studied his lessons before the teacher arrived.
+
+I shall have finished my task before my father returns.
+
+Charles will read his book.
+
+If John study, he will improve.
+
+Though he slay me, yet will I trust in him.
+
+Unless you hurry, you will be left.
+
+The boys may go into the woods to play.
+
+William could attend to the business for you, if he were here.
+
+The soldiers must obey the orders of their officers.
+
+You must study, if you desire to excel.
+
+Pity the sorrows of a poor old man.
+
+Fear God and keep his commandments.
+
+Mary is loved by her friends.
+
+The teacher was respected by his pupiis.
+
+The lesson has been recited by each member of the class.
+
+You will be promoted, if you persevere in your endeavor to
+improve.
+
+The prisoner will be brought before the judge, to-morrow, to
+hear his sentence.
+
+ETYMOLOGY. 67
+
+Be industrious, and you will succeed.
+
+Be studious, and you will improve.
+
+Charles is studying his lesson.
+
+The boys are hunting for rabbits in the woods.
+
+If he were more attentive, he might have escaped the punish-
+ment, which, he thought, was so grievous to be borne.
+
+When the mail shall have arrived, I will send immediately for
+my letters; and I will send replies to them by the next mail.
+
+Charles had sufficient time to study his lesson before he was
+called to his breakfast. William appears to havestudied his les-
+son, and to have had time for exercise.
+
+I have not seen my dictionary; do tell me where it is, if you
+know.. I did not use it at home. I cannot learn my lesson with-
+out it. Somebody must have hidden it to vex me. Ask the
+maid; perhaps she put it away. I will take care, to-morrow, to
+put it in the closet before I go out to play. :
+
+If it were raining while you were walking to the city, you
+should have carried your umbrella, or you should have waited
+under some shelter until the rain had ceased. Be more prudent,
+or you may impair your health.
+
+Note.—In the preceding sentence 7¢ is used indefinitely. See page 31.
+
+Review Exercise. — Parse all the Nouns in the foregoing sen-
+_ tences.
+
+Parse all the Articles.
+
+Parse all the Adjectives.
+Parse all the Pronouns.
+
+Exercises in Participles.
+
+Select the Participles in the following exercises, state which
+are Active and which Passive, and state also whether they are
+Present, Past or Perfect, or Compound Perfect.
+
+The child, seeing its mother, ran to meet her.
+Mary, walking in the woods, found a beautiful fern.
+The snow, falling rapidly, soon covered the ground,
+
+68 ELEMENTARY GRAMMAR.
+
+A man deserving blame should be censured.
+
+Washington died honored by all his countrymen.
+
+The house, destroyed by fire, was soon rebuilt.
+
+The laborer, fatigued with the toil of the day, returned to his
+home.
+
+The exercise written by Charles was admired by all.
+
+The boys, having recited their lessons, were dismissed.
+
+The thief, having stolen the horse, made his escape.
+
+John, having written his composition, gave it to the teacher.
+
+The sun having risen, the clouds disappeared.
+
+The general, being advised of the approach of the enemy,
+ordered his troops into line of battle.
+
+The father being informed of his son’s death, exhibited great
+sorrow.
+
+Charles, being aroused from his a discovered that the
+house was on fire.
+
+The day being far spent, we returned to our homes.
+
+The lesson having been recited, the class was dismissed.
+
+The fire having been extinguished, the crowd dispersed.
+
+War having been declared, the regiments were rapidly mustered
+into service.
+
+The physician having been called, pronounced it a ovale
+case.
+
+He had a dagger concealed under his coat.
+~ Honor, defined by Cicero, is the approbation of good men.
+
+William, being successful in his examination, expects promo-
+tion.
+
+William, having been successful in his examination, was pro-
+moted.
+
+William, having succeeded in his examination, expects to be
+promoted.
+
+The fire breaking out in the night, and the night being dark,
+the house was destroyed, the inmates barely escaping with their
+
+ETYMOLOGY. 69
+
+lives, with their clothing scorched, and some with limbs broken
+or bodies mutilated.
+
+Thomas being employed at his studies, could not engage in the
+sports of the younger members of the family; but, having com-
+pleted his lessons, he looked on their sports delighted, and joined
+-in them with pleasure.
+
+Having been informed that the enemy was approaching, and
+being without arms, the general ordered his men to prepare to re-
+treat to a place concealed from the enemy’s view, lest the enemy,
+seeing their defenceless condition, should make an easy conquest.
+
+Write three sentences containing a Present Participle, Active;
+three, Compound-Perfect, Active; three, Present-Passive; three,
+Perfect-Passive; three, Compound-Perfect Passive.
+
+Models for Parsing.
+
+Parse “seeing ”’ in the sentence, ‘‘ The child, seeing its mother,
+ran to meet her.” 3
+
+“Seeing” is (1) the Present Participle, (2) Active, (3) of the
+irregular, transitive verb “to see,” (Pres. see, Past saw, Past,
+Part. seen.)
+
+Parse “having recited” in the sentence, ‘“‘ The boys having re-
+cited their lessons, were dismissed.”
+
+‘“‘ Having recited” is (1) the Compound Perfect-Participle, (2)
+Active, (3) of the regular, transitive verb “to recite.”
+
+Parse all the Participles in the exercises on pages 67, 68 and 69.
+
+As the Participle is a part of the verb, it may have a noun
+after it in the objective case in the same manner as the verb has;
+thus, “John having written a letter, took it to the Post-office.’’
+Here “letter” is in the objective case, and is the object of the
+Participle “‘ having written.”
+
+In the exercises on pages 67, 68 and 69, select and parse all
+nouns in the objective case.
+
+Parse all the Pronouns.
+
+Parse all the Adjectives.
+
+Parse all the Verbs.
+
+70 ELEMENTARY GRAMMAR.
+
+VIL ADVERBS.
+
+An Adverb is a word used to qualify a Verb, an
+Adjective, or another Adverb; as, He writes rapidly. -
+
+Explanation. — An Adverb, when used to qualify a verb, generally
+shows how, when, or where some action takes place.
+
+Exercises. —In the sentence, ‘‘The industrious boy recites
+rapidly,’ which word is a noun? Which is a verb? Which
+word qualifies “boy,” or tells what kind of boy he is? What
+part of speech is ¢ What is an adjective? Which word
+qualifies “recites,” or tells how he recites? What is 2
+What is an adverb? Which does qualify here, a verb,
+an adjective, or another adverb?
+
+In the phrase, ‘“‘ very industrious boy,” what part of speech is
+industrious? What word qualifies industrious, or tells how in-
+dustrious he is? What is @ What is an adverb? Which
+does qualify here, a verb, an adjective, or another
+adverb ?
+
+In the phrase, ‘‘recites very rapidly,” what part of speech is
+rapidly? What word qualifies rapidly, or tells how rapidly he
+recites? What part of speech is ? What is an adverb?
+
+Which does qualify here, a verb, an adjective, or another
+adverb ?
+
+Some words are used sometimes as adverbs, and sometimes as
+adjectives. Among these are the following: little, less, least,
+better, best, much, more, most, no, only, well, all, still, first. Tf
+any of these words qualifies a noun, it is an adjective; but, if it —
+qualifies a verb, an adjective, or another adverb, then it is an-
+adverb.
+
+y)
+
+Examples..— “I have no money, and I can support you no
+longer.” The first ‘“‘no” is any»adjective, qualifying ‘“‘ money.”
+The second “no” is an adverb, qualifying the adverb ‘“ longer.”
+
+“He could not behave worse, nor deserve a worse punishment.”
+The first ‘‘ worse” is an adverb, qualifying the verb ‘‘ behave.”
+The second ‘“ worse” is an adjective, qualifying the noun ‘‘ pun-
+ishment.”
+
+ETYMOLOGY. 71
+
+Comparison of Adverbs.
+
+Many Adverbs are compared.
+
+Some Adverbs are compared by adding er and est
+to the Positive; as, soon, sooner, soonest.
+
+Adverbs ending in ly are compared by prefixing
+
+more and most, less and least; as, happily, more hap-
+
+pily, most happily ; less happily, least happily.
+
+Irregular Comparison.
+
+Positive. Comparative. Superlative.
+Well better best
+
+Til worse worst
+Badly worse , worst
+Much more most
+
+Far farther | farthest.
+
+Classes of Adverbs.
+
+Adverbs are divided into classes, according to their significa-
+tion. The most important of these classes are
+
+1, Adverbs of Manner or Quality; as, well, ill, swiftly,
+smoothly, truly, with a great many others formed from adjectives
+by adding the termination ly. This is by far the most numerous
+class of adverbs.
+
+2. Adverbs of Place; as, here, there, where, hither, thither,
+whither, hence, thence, whence, somewhere, nowhere, etc.
+
+3. Adverbs of Time; as, now, then, when, ever, never, soon,
+often, seldom, lately, yearly, yesterday, to-morrow, ete.
+
+4. Adverbs of Quantity ; as, much, little, sufficiently, enough,
+scarcely, etc.
+
+5. Adverbs of Direction; as, downward, upward, forward,
+backward, homeward, heavenward, hitherward, thitherward, etc.
+
+6. Adverbs of Number, Order, etc. (including all those
+
+fh ELEMENTARY GRAMMAR.
+
+formed from the Numeral Adjectives) ; as, first, secondly, thirdly,
+etc. ; once, twice, thrice, etc.; singly, doubly, triply, ete.
+
+7. Adverbs of Affirmation and Negation ; as, yes, no, verily,
+indeed, nay, nowise, doubtless, etc.
+
+8. Adverbs of Interrogation; as, how, why, when, where,
+whither, whence, ete.
+
+9. Adverbs of Comparison ; as, more, most, less, least, better,
+best, very, exceedingly, nearly, almost, ete.
+
+10. Adverbs of Uncertainty ; as, perchance, Be haps, perad-
+venture, possibly, probably, ete.
+
+Note. — The above is not intended as a complete list of Adverbs, nor
+even a complete classification of them. It will be found serviceable,
+however, for the learner in this way. When in doubt about the true
+character of a word, whether to call it an adverb or not, the doubt is
+often immediately resolved by attempting to refer the word to one of
+these classes. Does the word express place? Does it signify time? ete.
+
+Write three sentences, each containing an adverb of Manner
+or Quality; three, each containing an adverb of Place; three,
+each containing an adverb of Time; three, each containing an
+adverb of Comparison.
+
+Parsing Exercises.
+
+Parse “hastily” in the sentence, ‘‘John wrote the letter
+hastily.”
+
+Model. — “ Hastily ’ (1) is an adverb, it qualifies the verb
+‘“‘wrote;” (2) itis an adverb of manner, it tells the manner in
+which he wrote; (8) it is compared, hastily, more hastily, most
+hastily.
+
+Note. — When the adverb does not admit of comparison, the third
+thing to say of it will be, ‘‘ not compared.”
+
+Parse all the Adverbs in the following sentences:
+
+Cherish me kindly, cheer my young heart,
+I will follow thee ever and never depart.
+
+ETYMOLOGY. 73
+
+Charles reads well.
+
+Mary sang sweetly.
+
+The horse runs swiftly.
+
+_ He was to meet me here.
+
+Great men are greatly admired.
+
+Thus the farmer sows his seed.
+
+The lady sang so very sweetly that she was greatly applauded.
+Remember now thy Creator in the days of thy youth.
+
+John knows where to catch the largest fish.
+
+I know a spot where the wild rose blooms.
+
+We had scarcely reached the wharf when the boat left.
+
+The boys will return from school to-morrow.
+
+Mary will probably arrive promptly.
+
+Softly, slowly, toll the bell.
+
+He will certainly secure the reward.
+
+Probably he will return in time.
+
+He was absent twice in one week.
+
+We had nearly reached our destination when the sun set.
+Perhaps the excursion will be postponed.
+
+You must write more carefully; you are the Jeast careful
+
+writer in the class.
+
+You will recite first the first paragraph on the first page.
+How can you behave so badly?
+Why do you neglect your duty?
+
+The farmer homeward turned his weary steps, and cast his
+eyes upward to gaze upon the sky, while he thought cheerfully
+
+of those at home.
+
+Review Exercise.— Parse all the Nouns in the foregoing
+
+sentences.
+
+Parse all the Pronouns.
+Parse all the Verbs.
+
+Parse all the Adjectives.
+7
+
+74 ELEMENTARY GRAMMAR.
+
+VI. CONJUNCTIONS.
+
+A Conjunction is a word used to connect words,
+sentences, and parts of sentences; as, John and James
+study; John writes and James reads.
+
+The following are the principal Conjunctions:
+
+Also but nor therefore
+Although either or though
+And for since unless
+
+As if than wherefore
+Because lest that whether
+Both neither then yet
+
+Write five sentences, each containing a Conjunction.
+
+Parsing Exercises.
+Parse ‘‘and”’ in the sentence, ‘‘ John and James are brothers.”
+First Model.‘ And ” is a conjunction, it connects the noun
+“John” with the noun ‘‘ James.”
+
+Note.— When conjunctions connect words, those words will
+be the same parts of speech, that is a verb and a verb, an adjec-
+tive and an adjective, etc., except that nouns and pronouns may
+be connected by a conjunction.
+
+Second Model.—‘“‘John studies his lesson carefully, bu¢ James
+is very negligent of his lesson.” ‘‘ But” is a conjunction, it con-
+nects the sentence ‘John studies his lesson carefully,” with the
+sentence ‘‘James is very negligent of his lessen.”
+
+Exercises. — Parse each of the Conjunctions in the following
+sentences:
+
+Mary and John have gone to town.
+
+John and James study.
+
+James writes and John reads.
+
+Charles studies his lessons carefully, but John is very negligent
+with his lessons.
+
+ETYMOLOGY. ri
+
+The boy wrote well, though his hands were badly injured.
+He supported his mother, though he was quite young.
+
+I cannot go to school, because the weather is so bad.
+
+It is so dark that I cannot see.
+
+Review Exercise.— Parse each of the Nouns, Adjectives,
+Pronouns, Verbs, and Adverbs in the foregoing sentences.
+
+. mits PREPOSITIONS.
+
+A Preposition is a word placed before a noun or
+pronoun to show its relation to some other word; as,
+I write with a pen.
+
+There are two classes of Prepositions, Simple and Compound.
+
+Simple Prepositions are those which are not compounded with
+any other word.
+
+The Simple Prepositions generally assist in determining the
+_ place or position of a person or thing.
+
+Example.—‘‘J ohn went on the roof, and found his ball in the
+gutter.” ‘ On” shows the place of ‘* John,” and “in” the place
+_ where the ball was found.
+
+The Simple Prepositions are nineteen, viz. :
+
+oe At from past to
+After in round under
+By of since up
+Down on through with
+For over till
+
+Compound Prepositions are those which are formed by uniting
+two words or parts of words.
+
+76 ELEMENTARY GRAMMAR.
+
+The Compound Prepositions are
+
+Above before toward
+About behind towards
+Across below unto
+Against beneath into
+
+Along beside within
+Amid or amidst besides without
+Among or amongst between or betwixt throughout
+Around beyond underneath
+Athwart upon
+
+Write five sentences, each containing a Simple Preposition ;
+five, each containing a Compound Preposition.
+
+Parsing Exercises.
+
+Parse ‘‘on”’ in the sentence, ‘‘ John walks on the roof.”
+
+Model. — ‘‘On” is a preposition, it is placed before the noun
+roof; and it shows a relation between “roof” and walks,”
+tells on what he walks.
+
+Parse each of the Prepositions in the following sentences:
+
+John went to Boston on the boat.
+
+The old mill stood beside the road.
+
+The city of Philadelphia is situated between two rivers.
+
+He went in a carriage, drawn by two horses, on a fine day in the
+morning, into the city after his sister. As he rode over the roads
+and through the streets, he saw objects before him with which
+he was greatly pleased.
+
+When the widow stood beside the grave of her husband, she
+thought over his many acts of kindness towards her. Now he
+was to rest beneath the clods of the valley, and she was to be
+left without a partner. The good minister told her to look for
+comfort in her affliction unto her heavenly Father, and to think
+of that blissful abode above the weary world, sad of that better
+life beyond the grave.
+
+Review Exercise, — Parse all the other words in the fore-
+going sentences.
+
+ETYMOLOGY. Tt
+
+IX. INTERJECTIONS.
+
+An Interjection is a word used in making sudden
+-exclamations; as, ah / oh!
+
+The principal Interjections are,
+
+Adieu ha hist lo
+
+Ah hail ho O
+Aha halloo hum oh
+Alack hark hush pshaw
+Alas he huzza see
+Begone |
+
+Parsing Exercises.
+
+In parsing an Interjection, simply state that it is an Interjec-
+tion.
+
+Name the [nterjections in the following sentences.
+
+Alas! I have lost my friend.
+
+“Oh!” exclaimed the child, when he was struck.
+
+‘“Ha! ha!” replied his sister, “it serves you right.”
+
+“Fie!” said their mother, ‘this is not the proper spirit.”
+
+Write five sentences, each containing an interjection.
+
+WORDS USED AS DIFFERENT PARTS OF
+SPEECH. .
+
+As, meaning because, or since, is a Conjunction. Ex. As the
+wind was favorable, we set sail. It is also a part of the
+Correlative Conjunction as — so, and of several Complex
+Conjunctions, as well as, ete.
+
+As, in all other cases, is an Adverb.
+Brrore, Arrer, Titi, and Untiz, when followed by a noun or a
+pronoun in the objective case, are Prepositions. Ex. :
+Come before dinner.
+Come afer dinner.
+Wait ¢il7 midnight.
+Wait wntil your turn.
+
+7%
+
+78 ELEMENTARY GRAMMAR.
+
+Brrore, AFTer, Titi, and Unrit, when not followed by a noun
+or a pronoun in the objective case, are Adverbs. Ex.:
+
+Come before I have dined.
+Come after I have dined.
+Wait till I have dined.
+Wait wntil I have dined.
+Boru is an Adjective, when it means the two. Ex. Both shoes
+need mending. ,
+
+Botu is a Conjunction in all other cases. Ex. I both love and
+respect him.
+
+Bor is a Preposition, when it means except. Ex. He lost all his
+books but (except) his dictionary.
+
+Bur is an Adverb, when it means only. Ex. I but (only) touched
+him and he cried.
+But is a Conjunction in all other instances.
+
+EITHer is a Distributive Adjective Pronoun, when it means one —
+of the two. Ex. Hither of the boys may do it.
+
+EITHER is a Conjunction in all other cases.
+
+NeitHeEr is a Distributive Adjective Pronoun, when it means not
+one of the two.
+
+NEITHER is a Conjunction in all other cases.
+
+For is a Conjunction, when it means because, and is used in giv-
+ing a reason. Ex. I obey him, for he is my father, that —
+is, because He is my father. .
+
+For is a Preposition in all other cases.
+
+Srvcz, meaning for the reason that, is a Conjunction. Ex. Since
+it is your wish, I will certainly do it.
+
+SrvcE, when placed before a noun denoting a period of time, is a
+Preposition. Ex. J have had no food since Monday.
+
+Srycg, in other cases, is an Adverb.
+
+THEN, meaning in that case, or therefore, is a Conjunction. Ex.
+If all this be so, then I am right. :
+
+THEN, in all other instances, is an Adverb.
+
+a
+7 /
+5
+
+ETYMOLOGY. — 79 -
+
+Tat is a Relative Pronoun, when who, whom, or which may be
+used in its place. Ex. He is the wisest man that lives in
+our village.
+
+THaT is a Demonstrative Adjective Pronoun, when the may be
+used instead of it. Ex. ‘‘7’hat house which J see,” means
+‘the house which I see.”
+
+Tat is a Conjunction in all other cases. Ex. He wears warm
+clothes that he may not catch cold. Here, who, whom,
+which, or the, could not be used for that.
+
+Wuart is a Relative Pronoun, when that which or those which can
+be used in its stead. Ex. Eat what is set before you.
+That is, Eat that which is set before you.
+
+Wzuat is an Interrogative Pronoun, when used to ask a question.
+Ex. What do you see?
+
+Waar is an Adjective Pronoun, when joined with a noun, but
+not asking a question. Ex. What wonders he performed.
+He gave what money he had to the poor.
+
+Waar, when uttered as a mere exclamation, and to denote sur-
+prise, is an Interjection. Ex. What/ abuse your mother!
+
+WHILE, meaning to pass or spend (time), is a Verb. Ex. They
+managed to while away the hour very pleasantly.
+
+WHILE, meaning a portion of time, is a Noun. Ex. Let us sing
+a while.
+
+WHILE, meaning during the time that, is an Adverb. Ex. The
+act was done while I was absent.
+
+YET, meaning nevertheless, notwithstanding, is a Conjunction.
+Ex. Though he slay me, yet will I trust in him.
+
+YET, meaning up to a certain time, or over and above, is an Ad-
+verb. Ex. Has the boy come yet?
+
+I will give you yet one more reason.
+
+THIRD PaRm@
+
+—05g5 00-——.
+
+oY NTA
+
+THE third part of Grammar is called SYNTAX.
+Syntax treats of sentences.
+
+A Sentence is a number of words put together so
+as to make complete sense; as, Man 7s mortal.
+
+The principal parts of a-sentence are the Subject (or
+nominative) and the Predicate (or verb).
+
+Sentences are of two kinds, SIMPLE and COMPOUND.
+
+A Simple sentence is one which contains but one
+subject and one verb; as, Life zs short.
+
+A Compound sentence is one which contains two
+or more sentences, connected by one or more conjunc-
+
+tions; as, Life is short, but art ws long.
+80
+
+SYNTAX. 81
+
+RULE IT.
+
+The Subject of a Verb must be in the Nominative
+Case.
+
+Explanation. — The subject of the verb is that of which the assertion
+is made. ‘‘ The book is in the desk.’”’ The subject of the assertion here
+is “book.’”’ It is that which is asserted to be in the desk. ‘‘ John and
+I went home.” Here there are two subjects, ‘‘ John” and “1.” It is
+of both these we say that they “‘ went home.’”’ Now, the subject of the
+verb, that of which anything is asserted, must be in the nominative case.
+It would be contrary to the Rule, therefore, to say, ‘‘ John and me went
+home,” because ‘‘ me,”’ one of the subjects, is not in the nominative case.
+
+NOTES.
+
+Complex names, such as George Washington, Charles Henry
+Grant, ete., should be taken together in parsing, as if they were
+one word. Thus, we would say, ‘‘Charles Henry Grant,” a
+complex name, is a proper noun, etc.
+
+The subject of the verb may be an infinitive mood, or a part
+of a sentence, used as a noun; as, ‘‘To steal will render us liable
+to punishment,” ‘‘Thou shalt not kill, is the sixth command-
+ment.”’ In the former of these examples, ‘‘ To steal” is the sub-
+ject of the verb, just as “stealing”? would be, if the sentence
+were written, ‘‘Stealing will render us liable to punishment.”
+
+A noun or a pronoun addressed, and not the subject of any
+verb, is in the Nominative Case Independent; as, “‘ Father,
+forgive them.” ‘ Boys, go home.”
+
+A noun or a pronoun put before a participle as its subject, and
+not being the subject of any verb, is in the Nominative Case
+Absolute ; as, ‘‘ My father dying, I was left an orphan.”
+
+Models for Parsing.
+
+“James wrote a letter.” “James” is a proper noun, mascu-
+line gender, singular number, third person, nominative case, sub-
+ject of the verb ‘‘ wrote,” according to Rule I., which says,
+“The subject of the verb must be in the nominative case.”
+
+“* He will write a letter.” ‘‘ He” isa personal pronoun, mase. g.,
+KF ,
+
+82 ELEMENTARY GRAMMAR.
+
+sing. n., 3d p., nom. case, subject of the verb ‘will write,” ac-
+cording to Rule I. (Quote.)
+
+Note.—In parsing pronouns, certain other things are to be stated, which
+will be learned under Rule VIII. The parsing in the model is complete,
+so far as it can be given now.
+
+‘“‘ To steal will render us liable to punishment.” ‘To steal”
+is a verb in the infinitive mood, used as a noun. It is in the
+neut. gen., sing. n., 3d per., nom. ¢., and is the subject of the
+
+verb ‘ will render,” according to Note under RuleI. (Quote the ©
+
+Note.)
+
+“ Thou shalt not kill” is a divine command. ‘Thou shalt not
+
+kill,” is a part of a sentence, used asa noun. It is in the neut. |
+
+gen., sing. n., 3d per., nom. c., and is the subject of the verb ‘‘is,”
+according to Note under RuleI. (Quote the Note.)
+
+“ Father, forgive them.” ‘ Father” is a com. noun, mase. g.,
+sing. n., 2d p., and in the nominative case independent, according
+to Note under Rule !. (Quote Note.)
+
+“The sash falling suddenly, his finger was crushed.” “Sash”
+is a com. noun, n. g., sing. n., 3d p., and in the nominative case
+absolute before the participle “falling,” according to Note under
+Rule I. (Quote Note.)
+
+Exercises.
+Parse all the Nominatives in the following sentences:
+
+Mary wrote a letter.
+
+The child loves its mother.
+
+The letter was written by Mary.
+
+Our neighbors have sold their property.
+
+The boys are hunting in the woods.
+
+Perseverance overcomes difficulties.
+
+Difficulties are overcome by perseverance.
+
+God loves a cheerful giver.
+
+Has he not said it, and will he not do it?
+Christopher Columbus discovered North America,
+
+mg
+
+SYNTAX. 83
+
+John Quincy Adams was the sixth President of the United
+
+States.
+
+Napoleon, at the head of a large army, crossed the Alps.
+To study seemed his only desire.
+
+_ To deceive is always wrong.
+
+To swear is wrong.
+
+To play is pleasant.
+
+To despair is madness.
+
+Never despair is a good motto.
+
+Thou shalt not steal, is a divine command.
+Henry, have you studied your lesson?
+Welcome, little stranger.
+
+Sarah, be quiet.
+
+Fellow-citizens, listen to my cause.
+
+Teach me, O Lord, to serve thee aright.
+
+Our Father, who art in heaven.
+
+Supper being finished, they left the table.
+My father being weary, I relieved him.
+
+The sun having risen, the clouds disappeared.
+The teacher having been so long ill, his friends feared he would
+
+not recover.
+The lieutenant led the men, the captain having been disabled.
+
+Note. — The teacher can add such additional exercises as may be
+
+deemed necessary.
+
+84 ELEMENTARY GRAMMAR.
+
+RULE: IT.
+
+A Verb agrees with its Subject in Number and
+Person.
+NOTES.
+
+When the subject of the verb is an infinitive mood, or a part
+of a sentence, the verb should be singular; as, ‘‘To skate is a
+healthful amusement,” “Thou shalt not kill, is a divine com-
+mand.” But if there are two or more infinitives, or parts of
+sentences, making distinct subjects, then the verb should be
+plural; as, ‘‘To skate and to play cricket are healthful amuse-
+ments,” “Thou shalt not kill, and Thou shalt not steal, ave divine
+commands.”
+
+When the subject of the verb is a collective noun, the verb
+should be singular, if the idea expressed by the noun is singular;
+as, ‘The class zs large.” But if the idea expressed by the noun
+is plural, the verb should be plural; as, ‘‘The multitude pursue
+pleasure as their chief good.”
+
+Two or more subjects, connected by and, require a verb in the
+plural; as, ‘‘Socrates and Plato were wise.”
+
+Two or more subjects, connected by and, if used to express
+only one person or thing, require a verb in the singular; as,
+‘That eminent statesman and orator 7s dead.”
+
+Two or more subjects in the singular, connected by or or nor,
+require a verb in the singular; as, ‘‘ Ignorance or prejudice has
+caused this mistake.” |
+
+If any one of several subjects connected by or or nor is plural,
+the verb must be plural; as, ‘ Either he or they were mistaken.”
+
+When a verb has subjects of different persons, connected by
+and, the verb agrees with the first person rather than the second,
+and with the seeond rather than the third; as, ‘‘He and I shared
+the peach between us.” “Shared,” here, should be parsed as in
+the first person.
+
+When a verb has subjects of different persons, connected by or
+or nor, the verb agrees in person with the subject nearest to it;
+as, ‘‘ Either thou or I am mistaken.”
+
+SYNTAX. 85
+
+Models for Parsing.
+
+“ James wrote a letter.” ‘‘ Wrote” is a transitive verb, irreg-
+ular (Pres. write, Past wrote, Past P. written), active voice, in-
+dicative mood, past tense, and is in the singular number, third
+person, to agree with its subject “James,” according to Rule II.
+(Quote the Rule.)
+
+“To steal renders us liable to punishment.” ‘‘ Renders” is a
+trans. verb, reg., act. v., ind. m., pres. t., 3d p., and in the sing. n.,
+to agree with its subject ‘“‘to steal,’ a verb in the inf. mood
+used as a noun, according to Note under Rule II. (Quote Note.)
+
+“Thou shalt not steal, 7s the eighth commandment.” ‘Is” is
+an int. v., irr., (Am, was, been,) ind. m., pres. t., 3d p., sing. n., to
+agree with its subject, ‘“‘ Thou shalt not steal,” a part of a sentence
+used as anoun, according to Note under Rule II]. (Quote Note.)
+
+‘“‘Socrates and Plato were wise.” ‘‘ Were” is an intrans. verb,
+irr., (Am, was, been,) ind. m., past. t., 3d p., and in the pl. n.,
+because it has two subjects, ‘‘ Socrates’ and ‘‘ Plato,” connected
+by ‘‘and,” according to Note under Rule II. (Quote Note.)
+
+“Tf that skilful painter and glazier zs in town, be sure to em-
+ploy him.” “Js” is an intrans. verb., irr., (Am, was, been,) ind.
+m., pres. t., 3d p., and in the sing. n., because its two subjects,
+‘painter’ and “glazier,” express only one person, according to
+Note under Rule II. (Quote Note.)
+
+“Tonorance or prejudice has caused the mistake.” ‘Has
+caused” is a trans. verb, reg., act. v., ind. m., pres.-p. t., 3d p.,
+and in the sing. n., because its two subjects, ‘“‘ignorance”’ and
+“prejudice,” are in the singular, connected by or, according to
+Note under Rule II. (Quote Note.)
+
+“He and I shared the peach between us.” ‘“Shared” is a
+trans. verb, reg., act. v., ind. m., past. t., in the pl. n., because it
+has two subjects connected by ‘‘and,” according to Note under
+Rule II. (quote Note), and in the 1st p., according to Note under
+Rule II. (Quote Note.)
+
+Note.— Verbs in the Infinitive Mood may be parsed, for the present,
+as in the Model on page 65.
+8
+
+86 ELEMENTARY GRAMMAR.
+
+E:xereises.
+Parse the Verbs and Subjects in the following sentences :
+
+Perseverance overcomes difficulties.
+Difficulties are overcome by perseverance.
+Forgive your enemies.
+
+The lesson was recited by the class.
+
+North America was discovered by Columbus.
+Bless them that persecute you.
+
+To study seemed his only desire.
+
+To skate is a healthful amusement.
+
+To contradict persons older and wiser than ourselves, violates
+the rules of politeness.
+
+To be carnally minded is death.
+
+A gunner and his dog were seen in the woods.
+
+The father and daughter were buried in the same grave.
+Famine, pestilence, and death follow in the warrior’s path.
+My friend and teacher has gone to England.
+
+That distinguished poet, orator, and scholar has fallen.
+Neither kindness nor harshness had the desired effect.
+Neither gold nor silver is found in that country.
+
+Neither time nor tide waits for man.
+
+Neither the troops, nor their commander, were rewarded.
+Neither John nor his friends were present.
+
+Either the general or the soldiers are worthy of reward.
+You and he are of the same opinion.
+
+You and Susan have studied your lessons.
+
+You and I have forgotten our books.
+
+Either thou, or the teacher, or I am mistaken.
+
+Kither thou, or I, or the teacher is mistaken.
+
+Either the teacher, or I, or thou art mistaken.
+
+The teacher, I, and you are mistaken.
+
+SYNTAX. 87
+
+BULE fil.
+
+A Transitive Verb, in the Active Voice, requires
+an Object in the Objective Case.
+
+Note. — The noun or pronoun in the objective is said to be governed
+by the verb.
+
+NMOTES.:
+
+A participle of a Transitive verb, in the Active voice, requires
+an object in the objective case; as, ‘‘The boy, having eaten un-
+ripe fruit, became sick.”
+
+The Relative Pronoun, when in the objective case, generally
+precedes the verb by which it is governed; as, ‘‘The book which
+you see is mine.” Here, “which” is the object of the verb “‘see,”’
+and is placed before it.
+
+The object of the verb is sometimes an infinitive mood, or part
+of a sentence, used as a noun; as, ‘‘ Boys love fo play,” God said,
+“Let there be light.”
+
+Models for Parsing.
+
+“James wrote a /etter.” ‘Letter” is a com. noun, n. g., sing.
+n., 3d p., and is in the obj. ¢., governed by “ wrote,” a transitive
+verb in the active voice, according to Rule III. (Quote.)
+
+“The boy, having eaten unripe fruzé, became sick.” ‘Fruit ”
+is a com. noun, n. g., sing. n., 3d p., and in the obj. c., governed
+by the participle ‘“‘having eaten,” according to a note under
+Rule Hil. (Quote Note.)
+
+“James saw him.’ ‘“ Him” is a pers. pronoun, mase. g., sing.
+n., 3d p., and in the obj. c., governed by “saw,” a trans. v. in
+the act. v., according to Rule III. (Quote.)
+
+Note.—The parsing of the Pronoun here is complete as far as it goes..
+But there are other things to be learned concerning it under Rule VIILI.,
+before it can be parsed in full.
+
+Exercisés.
+
+Parse the Objectives which are the objects of Verbs and Participles,
+in the following sentences :
+
+88 ELEMENTARY GRAMMAR.
+
+Charles lost his knife.
+
+Mary found a book.
+
+William has recited his lesson.
+
+They may reach the station.
+
+John caught a bird in the trap.
+
+If you love God, keep his commandments.
+Temperance promotes health.
+The child, seeing its mother, ran to meet her.
+
+The boys, having recited their lessons, were dismissed.
+The thief, having stolen the horse, made his escape.
+
+The dog might have bitten the boy on the hand, if he had not
+been watched by the driver.
+
+The merchant sold a yard of cloth.
+
+The family, having read a chapter, clpata the pit and con-
+tinued their devotions.
+
+The teacher observed a boy breaking the rules.
+After capturing the fort, the troops entered the city.
+
+The man whom I saw, informed me that he had a collection
+of wild beasts, which he would exhibit if you would let him.
+
+Paul said, ‘“‘ Children, obey your parents.”
+God said, ‘‘ Let there be light.”
+
+Boys love to play.
+
+Charles desires to learn.
+
+Every child should learn to read.
+
+Review.
+
+Parse all the Nominatives and Verbs in the foregoing exercises.
+
+SYNTAX. 89
+
+RULE ATV.
+
+A Preposition requires an Object in the Objective
+Case.
+
+Note.— The noun or pronoun in the objective case after a preposition
+is said to be governed by it.
+
+NOTES.
+
+When a preposition is followed by an adjective without a
+noun, supply the noun, and parse the preposition accordingly ;
+as, ‘‘ Keep to the right (hand).”’
+
+The preposition is frequently omitted, particularly after verbs
+of giving and procuring ; after adjectives of likeness or near-
+ness; and before nouns denoting time, place, price, measure, ete.
+When it is practicable to supply the ellipsis, the noun or pronoun
+is parsed as in the objective, governed by the preposition thus
+supplied. But when no such word can be supplied, we say the
+noun is in the objective, expressing time, place, price, measure,
+etc., without any governing word. Examples: Give (to) me a
+book. Get (for) me an apple. Like (to) his father. Near (to)
+his home. They travelled (through) sixty miles (m) a day. A
+wall six feet high. Subjects worthy (of) fame. Books worth
+(worthy of?) a dollar.
+
+Sometimes one preposition immediately precedes another; as,
+“From before the altar.” The two prepositions in such cases
+should be considered as one, just as in the case of the compound
+
+. prepositions won, within, ete.
+
+Sometimes a2 preposition precedes an adverb; as, at once, for
+ever, etc. The two words should be taken together, as in the
+preceding case, and called an adverb.
+
+Models for Parsing.
+
+“James wrote a letter to his father.” ‘ Father” is a com.
+noun, masc. g., sing. n., 3d. p., and in the obj. c., governed by the
+preposition ‘‘ to,” according to Rule IV. (Quote.)
+
+“To” is a preposition, showing the relation between “wrote”
+
+8 *
+
+90 ELEMENTARY GRAMMAR.
+
+99
+
+and ‘‘ father,” and governs ‘‘ father” in the obj. c., according to
+
+Rule IV. (Quote.)
+
+‘““God seeth zn secret.” ‘‘In” is a preposition, showing the
+
+relation between “seeth” and “places,” or some such noun
+understood. The meaning is, ‘‘God seeth in secret places.”
+
+“Give your brother the book.” ‘‘ Brother” is a common
+noun, masc. g., sing. n., 8d. p., and in the obj. ¢., governed by
+the preposition ‘‘ to,” understood, according to note under Rule
+
+TV. (Quote.)
+
+Exercises.
+
+Parse the Prepositions, and the Nouns or Pronouns governed by them,
+in the following sentences:
+
+When the widow stood beside the grave of her husband, she
+thought over his many acts of kindness towards her. Now he
+was to rest beneath the clods of the valley, and she was to be
+left without a partner. The good minister told her to look for
+comfort in her affliction unto her heavenly Father, and to think
+of that blissful abode above the weary world, and of that better
+life beyond the grave.
+
+Turn to the left.
+
+He selected an apple from the best in his orchard.
+
+Mary looks like her mother.
+
+Charles, give me that book. _
+
+His ability won him much renown.
+
+The clouds seemed like piles of snow.
+
+A bird can fly twenty miles an hour.
+
+Children near the sea gather shells.
+
+The merchant sold mother, for fifty cents, a yard of silk worth
+one dollar, and promised to get her some better silk at a less
+price the next week.
+
+Review.
+
+Parse all the Subjects, Verbs, and age of Verbs in the
+foregoing sentences.
+
+eg) Peg 5 ee peat oy
+
+a,
+
+.
+Sa eset ae ee
+
+SYNTAX. 91
+
+Ronn Vv.
+
+A Noun or a Pronown in the Possessive Case is
+
+dependent upon the Noun signifying the thing
+
+possessed.
+
+Note. — The noun or pronoun in the possessive case is said to be gov- .
+
+_ erned by the noun signifying the thing possessed.
+
+NOTES.
+The noun governing the possessive case is often omitted; as,
+
+_ “T bought this slate at the bookseller’s [shop]. In such cases,
+supply the omission, and parse according to the general rule.
+
+In complex names and in complex titles, the sign of the pos-
+sessive is put only at the end, and the whole complex name, or
+title, is parsed as one word. Thus, ‘‘George Washington’s fare-
+
+_ well address,” not ‘‘ George’s Washington’s,”’ ete.
+
+A complex title sometimes consists of several words, some of
+which may be different parts of speech, and may have an inde-
+pendent construction of their own; thus, “The captain of the
+guard’s horse was slain.’’ In parsing such a sentence, ‘tof the
+guard” should be parsed first, each word separately, ‘“‘ guard ”
+being in the objective. Then, ‘‘captain of the guard’s” should
+be parsed as one complex title, in the possessive case, governed
+by ‘‘horse.” The’s belongs not to “guard,” but to the whole
+expression.
+
+The possessive is sometimes governed by a participle used as a
+noun; as, ‘The cause of John’s forgetting the lesson was his
+
+_ anxiety about the excursion.” Here, “John’s” is in the pos-
+
+sessive case, governed by ‘“‘forgetting” used asa noun. It would
+not be correct to put “‘John” in the objective case governed by
+or.” “Of,” here, governs “forgetting,” not “John.” ‘ The
+cause Of John forgetting the lesson,”’ should be, “‘The cause of
+John’s forgetting the lesson.”
+
+Models for Parsing.
+
+“James wrote a letter by his father’s permission.” ‘ Fath-
+er’s”’ is a com. noun, miase. g., sing. n., 3d p., and in the poss. ¢.,
+
+governed by ‘“‘ permission,” according to Rule V. (Quote.)
+
+92 ELEMENTARY GRAMMAR.
+
+Parse his in the foregoing sentence.
+“His” is a pers. pronoun, masce. g., sing. n., 3d p., and in the
+poss. c., governed by “ father’s,” according to Rule V. (Quote.)
+
+Note. — The parsing of the Pronoun here is complete as far as it goes.
+But there are other things to be learned concerning it under Rule VIII.
+before it can be parsed in full.
+
+‘““George Washington’s Farewell Address has just been read.”
+‘““George Washington’s,” a complex name, is a prop. noun, masc.
+g., sing. n., 3d p., poss. c., governed by ‘Address,’ according to
+Rule V. (Quote.)
+
+The Commander-in-chief’s horse was stolen. ‘‘Commander-
+in-chief’s,” a complex title, is a com. noun, masc. g., sing. n.,
+3d p., poss. c., governed by “horse,” according to Rule V.
+
+(Quote.) |
+Exercises.
+
+Parse all the Nouns and Pronouns in the possessive case, in the fol-
+lowing sentences:
+
+Cruel boys rob birds’ nests.
+
+The widow’s friend will not defraud her children.
+
+The boy’s politeness caused his friends to respect lim.
+
+Mary’s friend arrived home safely.
+
+The girl, who lost her book, has found it.
+
+He preferred a shepherd’s life to a monarch’s throne.
+
+Benjamin Franklin’s grave is in Philadelphia.
+
+My father-in-law’s house was destroyed by fire.
+
+My brother’s behavior is better than my sister’s.
+
+She-went to the baker’s and bought bread for her children.
+
+He spends his spare time at the lawyer’s.
+
+They stopped at the bookseller’s and made their purchases. i
+
+Review. ni
+
+In the foregoing sentences, parse all the Subjects, Verbs, Ob- | ‘
+jects, and Prepésitions. ae
+
+SYNTAX. 93
+
+RULE VE.
+
+A Noun or a Pronoun, put in Apposition with
+another, agrees with it in Case.
+
+Note.— A word is said to be in apposition with another when it is
+used to explain or identify the other; as, ‘‘Smith, the bookseller, died
+yesterday,” or when it is repeated for the sake of emphasis; as, “ Cis-
+terns, broken cisterns, that can hold no water.”
+
+NOTES.
+
+The words in apposition may be in any case, nominative, pos-
+sessive, or objective. |
+
+A noun may be put in apposition with a whole sentence; as,
+“He promptly acceded to my request, an act which redounds
+greatly to his honor.” ‘‘Act”’ is here nominative, in apposition
+with the whole of the preceding sentence.
+
+One of the most frequent instances of apposition is where the
+proper noun of an object is appended to its common name; as,
+“The river Delaware.”
+
+The phrases ‘‘They love one another,” ‘“‘They love each other,”
+etc., afford instances of apposition that very frequently occur.
+In the first of these examples, ‘‘one”’ is in the nominative, and
+is in apposition with ‘“they;” and “another” is in the objective,
+governed by “love.” The meaning is, ‘‘One loves another.”
+
+Model for Parsing.
+
+“James wrote a letter to his brother John.” “John” is a
+prop. noun, mase. g., sing. n., 3d p., obj. ¢., in apposition with
+the noun “brother,” according to Rule VI. (Quote.)
+
+Exercises.
+Parse the Nouns and Pronouns in apposition in the following sen-
+tences, correcting where necessary :
+Alexander, the coppersmith, did me great harm.
+My brother, James, has gone home.
+Washington, the first President, was buried at Mount Vernon.
+
+94 ELEMENTARY GRAMMAR,
+
+My cousin, Mary, has written me a letter.
+
+Kidd, the notorious pirate, suffered the felon’s reward, death
+upon the gallows.
+
+William bought a book for his sister Mary.
+
+Mr. Embury crossed the river Delaware in the ferry-boat
+Eagle,
+
+The steamer Pennsylvania will sail on Monday.
+
+We should make our business our pleasure.
+
+Why do you assail me, your only brother ?
+
+Harrisburg, the capital of Pennsylvania, lies on the east bank ~
+of the river Susquehanna.
+
+Preserve your health, the poor man’s wealth, the rich man’s
+bliss.
+
+Review.
+
+Parse, in the foregoing exercises, all the Subjects, Objects,
+Possessives, Prepositions, and Verbs.
+
+SYNTAX: 95
+
+RULE VIE.
+
+The Verb To Be has the same Case after it as
+before wt.
+
+Note. — In such instances, the noun or pronoun after the verb is not
+in apposition with the noun or pronoun before it, but is a part of the
+predicate of the verb. Thus: “James is commander of the troops.’
+Here, ‘‘ Commander ” should be parsed as nominative after the verb is.
+The same meaning would be conveyed by the expression “ James com-
+mands the troops,” so that the word commander is really a part of the
+predicate.
+
+NOTES.
+
+This rule applies to all the variations of the verb “to be,”
+such as, am, art, is, was, were, etc. It applies also to the verb
+become and to several other intransitive verbs, and also to the
+passive voice of some transitive verbs, such as to be named, to be
+called, etc.
+
+The verb ¢o de in the infinitive mood used as a noun may have
+a noun or a pronoun after it without any other noun before it; as,
+“To bea good man, is not so easy a thing as many people imagine.”
+Here ‘‘man” should be parsed as used indefinitely after the verb
+to be, without saying what its case is. The infinitive mood of
+many Other intransitive verbs, and likewise the infinitive passive
+of some transitive verbs, may also have a noun or a pronoun after
+them used indefinitely ; as, ‘‘To live a consistent Christian is not
+easy,” “To be called a Roman was counted a great honor.”
+
+Model for Parsing.
+
+Ie a
+”
+
+“James is commander of the troops.” ‘Commander
+com. noun, masc. g., sing. n., 3d p., nom. c. after the verb ‘‘is,
+according to Rule VII. (Quote.)
+
+“To be a good man is not an easy thing.” ‘ Man” is a com.
+
+noun, masc. g., sing. n., 3d p., used indefinitely after the verb “to
+be,” according to Note under Rule VII. (Quote.)
+
+?
+
+Exercises.
+
+Parse the Nouns and Pronouns after the verb in the same case with
+the noun or pronoun before it, in the following sentences:
+
+96 ELEMENTARY GRAMMAR.
+
+Ellen is the best scholar in the class.
+Arnold was a traitor to his country.
+I am the owner of this property.
+Nathan said unto David, ‘‘ Thou art the man.”
+Godliness, with contentment, is great gain.
+It was he that did it. |
+
+It was she that told us the story.
+It was Charles that we saw on the boat.
+Washington was the first President.
+I am sure it was John who passed.
+Thomson, the author of ‘‘ The Seasons,” is a delightful poet.
+Intemperance has been the ruin of many.
+He was considered to be a suitable person.
+To be called a coward does not make one so.
+To be a good citizen should be every man’s desire.
+The Senate caused Scylla to be proclaimed dictator.
+To die a hero is better than to live a coward.
+
+Review.
+
+_ Parse, in the foregoing exercises, all the Subjects, Possessives,
+Objects, Prepositions, and Verbs.
+
+=
+Soe
+
+SYNTAX. 97
+
+RULE Vitti.
+
+A Pronoun agrees with the Noun or the Pronoun
+for which it stands, in Gender, Number, and Per-
+son.
+
+NOTES.
+
+When a pronoun stands for a Collective noun, the pronoun
+should be singular, if the idea expressed by the noun is singular ;
+as, ‘The class is too large; zt must be divided into sections.”
+But if the idea expressed by the noun is plural, the pronoun
+should be plural, and should be in the neuter gender. ‘Send
+the multitude away that they may buy themselves bread.”
+
+When a pronoun stands for two or more words, connected by
+and, the pronoun should be plural. Thus, “ William and Mary
+were both there; I saw them.” ‘‘He and Mary were both there;
+I saw them.” ‘Heand she were both there; I saw them.”
+‘‘Them”’ in the first example stands for two nouns, in the sec-
+ond example for a noun.and a pronoun, and in the third for two
+pronouns.
+
+When a pronoun stands for two or more words, connected by
+and, but used to express only one subject, the pronoun should be
+singular. Thus, ‘He knew his Lord and Saviour, and loved him.”
+
+When a pronoun stands for two or more words, in the singular,
+connected by or or nov, the pronoun should be singular. Thus,
+‘*- Either play or work is injurious, if zt is carried to excess.” If
+one of the words connected by or or nor is plural, the pronoun
+representing them should be plural; as, ‘‘ Neither the captain nor
+the crew knew their danger.”
+
+When a pronoun stands for two or more words, connected by
+and, but of ditferent persons, the pronoun agrees with the first
+person rather than the second, and with the second rather than —
+the third. Thus, “ William and I had our skates with ws.”
+“Our” and “us” are plural, because they stand for two sub-
+jects, ‘‘ William” and “I.” But one of these subjects,‘‘ William,”
+being in the third person, and the other, ‘‘I,” being in the first
+person, the pronoun which stands for both must be in the first
+- ae G
+
+vy
+
+98 ELEMENTARY GRAMMAR.
+
+person. We would not express the meaning, if we were to say,
+‘William and I had their skates with them.”
+
+A pronoun may stand for an infinitive mood; as, ‘‘To contra-
+dict may be rude, but z¢ is not criminal.” A pronoun may stand
+also for a part of a sentence; as, ‘“‘ He is very witty, but unfortu-
+nately he is aware of zt.” The pronoun in such cases should be
+in the neuter gender, singular number, and third person. But if
+there are two or more infinitives, or parts of sentences, making
+distinct subjects, then the pronoun should be plural ; as, “To be
+temperate, and to use exercise in the open air, are good preserva-
+tives of health, but they are not infallible.”
+
+The pronoun 2¢ is sometimes used indefinitely, that is, without
+standing for any particular noun. When so used, it is in the
+neuter gender, singular number, and third person. Thus, ‘‘Come
+and trip it as you go,” “‘ /¢rains,” ‘‘See how zt snows,” “ J¢ is he.”
+
+W ho is used in referring to persons; Which is used in referring
+to inferior animals, to things without life, to infants, to collective
+nouns expressing a singular idea, and to persons in asking ques-
+tions where the particular individual was inquired for. ‘‘ Which”
+was formerly applied to persons as well as things; as, ‘‘ Our Father,
+which art in heaven.”
+
+That is used instead of Who or Which in the following cases:
+
+1. After two antecedents, one requiring who, and the other
+requiring which; as, ‘‘The man and the house that we saw
+yesterday.”
+
+2. After the Superlative ; as, “It is the best book that can be
+got.” !
+
+3. After Sume ; as, ‘‘ He is the same kind-hearted man that he
+used to be.”
+
+4. After Adi, or any similar antecedent expressing a general
+meaning, limited by the following verb; as, ‘‘ Add that heard me
+can testify.”
+
+5. After Who, used interrogatively; as, ‘‘ Who, that has seen
+anything of human nature, can believe it?”
+
+6. After /t, used indefinitely ; as, ‘‘/¢ was he that did it.”
+
+SYNTAX. 99
+
+The relative is sometimes omitted; as, ‘The letter [which] you
+wrote me on Saturday, came duly to hand.”
+
+The antecedent is sometimes omitted; as, ‘‘ Who lives to na-
+ture, rarely can be poor,” meaning, The person who lives, etc.
+
+Models for Parsing.
+
+“Mary lost her book.” “Her” is a pers. pron., fem. gen.,
+sing. numb., 3d per., to agree with ‘‘ Mary,” according to Rule
+VIII. (quote), and is in the possessive case, governed by ‘‘ book,”
+according to Rule V. (Quote.)
+
+“John, who was at school, wrote a letter to his father.”
+“Who” is a rel. pron., relating to ‘‘ John” for its antecedent;
+it is in the masce. g., sing. n., 3d p., to agree with ‘‘ John,” accord-
+ing to Rule VIII. (quote), and is in the nom. c., subject of the
+verb ‘‘ was,” according to Rule I. (Quote.)
+
+‘The class is too large; it must be divided.” ‘It” is a pers.
+pron., neut. g., sing. n., 3d p., to agree with “class,” a collective
+noun expressing a singular idea, according to a Note under Rule
+VIII. (quote Note), and is in the nom. c., subject of the verb
+“must be divided,” according to Rule I. (Quote.)
+
+‘Charles and Henry were both there; I saw them.” ‘' Them”
+is a pers. pron., masc. g., plur. n., 3d p., to agree with ‘‘ Charles”
+and ‘‘ Henry,” two words connected by “and,” according to a
+Note under Rule VIII. (quote Note), and is in the obj. ¢., object
+of the verb ‘‘saw,” according to Rule III. (Quote.)
+
+“William and I had our skates with ws.” ‘‘Us” is a pers.
+pron., standing for ‘ William” and ‘‘I,” two words of different
+persons; it is therefore in the 1st p., according to a Note under
+Rule VIII. (quote Note), plur. n., according to a Note under
+Rule VIII. (quote Note), and is in the obj. c., governed by the
+preposition ‘‘ with,” according to Rule IV. (Quote.)
+
+“To contradict may be rude, but i¢ is not criminal. “It” isa
+pers. pron., standing for ‘‘To contradict ;” a verb in the infinitive
+mood used as a noun, it is therefore in the neut. g., sing. n., 3d p.,
+according to a Note under Rule VIII. (quote Note), and is in the
+nom. ¢., subject of the verb ‘‘is,” according to Rule I. (Quote.)
+
+100 ELEMENTARY GRAMMAR,
+
+““7é rained all night.” “It” is a pers. pron., used indefinitely ;
+it is in the neut. g., sing. n., 3d p., according to a Note under Rule
+VIII. (quote Note), and is in the nom. c., ‘subject of the verb
+“rained,” according to Rule I. (Quote.)
+
+“The man and the house that we saw yesterday.”- “That” is
+a rel. pron., relating to two antecedents, ‘‘man” and “house,”
+and used instead of “who” or ‘ which,” according to a Note
+under Rule VIII. (quote Note), plur. n., according to a Note under
+Rule VIII. (quote Note), 3d p., and is in the obj. c., governed by
+the verb ‘“‘saw,” according to Rule III. (Quote.)
+
+“Give me what I want.” ‘ What” is a rel. pron., and relates
+to the object of “give,” understood, for its antecedent; it is in
+the neut. g., sing.n., 3d p., to agree with the omitted antecedent,
+according to Rule VIII. (quote), and is in the obj. ¢., object of
+the verb “want,” according to Rule III. (Quote.)
+
+‘Whoever hopes to win the prize, must labor hard.” ‘ Who-
+ever” is a compound rel. pron., composed of who and ever, re-
+lating to “‘ person,” or some other like word omitted, for its ante-
+cedent; in the com. g., sing. n., 3d p., to agree with the omitted
+antecedent, according to Rule VIII. (quote), and is in the nom. ¢.,
+_ subject of the verb “hopes,” according to Rule I. (Quote.)
+
+“Who wrote the letter? John.” ‘‘ Who” is an interrogative
+pronoun, [see page 34,]| relating to the subsequent word ‘‘John;”
+it is in the masculine gender, singular number, and third person,
+to agree with ‘‘John,” according to Rule VIII. (quote), and is
+in the nominative case, subject of the verb ‘ wrote,” according
+to Rule I. (Quote.)
+
+“Who wrote the letter?” ‘‘Who” is an interrogative pro-
+noun, relating to some noun contained in the answer, and not
+yet given; its gender, number, and person, therefore, cannot be
+determined; it is in the nominative case, subject of the verb
+“wrote,” according to Rule I. (Quote.)
+
+‘IT do not know who wrote it.” ‘‘ Who” is a responsive pro-
+noun, not relating to any word, either antecedent or subsequent;
+its gender, number, and person, cannot be determined; it is in
+the nom. ¢., subject of the verb “‘ wrote,” according to Rule I.
+
+SYNTAX. 101
+
+Exercises.
+
+Parse all the Pronouns in the following sentences:
+
+John sold his colt to his brother.
+Lucy gave her book to her cousin.
+While Charles was at school he wrote a letter to his brother.
+
+The boy was arrested by the officer who detected him in the
+act.
+
+I lost my knife in the woods.
+
+The general, who knew the treachery of the enemy, cautioned
+his troops of their danger.
+
+The boy who studies will improve.
+George received the letter which Charles wrote to him.
+Trust not him whose friendship is bought.
+
+‘* We come to you to complain of your soldiers; they have de-
+stroyed our playground. We requested them not to disturb it,
+but they called us rebels, and told us to help ourselves if we
+could.”
+
+The regiment is now in winter quarters, but it will soon be or-
+dered to the front.
+
+The captain reproved the company because they came without
+their muskets.
+
+Mary wrote to Charles and John, and advised them to return
+to their homes.
+
+He and Lucy are in the city, for I saw them.
+
+The captain and the crew were nearly exhausted when they
+were discovered.
+
+He remembered his benefactor and friend, and loved him for
+his kindness.
+
+The tyrant and coward is despised by all that know him.
+
+Charles wrote to his friend and playmate, and promised to
+visit him. |
+
+Neither Mary nor Lucy studied her lesson.
+
+Either the officer or the.men have failed to perform their duty.
+9*
+
+102 ELEMENTARY GRAMMAR.
+
+Henry and I took our books to school with us.
+Mother and [ took our friends with us to see the painting.
+You and Henry must study your lessons.
+
+To swear is as impolite as it is wicked.
+
+It is snowing very fast.
+
+It is useless to search further.
+
+Who broke the slate? John.
+
+Who won the prize? Mary.
+
+Who recited the lesson?
+
+Whose book was lost?
+
+I do not know who recited the lesson.
+
+I cannot tell whose book was lost.
+
+You may do what you please, say whatever you will, and take
+whatsoever you like, but what you do, or whatever you say, and
+whatsoever you take, you must account for.
+
+Review.
+
+Parse, in the foregoing exercises, all the Nouns, Prepositions,
+and Verbs.
+
+SYNTAX. 103
+
+RULE (TX.
+
+An Article belongs to the Noun which it qualifies
+or points out.*
+NOTES.
+
+The noun to which the article belongs is sometimes omitted. In
+that case, supply the noun, and parse the article according to the
+Rule, as belonging to the noun thus supplied. Thus, ‘‘Turn neither
+to the right [hand], nor to the left segues ” “Henry the Eighth
+[king of that name] was then reigning.”
+
+A is often an abbreviation for some other short aca at, mM,
+on, etc.; as, ‘‘ His greatness is a ripening.” In such cases it is not
+an article, but a preposition, and is to be parsed accordingly.
+
+Model for Parsing.
+
+“‘ James wrote a letter.” ‘ A” is the ind. art., and belongs to
+the noun “letter,” according to Rule [X. (Quote.)
+
+Exercises.
+
+Parse the Articles in the following sentences:
+
+A book. A good man. The new coat. The fast horse.
+In crossing a bridge, you must always keep to the right.
+James the Second was banished from the kingdom.
+
+Give glory to God in the highest.
+
+The poor have claims on the rich.
+
+The less you spend the more you will have.
+
+Review.
+
+Parse, in the foregoing ERORUIcs, all the Nouns, Pronouns,
+Prepositions, and Verbs.
+
+* Note.—It might perhaps be more scientific to say, ‘The Article is con-
+nected syntactically with the Noun which it qualifies or points out.” But
+the rule as given is easier for the memory, and gives substantially the same
+idea to the young learner, the only object in either case being to accustom
+him to the necessity of pointing out the noun to which the Article is thus
+related.
+
+104 ELEMENTARY GRAMMAR.
+
+ROUGE (x:
+
+An Adjective belongs to the Noun or the Pronoun
+which tt qualifies.*
+
+NOTES.
+
+The noun to which the adjective belongs is sometimes omitted ;
+as, ‘‘Of two evils, choose the least . . . .” In such cases, supply
+the omission, and parse the adjective according to the Rule, as
+belonging to the noun thus supplied.
+
+An adjective sometimes qualifies an infinitive mood, or a part
+of a sentence, used as a noun; as, ‘To play is pleasant.” ‘To
+
+use profane language is both foolish and wicked.” In such cases —
+
+the adjective should be parsed as belonging to the infinitive
+mood, or the part of a sentence. .
+
+Model for Parsing.
+
+“James writes a long letter. ‘‘ Long” is an adj., in the pos.
+deg., compared long, longer, longest, and belongs to “letter,”
+which it qualifies or describes, according to Rule X. (Quote.)
+
+“Of two evils, choose the least.” ‘‘ Least” is an adj., in the
+superlative deg., (little, less, least,) and belongs to ‘‘evil” under-
+stood, ‘vhich it qualifies or describes, according to Rule X.
+
+(Quote. )
+
+“To play is pleasant.” ‘‘Pleasant” is an adj., pos. deg.,
+(pleasant, more pleasant, most pleasant,) and belongs to ‘To
+play,” a verb in the infin. m., used as a noun, which it qualifies
+or describes, according to Note under Rule X. (Quote the Note.)
+
+EXereises.
+Parse the Adjectives in the following sentences :
+A large reward was offered.
+John is a rapid writer.
+She is a good girl.
+John is a better writer than Charles.
+
+* See Note on page 103.
+
+Sin Aes” 105
+
+The darkest night will pass away.
+
+The example is not difficult.
+
+The train went to New York at a rapid rate.
+
+His new slate was broken into many small pieces.
+A merry heart maketh a glad countenance.
+Charles is the most industrious boy in his class.
+Mary is a better writer than Charles.
+
+The poor have claims upon the rich.
+
+In crossing a bridge keep to the right.
+
+.Henry the Eighth was then on the throne.
+James the Second was banished from the kingdom. ©
+The less you spend, the more you will have.
+
+To steal is wicked.
+
+To eat unripe fruit is injurious.
+
+The window is so located that you can see the beautiful new
+houses on the opposite side of the river.
+
+Review.
+
+In the foregoing exercises, parse all the Nouns, Pronouns,
+Prepositions, Articles, and Verbs.
+
+106 ELEMENTARY GRAMMAR,
+
+RULE! AT
+
+An Adjective Pronoun belongs to the Noun or the
+
+Pronoun which tt qualifies or points out.*
+NOTES.
+
+The Distributives and Demonstratives agree in number with
+the nouns to which they belong; as, ‘‘7hzs sort of persons,” not
+‘These sort.” The distributives, each, every, either, neither, are
+all singular. Of the demonstratives, this and that are singular,
+these and those plural.
+
+The noun is often understood after adjective pronouns. In
+such cases, supply the noun, and parse as usual; as, ‘‘ Let each
+EDO HIS duby.’”
+
+Model for Parsing.
+
+‘“‘ James wrote this letter.” ‘‘This” is a dem. adj. pron., be-
+longing to ‘‘ letter,” according to Rule XI. (quote), and is in the
+singular number, to agree with “letter,” according to Note under
+Rule XI. (Quote.)
+
+Exercises.
+
+Parse the Adjective Pronouns in the following sentences:
+
+Those men only are great who are good.
+This house belongs to my father.
+
+That style of dress is admired.
+
+Those books are not in their places.
+Such boys are worthy of respect.
+
+Some rivers are shallow.
+
+Give me the other hat.
+
+Every station in life has its cares.
+
+All men must die.
+
+Each boy took his book and went home.
+Neither of the boys have arrived.
+
+That horse which you see is mine.
+
+* See Note on page 108,
+
+SYNTAX. 107
+
+That statement is not correct.
+
+John, you can take one book, and Mary can take the other.
+Such conduct deserves reprootf.
+
+Both boys have arrived in time.
+
+This knife was given to me by my brother.
+
+These books were purchased for our library.
+
+Some live in poverty, some in wealth.
+
+Review.
+
+Parse, in the foregoing exercises, all the Nouns, Pronouns,
+Prepositions, Articles, Adjectives, and Verbs.
+
+108 ELEMENTARY GRAMMAR.
+
+RULE 211,
+
+A Participle belongs to the Noun or the Pronoun
+which tt qualifies.*
+
+NOTES.
+
+1. The participle is often used as a noun, either in the nomina-
+tive case or in the objective; as, ‘‘ Writing letters is easier than
+writing compositions’ (nom.); ‘‘In wreting letters he soon be-
+came expert” (obj.). In these instances, the participle, as a part
+of the verb, retains its government of the objective.
+
+2. The participle used as a noun, is frequently found govern-
+ing another noun in the possessive case; as, ‘‘ Much depends on
+John’s writing his letters rapidly.”
+
+3. The participle is sometimes used simply as a noun; as,
+“Avoid foolish talking and jesting.”” When so used, parse the
+word as a participial noun.
+
+4. The participle is sometimes used simply as an adjective; as,
+“Singing birds abound in summer,” ‘‘He is a learned man.”
+When a participle is so used, call it a participial adjective, and.
+parse it as any other adjective.
+
+5. A participle of the verb to be may have a noun or a pro-
+noun after it in apposition with the one before it: as, ‘‘ Thomas,
+being an apt scholar, won the favor of his teacher.” This rule
+applies also to the participles of many other intransitive verbs,
+
+and likewise to the participles of the passive voice of some tran-
+
+sitive verbs; as, ‘‘Solomon, while reigning 47mg, built the tem-
+ple,” ‘‘ Washington, being appointed commander-in-chief, pro-
+ceeded at once to Cambridge.”
+
+Model for Parsing.
+
+‘“‘The child, seeing its mother, ran to meet her.” “Seeing” is
+the present participle, active, of the irregular transitive verb ‘“‘to
+see,” (see, saw, seen,) and belongs to ‘“‘child,” according to Rule
+XII. (Quote.) .
+
+* See Note on page 108.
+
+\
+
+rR EM he oe
+
+ae Oy
+
+SYNTAX. ~ 109
+
+“Writing letters is easier than writing compositions.” ‘ Writ-
+ing” is the pres. part., active, of the irreg. trans. verb ‘“‘to write,”
+(write, wrote, written.) It is here used as a noun, according
+
+to anote under Rule XII. (Quote the Note.) It is in the nom.
+
+case, subject of the verb “is,” according to Rule I. (Quote.)
+“ Avoid foolish talking and jesting.” ‘Talking” is a parti-
+cipial noun, in the neut. gen., sing. numb., 3d per., obj. c., object
+
+of the verb “avoid,” according to Rule III. (Quote.)
+
+“Singing birds abound insummer.” ‘‘Singing” is a participial
+adj., not.compared, and belongs to ‘birds,’ which it qualifies
+or describes, according to Rule X.
+
+“James, having written a letter, sent it to the post-office.”
+“Having written” is the comp. perf. part., active, of the irr.
+trans. verb ‘‘to write” (write, wrote, written), and belongs to
+
+“James,” according to Rule XII. (Quote.)
+
+Heecreises.
+Parse all the Participles in the following sentences :
+
+The snow, falling rapidly, soon covered the ground.
+
+A man deserving blame should be censured.
+
+The laborer, fatigued with the toil of the day, slept soundly.
+The exercise written by Charles was admired by all.
+
+The boys, having recited their lessons, were dismissed.
+
+. John, having written his composition, gave it to the teacher.
+
+__ The day being far spent, we returned to our homes.
+
+_= The lesson having been recited, the class was dismissed.
+
+The fire having been extinguished, the crowd dispersed.
+Honor defined by Cicero is the approbation of good men.
+
+William, being successful in his examination, expects promo-
+tion.
+
+William, having been successful in his examination, was pro-
+moted.
+10
+
+110 ELEMENTARY GRAMMAR.
+
+William, having succeeded in his examination, expects to. be
+promoted.
+
+Reading good books promotes knowledge.
+
+In catching fish he soon became expert.
+
+Charles takes pleasure in studying his lessons.
+
+Much depends on Mary’s reaching the city promptly.
+
+John’s writing is worthy of commendation.
+
+The astronomer spent the night in studying the heavens.
+
+Loud talking and laughing are rude.
+
+Bryant is a distinguished poet.
+
+The roaring lion is an object of fear.
+
+Charles being the first boy to arrive, was rewarded.
+
+Mary being an industrious girl was commended by her teacher.
+
+He being an old offender, was sentenced to imprisonment.
+
+The fire breaking out in the night, and the night being dark,
+the house was destroyed, the frightened inmates barely escaping
+with their lives, with their clothing scorched, and with limbs
+broken or bodies mutilated. ,
+
+Review.
+
+Parse, in the foregoing exercises, all the Nouns, Pronouns,
+Prepositions, Articles, Adjectives, and Verbs.
+
+ma ae YS ba ‘ “ * a
+_—- a ’ ‘1, ew = -
+SE Taras Bl a SE ee se in tt
+
+Ta Se ee
+
+SYNTAX. 111
+
+RULE? XTi.
+
+An Adverb belongs to the Verb, Adjective, or
+other Adverb which tt qualifies.*
+
+NOTES.
+
+There is often used as a mere expletive, its only force being to
+introduce the verb before its nominative; as, ‘“‘ There is truth in
+the old proverb.” In such sentences, there does not mean in
+that place.
+
+Nay, no, yea, yes, expressing simply negation or affirmation,
+contain in themselves a complete sense, and do not belong to any
+verb. The same is true of Amen. In parsing each word state
+merely that they are adverbs.
+
+Adverbs should not be used where adjectives are required,
+that is, to qualify nouns or pronouns. Thus, “The dress looked
+pretty,” not “prettily.” ‘‘Pretty,” here, is an adjective describ-
+ing “dress,” and does not qualify the verb “looked.” It does
+not express the manner of looking.
+
+Sometimes an adverb is preceded by a preposition, as, at once,
+for ever, etc. In such cases the two words should be taken
+together and called an adverb.
+
+Model for Parsing.
+
+‘James wrote a letter hastily.” ‘Hastily” is an adv. in the
+pos. deg. (hastily, more hastily, most hastily), and belongs to the
+verb ‘“‘ wrote,” according to Rule XII. (Quote.)
+
+“A thoroughly bad man.” ‘ Thoroughly” is an adv. in the
+pos. deg. (thoroughly, more thoroughly, most thoroughly), and
+belongs to the adj. ‘‘ bad,” according to Rule XII. (Quote.)
+
+Exercises.
+Parse all the Adverbs in the following sentences :
+Live temperately.
+She is particularly careful.
+
+* See Note, page 103.
+
+112 ELEMENTARY GRAMMAR, .
+
+This horse runs very rapidly.
+
+The most cautious are often deceived.
+
+Thus the farmer sows his seed.
+
+Great men are greatly admired. ;
+How can you behave so badly?
+Why do you neglect your duty? ,
+
+A smart child may learn more rapidly than is desirable. 4
+Remember now thy Creator in the days of thy youth.
+
+You must try to write more carefully; you are the least careful
+writer in the class.
+
+Cherish me kindly, cheer my young heart,
+I will follow thee ever, and never depart.
+
+There was a man sent from God whose name was J ohn,
+There is truth in the old proverb. |
+There is nothing to be seen.
+Did you recite the lesson? Yes.
+
+Has Charles returned from school? No.
+The boys have arrived at last. |
+They returned at once to their homes.
+
+A good name endureth for ever.
+
+It is exceedingly cold, the north wind blows keenly! Ihave
+seldom experienced so severe a winter.
+
+Review.
+
+In the preceding exercises, parse all the Nouns, Pronouns,
+Prepositions, Articles, Adjectives, and Verbs.
+
+BY MPARL © 113
+
+RULE XIV.
+
+The Infinitive Mood depends upon some Verb,
+Adjective, or Noun.
+
+Explanation. — “‘ He delights to tease his companions.” Here, “ to
+tease”? depends on the verb “delights.” That is the word with whicr
+it must be connected in order to make sense.
+
+“ His time to die had not yet come.” In this example, “to die” de-
+pends on the noun “‘ time.”
+
+“He was too stupid to learn.” Here, “‘to learn” depends on the
+adjective “ stupid.”
+
+NOTES.
+
+1. The preposition to, which is used in making the form called
+the infinitive mood, and which is generally called the sign of the
+infinitive mood, is not to be parsed by itself, but with the verb.
+
+2. To, the sign of the infinitive, is generally omitted after the
+active voice of the verbs bid, dare (to venture), need, make, see,
+hear, feel, let, and some others; as, ‘‘I saw him (to) do it.” In
+the passive voice of these verbs, however, the “to” is generally
+expressed; as, ‘‘ He was seen ¢o do it.”
+
+3. The infinitive mood is frequently used as a noun, and at the
+same time retains its government of the objective case. Thus,
+“To write letters is easy.” Here, “to write,” as a noun, is
+nominative to “is,” and at the same time, as a verb, governs
+‘* letters.”
+
+Model for Parsing.
+
+‘‘ Charles expects to win the prize.” ‘To win” is a trans. verb,
+irr. (win, won, won), act. v., inf. m., pres. t., and depends upon
+the verb ‘‘ expects,” according to Rule XIV. (Quote.)
+
+Exercises.
+
+Parse all the Infinitives in the following sentences:
+
+Charles expects to return to school.
+Mary tried to catch the train.
+
+Henry wanted to borrow my knife.
+10* H
+
+=
+
+114 ELEMENTARY GRAMMAR,
+
+The sinner was not prepared to die.
+He was too scurrilous to be tolerated in decent society. —
+The President was to have been inaugurated last Friday.
+She seemed to love her child, and yet she was seen to treat it
+badly. ?
+
+It was too late to travel any farther.
+
+It is too early to visit her.
+
+It was too wet to go out.
+
+IT saw him take the book.
+
+I heard him recite the lesson.
+
+They need not call her.
+
+I bade him go home.
+
+Employ your time judiciously, and you will not find it pass so
+slowly.
+
+To write letters is easy.
+
+To write a good composition requires care.
+
+To love our friends is natural.
+
+The difference in their conduct makes us approve the one and
+condemn the other.
+
+Review.
+
+Parse all the other words in the foregoing exercises, except the
+Conjunctions.
+
+;
+
+.
+
+4
+*
+.
++
+i.
+;
+bs
+“
+
+SYNTAX, 115
+
+RULE XV:
+
+A Conjunction connects the Words, Sentences, or
+
+Parts of Sentences, between which it stands.
+NOTES.
+
+The words connected by conjunctions must be of the same
+class. Nouns are connected ‘vith nouns, adjectives with adjec-
+tives, verbs with verbs, adverbs with adverbs, etc. Nouns and
+pronouns are here counted as belonging to one class.
+
+Words and clauses are often connected, not by a single con-
+junction, but by two conjunctions, or by a conjunction and an
+adverb, corresponding to each other; as, ‘Give me neither’
+poverty nor riches.”
+
+Model for Parsing.
+
+“James and John are brothers.” “And” is a conjunction,
+connecting ‘‘James”’ and ‘John,” according to Rule XV.
+(Quote.) |
+
+“Tt is neither cold nor hot.” “Neither” and ‘“‘nor” are cor-
+responding conjunctions, connecting ‘‘cold” and ‘‘hot,” accord-
+ing .to a note under Rule XV. (Quote.)
+
+Exercises.
+
+Parse all the Conjunctions in the following sentences:
+
+John and James have gone to school.
+
+The farmer sold his wheat and corn to the miller.
+
+Forget the faults of others, and remember your own.
+
+You shall never fail, if you do these things. |
+
+Though he slay me, yet will I trust in him.
+
+He is a friend to-day, but may be an enemy to-morrow.
+As he treats others, so will he be treated by them.
+Washington was a better man than Napoleon.
+
+Unless it blossom in the spring, the tree will not bear fruit.
+The hour has arrived, therefore we must depart.
+
+Review.
+Parse all the other words in the foregoing sentences.
+
+116 ELEMENTARY GRAMMAR.
+
+RULE XVI.—INTERJECTIONS.
+
+An Interjection has no dependence wpon other
+
+words.
+NOTES.
+
+In parsing an interjection, all that is necessary is to tell what
+part of speech it is.
+
+Sometimes interjections have the appearance of governing the
+objective case; as, ‘‘Ah, me!” But such sentences are always
+elliptical, some verb or ie sea being understood; as, ‘Ah!
+
+(pity) me.”
+
+“77
+
+ANY)
+NY Va. Ny NY \
+
+f
+.
+7
+
+,
+
+REVIEW EXERCISES.
+
+—-0£93 co———-
+
+1. Write three sentences, each containing a noun used as the
+subject of a verb. |
+
+2. Write three sentences, each containing a pronoun used as
+the subject of a verb.
+
+8. Write three sentences, each containing a complex name
+used as the subject of a verb.
+
+4, Write three sentences, each containing a verb in the infini-
+tive mood used as a noun, subject of a verb.
+
+5. Write three sentences, each containing a noun in the nom-
+inative case independent.
+
+6. Write three sentences, each containing a noun in the nom-
+inative case absolute.
+
+7. Write three sentences, each containing a verb in the plural
+number, having two or more subjects connected by “and.”
+
+8. Write three sentences, each containing a verb in the singular
+number, having two or more subjects connected by ‘‘ and.”
+
+9. Write three sentences, each containing a verb in the singular
+number, having two or more subjects connected by ‘‘o7” or
+mor.”
+
+10. Write three sentences, each containing a verb in the plural
+number, having two or more subjects connected by “or” or
+“nor.”
+~ 11. Write three sentences, each containing a verb in the infin-
+itive mood used as a noun in the objective case.
+
+at
+117
+
+118 ELEMENTARY GRAMMAR.
+
+12. Write three sentences, each containing a part of a sen-
+tence used as a noun in the objective case.
+
+13. Write three sentences, each containing a preposition fol-
+lowed by an adjective without any noun expressed.
+
+14. Write three sentences, each containing a noun in the
+objective case, object of some omitted preposition.
+
+15. Write three sentences, each containing a noun in the pos-
+sessive case with the governing noun omitted.
+
+16. Write three sentences, each containing a complex name in
+the possessive case.
+
+17. Write three sentences, each containing a complex title in
+the possessive case.
+
+18. Write three sentences, each containing a noun in the pos-
+sessive case governed by a participle.
+
+19. Write three sentences, each containing a noun in apposi-
+tion with another noun in the nominative case.
+
+20. Write three sentences, each containing a noun in apposi-
+tion with another noun in the objective case.
+
+21. Write three sentences, each containing the verb ‘“ to be”
+used as a noun, and having a noun or pronoun after it used
+indefinitely.
+
+22. Write three sentences, each containing a pronoun standing
+for a collective noun.
+
+93. Write three sentences, each containing a pronoun in the
+plural number standing for two or more words connected by
+“and.” |
+
+24. Write three sentences, each containing a pronoun in the
+singular number standing for two or more words connected by
+66 and.”
+
+25. Write three sentences, each containing a pronoun in the
+singular number standing for two or more words connected by
+6 op 9 or “nor,”
+
+26. Write three sentences, each containing a pronoun in the
+
+plural number standing for two or more words connected by
+66 or >) or “mor.”
+
+_— a ie
+
+SYNTAX. 119
+
+27. Write three sentences, each containing a pronoun standing
+for two or more words of different persons connected by ‘‘and.”
+
+28. Write three sentences, each containing a pronoun standing
+for a verb in the infinitive mood used as a noun.
+
+29. Write three sentences containing the pronoun ‘“7¢” used
+‘indefinitely. }
+
+30. Write twelve sentences, three of each class (see page 98),
+each containing the pronoun “that” used instead of ‘“‘ who” or
+‘* which.”
+
+31. Write three sentences, in each of which omit the relative
+pronoun.
+
+32. Write three sentences, in each of which omit the antece-
+dent.
+
+33. Write three sentences, each containing an article, and
+omitting the noun to which the article belongs.
+
+34. Write three sentences, ea@h containing an adjective, and
+omitting the noun which the adjective qualifies.
+
+35. Write three sentences, each containing an adjective quali-
+fying a verb in the infinitive mood used as a noun.
+
+36. Write three sentences, each containing an adjective pro-
+noun qualifying some omitted noun.
+
+37. Write three sentences, each containing a participle used as
+a noun in the nominative case, and retaining its government of
+the objective case.
+
+38. Write three sentences, each containing a participle used as
+a noun in the objective case, and retaining its government of the
+objective.
+
+39. Write three sentences, each containing a participle used as
+a noun, and governing another noun in the possessive case.
+
+40. Write three sentences, each containing a participle used
+simply as a noun.
+
+41. Write three sentences, each containing a participle used as
+an adjective.
+
+42. Write three sentences, each containing a participle of the
+
+120 ELEMENTARY GRAMMAR.
+
+verb ‘‘¢o be,” having a noun or pronoun after it in apposition
+with one before it.
+
+43. Write three sentences, each containing a preposition and
+an adverb to be taken together as an adverb.
+
+44, Write three sentences, each containing a verb in the infini-
+tive mood depending upon some other verb.
+
+45. Write three sentences, each containing a verb in the infini-
+tive mood depending upon an adjective. |
+
+46. Write three sentences, each containing a verb in the infini-
+tive mood depending upon a noun.
+
+47. Write three sentences, each containing a verb in the infini-
+tive mood, with the sign of the infinitive omitted.
+
+48. Write three sentences, each containing a verb in the infini-
+tive mood used as a noun in the nominative case, and retaining
+its government of the objective.
+
+j
+
+EXERCISES
+
+IN THE
+
+CORRECTION OF FALSE SYNTAX.
+
+Sage OO, ees
+
+“ John and me went home.”’
+
+This sentence is incorrect, because ‘‘ me,” one of the subjects
+of the verb “‘ went,” is in the objective case. It should be in the
+nominative case, according to Rule I. (Quote.) The sentence
+should read, ‘“‘ John and I went home.”
+
+‘The days of man is but as grass.”
+
+This sentence is incorrect. ‘“/s’’ is singular. It. should be
+plural, because its subject, ‘‘ days,” is plural, according to Rule
+II. (Quote.) The sentence should read, ‘‘ The days of man are
+but as grass.” .
+
+‘Life and death is in the power of the tongue.”
+
+This sentence is incorrect. ‘Js” is singular. It should be
+plural, because it has two subjects connected by ‘‘ and,” accord-
+ing to a note under Rule If. (Quote the Note.) The sentence
+should read, ‘‘ Life and death are in the power of the tongue.”
+
+‘He and they we know, but who art thou?”
+
+This sentence is incorrect. ‘‘ He” and “they” are in the nom-
+inative case. They should be objective, because they are the
+objects of the verb “‘ know,” according to Rule III. (Quote.)
+The sentence should read, “Him and them we know, but who
+art thou? ” .
+
+11 | 121
+
+193 ELEMENTARY GRAMMAR.
+
+‘‘The property was divided between you and I.”
+
+This sentence is incorrect, because “JZ,” one of the objects of
+the preposition “‘ between,” is in the nominative case. It should
+be objective, according to Rule IV. (Quote.) The sentence
+should read, ‘“‘ The property was divided between you and me.”
+
+‘““Tt was him that did it.” |
+
+This sentence is incorrect. ‘‘ Him” is in the objective case.
+It should be nominative, because the verb ‘‘to be” has the same
+case after it as before it, according to Rule VI. (Quote.) The
+sentence should read, “It was he that did it.”
+
+‘“‘ Neither the captain nor the crew knew his danger.”
+
+This sentence is incorrect. ‘‘ His” is singular. It should be
+plural, because it stands for two nouns connected by “nor,” one
+of which is plural, according to a note under Rule VIII. (Quote
+the Note.) The sentence should read, ‘‘ Neither the captain nor
+the crew knew their danger.”
+
+Correct the following sentences, giving reasons for the corrections:
+
+. Him and her are of the same age.
+
+. They and us agreed to do it.
+
+. You and them had a long dispute.
+
+. Mary and me have studied our lessons.
+. John and him have gone home.
+
+Mary and her have finished their work.
+You was there when we left.
+
+. The boys loves to play.
+
+CMO TH oT FP wo WNW
+
+. Great pains has been taken to little purpose.
+
+i
+O
+
+. He dare not act contrary to his instructions.
+. A variety of pleasing objects charm the eye.
+
+Rede heat
+ho Hs
+
+. The people has no opinion of their own.
+
+. The class have been dismissed.
+
+ee ea
+— cw
+
+. Neither precept nor discipline are so forcible as example.
+. Either thou or I art mistaken.
+
+pA
+Or
+
+Se Seer ae, eer ee
+
+CORRECTION OF FALSE SYNTAX. 123
+
+16. Either I or thou am mistaken.
+17. To play in the mud, and to walk through the wet grass,
+soils the clothes.
+
+18. Neither John nor James have arrived.
+19. Ignorance or prejudice have caused this mistake.
+
+20. John and James was both there.
+
+21. He or I is to go.
+
+22. He that is idle, reprove sharply.
+
+23. He that committed the offence you should punish.
+
+24. The teacher taught him and | to read.
+
+25. Who did you see at school?
+
+26. Who do you want?
+
+27. He that is needy you should assist.
+
+28. Let you and I the battle try.
+
+29. Who did you receive the intelligence from?
+
+30. Who did you inquire for?
+
+31. Nothing has been heard of he or his brother.
+
+32. We miss our classmate, he who was so kind.
+
+33. His aunt, her who was here, died suddenly.
+
+34. My brother, him you saw yesterday, lives in that house.
+35. We should praise God, He who has given us all things. .
+36. It was her that told the story.
+387. It was him that told the story.
+
+38. It was them that we saw.
+
+39. It was me that wrote the letter.
+
+40. The Board of Education has just published their annual
+report.
+
+41. Vice and ignorance have cast its blight over thousands.
+42. A tree is known by his fruit.
+
+43. If you have a pen or a pencil lend them to me.
+
+44. He or his brother lost their title.
+
+45. The tiger is a beast of prey who destroys without pity.
+
+124
+
+46.
+AT.
+48.
+49.
+50.
+51.
+52.
+53.
+54.
+5d.
+56.
+57.
+58.
+59.
+60.
+61.
+62.
+
+ELEMENTARY GRAMMAR.
+
+This is the same picture which we saw before.
+
+All which beauty, all which wealth e’er gave.
+
+Who, who has any sense of duty would act thus.
+The lady and the lap dog which we saw at the window.
+The infant whom you see in the cradle is very sick.
+This is the friend which I love.
+
+Those sort of goods are not durable.
+
+Those sort of people fear nothing.
+
+These kind of persons cannot be trusted.
+
+Much depends on Mary reaching the city promptly.
+This apple tastes sweetly.
+
+He lives in a manner suitably to his station in life.
+He hoped for a soon and prosperous issue to the war.
+They need not to call her.
+
+I dare not to proceed so hastily.
+
+He was seen write the letter.
+
+He bade me to go home.
+
+TE ee No ee TS Se Se Se OMe Price See ee IN
+
+SELECTIONS FOR PARSING.
+
+——_0 £420-0-———_
+
+1. A sorr answer turneth away wrath; but grievous words
+stir up anger.
+
+2. A good name is better than precious ointment.
+
+8. A good man obtaineth favor of the Lord.
+
+4, A righteous man regardeth the life of his beast; but the
+tender mercies of the wicked are cruel.
+
+5. As thy days, so shall thy strength be.
+
+6. A man that hath friends must show himself friendly; and
+there is a friend that sticketh closer than a brother.
+
+7. A word fitly spoken is like apples of gold in pictures of
+silver. |
+
+8. A wise son heareth his father’s instruction; but a scorner
+heareth not rebuke.
+
+9. And if the blind lead the blind, both shall fall into the
+ditch.
+
+10. And we know that all things work together for good to
+them that love God.
+
+11. A wise son maketh a glad father; but a foolish man
+despiseth his mother.
+
+12. A good name is rather to be chosen than great riches, and
+loving favor rather than silver and gold.
+
+13. A prudent man foreseeth the evil and hideth; but the sim-
+ple pass on and are punished.
+IS leg 125
+
+126 ELEMENTARY GRAMMAR.
+
+14. A little that a rats ais man hath i is better than the riches
+of many wicked.
+
+15. A false balance is an abomination to the Lord; but a just
+weight is his delight.
+
+16. A fool uttereth all his ha but a wise man keepeth it till
+afterwards.
+
+17. A merry heart doeth good like a medicine; but a broken
+spirit drieth the bones.
+
+18. A wise man will hear and will increase learning.
+
+19. An angry man stirreth up strife; and a furious man
+aboundeth in transgression.
+
+20. All things whatsoever ye would that men should do to
+you, do ye even so to them.
+
+21. Your voiceless lips, O flowers! are living preachers,
+Each cup a pulpit, and each leaf a book,
+Supplying to my fancy numerous teachers
+From loveliest nook.
+
+22. In the world’s broad field of battle,
+In the bivouac of Life,
+Be not like dumb, driven cattle:
+Be a hero in the strife.
+
+23. The spacious firmament on high,
+With all the blue ethereal sky,
+And spangled heavens, a shining frame,
+Their great Original proclaim.
+
+24. Be still, sad heart! and cease repining;
+Behind the clouds is the sun still shining;
+Thy fate is the common fate of all; |
+Into each life some rain must fall,—
+Some days must be dark and dreary.
+
+25, Art is long, and time is fleeting,
+And our hearts, though stout and brave,
+Still, like muffled drums, are beating
+Funeral marches to the grave.
+
+ee pa te Se
+
+27.
+
+28.
+
+29.
+
+31.
+
+SELECTIONS FOR PARSING. 127
+
+26. Judge not the Lord by feeble sense,
+But trust him for his grace;
+Behind a frowning providence
+He hides a smiling face.
+
+Labor is life! ’T is the still water faileth;
+
+Idleness ever despaireth, bewaileth ;
+
+Keep the watch wound, for the dark rust assaileth;
+Flowers droop and die in the stillness of noon.
+
+Beside the bed where parting life was laid,
+
+And sorrow, guilt, and shame by turns dismayed,
+The reverend champion stood. At his control
+Despair and anguish fled the struggling soul,
+Comfort came down, the trembling wretch to raise,
+And his last faltering accents whispered praise.
+
+&
+
+To him who in the love of Nature holds
+Communion with her visible forms, she speaks
+A various language; for his gayer hours
+
+She has a voice of gladness, and a smile
+
+And eloquence of beauty, and she glides
+
+Into his darker musings, with a mild
+
+And healing sympathy, that steals away
+
+Their sharpness, ere he is aware.
+
+. So live, that, when thy summons ¢omes to join
+
+The innumerable caravan, that moves
+
+To that mysterious realm where each shall take
+
+His chamber in the silent halls of death,
+
+Thou go not like the quarry-slave at night
+
+Scourged to his dungeon, but, sustained and soothed
+By an unfaltering trust, approach thy grave
+
+Like one who draws the drapery of his couch
+About him, and lies down to pleasant dreams.
+
+Beside yon straggling fence that skirts the way,
+With blossomed furze unprofitably gay,
+
+There, in his noisy mansion, skilled to rule,
+The village master taught his little school.
+
+128
+
+32.
+
+ELEMENTARY GRAMMAR,
+
+A man severe he was, and stern to view;
+
+I knew him well, and every truant knew:
+Well had the boding tremblers learned to trace
+The day’s disasters in his morning face;
+
+Full well they laughed, with counterfeited glee,
+At all his jokes, for many a joke had he;
+
+Full well the busy whisper, cireling round,
+Conveyed the dismal tidings when he frowned.
+
+Abou Ben Adhem (may his tribe increase!)
+
+Awoke one night from a sweet dream of peace,
+And saw, within the moonlight in his room,
+Making it rich, and like a lily in bloom,
+
+An angel writing in a book of gold.
+
+Exceeding peace had made Ben Adhem bold,
+
+And, to the Presence in the room, he said:
+
+‘What writest thou?” The vision raised its head,
+And, with a look made all of sweet accord,
+Answered, ‘‘The names of those who love the Lord!”
+‘‘ And is mine one?” asked Abou. “ Nay, not so,”
+Replied the angel. Abou spake more low,
+
+But cheerily still; and said, “I pray thee, then,
+Write me as one that loves his fellow-men.”
+
+The angel wrote, and vanished. The next night
+
+It came again, with a great wakening light,
+
+And showed the names whom love of God had bless’d; |
+
+And, lo! Ben Adhem’s name led all the rest!
+
+THE END.
+
+Fae Soe, 2 ee ae FOO ae Khe
+
+
+
+
+
+
+
+
+
+
+
+- —-—~-+
+
+MILI
+
+I |
+0003 2320491 ©
+
+Se " oe
+
+Schools, Acailemies, aul Colleges, :
+
+Chase & Stuart’s Classical Series.
+
+Crittenden’s Commercial Arithmetie.
+
+Gregory’s Christian Ethics,
+
+Groesbeck’s Practical Book-Keeping Series.
+_Hart’s Language Lessons.
+
+Hart’s Elementary English Grammar. |
+-_Hart’s English Grammar and Analysis.
+
+Hart’s First Lessons in Composition.
+- Hart’s Composition and Rhetoric.
+
+Hart’s Short Course in Literature.
+
+Hart’s English _ Literature.
+
+Hart’s American Literature.
+
+Hart’s Class- Book of Poetry.
+
+Hart’s ‘‘In the School Room.”’’
+
+Hart’s Constitution of the United States:
+
+Houston’s Physical Geography.
+
+Lawrence’s Model Speaker. :
+
+Martindale’s First Lessons in Natural Philosophy.
+_Martindale’s Anatomy, Physiology, and Hygiene.
+_ Martindale’ s History of the United States. —
+--Singer’s Model Series of Arithmetics.
+~The Model School Diary. |
+
+The Model Monthly Rep: rt. .
+
+The Model Pocket Regisier and Grade Book.
+
+a)
+i
+*
+Oey Sn,
+bc oan
+
+A “2
+vv a
+
+Vi _ Webb's Model Befiner.
+
+“we Weebb’s Model Etymology.
+
+M Westlake’s 83000 Practice Words.
+
+, Wiilson’s Elementary Algebra. >
+Yi} : oe
+
+For hioth Mer in “regard to our Publications;
+a See address ie
+
+‘ELDREDGE & BROTHER,
+: ee 17 North Seventh Street,
+
+Ve und, ¢
+ot ie ioe PH ptr aS BF iki IA. YG
+* & P f ; heofi=>
+: < 2 \\Y
+\ MGA NG
+SN) * ye. eH Wi) \
+? aA : iy SSS
+Ss: =< z, WL fj —— tis
+@ ‘ss >> S77 a ee : =
+* ¥ , n s H
+. a te Se, #3 p Rf OnE
+

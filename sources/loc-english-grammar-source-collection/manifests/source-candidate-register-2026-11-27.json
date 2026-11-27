@@ -1,0 +1,304 @@
+{
+  "schema_version": "1.0",
+  "review_date": "2026-11-27",
+  "repository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+  "review_run_status": "completed",
+  "review_failures": [],
+  "selection_rule": "New content is eligible for acquisition only when the exact material and scope are supported as public domain or CC0. Public availability and permissive secondary labels are not sufficient.",
+  "acquired_from_this_review": 0,
+  "added_to_training_inputs": 0,
+  "items": [
+    {
+      "id": "princeton-wordnet-3.1",
+      "name": "Princeton WordNet 3.1 database files",
+      "review_origin": "M11 reassessment",
+      "decision": "excluded_not_verified_public_domain_or_cc0",
+      "rights_status": "copyrighted_license_attachment_for_3_1_unverified",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The official license located is labeled for WordNet 3.0; no distinct 3.1 database-archive license or PD/CC0 dedication was verified. AI training is not expressly addressed.",
+      "next_action": "Do not ingest under the current rule. Reconsider only after exact 3.1 rights are established; even then, a copyrighted license would not satisfy the PD/CC0-only preference.",
+      "evidence": [
+        {"title": "WordNet Current Version and Downloads", "url": "https://wordnet.princeton.edu/download/current-version"},
+        {"title": "License and Commercial Use of WordNet", "url": "https://wordnet.princeton.edu/license-and-commercial-use"},
+        {"title": "WordNet Release 3.0 LICENSE", "url": "https://wordnetcode.princeton.edu/3.0/LICENSE"}
+      ]
+    },
+    {
+      "id": "ud-english-ewt",
+      "name": "Universal Dependencies English Web Treebank",
+      "review_origin": "M11 reassessment",
+      "decision": "metadata_only_mixed_source_text_rights",
+      "rights_status": "cc_by_sa_annotations_but_underlying_texts_unresolved",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "CC BY-SA 4.0 covers annotations/database rights, not necessarily the mixed-source text in the CoNLL-U corpus; no separable PD/CC0 corpus was verified.",
+      "next_action": "Keep only as metadata. Do not ingest text-bearing files without exact text-rights clearance or a proven separable PD/CC0 subset.",
+      "evidence": [
+        {"title": "Universal Dependencies v2.19 License Agreement and treebank license table", "url": "https://lindat.mff.cuni.cz/repository/static/license-ud-2.19.html"},
+        {"title": "Universal Dependencies English-EWT repository README", "url": "https://github.com/UniversalDependencies/UD_English-EWT"},
+        {"title": "English Web Treebank LDC2012T13 catalog entry", "url": "https://catalog.ldc.upenn.edu/LDC2012T13"}
+      ]
+    },
+    {
+      "id": "cmudict",
+      "name": "CMU Pronouncing Dictionary",
+      "review_origin": "M11 reassessment",
+      "decision": "excluded_open_copyright_license_not_public_domain",
+      "rights_status": "permissive_copyrighted_material",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The CMU README asserts copyright while allowing unrestricted research or commercial use and requesting origin acknowledgment on redistribution. This is not PD or CC0 and is not an AI-training-specific grant.",
+      "next_action": "Do not ingest under the current PD/CC0-only rule. If the policy later admits permissive copyrighted sources, preserve CMU attribution and notices.",
+      "evidence": [
+        {"title": "CMUdict README at the assessed immutable commit", "url": "https://raw.githubusercontent.com/cmusphinx/cmudict/74790861f652b15e4ac49015a90074ad62a27690/README"},
+        {"title": "CMUdict LICENSE at the assessed immutable commit", "url": "https://raw.githubusercontent.com/cmusphinx/cmudict/74790861f652b15e4ac49015a90074ad62a27690/LICENSE"},
+        {"title": "CMU official CMUdict lookup and about page", "url": "https://www.speech.cs.cmu.edu/cgi-bin/cmudict"}
+      ]
+    },
+    {
+      "id": "berkeley-framenet-1.7",
+      "name": "Berkeley FrameNet 1.7",
+      "review_origin": "M11 reassessment",
+      "decision": "metadata_only_rights_and_component_scope_unresolved",
+      "rights_status": "no_primary_pd_cc0_or_complete_commercial_training_grant_verified",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "Berkeley's request page is not a public license. NLTK's CC BY 3.0 catalog label is secondary and does not verify rights for the exact complete package or embedded source-text excerpts.",
+      "next_action": "Do not acquire under the current rule. Require written rights-holder confirmation for the exact version and all components before reconsideration.",
+      "evidence": [
+        {"title": "FrameNet Data Licensing Request", "url": "https://framenet.icsi.berkeley.edu/data-request"},
+        {"title": "FrameNet data download", "url": "https://framenet.icsi.berkeley.edu/download"},
+        {"title": "NLTK Data catalog, FrameNet 1.7 listing", "url": "https://www.nltk.org/nltk_data/"}
+      ]
+    },
+    {
+      "id": "nist-ai-rmf-glossary",
+      "name": "NIST AI RMF terminology glossary",
+      "review_origin": "M11 reassessment",
+      "decision": "metadata_only_mixed_source_components",
+      "rights_status": "no_blanket_pd_or_cc0_grant_for_live_glossary_verified",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The live beta glossary cites definitions from third-party standards, books, papers, and other sources; the general NIST policy does not clear each component or authorize the complete workbook as PD/CC0.",
+      "next_action": "Keep metadata only. Reconsider only with exact-snapshot and component-level rights evidence.",
+      "evidence": [
+        {"title": "NIST AI Resource Center — Glossary", "url": "https://airc.nist.gov/glossary/"},
+        {"title": "The Language of Trustworthy AI — live published glossary", "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTRBYglcOtgaMrdF11aFxfEY3EmB31zslYI4q2_7ZZ8z_1lKm7OHtF0t4xIsckuogNZ3hRZAaDQuv_K/pubhtml"},
+        {"title": "NIST research-product rights policy", "url": "https://www.nist.gov/open/copyright-fair-use-and-licensing-statements-srd-data-software-and-technical-series-publications"}
+      ]
+    },
+    {
+      "id": "openstax-principles-management",
+      "name": "OpenStax Principles of Management",
+      "review_origin": "M11 reassessment",
+      "decision": "excluded_noncommercial_and_ai_permission_required",
+      "rights_status": "cc_by_nc_sa_4_0_with_title_specific_prior_written_permission_requirement",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The license is noncommercial, and the title notice requires prior written OpenStax permission for LLM training or ingestion.",
+      "next_action": "Do not ingest absent written permission covering the intended use and any third-party components.",
+      "evidence": [
+        {"title": "Principles of Management — official OpenStax book page", "url": "https://openstax.org/details/books/principles-management"},
+        {"title": "Principles of Management — Introduction chapter and reuse notice", "url": "https://openstax.org/books/principles-management/pages/1-introduction"},
+        {"title": "OpenStax licensing information", "url": "https://help.openstax.org/s/article/Licensing-information-of-OpenStax-textbooks"}
+      ]
+    },
+    {
+      "id": "openstax-principles-accounting-v1-v2",
+      "name": "OpenStax Principles of Accounting, Volumes 1 and 2",
+      "review_origin": "M11 reassessment",
+      "decision": "excluded_not_pd_cc0_and_ai_permission_required",
+      "rights_status": "cc_by_nc_sa_4_0; prior_written_ai_permission_required",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "Both volumes are copyrighted noncommercial works; the reviewed title terms do not clear commercial model training or ingestion absent written permission.",
+      "next_action": "Keep out of content inputs. Retain bibliographic metadata only if useful; require written permission and separate component clearance before reconsideration.",
+      "evidence": [
+        {"title": "Principles of Accounting, Volume 1 — official book details", "url": "https://openstax.org/details/books/principles-financial-accounting"},
+        {"title": "Principles of Accounting, Volume 1 — reuse notice", "url": "https://openstax.org/books/principles-financial-accounting/pages/1-why-it-matters"},
+        {"title": "Principles of Accounting, Volume 2 — official book details", "url": "https://openstax.org/details/books/principles-managerial-accounting"}
+      ]
+    },
+    {
+      "id": "sba-business-guide",
+      "name": "U.S. Small Business Administration Business Guide",
+      "review_origin": "M11 reassessment",
+      "decision": "metadata_only_exact_page_scope_unresolved",
+      "rights_status": "generic_public_domain_policy_but_contributed_or_licensed_material_may_be_excluded",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The general SBA.gov policy does not resolve exact page-body boundaries or third-party contributed/licensed components in the live guide.",
+      "next_action": "Keep metadata only unless exact pages and excluded components are verified as PD/CC0.",
+      "evidence": [
+        {"title": "About the SBA.gov website — reproduction of SBA content", "url": "https://www.sba.gov/about-sba/open-government/about-the-sba-gov-website"},
+        {"title": "SBA Business Guide", "url": "https://www.sba.gov/business-guide"},
+        {"title": "SBA sitemap", "url": "https://www.sba.gov/sitemap.xml"}
+      ]
+    },
+    {
+      "id": "nasa-systems-engineering-handbook",
+      "name": "NASA Systems Engineering Handbook, NASA/SP-2016-6105 Rev. 2",
+      "review_origin": "M11 reassessment",
+      "decision": "metadata_only_rights_not_pd_cc0_cleared",
+      "rights_status": "public_use_permitted_metadata_but_contractor_and_third_party_rights_unresolved",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The NTRS record says Public Use Permitted, but the reviewed material does not establish a blanket PD/CC0 grant for contractor-authored and possible third-party components or expressly clear commercial AI training.",
+      "next_action": "Do not ingest under the current rule. Retain exact NTRS and revision metadata only.",
+      "evidence": [
+        {"title": "NASA Systems Engineering Handbook — NTRS citation 20170001761", "url": "https://ntrs.nasa.gov/citations/20170001761"},
+        {"title": "NASA NTRS citation API record 20170001761", "url": "https://ntrs.nasa.gov/api/citations/20170001761"},
+        {"title": "NASA STI terms and disclaimers", "url": "https://sti.nasa.gov/disclaimers/"}
+      ]
+    },
+    {
+      "id": "nist-ssdf-sp800-218-v1-1",
+      "name": "NIST SP 800-218 SSDF Version 1.1",
+      "review_origin": "M11 reassessment",
+      "decision": "metadata_only_territorial_and_contributor_rights_unresolved",
+      "rights_status": "us_copyright_statement_does_not_clear_all_global_or_third_party_rights",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The NIST policy and publication indicate no U.S. copyright claim, but non-NIST authorship and worldwide/third-party rights remain unresolved for the intended use.",
+      "next_action": "Do not ingest under the current rule. Assess supplementary files separately if rights are later clarified.",
+      "evidence": [
+        {"title": "NIST SP 800-218 Version 1.1 final PDF", "url": "https://nvlpubs.nist.gov/nistpubs/specialpublications/nist.sp.800-218.pdf"},
+        {"title": "NIST research-product rights policy", "url": "https://www.nist.gov/open/copyright-fair-use-and-licensing-statements-srd-data-software-and-technical-series-publications"},
+        {"title": "NIST SP 800-218 publication record", "url": "https://csrc.nist.gov/pubs/sp/800/218/final"}
+      ]
+    },
+    {
+      "id": "openstax-introductory-statistics-2e",
+      "name": "OpenStax Introductory Statistics 2e",
+      "review_origin": "M11 reassessment",
+      "decision": "excluded_not_pd_cc0_and_ai_permission_required",
+      "rights_status": "cc_by_nc_sa_4_0_with_prior_written_permission_requirement_for_ai_ingestion",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The book has a noncommercial license and title-specific AI-ingestion permission requirement; third-party components may have separate rights.",
+      "next_action": "Do not ingest absent written permission and component-level clearance.",
+      "evidence": [
+        {"title": "Introductory Statistics 2e — official introduction and reuse notice", "url": "https://openstax.org/books/introductory-statistics-2e/pages/1-introduction"},
+        {"title": "Introductory Statistics 2e — official preface", "url": "https://openstax.org/books/introductory-statistics-2e/pages/preface"},
+        {"title": "OpenStax licensing update", "url": "https://openstax.org/license"}
+      ]
+    },
+    {
+      "id": "census-naics-2022",
+      "name": "North American Industry Classification System, United States, 2022",
+      "review_origin": "new official-source lead",
+      "decision": "metadata_only_joint_and_component_rights_unresolved",
+      "rights_status": "no_exact_pd_or_cc0_grant_verified_for_full_manual_and_definitions",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The 2022 manual reflects trilateral development by the United States, Canada, and Mexico; no exact-material PD/CC0 evidence for the complete content was verified.",
+      "next_action": "Keep metadata only; do not import the manual, workbook, or definitions under the current rule.",
+      "evidence": [
+        {"title": "2022 NAICS Manual", "url": "https://www.census.gov/naics/reference_files_tools/2022_NAICS_Manual.pdf"},
+        {"title": "Census NAICS official landing page", "url": "https://www.census.gov/naics/?year=2022"},
+        {"title": "17 U.S.C. §105", "url": "https://www.copyright.gov/title17/92chap1.html"}
+      ]
+    },
+    {
+      "id": "irs-small-business-tax-terms",
+      "name": "IRS small-business tax terminology lead",
+      "review_origin": "new official-source lead",
+      "decision": "metadata_only_exact_resource_not_bounded",
+      "rights_status": "general_irs_content_policy_does_not_clear_unspecified_resource_components",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The lead did not identify a single exact glossary or fixed source scope; IRS employee-created content and third-party components must be distinguished item by item.",
+      "next_action": "Do not ingest. Select one exact publication or bounded dataset, then review its rights notices and components.",
+      "evidence": [
+        {"title": "Use of content from IRS.gov", "url": "https://www.irs.gov/about-irs/use-of-content-from-irsgov"},
+        {"title": "IRS Publication 850: English-Spanish Glossary of Tax Words and Phrases", "url": "https://www.irs.gov/pub/irs-pdf/p850.pdf"},
+        {"title": "IRS Publication 334: Tax Guide for Small Business", "url": "https://www.irs.gov/publications/p334"}
+      ]
+    },
+    {
+      "id": "census-bureau-glossary",
+      "name": "Official Census Bureau Glossary",
+      "review_origin": "new official-source lead",
+      "decision": "metadata_only_rights_and_revision_unspecified",
+      "rights_status": "no_exact_glossary_pd_or_cc0_statement_verified",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The glossary and index provide definitions but no material-specific rights statement or stable revision; possible third-party content was not resolved.",
+      "next_action": "Keep metadata only; require source-specific rights and exact revision before considering any acquisition.",
+      "evidence": [
+        {"title": "Official Census Bureau Glossary", "url": "https://www.census.gov/glossary/"},
+        {"title": "Census Bureau Glossary of Statistical Terms", "url": "https://www.census.gov/help/glossary.html"},
+        {"title": "Census API Terms of Service", "url": "https://www.census.gov/data/developers/about/terms-of-service.html"}
+      ]
+    },
+    {
+      "id": "nist-csrc-glossary",
+      "name": "NIST Computer Security Resource Center Glossary",
+      "review_origin": "new official-source lead",
+      "decision": "metadata_only_mixed_source_definitions",
+      "rights_status": "no_blanket_pd_or_cc0_grant_for_all_aggregated_definitions_verified",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The glossary is a large aggregate with mixed-source definitions; export metadata and public accessibility do not establish PD/CC0 status for every definition.",
+      "next_action": "Keep metadata only unless source provenance establishes PD/CC0 for all included definitions or a separable subset is defined.",
+      "evidence": [
+        {"title": "NIST CSRC Glossary", "url": "https://csrc.nist.gov/glossary"},
+        {"title": "NIST CSRC glossary export metadata", "url": "https://csrc.nist.gov/csrc/media/glossary/glossary-export.meta"},
+        {"title": "NIST research-product rights policy", "url": "https://www.nist.gov/open/copyright-fair-use-and-licensing-statements-srd-data-software-and-technical-series-publications"}
+      ]
+    },
+    {
+      "id": "noaa-nws-glossary",
+      "name": "NOAA National Weather Service online glossary",
+      "review_origin": "new official-source lead",
+      "decision": "public_domain_candidate_scope_check_incomplete",
+      "rights_status": "public_domain_candidate_for_observed_official_glossary_text_only_not_cc0",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "scope_review_complete": false,
+      "scope_reviewed": ["Glossary browse-by-letter index", "A-letter page sample"],
+      "scope_not_reviewed": ["Remaining numeric and B-Z letter pages and possible page-specific exceptions"],
+      "reason": "The observed NWS glossary text is a plausible public-domain candidate under NOAA/NWS reuse policy, but only the A page was sampled; outside authorship or page-specific exceptions on remaining pages have not been excluded. It is not CC0 and carries attribution/non-endorsement constraints.",
+      "next_action": "Exclude from acquisition and training until all linked letter pages and content exceptions are reviewed. If cleared, capture only the precisely reviewed NWS glossary text and preserve attribution and disclaimer conditions.",
+      "evidence": [
+        {"title": "NOAA NWS glossary browse-by-letter page", "url": "https://forecast.weather.gov/glossary.php?word=Mirage"},
+        {"title": "NOAA NWS glossary A entries", "url": "https://forecast.weather.gov/glossary.php?letter=a"},
+        {"title": "NOAA/NWS data and third-party data disclaimer", "url": "https://www.weather.gov/disclaimer"}
+      ]
+    },
+    {
+      "id": "usgs-water-science-glossary",
+      "name": "USGS Water Science Glossary",
+      "review_origin": "new official-source lead",
+      "decision": "metadata_only_mixed_source_contributions_unresolved",
+      "rights_status": "no_complete_pd_or_cc0_scope_verified_for_all_credited_content",
+      "pd_or_cc0_eligible": false,
+      "content_acquired": false,
+      "training_eligible": false,
+      "reason": "The page is a compiled glossary with external source/credit references, including Nevada material; the full mix of contributions was not cleared as PD/CC0.",
+      "next_action": "Keep metadata only. Reconsider only a precisely bounded USGS-authored subset with documented rights and attribution.",
+      "evidence": [
+        {"title": "USGS Water Science Glossary", "url": "https://www.usgs.gov/water-science-school/science/water-science-glossary"},
+        {"title": "USGS Copyrights and Credits", "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits"},
+        {"title": "USGS Access Controls and Copyrights", "url": "https://www.usgs.gov/data-management/access-controls-and-copyrights"}
+      ]
+    }
+  ]
+}
