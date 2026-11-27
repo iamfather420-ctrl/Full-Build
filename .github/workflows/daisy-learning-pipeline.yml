@@ -1,0 +1,65 @@
+name: Daisy End-to-End Learning Pipeline Preflight
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "config/daisy/canonical-language-source.json"
+      - "scripts/daisy_learning_pipeline.py"
+      - ".github/workflows/daisy-learning-pipeline.yml"
+  push:
+    branches: [main]
+    paths:
+      - "config/daisy/canonical-language-source.json"
+      - "scripts/daisy_learning_pipeline.py"
+      - ".github/workflows/daisy-learning-pipeline.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daisy-learning-pipeline-preflight
+  cancel-in-progress: false
+
+jobs:
+  source-to-learning-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      pipeline_status: ${{ steps.pipeline.outputs.status }}
+    steps:
+      - name: Checkout Full-Build
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Checkout SolveX Paradox Box canonical language repository
+        uses: actions/checkout@v4
+        with:
+          repository: Solvex-Paradox-Box/loc-english-grammar-source-collection
+          ref: f05574caa02c9962f5ad14491fc0459116e733c2
+          path: .sources/loc-english-grammar-source-collection
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify pinned source and produce eight-stage pipeline evidence
+        id: pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/daisy_learning_pipeline.py \
+            --source-root .sources/loc-english-grammar-source-collection \
+            --expected-commit f05574caa02c9962f5ad14491fc0459116e733c2 \
+            --output artifacts/daisy-learning-pipeline/preflight.json
+          status="$(python3 -c 'import json; print(json.load(open("artifacts/daisy-learning-pipeline/preflight.json"))["status"])')"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Upload source-to-learning pipeline evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: daisy-learning-pipeline-preflight
+          path: artifacts/daisy-learning-pipeline/preflight.json
+          if-no-files-found: error
+          retention-days: 30
