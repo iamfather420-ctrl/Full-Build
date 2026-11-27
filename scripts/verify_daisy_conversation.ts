@@ -38,7 +38,7 @@ async function main() {
     const reply = attestGeneratedReply(result.text);
     const instructionPrefix = instruction.slice(0, Math.min(120, instruction.length));
     if (reply.text.includes(instructionPrefix) || /<\|im_start\|>|<\|im_end\|>|^SYSTEM:/m.test(reply.text)) {
-      throw new Error(\`BLOCKED at conversation scenario \${index + 1}: PROMPT_ECHO_DETECTED. Echoed instructions are not a valid assistant reply.\`);
+      throw new Error('BLOCKED at conversation scenario ' + (index + 1) + ': PROMPT_ECHO_DETECTED. Echoed instructions are not a valid assistant reply.');
     }
     const qualityChecks: Array<[number, RegExp, string]> = [
       [0, /\b(daisy|hello|hi|i am|i'm)\b/i, 'INTRODUCTION_NOT_RESPONSIVE'],
@@ -48,7 +48,7 @@ async function main() {
     ];
     const qualityCheck = qualityChecks[index];
     if (qualityCheck && !qualityCheck[1].test(reply.text)) {
-      throw new Error(\`BLOCKED at conversation scenario \${index + 1}: \${qualityCheck[2]}. Model output did not satisfy the scenario's basic relevance check.\`);
+      throw new Error('BLOCKED at conversation scenario ' + (index + 1) + ': ' + qualityCheck[2] + '. Model output did not satisfy the scenario basic relevance check.');
     }
     evidence.push({
       scenario: index + 1,
