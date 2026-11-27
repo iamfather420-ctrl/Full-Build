@@ -54,7 +54,7 @@ export interface SubsystemExecutionResult extends RawNodeExecutionResult {
 
 function isExternalProviderUnavailable(reason: string | undefined): boolean {
   if (!reason) return false;
-  return /requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
+  return /independent oracle provider is required|external probes are disabled|requires GitHub Actions OIDC permission|Pinned external signer identity and Ed25519 public key are required|timed out|fetch failed|ECONN(?:REFUSED|RESET|TIMEDOUT)|ENOTFOUND|EAI_AGAIN|(?:evaluator gateway|external attestation signer|signer self-test endpoint) failed \(HTTP (?:404|408|429|5\d\d)\)|requires a valid (?:Fly evaluator gateway|external signer) URL/i.test(reason);
 }
 
 function hasMeaningfulEvidence(value: unknown): boolean {
@@ -325,9 +325,6 @@ export class DaisySubsystemExecutors {
 
       // 11. DN-11: 21-Stage Problem Pipeline
       case 'DN-11': {
-        if (process.env.SOLVEX_NODE_EXTERNAL_PROBES !== 'true') {
-          return { node_id: 'DN-11', name: '21-Stage Problem Pipeline', category: 'CORE_KERNEL', executed: true, claim_scope: 'LOCAL', status: 'FAIL_CLOSED', duration_ms: performance.now() - start, evidence: { external_probe_enabled: false, reason: 'Full pipeline execution is reserved for the authoritative external-provider verification step.' } };
-        }
         const pipe = SolutionPipeline.getInstance();
         const durable = DurableStore.getInstance();
         const solution = durable.getState().solutions['DH-S-001'];
@@ -345,7 +342,7 @@ export class DaisySubsystemExecutors {
             evidence: { completed_stages: 0, success: false, source_bound: false, reason: 'DH-S-001 source is missing or does not match its stored implementation hash.' }
           };
         }
-        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true });
+        const res = await pipe.runPipeline('DH-P-001', source, { continueAfterProviderRequired: true, externalOracleEnabled: process.env.SOLVEX_NODE_EXTERNAL_PROBES === 'true' });
         const proofId = 'PB-' + sourceHash.slice(0, 24);
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
