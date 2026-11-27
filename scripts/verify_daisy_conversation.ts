@@ -37,18 +37,18 @@ async function main() {
     }
     const reply = attestGeneratedReply(result.text);
     const instructionPrefix = instruction.slice(0, Math.min(120, instruction.length));
-    if (reply.text.includes(instructionPrefix) || /<\\|im_start\\|>|<\\|im_end\\|>|^SYSTEM:/m.test(reply.text)) {
-      throw new Error(`BLOCKED at conversation scenario ${index + 1}: PROMPT_ECHO_DETECTED. Echoed instructions are not a valid assistant reply.`);
+    if (reply.text.includes(instructionPrefix) || /<\|im_start\|>|<\|im_end\|>|^SYSTEM:/m.test(reply.text)) {
+      throw new Error(\`BLOCKED at conversation scenario \${index + 1}: PROMPT_ECHO_DETECTED. Echoed instructions are not a valid assistant reply.\`);
     }
     const qualityChecks: Array<[number, RegExp, string]> = [
-      [0, /\\b(daisy|hello|hi|i am|i'm)\\b/i, 'INTRODUCTION_NOT_RESPONSIVE'],
-      [1, /\\b(introduc|hello|daisy|asked)\\w*\\b/i, 'CONTEXT_FOLLOWUP_NOT_RESPONSIVE'],
-      [2, /She went to the store yesterday\\.?/i, 'GRAMMAR_CORRECTION_NOT_VERIFIED'],
-      [3, /\\b(typescript|build|compile|error)\\b/i, 'TECHNICAL_RESPONSE_NOT_ON_TOPIC'],
+      [0, /\b(daisy|hello|hi|i am|i'm)\b/i, 'INTRODUCTION_NOT_RESPONSIVE'],
+      [1, /\b(introduc|hello|daisy|asked)\w*\b/i, 'CONTEXT_FOLLOWUP_NOT_RESPONSIVE'],
+      [2, /She went to the store yesterday\.?/i, 'GRAMMAR_CORRECTION_NOT_VERIFIED'],
+      [3, /\b(typescript|build|compile|error)\b/i, 'TECHNICAL_RESPONSE_NOT_ON_TOPIC'],
     ];
     const qualityCheck = qualityChecks[index];
     if (qualityCheck && !qualityCheck[1].test(reply.text)) {
-      throw new Error(`BLOCKED at conversation scenario ${index + 1}: ${qualityCheck[2]}. Model output did not satisfy the scenario's basic relevance check.`);
+      throw new Error(\`BLOCKED at conversation scenario \${index + 1}: \${qualityCheck[2]}. Model output did not satisfy the scenario's basic relevance check.\`);
     }
     evidence.push({
       scenario: index + 1,
