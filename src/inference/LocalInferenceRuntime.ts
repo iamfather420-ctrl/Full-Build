@@ -4,6 +4,7 @@ import path from 'node:path';
 import { verifyDaisyModelFile, VERIFIED_DAISY_GGUF } from './verifiedDaisyModel';
 import {
   DEFAULT_INFERENCE_TIMEOUT_MS,
+  InferenceMessage,
   InferenceRequest,
   InferenceResult,
   InferenceRuntime,
