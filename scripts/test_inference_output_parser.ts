@@ -48,12 +48,13 @@ test('does not treat timing-only output as a completion', () => {
 
 
 
+
 test('extracts completion when a full ChatML prompt is echoed', () => {
   const prompt = formatMessagesAsChatML([
     { role: 'system', content: 'Be concise.' },
     { role: 'user', content: 'Explain a noun.' },
   ]);
-  const output = \`\${prompt}A noun names a person, place, thing, or idea.\n\n[ Prompt: 12.3 t/s ]\`;
+  const output = prompt + 'A noun names a person, place, thing, or idea.\n\n[ Prompt: 12.3 t/s ]';
   assert.equal(extractCompletion(output, prompt), 'A noun names a person, place, thing, or idea.');
 });
 
