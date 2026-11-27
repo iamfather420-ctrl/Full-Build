@@ -1,7 +1,7 @@
 /**
  * Selects the generative inference path.
- * Order: first-party local runtime → (optional) external provider only if explicitly allowed.
- * Never invents a successful reply when both are unavailable.
+ * Uses the first-party local runtime only. No external provider fallback exists.
+ * Never invents a successful reply when local inference is unavailable.
  */
 import {
   InferenceRequest,
@@ -32,8 +32,7 @@ export class InferenceRouter {
       return { result, source: result.status === 'OK' ? 'first_party_local' : 'none', runtime: this.local.getInfo() };
     }
 
-    // Do not call external providers from this router. The HTTP layer may
-    // separately honor ALLOW_EXTERNAL_MODEL_PROVIDER after this returns.
+    // No third-party AI API fallback is permitted by the first-party-only policy.
     return {
       source: 'none',
       runtime: info,
@@ -45,7 +44,7 @@ export class InferenceRouter {
         durationMs: 0,
         code: 'FIRST_PARTY_MODEL_UNAVAILABLE',
         error:
-          'No first-party inference runtime is ready. Model weights and engine are not configured. External providers remain disabled unless ALLOW_EXTERNAL_MODEL_PROVIDER=true is set explicitly.',
+          'No first-party inference runtime is ready. Model weights and engine are not configured. External AI providers are prohibited by project policy.',
       },
     };
   }
