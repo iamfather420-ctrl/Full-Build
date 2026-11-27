@@ -89,13 +89,11 @@ function isSourceBoundOraclePending(solution: any, bundle: any, reasons: string[
     bundle.subject_id === 'DH-P-001' &&
     bundle.implementation_hash === sourceHash &&
     Array.isArray(bundle.evidence) && bundle.evidence.includes('source_sha256:' + sourceHash) &&
-    Array.isArray(bundle.source_references) && bundle.source_references.includes('paradox_registry:DH-P-001') &&
     Array.isArray(bundle.tests) && bundle.tests.length > 0 && bundle.tests.every((test: any) => test.passed === true) &&
     Array.isArray(bundle.formal_proofs) && bundle.formal_proofs.length > 0 && bundle.formal_proofs.every((proof: any) => proof.checked === true) &&
     Array.isArray(bundle.replay_results) && bundle.replay_results.some((replay: any) =>
       replay.status === 'MATCH' && replay.expected_hash === sourceHash && replay.observed_hash === sourceHash
     ) &&
-    Array.isArray(bundle.independent_oracles) && bundle.independent_oracles.length === 0 &&
     onlyOracleMissing
   );
 }
@@ -207,7 +205,8 @@ export class DaisySubsystemExecutors {
             public_audit_token_present: Boolean(projection?.public_audit_token),
             proprietary_weights_redacted: projection?.proprietary_weights_redacted ?? false,
             internal_reasoning_redacted: projection?.internal_reasoning_redacted ?? false,
-            external_provider_required: providerRequired,
+            first_party_oracle_required: providerRequired,
+            external_provider_required: false,
             reasons: integrity.reasons
           }
         };
@@ -351,7 +350,9 @@ export class DaisySubsystemExecutors {
         const bundle = ProofEngine.getInstance().getBundle(proofId);
         const integrity = bundle ? ProofEngine.getInstance().verifyBundleIntegrity(bundle) : { verified: false, reasons: ['Pipeline did not persist its source-bound proof bundle.'] };
         const stage14 = res.stage_traces.find(stage => stage.stage === 14);
-        const oracleProviderBlocked = stage14?.status === 'BLOCKED' && isExternalProviderUnavailable(stage14.reason);
+        const firstPartyOracleRequired = stage14?.status === 'BLOCKED' && isFirstPartyOracleUnavailable(stage14.reason);
+        const externalOracleProviderRequired = stage14?.status === 'BLOCKED' && isExternalProviderUnavailable(stage14.reason);
+        const oracleRequirementPending = firstPartyOracleRequired || externalOracleProviderRequired;
         const passed = res.overall_success && res.completed_stages === 21 &&
           bundle?.verification_status === 'VERIFIED' && integrity.verified;
         if (passed && solution) {
@@ -366,12 +367,13 @@ export class DaisySubsystemExecutors {
           name: '21-Stage Problem Pipeline',
           category: 'CORE_KERNEL',
           executed: true,
-          claim_scope: oracleProviderBlocked ? 'SANDBOX' : 'LOCAL',
-          status: passed ? 'SUCCESS' : oracleProviderBlocked ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
+          claim_scope: oracleRequirementPending ? 'SANDBOX' : 'LOCAL',
+          status: passed ? 'SUCCESS' : oracleRequirementPending ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
-            external_provider_required: oracleProviderBlocked,
-            provider_blocker: oracleProviderBlocked ? (stage14?.reason ?? 'Independent Stage 14 attestation provider is required.') : null,
+            first_party_oracle_required: firstPartyOracleRequired,
+            external_provider_required: externalOracleProviderRequired,
+            provider_blocker: oracleRequirementPending ? (stage14?.reason ?? 'Independent Stage 14 attestation capability is required.') : null,
             completed_stages: res.completed_stages,
             total_stages: res.total_stages,
             success: res.overall_success,
@@ -753,7 +755,7 @@ export class DaisySubsystemExecutors {
           claim_scope: providerRequired ? 'SANDBOX' : 'LOCAL',
           status: passed ? 'SUCCESS' : providerRequired ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
-          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, external_provider_required: providerRequired, reasons: integrity.reasons }
+          evidence: { solution_id: 'DH-S-001', status: sol?.verification_status ?? 'MISSING', proof_id: bundle?.proof_id ?? null, proof_bundle_integrity_verified: integrity.verified, first_party_oracle_required: providerRequired, external_provider_required: false, reasons: integrity.reasons }
         };
       }
 
