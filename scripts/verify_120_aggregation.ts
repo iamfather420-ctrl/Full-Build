@@ -9,6 +9,8 @@ import { computeSha256 } from '../src/database/DatabaseSchema';
 import { REAL_88_PARADOX_REGISTRY } from '../src/data/paradoxData';
 import { AUTHORITATIVE_32_DH_CONTRACTS } from '../src/formal/dhAuthoritativeFormalContracts';
 import { DaisyActivationGate, DaisyActivationAuthorization } from '../src/brain/DaisyActivationGate';
+import type { ConsensusCertificate } from '../src/brain/IndependentUnanimousConsensus';
+import { verifyDaisyConsensusCertificate } from '../src/brain/DaisyConsensusCertificateVerifier';
 import type { DFRL88VerificationReport } from '../src/proofs/DFRLFormalVerifier';
 import type { DH32VerificationReport } from '../src/proofs/DHFormalVerifier';
 
@@ -337,7 +339,27 @@ async function main() {
       activationAuthorization = JSON.parse(fs.readFileSync(activationAuthorizationPath, 'utf8')) as DaisyActivationAuthorization;
     } catch {}
   }
-  const activationAuthorizationValid = Boolean(activationAuthorization &&
+  let consensusAuthorization: ConsensusCertificate | undefined;
+  const consensusAuthorizationPath = path.join(outDir, 'daisy-consensus', 'production-activation-consent.json');
+  if (fs.existsSync(consensusAuthorizationPath)) {
+    try {
+      consensusAuthorization = JSON.parse(fs.readFileSync(consensusAuthorizationPath, 'utf8')) as ConsensusCertificate;
+    } catch {}
+  }
+  const activationEvidenceBinding = {
+    source_commit_sha: commitSha,
+    verification_root_sha256: combinedRootSha256,
+    run_evidence_sha256: runEvidenceSha256
+  };
+  const consensusVerification = consensusAuthorization
+    ? verifyDaisyConsensusCertificate(activationEvidenceBinding, consensusAuthorization)
+    : { valid: false, reason: 'CONSENSUS_CERTIFICATE_MISSING' };
+  const consensusAuthorizationValid = Boolean(
+    consensusAuthorization &&
+    consensusVerification.valid &&
+    activationAuthorization?.consensus_certificate_sha256 === consensusAuthorization.certificate_sha256
+  );
+  const activationAuthorizationValid = Boolean(activationAuthorization && consensusAuthorizationValid &&
     DaisyActivationGate.verifyAuthorization(
       activationAuthorization,
       commitSha,
@@ -348,24 +370,35 @@ async function main() {
     passed120 &&
     satIdentityMatches &&
     adversarialOk &&
-    gatesTotal > 0 &&
-    gatesPassed === gatesTotal &&
+    gatesTotal === 46 &&
+    gatesPassed === 46 &&
     gatesFailed === 0 &&
+    consensusAuthorizationValid &&
     activationAuthorizationValid;
 
   const activationGate = {
     schema_version: '1.0.0',
     status: brainActive ? 'ACTIVE' : 'BLOCKED',
     reason: brainActive
-      ? 'Formal, adversarial, 46-gate, and signed human-root authorization evidence passed.'
-      : activationAuthorizationValid
-        ? 'Activation blocked until formal corpus, adversarial checks, and all 46 system gates pass; no provider or blocked gate may be excluded.'
-        : 'Activation blocked: fresh signed human-root authorization for this source commit and run evidence is unavailable or invalid.',
+      ? 'Formal, adversarial, all 46 system gates, three distinct model approvals, and human-root authorization bound to the same certificate passed.'
+      : !consensusAuthorizationValid
+        ? 'Activation blocked: a fresh, valid 3-of-3 independent-model consent certificate bound to this source commit and evidence is unavailable.'
+        : !activationAuthorizationValid
+          ? 'Activation blocked: human-root authorization bound to the 3-of-3 consensus certificate is unavailable or invalid.'
+          : 'Activation blocked until the 120-case corpus, adversarial checks, and all 46 system gates pass; no provider or blocked gate may be excluded.',
     commit_sha: commitSha,
     source_commit_sha: commitSha,
     verification_root_sha256: combinedRootSha256,
+    corpus_root_sha256: combinedRootSha256,
     run_evidence_sha256: runEvidenceSha256,
     activation_authorization: activationAuthorization ?? null,
+    consensus_authorization: consensusAuthorization ?? null,
+    consensus_verification: {
+      valid: consensusAuthorizationValid,
+      reason: consensusVerification.reason,
+      certificate_sha256: consensusAuthorization?.certificate_sha256 ?? null
+    },
+    generated_at: new Date().toISOString(),
     timestamp: new Date().toISOString(),
     corpus: {
       total_required: 120,
