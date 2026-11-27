@@ -182,6 +182,14 @@ export class SqliteStore {
     return tableName;
   }
 
+  public findAllRecords<T = any>(tableName: string): T[] {
+    const table = this.assertTableName(tableName);
+    if (this.diskBacked) {
+      return this.db.all(`SELECT * FROM ${table}`).map(row => this.hydrateRow(row)) as T[];
+    }
+    return [...(this.tables.get(table) || [])] as T[];
+  }
+
   public findTenantRecords<T = any>(tableName: string, tenantId: string, limit: number = 100): T[] {
     const table = this.assertTableName(tableName);
     if (this.diskBacked) {
