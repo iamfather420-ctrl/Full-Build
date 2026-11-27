@@ -56,7 +56,7 @@ assert.ok(activationGate.includes('record.source_commit_sha?.toLowerCase() !== e
 assert.ok(activationGate.includes('gates?.total !== 46'));
 assert.match(activationGate, /adversarial_verification/);
 assert.match(activationGate, /Corrupt or unreadable disk evidence must never fall back/);
-assert.match(activationGate, /fresh 120-case, adversarial, 46-system-gate evidence/);
+assert.match(activationGate, /fresh 120-case, adversarial, 46-gate evidence/);
 assert.ok(brain.includes("status: brainActive ? brainClaimScope : 'BLOCKED'"));
 assert.ok(brain.includes("status: 'DISABLED'"));
 assert.ok(brain.includes("mode: 'NOT_ENABLED_UNVERIFIED'"));
