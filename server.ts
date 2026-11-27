@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import { readFileSync, statSync, accessSync, constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import apiRouter from './src/server/apiRouter';
 import { NeonStore } from './src/database/NeonPersistence';
 
 dotenv.config();
@@ -74,7 +73,18 @@ async function startServer() {
     res.status(readiness.status === 'ready' ? 200 : 503).json(readiness);
   });
 
-  app.use('/api', apiRouter);
+  // The isolated model-conversation smoke test must not load auth, Neon, or
+  // outreach modules. This mode intentionally exposes no application API.
+  if (process.env.DAISY_INFERENCE_SMOKE_ONLY === 'true') {
+    app.get('/api/*', (_req, res) => res.status(503).json({
+      success: false,
+      code: 'INFERENCE_SMOKE_ONLY',
+      message: 'Application APIs are disabled in isolated model-verification mode.',
+    }));
+  } else {
+    const { default: apiRouter } = await import('./src/server/apiRouter');
+    app.use('/api', apiRouter);
+  }
 
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(__dirname, 'dist'), { index: false, fallthrough: true }));

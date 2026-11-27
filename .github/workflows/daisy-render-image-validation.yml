@@ -8,6 +8,11 @@ on:
       - "Dockerfile.render-daisy"
       - "render-daisy-entrypoint.sh"
       - "scripts/daisy-infer.sh"
+      - "scripts/verify_daisy_conversation.ts"
+      - "src/brain/DaisyConversationProtocol.ts"
+      - "src/inference/LocalInferenceRuntime.ts"
+      - "src/inference/verifiedDaisyModel.ts"
+      - "DAISY_FOUNDATIONAL_SYSTEM_INSTRUCTION.md"
       - "scripts/fetch_daisy_model_release.py"
       - "register_database_url.sh"
       - "package.json"
@@ -37,3 +42,30 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build dedicated Full-Build Daisy image without publishing
         run: docker buildx build --load --file Dockerfile.render-daisy --tag solvex-daisy-render:pr-validation .
+
+      - name: Run the pinned Daisy model through real first-party conversation scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          container="daisy-pr-smoke-${GITHUB_RUN_ID}"
+          cleanup() { docker logs "$container" || true; docker rm -f "$container" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          docker run --detach --name "$container" -e DAISY_INFERENCE_SMOKE_ONLY=true -p 10000:10000 solvex-daisy-render:pr-validation
+          verified=0
+          for attempt in $(seq 1 120); do
+            if ! docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null | grep -q true; then
+              echo "Daisy container exited before model verification."
+              exit 1
+            fi
+            if docker exec "$container" grep -q '"status":"MODEL_FILE_VERIFIED"' /tmp/daisy-model-status.json 2>/dev/null; then
+              verified=1
+              break
+            fi
+            sleep 5
+          done
+          if [ "$verified" -ne 1 ]; then
+            echo "Pinned Daisy model did not reach MODEL_FILE_VERIFIED within 10 minutes."
+            exit 1
+          fi
+          docker exec "$container" test -x /usr/local/bin/llama-cli
+          docker exec "$container" bun scripts/verify_daisy_conversation.ts

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { verifyDaisyModelFile, VERIFIED_DAISY_GGUF } from './verifiedDaisyModel';
 import {
   DEFAULT_INFERENCE_TIMEOUT_MS,
+  InferenceMessage,
   InferenceRequest,
   InferenceResult,
   InferenceRuntime,
@@ -25,22 +26,36 @@ async function isExecutableFile(filePath: string): Promise<boolean> {
 }
 
 export function extractCompletion(stdout: string, prompt: string): string {
-  // llama-cli may hide the prompt, echo it, or wrap it in a startup banner.
-  // Only the text after the prompt echo, and before the timing line, is a completion.
-  const withoutControls = stdout.replace(/\u001b\[[0-9;]*[A-Za-z]/g, '').replace(/\u0008/g, '');
-  const timingAt = withoutControls.search(/\n?\[ Prompt:/);
-  const body = timingAt >= 0 ? withoutControls.slice(0, timingAt) : withoutControls;
-  const marker = `> ${prompt}`;
-  const markerAt = body.lastIndexOf(marker);
-  let region = markerAt >= 0 ? body.slice(markerAt + marker.length) : body;
-  if (markerAt < 0) {
-    const lines = body.split('\n');
-    let lastPrompt = -1;
-    for (let index = 0; index < lines.length; index += 1) {
-      if (lines[index].trim().startsWith('>')) lastPrompt = index;
+  const normalized = stdout
+    .replace(/\u001b\[[0-9;]*[A-Za-z]/g, '')
+    .replace(/\u0008/g, '')
+    .replace(/\r/g, '');
+  const timingAt = normalized.search(/\n?\[ Prompt:/);
+  const body = (timingAt >= 0 ? normalized.slice(0, timingAt) : normalized).trim();
+  const normalizedPrompt = prompt.trimEnd();
+  const candidates = ['> ' + normalizedPrompt, normalizedPrompt];
+  let echoAt = -1;
+  let echoLength = 0;
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const at = body.lastIndexOf(candidate);
+    if (at > echoAt) {
+      echoAt = at;
+      echoLength = candidate.length;
     }
+  }
+
+  let region = body;
+  if (echoAt >= 0) {
+    region = body.slice(echoAt + echoLength);
+  } else if (body.startsWith('> ')) {
+    const lines = body.split('\n');
+    const lastPrompt = lines.reduce((found, line, index) => line.trim().startsWith('>') ? index : found, -1);
     if (lastPrompt >= 0) region = lines.slice(lastPrompt + 1).join('\n');
   }
+
+  const stopAt = region.indexOf('<|im_end|>');
+  if (stopAt >= 0) region = region.slice(0, stopAt);
   return region
     .split('\n')
     .map((line) => line.trim())
@@ -52,14 +67,29 @@ export function extractCompletion(stdout: string, prompt: string): string {
       && !line.startsWith('model ')
       && !line.startsWith('ftype ')
       && !line.startsWith('modalities ')
+      && !line.startsWith('/exit')
+      && !line.startsWith('/help')
       && !/^loading model/i.test(line)
       && !/^available commands/i.test(line)
       && !/^exiting\.\.\.$/i.test(line)
-      && !line.includes('/')
       && !/[▄▀█]/.test(line))
     .join('\n')
     .trim();
 }
+
+export function formatMessagesAsChatML(messages: readonly InferenceMessage[]): string {
+  if (messages.length === 0) throw new Error('MESSAGES_REQUIRED');
+  const serialized = messages.map((message) => {
+    if (!message.content.trim()) throw new Error('EMPTY_MESSAGE_CONTENT');
+    const content = message.content.replace(
+      /<\|(?:im_start|im_end|im_sep)\|>/g,
+      (token) => token.replace('<', '‹').replace('>', '›'),
+    );
+    return '<|im_start|>' + message.role + '\n' + content + '<|im_end|>';
+  });
+  return serialized.join('\n') + '\n<|im_start|>assistant\n';
+}
+
 export function createInferenceChildEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
   const allowed = ['PATH', 'HOME', 'TMPDIR', 'TEMP', 'TMP', 'LANG', 'LC_ALL', 'SystemRoot', 'WINDIR', 'LD_LIBRARY_PATH', 'DAISY_LLAMA_CLI'];
   const child: NodeJS.ProcessEnv = {};
@@ -246,12 +276,10 @@ export class LocalInferenceRuntime implements InferenceRuntime {
     }
 
     const timeoutMs = request.timeoutMs ?? DEFAULT_INFERENCE_TIMEOUT_MS;
-    const prompt = request.messages
-      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-      .join('\n\n');
+    const prompt = formatMessagesAsChatML(request.messages);
 
     try {
-      const text = extractCompletion(await this.runEngine(prompt, timeoutMs, request.signal), prompt);
+      const text = extractCompletion(await this.runEngine(prompt, timeoutMs, request.maxOutputTokens ?? 64, request.temperature ?? 0, request.signal), prompt);
       if (!text.trim()) {
         this.ready = false;
         this.loadState = 'INFERENCE_FAILED';
@@ -296,13 +324,13 @@ export class LocalInferenceRuntime implements InferenceRuntime {
     }
   }
 
-  private runEngine(prompt: string, timeoutMs: number, signal?: AbortSignal): Promise<string> {
+  private runEngine(prompt: string, timeoutMs: number, maxOutputTokens: number, temperature: number, signal?: AbortSignal): Promise<string> {
     return new Promise((resolve, reject) => {
       const engine = path.resolve(this.enginePath!);
       const model = path.resolve(this.modelPath!);
       // Generic CLI contract: engine --model <path> --prompt <text>
       // Operators may wrap llama.cpp / similar behind a thin adapter script.
-      const child = spawn(engine, ['--model', model, '--prompt', prompt], {
+      const child = spawn(engine, ['--model', model, '--prompt', prompt, '--max-tokens', String(maxOutputTokens), '--temperature', String(temperature)], {
         stdio: ['ignore', 'pipe', 'pipe'],
         env: createInferenceChildEnvironment(),
       });

@@ -25,6 +25,9 @@ RUN git clone https://github.com/ggml-org/llama.cpp.git /tmp/llama.cpp \
     && cmake -S /tmp/llama.cpp -B /tmp/llama.cpp/build -DGGML_NATIVE=OFF -DGGML_OPENMP=ON \
     && cmake --build /tmp/llama.cpp/build --config Release --target llama-cli -j2 \
     && install -m 0755 /tmp/llama.cpp/build/bin/llama-cli /usr/local/bin/llama-cli \
+    && cp -a /tmp/llama.cpp/build/bin/*.so* /usr/local/lib/ \
+    && ldconfig \
+    && ldd /usr/local/bin/llama-cli \
     && rm -rf /tmp/llama.cpp
 
 COPY . .

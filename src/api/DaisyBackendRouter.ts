@@ -9,6 +9,8 @@ import { getLocalInferenceRuntime } from '../inference/LocalInferenceRuntime';
 import type { InferenceMessage } from '../inference/InferenceRuntime';
 import { DiscoveryAssertionRequestSchema } from '../discovery/DiscoverEngineContract';
 import { submitAssertion } from '../discovery/DiscoverEngineClient';
+import { attestGeneratedReply, buildConversationMessages } from '../brain/DaisyConversationProtocol';
+import { DAISY_LOC_GRAMMAR_EVIDENCE } from '../inference/daisyLocGrammarEvidence';
 
 const router = Router();
 const inference = new InferenceRouter(getLocalInferenceRuntime());
@@ -107,17 +109,32 @@ router.get('/status', async (req, res) => {
       runtime.probe(),
     ]);
     const nodes = NodeRegistry.getInstance().getAllNodes();
+    const modelLoadable = runtime.canAttempt();
+    const runtimeEvidence = runtime.publicStatus();
     res.setHeader('Cache-Control', 'no-store');
     return res.json({
-      status: info.ready && instruction ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED',
+      status: modelLoadable && instruction ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED',
       inference: {
-        chatEnabled: Boolean(info.ready && instruction),
+        chatEnabled: Boolean(modelLoadable && instruction),
         state: !instruction ? 'BLOCKED_INSTRUCTION_UNAVAILABLE'
-          : info.ready ? 'CONFIGURED_NOT_LOAD_TESTED' : 'BLOCKED_MODEL_OR_ENGINE_MISSING',
+          : runtimeEvidence.loadState === 'LOADABLE' ? 'LOADABLE_NOT_YET_INFERRED'
+            : runtimeEvidence.loadState === 'READY' ? 'READY_AFTER_REAL_INFERENCE'
+              : 'BLOCKED_MODEL_OR_ENGINE_MISSING',
         runtimeId: info.runtimeId,
         modelId: info.modelId,
         modelVersion: info.modelVersion,
+        loadState: runtimeEvidence.loadState,
+        modelSha256: runtimeEvidence.modelSha256,
+        expectedSha256: runtimeEvidence.expectedSha256,
         offlineCapable: false,
+      },
+      languageTraining: {
+        trainingStatus: DAISY_LOC_GRAMMAR_EVIDENCE.training_status,
+        trainingRunId: DAISY_LOC_GRAMMAR_EVIDENCE.workflow_run_id,
+        datasetSha256: DAISY_LOC_GRAMMAR_EVIDENCE.dataset_sha256,
+        inferenceStatus: DAISY_LOC_GRAMMAR_EVIDENCE.inference_status,
+        modelLoaded: runtimeEvidence.loadState === 'READY',
+        activationAuthorized: DAISY_LOC_GRAMMAR_EVIDENCE.activation_authorized,
       },
       systemInstruction: {
         available: Boolean(instruction),
@@ -150,15 +167,16 @@ router.post('/chat', async (req, res) => {
   const instruction = await loadCanonicalInstruction();
   if (!instruction) return blocked(res, 503, 'FOUNDATIONAL_INSTRUCTION_UNAVAILABLE', 'The canonical Daisy instruction is unavailable. No response was generated.');
 
-  const messages: InferenceMessage[] = [
-    { role: 'system', content: instruction.text },
-    ...parsed.data.history.map((item) => ({ role: item.role, content: item.content } as InferenceMessage)),
-    { role: 'user', content: parsed.data.prompt },
-  ];
+  let messages: InferenceMessage[];
+  try {
+    messages = buildConversationMessages(instruction.text, parsed.data.history, parsed.data.prompt);
+  } catch {
+    return blocked(res, 400, 'INVALID_CONVERSATION_CONTEXT', 'The conversation context is invalid. No inference request was made.');
+  }
   try {
     const outcome = await inference.resolveChat({ messages, timeoutMs: 60_000, maxOutputTokens: 2_048 });
     res.setHeader('Cache-Control', 'no-store');
-    if (outcome.result.status !== 'OK' || typeof outcome.result.text !== 'string' || !outcome.result.text.trim()) {
+    if (outcome.result.status !== 'OK') {
       return res.status(503).json({
         success: false,
         status: 'MODEL_UNAVAILABLE',
@@ -166,10 +184,17 @@ router.post('/chat', async (req, res) => {
         message: 'First-party Daisy inference is unavailable. No simulated reply was generated.',
       });
     }
+    let reply: ReturnType<typeof attestGeneratedReply>;
+    try {
+      reply = attestGeneratedReply(outcome.result.text);
+    } catch {
+      return blocked(res, 503, 'INVALID_MODEL_COMPLETION', 'The local model returned an invalid completion. No reply was delivered.');
+    }
     return res.json({
       success: true,
       status: 'OK',
-      text: outcome.result.text,
+      text: reply.text,
+      replyEvidence: reply.evidence,
       runtime: {
         source: outcome.source,
         runtimeId: outcome.result.runtimeId,

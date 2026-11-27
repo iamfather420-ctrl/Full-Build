@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
+type DaisyChatResponse = {
+  success?: boolean;
+  text?: string;
+  runtime?: { source?: string };
+  replyEvidence?: { protocol?: string; sha256?: string; characterCount?: number; sentenceCount?: number };
+};
 type DaisyStatus = {
   status?: string;
   inference?: {
@@ -73,15 +79,28 @@ export const DaisyChatPanel: React.FC = () => {
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ prompt: text, history: messages.slice(-20) }),
       });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok || body.success !== true || typeof body.text !== 'string' || !body.text.trim()) {
-        throw new Error(body.message || body.code || 'First-party Daisy inference did not return a verified completion.');
+      const body = await response.json().catch(() => ({})) as DaisyChatResponse & { message?: string; code?: string };
+      const reply = typeof body.text === 'string' ? body.text.trim() : '';
+      const evidence = body.replyEvidence;
+      const expectedSha256 = evidence?.sha256;
+      if (!response.ok || body.success !== true || !reply ||
+          body.runtime?.source !== 'first_party_local' ||
+          evidence?.protocol !== 'daisy-conversation/v1' ||
+          typeof expectedSha256 !== 'string' || !/^[a-f0-9]{64}$/i.test(expectedSha256) ||
+          evidence.characterCount !== reply.length ||
+          !Number.isInteger(evidence.sentenceCount) || (evidence.sentenceCount ?? 0) < 1) {
+        throw new Error(body.message || body.code || 'First-party Daisy inference did not return complete reply evidence.');
+      }
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(reply));
+      const observedSha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+      if (observedSha256 !== expectedSha256.toLowerCase()) {
+        throw new Error('Daisy reply evidence does not match the returned text.');
       }
       setGenerationVerified(true);
       setMessages((previous): ChatMessage[] => [
         ...previous,
         { role: 'user' as const, content: text },
-        { role: 'assistant' as const, content: body.text.trim() },
+        { role: 'assistant' as const, content: reply },
       ].slice(-20));
     } catch (error: unknown) {
       setPrompt(text);
