@@ -15,18 +15,18 @@ assert.match(instruction, /Human purpose comes first/);
 assert.match(instruction, /Evidence comes before claims/);
 assert.match(entrypoint, /import ['\"]\.\/server_native['\"]/);
 assert.match(server, /readFileSync/);
-assert.match(server, /ALLOW_EXTERNAL_MODEL_PROVIDER === 'true'/);
-assert.match(server, /if \(apiKey && allowExternalModelProvider\)/);
-assert.match(server, /const allowExternalModelProvider = process\.env\.ALLOW_EXTERNAL_MODEL_PROVIDER === 'true'/, 'External inference must require an explicit environment opt-in.');
-assert.match(server, /External model provider is disabled by default/, 'The server must clearly report that external inference is disabled by default.');
-assert.match(server, /systemInstruction:\s*foundationalSystemInstruction/);
+assert.match(server, /DISABLED_BY_FIRST_PARTY_ONLY_REQUIREMENT/);
+assert.doesNotMatch(server, /GoogleGenAI|@google\\/genai|GEMINI_API_KEY|ALLOW_EXTERNAL_MODEL_PROVIDER|generateContent/,
+  'Daisy must not contain an external AI provider path or environment opt-in.');
+assert.match(server, /role: 'system' as const, content: foundationalSystemInstruction/,
+  'The canonical instruction must be passed to the first-party local runtime as the system message.');
 assert.match(server, /FOUNDATIONAL_INSTRUCTION_UNAVAILABLE/);
 assert.match(server, /PAYMENTS_DISABLED/);
 assert.match(server, /res\.status\(410\)/);
 assert.doesNotMatch(server, /pending_checkout|simulatedRepos|txn_\$\{|payment-trigger/);
 assert.match(server, /GITHUB_LOOKUP_UNAVAILABLE/);
 assert.match(server, /UNIFICATION_NOT_IMPLEMENTED/);
-assert.match(server, /No simulated response was generated/);
+assert.match(server, /External AI providers are prohibited by policy/);
 assert.doesNotMatch(server, /--allow-unauthenticated/);
 assert.match(brain, /private verifiedDFRLCount: number = 0/);
 assert.match(brain, /private verifiedReplayCount: number = 0/);
