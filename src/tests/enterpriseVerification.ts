@@ -122,7 +122,7 @@ export async function runEnterpriseVerification() {
   });
 
   // 5. Anti-Tamper Sentinel Detection
-  runTest('Anti-Tamper Sentinel Active Tamper Detection', 'AUDIT', () => {
+  runTest('In-Memory Audit Hash Chain Mutation Detection (Not Persistence)', 'AUDIT', () => {
     const store = DurableStore.getInstance();
     const chain = store.getState().audit_chain;
     if (chain.length < 2) {
