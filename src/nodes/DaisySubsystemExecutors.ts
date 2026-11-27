@@ -221,7 +221,8 @@ export class DaisySubsystemExecutors {
             record_hash: rec.record_hash,
             chain_valid: verification.valid,
             source: verification.source,
-            durable: verification.durable,
+            disk_backed: verification.disk_backed,
+            durable_across_restart_verified: verification.durable,
             signed: verification.signed,
             ledger_type: 'LINEAR_HASH_CHAIN_NOT_MERKLE'
           }
@@ -245,20 +246,22 @@ export class DaisySubsystemExecutors {
           payload_hash: originalHash
         });
         const chainRestored = restored === 1 && store.verifyChain().valid;
-        const durable = sqlite.isDiskBacked();
+        const diskBacked = sqlite.isDiskBacked();
         return {
           node_id: 'DN-07',
           name: 'Persistent Audit Record Tamper Detection',
           category: 'AUDIT',
           executed: true,
           claim_scope: 'LOCAL',
-          status: tamperDetected && chainRestored && durable ? 'SUCCESS' : (durable ? 'FAIL_CLOSED' : 'PROVIDER_REQUIRED'),
+          status: tamperDetected && chainRestored ? 'PROVIDER_REQUIRED' : 'FAIL_CLOSED',
           duration_ms: performance.now() - start,
           evidence: {
             persistent_record_mutation: changed === 1,
             mutation_alarm_tripped: tamperDetected,
             original_record_restored: chainRestored,
-            durable_store: durable,
+            disk_backed_store: diskBacked,
+            durable_across_restart_verified: false,
+            persistence_provider_required: true,
             signed: false
           }
         };
