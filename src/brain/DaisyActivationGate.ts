@@ -1,3 +1,4 @@
+import type { ConsensusCertificate } from './IndependentUnanimousConsensus';
 export type DaisyActivationStatus = 'INACTIVE' | 'ACTIVE' | 'BLOCKED';
 
 export interface DaisyActivationAuthorization {
@@ -6,6 +7,7 @@ export interface DaisyActivationAuthorization {
   source_commit_sha: string;
   verification_root_sha256: string;
   run_evidence_sha256: string;
+  consensus_certificate_sha256: string;
   signature_base64: string;
 }
 
@@ -49,6 +51,7 @@ export interface DaisyActivationGateRecord {
   source_commit_sha: string;
   generated_at: string;
   activation_authorization?: DaisyActivationAuthorization;
+  consensus_authorization?: ConsensusCertificate;
 }
 
 let inMemoryRecord: DaisyActivationGateRecord | null = null;
@@ -64,7 +67,8 @@ export class DaisyActivationGate {
     runEvidence: string
   ): boolean {
     const publicKey = typeof process !== 'undefined' ? process.env?.SOLVEX_ACTIVATION_ROOT_PUBLIC_KEY : undefined;
-    if (!authorization || !publicKey || !authorization.authorized_by?.trim()) return false;
+    if (!authorization || !publicKey || !authorization.authorized_by?.trim() ||
+        !/^[a-f0-9]{64}$/.test(authorization.consensus_certificate_sha256 || '')) return false;
     if (authorization.source_commit_sha?.toLowerCase() !== sourceCommit.toLowerCase() ||
       authorization.verification_root_sha256 !== verificationRoot ||
       authorization.run_evidence_sha256 !== runEvidence) return false;
@@ -79,12 +83,13 @@ export class DaisyActivationGate {
         (typeof require === 'function' ? require('node:crypto') : null);
       if (!crypto || !/^[A-Za-z0-9+/]+={0,2}$/.test(authorization.signature_base64)) return false;
       const payload = JSON.stringify({
-        schema: 'SOLVEX_DAISY_ACTIVATION_AUTHORIZATION_V1',
+        schema: 'SOLVEX_DAISY_ACTIVATION_AUTHORIZATION_V2',
         authorized_by: authorization.authorized_by.trim(),
         issued_at: authorization.issued_at,
         source_commit_sha: sourceCommit.toLowerCase(),
         verification_root_sha256: verificationRoot,
-        run_evidence_sha256: runEvidence
+        run_evidence_sha256: runEvidence,
+        consensus_certificate_sha256: authorization.consensus_certificate_sha256
       });
       return crypto.verify(
         null,
@@ -132,9 +137,9 @@ export class DaisyActivationGate {
 
     const gates = record.mandatory_gates;
     if (
-      gates?.total !== 67 ||
-      gates?.observed !== 67 ||
-      gates?.passed !== 67 ||
+      gates?.total !== 46 ||
+      gates?.observed !== 46 ||
+      gates?.passed !== 46 ||
       gates?.failed !== 0 ||
       gates?.blocked !== 0 ||
       gates?.external_provider_required !== 0 ||
@@ -158,9 +163,12 @@ export class DaisyActivationGate {
       Object.values(adversarial).some(value => value !== true)) return false;
 
     const isSha256 = (value: string) => typeof value === 'string' && /^[a-f0-9]{64}$/i.test(value);
+    const consensusHash = record.consensus_authorization?.certificate_sha256;
     return isSha256(record.verification_root_sha256)
       && record.corpus_root_sha256 === record.verification_root_sha256
       && isSha256(record.run_evidence_sha256)
+      && isSha256(consensusHash || '')
+      && record.activation_authorization?.consensus_certificate_sha256 === consensusHash
       && this.verifyAuthorization(
         record.activation_authorization,
         record.source_commit_sha,
@@ -210,7 +218,7 @@ export class DaisyActivationGate {
   public static assertActive(): DaisyActivationGateRecord {
     const record = this.read();
     if (!record || !this.isFreshAndComplete(record)) {
-      throw new Error('DAISY_BRAIN_FAIL_CLOSED: fresh 120-case, adversarial, 67-gate evidence for this source revision is not ACTIVE');
+      throw new Error('DAISY_BRAIN_FAIL_CLOSED: fresh 120-case, adversarial, 46-gate, human-root, and 3-of-3 consensus evidence for this source revision is not ACTIVE');
     }
     return record;
   }
