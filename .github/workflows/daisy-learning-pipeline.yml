@@ -2,6 +2,12 @@ name: Daisy End-to-End Learning Pipeline Preflight
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "config/daisy/canonical-language-source.json"
+      - "scripts/daisy_learning_pipeline.py"
+      - ".github/workflows/daisy-learning-pipeline.yml"
   push:
     branches: [main]
     paths:
