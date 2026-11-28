@@ -8,7 +8,7 @@
  *
  * Pipeline per lead:
  *   discovered  — real post found, deduped by URL, fit-scored
- *   composed    — gpt-5.4 wrote a tailored public reply / contact draft
+ *   composed    — Daisy's first-party local model produced a tailored public reply / contact draft
  *   delivered   — draft actually sent (requires a connected delivery channel:
  *                 email service or platform account credentials). Until a
  *                 channel is connected, drafts stay queued — the engine never
@@ -186,58 +186,12 @@ async function composeAI(prompt: string): Promise<{ text: string; source: string
     return { text: localText, source: "first_party_local", model: local.result.modelId };
   }
 
-  // External generation is a separate, explicit operator opt-in. A configured
-  // API key alone is not consent to route outreach content to a third party.
-  if (process.env.ALLOW_EXTERNAL_OUTREACH_PROVIDER !== "true") {
-    throw new Error(
-      "Daisy first-party outreach inference is unavailable and external outreach inference is not explicitly enabled. " +
-      (local.result.error || local.result.code || "Local model unavailable.")
-    );
-  }
-
-  const apiKey = process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY;
-  if (!apiKey) throw new Error("External outreach inference is enabled but neither OPENAI_API_KEY nor SOLVEX_FLY is configured");
-  const model = process.env.OUTREACH_AI_MODEL ?? "gpt-4o-mini";
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25_000);
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        max_completion_tokens: 350,
-        store: false,
-        messages: [
-          { role: "system", content: systemInstruction },
-          { role: "user", content: prompt }
-        ]
-      })
-    });
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      let detail = body.slice(0, 500);
-      try {
-        const parsed = JSON.parse(body) as { error?: { message?: string; code?: string } };
-        detail = parsed.error?.message ?? parsed.error?.code ?? detail;
-      } catch {}
-      throw new Error(`OpenAI HTTP ${response.status}: ${detail || "request rejected"}`);
-    }
-    const data = await response.json() as {
-      choices?: Array<{ message?: { content?: string | null }; finish_reason?: string }>;
-      error?: { message?: string };
-    };
-    const text = data.choices?.[0]?.message?.content?.trim();
-    if (!text || text.length < 20) throw new Error("OpenAI returned an empty or unusably short draft");
-    if (/this is a solved class of problem|separating the control plane from the evidence plane/i.test(text)) {
-      throw new Error("Generated draft failed the anti-boilerplate quality check");
-    }
-    return { text, source: "explicit_external_fallback", model };
-  } finally {
-    clearTimeout(timer);
-  }
+  throw new Error(
+    "BLOCKED: Daisy first-party outreach inference is unavailable; no third-party AI provider is permitted. " +
+    (local.result.error || local.result.code || "Local model unavailable.")
+  );
 }
+
 function validateDraft(draft: string, p: typeof outreachProspects.$inferSelect): void {
   const words = draft.trim().split(/\s+/).filter(Boolean);
   if (words.length < 8 || words.length > 90) {
@@ -413,33 +367,27 @@ async function tick() {
       return;
     }
     logger.info({ hostname: process.env.FLY_MACHINE_ID ?? process.env.HOSTNAME ?? "unknown" }, "OUTREACH: worker lease acquired; this machine owns the current cycle");
-    const aiConfigured = Boolean(process.env.OPENAI_API_KEY ?? process.env.SOLVEX_FLY);
-    if (!aiConfigured) {
-      // Continue discovering prospects, but never disguise a canned fallback as AI output.
-      await huntLeads();
-    } else {
-      const pendingRows = await db
-        .select()
-        .from(outreachProspects)
-        .where(eq(outreachProspects.stage, "discovered"))
-        .orderBy(asc(outreachProspects.updatedAt))
-        .limit(25);
-      const now = Date.now();
-      const pending = pendingRows.find(p => (composeRetryAfter.get(p.id) ?? 0) <= now);
-      if (pending) {
-        try {
-          await composeDraft(pending);
-          composeRetryAfter.delete(pending.id);
-        } catch (err) {
-          composeRetryAfter.set(pending.id, now + 5 * 60_000);
-          const message = (err as Error).message;
-          logger.error({ prospectId: pending.id, error: message }, "OUTREACH: AI composition or quality check failed; prospect remains undispatched");
-          await logEvent(pending.id, pending.sourceAuthor ?? pending.company, "compose_error",
-            `AI composition/quality check failed; no draft was approved or sent. Retry in 5 minutes. Reason: ${message.slice(0, 350)}`);
-        }
-      } else if (pendingRows.length === 0) {
-        await huntLeads();
+    const pendingRows = await db
+      .select()
+      .from(outreachProspects)
+      .where(eq(outreachProspects.stage, "discovered"))
+      .orderBy(asc(outreachProspects.updatedAt))
+      .limit(25);
+    const now = Date.now();
+    const pending = pendingRows.find(p => (composeRetryAfter.get(p.id) ?? 0) <= now);
+    if (pending) {
+      try {
+        await composeDraft(pending);
+        composeRetryAfter.delete(pending.id);
+      } catch (err) {
+        composeRetryAfter.set(pending.id, now + 5 * 60_000);
+        const message = (err as Error).message;
+        logger.error({ prospectId: pending.id, error: message }, "OUTREACH: first-party AI composition or quality check failed; prospect remains undispatched");
+        await logEvent(pending.id, pending.sourceAuthor ?? pending.company, "compose_error",
+          "First-party AI composition/quality check failed; no draft was approved or sent. Retry in 5 minutes. Reason: " + message.slice(0, 350));
       }
+    } else if (pendingRows.length === 0) {
+      await huntLeads();
     }
     await pruneOld();
   } catch (err) {
