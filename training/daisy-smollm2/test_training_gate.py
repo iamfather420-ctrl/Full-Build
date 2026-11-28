@@ -237,6 +237,123 @@ class TrainingGateTest(unittest.TestCase):
             production_keys = list((ROOT / "training/daisy-smollm2/trust-root").glob("*.spki.pem"))
             self.assertEqual(production_keys, [])
 
+    def _assert_zero_step(self, verify, label: str) -> None:
+        optimizer = CountingOptimizer()
+        seal_optimizer(optimizer, verify)
+        with self.assertRaises(AuthorizationBlocked):
+            optimizer.step()
+        self.assertEqual(optimizer.inner_steps, 0, label)
+
+    def test_each_blocked_authorization_makes_zero_optimizer_updates(self):
+        document_id = "fixture-document"
+        tenant = "iamfather420-ctrl/Full-Build"
+        source_sha256 = "ab" * 32
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            trust = root / "trust"
+            valid = root / "valid.json"
+            self._write_fixture(trust, valid, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "valid")
+            expired = root / "expired.json"
+            revoked = root / "revoked.json"
+            invalid = root / "invalid.json"
+            wrong_scope = root / "wrong-scope.json"
+            malformed = root / "malformed.json"
+            malformed.write_text("{", encoding="utf-8")
+            self._write_fixture(trust, expired, document_id, source_sha256, tenant, "2020-01-01T00:00:00.000Z", "valid")
+            self._write_fixture(trust, revoked, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "revoked")
+            self._write_fixture(trust, invalid, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "invalid")
+            self._write_fixture(trust, wrong_scope, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "wrong-scope")
+            cases = {
+                "missing": lambda: cryptographic_block(root / "missing.json", source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust),
+                "malformed": lambda: cryptographic_block(malformed, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust),
+                "expired": lambda: cryptographic_block(expired, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust),
+                "revoked": lambda: cryptographic_block(revoked, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust),
+                "wrong-tenant": lambda: cryptographic_block(valid, source_sha256=source_sha256, document_id=document_id, tenant="unauthorized-actor", trust_dir=trust),
+                "wrong-scope": lambda: cryptographic_block(wrong_scope, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust),
+                "mismatched-hash": lambda: cryptographic_block(valid, source_sha256="cd" * 32, document_id=document_id, tenant=tenant, trust_dir=trust),
+                "invalid-signature": lambda: cryptographic_block(invalid, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust),
+                "unapproved-source": lambda: fresh_step_authorization(GATE, DATASET),
+            }
+            for label, verify in cases.items():
+                self._assert_zero_step(verify, label)
+
+    def test_trainer_paths_cannot_bypass_the_step_boundary(self):
+        class Args:
+            deepspeed = None
+            fsdp = None
+
+        class Trainer:
+            def __init__(self):
+                self.optimizer = None
+                self.args = Args()
+                self.callbacks = []
+
+            def add_callback(self, callback):
+                self.callbacks.append(callback)
+
+            def create_optimizer(self):
+                self.optimizer = CountingOptimizer()
+
+            def train(self, resume_from_checkpoint=None):
+                self.create_optimizer()
+                self.optimizer = CountingOptimizer()
+                for callback in self.callbacks:
+                    callback.on_pre_optimizer_step(self)
+                self.optimizer.step()
+
+        def blocked():
+            return "Authorization is revoked."
+
+        trainer = Trainer()
+        install_trainer_step_boundary(trainer, blocked)
+        with self.assertRaises(AuthorizationBlocked):
+            trainer.train()
+        self.assertEqual(trainer.optimizer.inner_steps, 0)
+        with self.assertRaises(AuthorizationBlocked):
+            trainer.train(resume_from_checkpoint="checkpoint")
+        self.assertEqual(trainer.optimizer.inner_steps, 0)
+
+        class AccumulatingTrainer(Trainer):
+            def train(self, resume_from_checkpoint=None):
+                self.create_optimizer()
+                self.microbatches = 3
+                self.optimizer.step()
+
+        accumulating = AccumulatingTrainer()
+        install_trainer_step_boundary(accumulating, blocked)
+        with self.assertRaises(AuthorizationBlocked):
+            accumulating.train()
+        self.assertEqual(accumulating.optimizer.inner_steps, 0)
+        self.assertEqual(accumulating.microbatches, 3)
+
+        class DirectStepTrainer(Trainer):
+            def optimizer_step(self):
+                self.optimizer.step()
+
+            def train(self, resume_from_checkpoint=None):
+                self.create_optimizer()
+                self.optimizer_step()
+
+        direct = DirectStepTrainer()
+        install_trainer_step_boundary(direct, blocked)
+        with self.assertRaises(AuthorizationBlocked):
+            direct.train()
+        self.assertEqual(direct.optimizer.inner_steps, 0)
+
+        unsafe = Trainer()
+        install_trainer_step_boundary(unsafe, blocked)
+        unsafe.args.deepspeed = "ds_config.json"
+        with self.assertRaises(AuthorizationBlocked) as caught:
+            unsafe.train()
+        self.assertIn("DeepSpeed", str(caught.exception))
+        self.assertIsNone(unsafe.optimizer)
+        unsafe.args.deepspeed = None
+        unsafe.args.fsdp = "full_shard"
+        with self.assertRaises(AuthorizationBlocked) as caught:
+            unsafe.train()
+        self.assertIn("FSDP", str(caught.exception))
+        self.assertIsNone(unsafe.optimizer)
+
     def _write_fixture(self, trust: Path, gate: Path, document_id: str, source_sha256: str, tenant: str, expires: str, mode: str) -> None:
         script = r"""
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -247,7 +364,7 @@ const record = {
   schema: "daisy-training-authorization/v1",
   documentId: process.env.DOC,
   sourceSha256: process.env.SHA,
-  scope: "optimizer-update",
+  scope: process.env.MODE === "wrong-scope" ? "read-only" : "optimizer-update",
   approver: "test-approver",
   keyId: "test-root",
   tenant: process.env.TENANT,

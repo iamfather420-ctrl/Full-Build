@@ -155,18 +155,18 @@ def block_reason_for_gate(path: Path, now: datetime | None = None, dataset_path:
 
 
 def seal_optimizer(optimizer: Any, verify: Callable[[], str | None]) -> Any:
-    if getattr(optimizer, "_daisy_sealed", False):
+    current = optimizer.step
+    if getattr(current, "_daisy_authorization_wrapper", False):
         return optimizer
-    inner = optimizer.step
 
     def step(*args: Any, **kwargs: Any) -> Any:
         reason = verify()
         if reason:
             raise AuthorizationBlocked(f"BLOCKED: {reason}")
-        return inner(*args, **kwargs)
+        return current(*args, **kwargs)
 
+    step._daisy_authorization_wrapper = True
     optimizer.step = step
-    optimizer._daisy_sealed = True
     return optimizer
 
 
@@ -176,20 +176,77 @@ def bind_training_optimizer(optimizer: Any, dataset_path: Path | str, gate_path:
     return seal_optimizer(optimizer, lambda: fresh_step_authorization(gate, dataset))
 
 
+def _refuse_unsealed_training_mode(trainer: Any) -> None:
+    args = getattr(trainer, "args", None)
+    if args is None:
+        return
+    if getattr(args, "deepspeed", None):
+        raise AuthorizationBlocked("BLOCKED: DeepSpeed is not a sealed optimizer path.")
+    fsdp = getattr(args, "fsdp", None)
+    if fsdp not in (None, "", False, [], "false"):
+        raise AuthorizationBlocked("BLOCKED: distributed FSDP training is not a sealed optimizer path.")
+
+
 def install_trainer_step_boundary(trainer: Any, verify: Callable[[], str | None]) -> Any:
+    def reseal() -> None:
+        optimizer = getattr(trainer, "optimizer", None)
+        if optimizer is not None:
+            seal_optimizer(optimizer, verify)
+
     original_create = trainer.create_optimizer
 
     def create_optimizer(*args: Any, **kwargs: Any) -> Any:
         created = original_create(*args, **kwargs)
-        optimizer = getattr(trainer, "optimizer", None)
-        if optimizer is None:
+        if getattr(trainer, "optimizer", None) is None:
             raise AuthorizationBlocked("BLOCKED: trainer created no optimizer.")
-        seal_optimizer(optimizer, verify)
+        seal_optimizer(trainer.optimizer, verify)
         return created
 
     trainer.create_optimizer = create_optimizer
-    if getattr(trainer, "optimizer", None) is not None:
-        seal_optimizer(trainer.optimizer, verify)
+
+    if hasattr(trainer, "optimizer_step"):
+        original_optimizer_step = trainer.optimizer_step
+
+        def optimizer_step(*args: Any, **kwargs: Any) -> Any:
+            reseal()
+            reason = verify()
+            if reason:
+                raise AuthorizationBlocked(f"BLOCKED: {reason}")
+            return original_optimizer_step(*args, **kwargs)
+
+        trainer.optimizer_step = optimizer_step
+
+    if hasattr(trainer, "training_step"):
+        original_training_step = trainer.training_step
+
+        def training_step(*args: Any, **kwargs: Any) -> Any:
+            reseal()
+            return original_training_step(*args, **kwargs)
+
+        trainer.training_step = training_step
+
+    class ResealBeforeUpdate:
+        def on_pre_optimizer_step(self, trainer_or_args: Any = None, *args: Any, **kwargs: Any) -> None:
+            optimizer = kwargs.get("optimizer")
+            if optimizer is not None:
+                seal_optimizer(optimizer, verify)
+            host = trainer_or_args if hasattr(trainer_or_args, "optimizer") else trainer
+            current = getattr(host, "optimizer", None)
+            if current is not None:
+                seal_optimizer(current, verify)
+
+    if hasattr(trainer, "add_callback"):
+        trainer.add_callback(ResealBeforeUpdate())
+
+    original_train = trainer.train
+
+    def train(*args: Any, **kwargs: Any) -> Any:
+        _refuse_unsealed_training_mode(trainer)
+        reseal()
+        return original_train(*args, **kwargs)
+
+    trainer.train = train
+    reseal()
     return trainer
 
 

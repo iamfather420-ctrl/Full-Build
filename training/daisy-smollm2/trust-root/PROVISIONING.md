@@ -63,6 +63,9 @@ If the private key is lost or exposed, delete its public key from this directory
 That returns the root to fail-closed. There is no break-glass key and no way for this repository to reissue signatures.
 A new human ceremony is required. Source approval is a separate decision and is not restored by a new key.
 
-## Current state
+## Verification
 
-No production key is installed. This document is not that key and not an authorization to train.
+This procedure was read and not executed. No private key was generated, printed, or installed.
+No public key was added. The only files in this directory are `README.md` and this document.
+The private key, when one exists, stays with the human approver and never enters this repository.
+
