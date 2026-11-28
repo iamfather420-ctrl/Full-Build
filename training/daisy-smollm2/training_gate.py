@@ -18,6 +18,9 @@ DEFAULT_GATE = ROOT / "sources/loc-english-grammar-source-collection/manifests/l
 DEFAULT_AUDIT = ROOT / "artifacts/training/loc-english/language-model-audit.json"
 DEFAULT_DATASET = ROOT / "artifacts/training/loc-english/language-model-corpus.jsonl"
 DEFAULT_TEXT_ROOT = ROOT / "sources/loc-english-grammar-source-collection/data/training_sources/public_domain/english/extracted_text"
+DEFAULT_PROVENANCE = ROOT / "sources/loc-english-grammar-source-collection/data/training_sources/public_domain/english/provenance-manifest.json"
+DEFAULT_BOOK_APPROVALS = Path(__file__).resolve().parent / "book-approvals-2026-11-27.json"
+BOOK_APPROVAL_VERIFIER = Path(__file__).resolve().parent / "verify-book-approvals.mjs"
 
 
 class AuthorizationBlocked(RuntimeError):
@@ -114,6 +117,15 @@ def loc_books_review_block(gate_path: Path) -> str | None:
     review = str(group.get("rights_and_review_status") or "")
     if status != "approved" or "PENDING_REVIEW" in review:
         return "LOC six books remain PENDING_REVIEW / training_status not_approved. A signature cannot authorize them until that source review is resolved."
+    if not BOOK_APPROVAL_VERIFIER.is_file():
+        return "Per-book approval verifier is unavailable."
+    checked = subprocess.run(
+        ["node", str(BOOK_APPROVAL_VERIFIER), "--provenance", str(DEFAULT_PROVENANCE),
+         "--approvals", str(DEFAULT_BOOK_APPROVALS), "--trust", str(TRUST)],
+        capture_output=True, text=True,
+    )
+    if checked.returncode != 0:
+        return (checked.stderr or checked.stdout or "Per-book source approval failed.").strip()
     return None
 
 
