@@ -126,9 +126,20 @@ class TrainingGateTest(unittest.TestCase):
     def test_fresh_step_refuses_forged_gate_without_a_production_key(self):
         forged = Path("/tmp/forged-training-authorization.json")
         forged.write_text(
-            '{"authorization":{"schema":"daisy-training-authorization/v1","documentId":"loc-english-language-model-corpus",'
-            '"sourceSha256":"79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7","tenant":"iamfather420-ctrl/Full-Build",'
-            '"signature":"bm90LWEgc2lnbmF0dXJl"}}',
+            json.dumps({
+                "source_groups": [{
+                    "source_id": "loc-english-grammar-six-books",
+                    "training_status": "approved",
+                    "rights_and_review_status": "APPROVED test fixture only",
+                }],
+                "authorization": {
+                    "schema": "daisy-training-authorization/v1",
+                    "documentId": "loc-english-language-model-corpus",
+                    "sourceSha256": "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7",
+                    "tenant": "iamfather420-ctrl/Full-Build",
+                    "signature": "bm90LWEgc2lnbmF0dXJl",
+                },
+            }),
             encoding="utf-8",
         )
         reason = fresh_step_authorization(forged, DATASET)
