@@ -111,13 +111,13 @@ export function approvalRefusal(approval: DocumentApproval | null, documentId: s
   if (approval.scope !== "document") return "A repository-level permission does not authorize this file.";
   if (approval.documentId !== documentId) return "The approval names a different document.";
   if (!approval.approver.trim()) return "The approval has no human approver.";
+  if (approval.revokedAt && approval.revokedAt <= now) return "The approval was revoked.";
+  if (approval.expiresAt <= now) return "The approval is expired.";
+  if (approval.issuedAt > now) return "The approval is not yet in force.";
   if (!approval.signature || !approval.keyId || !approval.sourceSha256) {
     return "Cryptographic approval proof, key identity, or source digest is missing.";
   }
   return "No trusted cryptographic signature verifier is configured; approval is blocked.";
-  if (approval.revokedAt && approval.revokedAt <= now) return "The approval was revoked.";
-  if (approval.expiresAt <= now) return "The approval is expired.";
-  if (approval.issuedAt > now) return "The approval is not yet in force.";
   return null;
 }
 export function admitDocument(
