@@ -5,6 +5,7 @@
   "decision": "NOT_APPROVED",
   "this_document_is_training_authorization": false,
   "automatic_approval": false,
+  "page_coverage_followup": "training/daisy-smollm2/reviews/loc-six-book-page-audit-2026-11-27.json",
   "training_eligible_count": 0,
   "note": "Each book remains ineligible until the human approver explicitly approves that book. A Library of Congress reuse statement is not training approval. Hashes below were recomputed from the files in this checkout.",
   "books": [
