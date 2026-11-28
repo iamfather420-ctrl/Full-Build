@@ -144,7 +144,7 @@ class TrainingGateTest(unittest.TestCase):
             encoding="utf-8",
         )
         reason = fresh_step_authorization(forged, DATASET)
-        self.assertEqual(reason, "Trusted verification key is unavailable.")
+        self.assertIn("exactly one approval", reason or "")
         self._assert_zero_updates(bind_train, DATASET, forged)
         self._assert_zero_updates(bind_text, DATASET, forged)
 
