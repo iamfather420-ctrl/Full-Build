@@ -1,5 +1,3 @@
-const BOILERPLATE = /books in this collection are in the public domain and are free to use and reuse/i;
-
 export function locBookEligibility({ source, gate, inventorySource, bookApproval }) {
   const reasons = [];
   if (!gate || typeof gate !== "object" || Array.isArray(gate) || !Array.isArray(gate.source_groups)) {
@@ -24,8 +22,6 @@ export function locBookEligibility({ source, gate, inventorySource, bookApproval
   if (source && (source.trainingEligible === true || source.training_eligible === true || source.approved === true)) {
     reasons.push("A client-supplied approval flag cannot authorize training.");
   }
-  const rights = String(source?.loc_rights ?? source?.rightsEvidence ?? "");
-  if (BOILERPLATE.test(rights)) reasons.push("Collection-wide Library of Congress boilerplate is not individual approval.");
   const trainingEligible = reasons.length === 0;
   return {
     trainingEligible,
