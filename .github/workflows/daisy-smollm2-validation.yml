@@ -54,7 +54,7 @@ jobs:
           set -euo pipefail
           output="$(DAISY_TRAIN_FILE=/tmp/daisy-corpus-must-not-exist.jsonl DAISY_OUTPUT_DIR=/tmp/daisy-output-must-not-exist python training/daisy-smollm2/train.py 2>&1 || true)"
           printf '%s\n' "$output"
-          grep -q "BLOCKED: verified training corpus not found" <<< "$output"
+          grep -q "BLOCKED: Dataset content is unavailable" <<< "$output"
           test ! -e /tmp/daisy-output-must-not-exist
       - name: Verify LOC corpus preparation remains blocked and immutable
         shell: bash
