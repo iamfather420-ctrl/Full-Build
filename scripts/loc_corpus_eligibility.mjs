@@ -1,6 +1,6 @@
 const BOILERPLATE = /books in this collection are in the public domain and are free to use and reuse/i;
 
-export function locBookEligibility({ source, gate, inventorySource }) {
+export function locBookEligibility({ source, gate, inventorySource, bookApproval }) {
   const reasons = [];
   if (!gate || typeof gate !== "object" || Array.isArray(gate) || !Array.isArray(gate.source_groups)) {
     reasons.push("Source-review record is missing or malformed.");
@@ -15,13 +15,17 @@ export function locBookEligibility({ source, gate, inventorySource }) {
   else if (inventorySource.training_eligible !== true || inventorySource.rights_status === "PENDING_REVIEW" || inventorySource.rights_review === "PENDING_REVIEW") {
     reasons.push("Source inventory does not approve this book.");
   }
+  if (!source || typeof source !== "object") reasons.push("Source record is missing.");
+  if (!bookApproval || bookApproval.verified !== true
+    || bookApproval.sourceId !== String(source?.item_id ?? "")
+    || bookApproval.sourceSha256 !== String(source?.text_sha256 ?? "").toLowerCase()) {
+    reasons.push("A cryptographically verified, source-digest-bound individual book approval is required.");
+  }
   if (source && (source.trainingEligible === true || source.training_eligible === true || source.approved === true)) {
     reasons.push("A client-supplied approval flag cannot authorize training.");
   }
   const rights = String(source?.loc_rights ?? source?.rightsEvidence ?? "");
-  if (BOILERPLATE.test(rights) && reasons.length > 0) {
-    reasons.push("Collection-wide Library of Congress boilerplate is not individual approval.");
-  }
+  if (BOILERPLATE.test(rights)) reasons.push("Collection-wide Library of Congress boilerplate is not individual approval.");
   const trainingEligible = reasons.length === 0;
   return {
     trainingEligible,
