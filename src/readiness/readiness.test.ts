@@ -26,6 +26,7 @@ import { completionOf } from "./scoring";
 import { resolveTasks } from "./remediation";
 import { configureWeightEngine, execute, resetReadinessState } from "./service";
 import { evidence } from "./evidence";
+import { hasVerifiedTenantSession, isTrainingTaskSelection } from "./authorization";
 
 configureWeightEngine({ loadKernel, applySgd, evaluate, validateWeights });
 
@@ -290,13 +291,14 @@ function validApproval(documentId: string, overrides: Partial<DocumentApproval> 
 test("an approved document is admitted only when the manifest and a document approval allow it", () => {
   const document = admittedFixture(new TextEncoder().encode("fixture-bytes"));
   const now = "2026-11-27T12:00:00.000Z";
-  const openManifest = { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false };
+  const openManifest = { modelTrainingAuthorized: true, trainingPipelineEnabled: true, trainingCorpusGenerated: true };
   const closed = admitDocument(document, REAL_MANIFEST_GATE, null, validApproval(document.id), now);
   assert.equal(closed.state, "BLOCKED");
   const missingApproval = admitDocument(document, openManifest, null, null, now);
   assert.equal(missingApproval.state, "BLOCKED");
   const open = admitDocument(document, openManifest, null, validApproval(document.id), now);
-  assert.equal(open.state, "ADMITTED");
+  assert.equal(open.state, "BLOCKED");
+  assert.equal(open.reasons.some((reason) => reason.includes("cryptographic")), true);
   const corrupt = { ...document, observedSha256: "0".repeat(64), text: "short" };
   const failed = admitDocument(corrupt, openManifest, null, validApproval(document.id), now);
   assert.equal(failed.state, "BLOCKED");
@@ -318,11 +320,11 @@ test("duplicate digests are not both admitted", () => {
   const copy = { ...document, id: "synthetic-duplicate", path: "fixtures/copy.txt" };
   const selected = selectTrainingDocuments(
     [document, copy],
-    { modelTrainingAuthorized: true, trainingPipelineEnabled: false, trainingCorpusGenerated: false },
+    { modelTrainingAuthorized: true, trainingPipelineEnabled: true, trainingCorpusGenerated: true },
     [validApproval(document.id), validApproval(copy.id)],
   );
-  assert.equal(selected.admitted.length, 1);
-  assert.equal(selected.results.find((result) => result.id === "synthetic-duplicate")?.state, "BLOCKED");
+  assert.equal(selected.admitted.length, 0);
+  assert.equal(selected.results.every((result) => result.state === "BLOCKED"), true);
 });
 
 test("micro-model inference fail-closes when the digest changes", () => {
@@ -383,4 +385,14 @@ test("the approval queue is unsigned and admits nothing", () => {
   assert.equal(queue.sourcesSigned, 0);
   assert.equal(queue.sourcesAdmitted, 0);
   assert.equal(queue.sources.every((source) => source.signature === null && source.admitted === false && source.recommendedDecision === "DO_NOT_ADMIT"), true);
+});
+
+
+test("readiness execution requires a verified tenant session and client approval cannot authorize training", () => {
+  assert.equal(hasVerifiedTenantSession({ authenticated: false, userId: "u1", tenantUserId: "u1" }), false);
+  assert.equal(hasVerifiedTenantSession({ authenticated: true, userId: "u1", tenantUserId: "u2" }), false);
+  assert.equal(hasVerifiedTenantSession({ authenticated: true, userId: "u1", tenantUserId: "u1" }), true);
+  assert.equal(isTrainingTaskSelection(["scan-only"]), false);
+  assert.equal(isTrainingTaskSelection(["generate-weights"]), true);
+  assert.equal(isTrainingTaskSelection(["training-engine", "scan-only"]), true);
 });
