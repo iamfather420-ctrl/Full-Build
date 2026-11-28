@@ -1,14 +1,19 @@
-"""Fail closed unless the learning-engine gate actually authorizes training."""
+"""Fail closed unless a trusted Ed25519 authorization is valid at the optimizer."""
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+
+SCRIPT = Path(__file__).resolve().parent / "verify-authorization.mjs"
+TRUST = Path(__file__).resolve().parent / "trust-root"
 
 
 def block_reason(status: Any, now: datetime | None = None) -> str | None:
+    """Legacy field check. A passing result is not optimizer authorization."""
     if not isinstance(status, dict):
         return "Invalid authorization record."
     revoked = status.get("revokedAt")
@@ -31,18 +36,36 @@ def block_reason(status: Any, now: datetime | None = None) -> str | None:
         return "model_training_authorized_by_this_manifest is not true."
     if status.get("training_pipeline_enabled") is not True:
         return "training_pipeline_enabled is not true."
-    signature = status.get("signature")
-    if not isinstance(signature, str) or not signature.strip():
+    if not isinstance(status.get("signature"), str) or not str(status.get("signature")).strip():
         return "Authorization is unsigned."
-    return None
+    return "A nonempty signature is not cryptographic authorization."
+
+
+def cryptographic_block(gate_path: Path) -> str:
+    if not gate_path.is_file():
+        return "Learning-engine gate is missing."
+    if not SCRIPT.is_file():
+        return "Trusted verifier is unavailable."
+    process = subprocess.run(
+        ["node", str(SCRIPT), "gate", "--gate", str(gate_path), "--trust", str(TRUST)],
+        capture_output=True, text=True,
+    )
+    if process.returncode == 0:
+        return "Verifier accepted without a trusted production key."
+    return (process.stderr or process.stdout or "Authorization failed.").strip()
 
 
 def block_reason_for_gate(path: Path, now: datetime | None = None) -> str | None:
-    if not path.is_file():
-        return "Learning-engine gate is missing."
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    status = payload.get("status") if isinstance(payload, dict) else None
-    return block_reason(status, now)
+    del now
+    return cryptographic_block(path)
+
+
+def guarded_optimizer_step(check: Callable[[], str | None], optimize: Callable[[], None]) -> str | None:
+    reason = check()
+    if reason:
+        return reason
+    optimize()
+    return None
 
 
 def main() -> int:

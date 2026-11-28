@@ -1,6 +1,7 @@
 import unittest
 from datetime import datetime, timezone
-from training_gate import block_reason
+from pathlib import Path
+from training_gate import block_reason, block_reason_for_gate, guarded_optimizer_step
 
 OPEN = {
     "model_training_authorized_by_this_manifest": True,
@@ -8,6 +9,7 @@ OPEN = {
     "signature": "owner-signature",
     "valid": True,
 }
+GATE = Path("sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json")
 
 class TrainingGateTest(unittest.TestCase):
     def test_current_gate_blocks(self):
@@ -21,8 +23,20 @@ class TrainingGateTest(unittest.TestCase):
         self.assertEqual(block_reason({**OPEN, "valid": False}), "Authorization is invalid.")
         self.assertEqual(block_reason(None), "Invalid authorization record.")
 
-    def test_complete_record_is_the_only_open_path(self):
-        self.assertIsNone(block_reason(OPEN))
+    def test_a_nonempty_signature_is_not_authorization(self):
+        self.assertIn("not cryptographic", block_reason(OPEN) or "")
+
+    def test_real_gate_blocks_before_the_optimizer(self):
+        calls = []
+        reason = guarded_optimizer_step(lambda: block_reason_for_gate(GATE), lambda: calls.append("updated"))
+        self.assertEqual(reason, "Trusted verification key is unavailable.")
+        self.assertEqual(calls, [])
+
+    def test_missing_gate_blocks_before_the_optimizer(self):
+        calls = []
+        reason = guarded_optimizer_step(lambda: block_reason_for_gate(Path("/tmp/missing-learning-gate.json")), lambda: calls.append("updated"))
+        self.assertIn("missing", reason or "")
+        self.assertEqual(calls, [])
 
 if __name__ == "__main__":
     unittest.main()

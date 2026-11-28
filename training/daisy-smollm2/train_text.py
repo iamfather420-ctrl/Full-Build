@@ -107,6 +107,10 @@ def main() -> int:
     )
     trainer = Trainer(model=model, args=args, train_dataset=train_ds, eval_dataset=val_ds,
         tokenizer=tokenizer, data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False))
+    gate_block = block_reason_for_gate(gate_path)
+    if gate_block:
+        print(f"BLOCKED: {gate_block}", file=sys.stderr)
+        return 2
     train_result = trainer.train()
     metrics = trainer.evaluate()
     checkpoint = output_dir / "checkpoint"
