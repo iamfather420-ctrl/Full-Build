@@ -29,9 +29,9 @@ jobs:
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
-      - name: Install dependencies without mutating the npm-format lockfile
-        run: bun install --no-save
+          bun-version: 1.4.5
+      - name: Install exact dependencies from the committed Bun lockfile
+        run: bun install --frozen-lockfile
       - name: Build and publish digest-pinned Stage 6 sandbox
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
