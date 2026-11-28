@@ -175,6 +175,33 @@ class TrainingGateTest(unittest.TestCase):
             self.assertIn("proprietary_from_scratch_daisy", text)
             self.assertIn("smollm2-supervised-finetune", text)
 
+    def test_wrong_tenant_mismatched_hash_and_unapproved_source_make_zero_updates(self):
+        document_id = "fixture-document"
+        tenant = "iamfather420-ctrl/Full-Build"
+        source_sha256 = "ab" * 32
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            trust = root / "trust"
+            gate = root / "gate.json"
+            self._write_fixture(trust, gate, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "valid")
+            cases = {
+                "wrong-tenant": dict(source_sha256=source_sha256, document_id=document_id, tenant="unauthorized-actor", trust_dir=trust),
+                "mismatched-hash": dict(source_sha256="cd" * 32, document_id=document_id, tenant=tenant, trust_dir=trust),
+            }
+            for name, kwargs in cases.items():
+                optimizer = CountingOptimizer()
+                seal_optimizer(optimizer, lambda kwargs=kwargs: cryptographic_block(gate, **kwargs))
+                with self.assertRaises(AuthorizationBlocked):
+                    optimizer.step()
+                self.assertEqual(optimizer.inner_steps, 0, name)
+        for bind in (bind_train, bind_text):
+            optimizer = CountingOptimizer()
+            bind(optimizer, DATASET, GATE)
+            with self.assertRaises(AuthorizationBlocked) as caught:
+                optimizer.step()
+            self.assertIn("not_approved", str(caught.exception))
+            self.assertEqual(optimizer.inner_steps, 0)
+
     def test_valid_signature_passes_and_bad_cases_stay_blocked(self):
         document_id = "fixture-document"
         tenant = "iamfather420-ctrl/Full-Build"
