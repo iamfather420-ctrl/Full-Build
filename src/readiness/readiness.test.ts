@@ -23,7 +23,7 @@ import { runContextProbe } from "./contextProbe";
 import { FINAL_LANGUAGE_EVALUATION } from "./evaluationSets";
 import type { GitHubClient, GitHubResponse } from "./github";
 import { completionOf } from "./scoring";
-import { resolveTasks } from "./remediation";
+import { resolveTasks, TASKS } from "./remediation";
 import { configureWeightEngine, execute, resetReadinessState } from "./service";
 import { evidence } from "./evidence";
 import { hasVerifiedTenantSession, isTrainingTaskSelection } from "./authorization";
@@ -137,7 +137,8 @@ test("replacement and migrations are refused", async () => {
   const weights = report.execution?.results.find((result) => result.taskId === "generate-weights");
   assert.equal(replace?.state, "BLOCKED");
   assert.equal(database?.state, "BLOCKED");
-  assert.equal(weights?.state, "COMPLETED");
+  assert.equal(weights?.state, "REVIEW_REQUIRED");
+  assert.match(weights?.detail ?? "", /EXPERIMENTAL_AUTHORED_SEED_MICRO_MODEL/);
   assert.equal(report.sandbox?.cloned, false);
   assert.ok(report.daisyCompletion < 1);
 });
@@ -298,7 +299,7 @@ test("an approved document is admitted only when the manifest and a document app
   assert.equal(missingApproval.state, "BLOCKED");
   const open = admitDocument(document, openManifest, null, validApproval(document.id), now);
   assert.equal(open.state, "BLOCKED");
-  assert.equal(open.reasons.some((reason) => reason.includes("cryptographic")), true);
+  assert.equal(open.reasons.some((reason) => reason.toLowerCase().includes("cryptographic")), true);
   const corrupt = { ...document, observedSha256: "0".repeat(64), text: "short" };
   const failed = admitDocument(corrupt, openManifest, null, validApproval(document.id), now);
   assert.equal(failed.state, "BLOCKED");
@@ -385,6 +386,21 @@ test("the approval queue is unsigned and admits nothing", () => {
   assert.equal(queue.sourcesSigned, 0);
   assert.equal(queue.sourcesAdmitted, 0);
   assert.equal(queue.sources.every((source) => source.signature === null && source.admitted === false && source.recommendedDecision === "DO_NOT_ADMIT"), true);
+});
+
+test("the authored micro-model is not proprietary Daisy completion", () => {
+  const report = JSON.parse(readFileSync(new URL("./artifacts/daisy-next-token-micro.report.json", import.meta.url), "utf8")) as {
+    classification: string;
+    proprietaryConversationalModel: string;
+    proprietaryFromScratchDaisy: boolean;
+    documentsAdmitted: number;
+  };
+  assert.equal(report.classification, "EXPERIMENTAL_AUTHORED_SEED_MICRO_MODEL");
+  assert.equal(report.proprietaryConversationalModel, "NOT_COMPLETE");
+  assert.equal(report.proprietaryFromScratchDaisy, false);
+  assert.equal(report.documentsAdmitted, 0);
+  const task = TASKS.find((item) => item.id === "generate-weights");
+  assert.equal(task?.label.includes("proprietary Daisy model weights"), false);
 });
 
 

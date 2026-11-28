@@ -59,7 +59,8 @@ class TrainingGateTest(unittest.TestCase):
         self.assertEqual(binding["documentId"], "loc-english-language-model-corpus")
         self.assertEqual(binding["tenant"], "iamfather420-ctrl/Full-Build")
         self.assertEqual(binding["sourceSha256"], hashlib.sha256(DATASET.read_bytes()).hexdigest())
-        self.assertEqual(binding["sourceSha256"], "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7")
+        self.assertEqual(binding["sourceSha256"], "875d81ae0769e39d1f657ede98ce3dca390784fbe44caf7399fd6c06ff3fc131")
+        self.assertNotEqual(binding["sourceSha256"], "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7")
 
     def test_modified_dataset_does_not_match_the_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -151,6 +152,35 @@ class TrainingGateTest(unittest.TestCase):
         reason = fresh_step_authorization(GATE, DATASET)
         self.assertIn("not_approved", reason or "")
         self.assertIn("PENDING_REVIEW", reason or "")
+
+    def test_unapproved_loc_corpus_is_staging_only_and_checkpoint_is_unchanged(self):
+        audit = json.loads((ROOT / "artifacts/training/loc-english/language-model-audit.json").read_text(encoding="utf-8"))
+        self.assertEqual(audit["approval"], "NOT_APPROVED")
+        self.assertEqual(audit["corpusStatus"], "STAGING_ONLY")
+        self.assertEqual(audit["use"], "NOT_FOR_TRAINING")
+        self.assertEqual(audit["historicalDatasetSha256"], "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7")
+        self.assertNotIn("do not require", audit["eligibilityPolicy"])
+        eligible = 0
+        for line in DATASET.read_text(encoding="utf-8").splitlines():
+            record = json.loads(line)
+            if record.get("trainingEligible") is True:
+                eligible += 1
+            self.assertEqual(record["approval"], "NOT_APPROVED")
+            self.assertEqual(record["use"], "NOT_FOR_TRAINING")
+        self.assertEqual(eligible, 0)
+        self.assertEqual(hashlib.sha256(DATASET.read_bytes()).hexdigest(), audit["datasetSha256"])
+        incident = json.loads((ROOT / "src/readiness/artifacts/experimental-grammar-cycle-2026-11-27.json").read_text(encoding="utf-8"))
+        self.assertEqual(incident["preservedCheckpoint"]["weightDigest"], "9a1d7520e6c8070aa4f2fe42346c6930c28cc3a604a01f7cc9508a568234d907")
+        self.assertEqual(incident["preservedCheckpoint"]["sampleUpdates"], 384)
+        self.assertFalse(incident["authorizedProductionWeights"])
+        digest = subprocess.run(
+            ["node", "--input-type=module", "--eval",
+             "import {createHash} from 'node:crypto'; import {readFileSync} from 'node:fs';"
+             "const w=JSON.parse(readFileSync('src/readiness/artifacts/experimental-grammar-cycle-weights.json','utf8'));"
+             "process.stdout.write(createHash('sha256').update(JSON.stringify(w.tensors)).digest('hex'));"],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        ).stdout
+        self.assertEqual(digest, "9a1d7520e6c8070aa4f2fe42346c6930c28cc3a604a01f7cc9508a568234d907")
 
     def test_loc_review_gate_fails_closed_when_missing_malformed_or_source_group_missing(self):
         missing = Path("/tmp/missing-loc-review-gate.json")

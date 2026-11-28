@@ -4,6 +4,9 @@ import { DAISY_LOC_GRAMMAR_EVIDENCE } from '../inference/daisyLocGrammarEvidence
 
 test('completed LOC training is not reported as loaded inference', () => {
   assert.equal(DAISY_LOC_GRAMMAR_EVIDENCE.training_status, 'PASS');
+  assert.equal(DAISY_LOC_GRAMMAR_EVIDENCE.source_approval, 'NOT_APPROVED');
+  assert.equal(DAISY_LOC_GRAMMAR_EVIDENCE.corpus_use, 'NOT_FOR_TRAINING');
+  assert.equal(DAISY_LOC_GRAMMAR_EVIDENCE.proprietary_from_scratch_daisy, false);
   assert.equal(DAISY_LOC_GRAMMAR_EVIDENCE.inference_status, 'NOT_RUN');
   assert.equal(DAISY_LOC_GRAMMAR_EVIDENCE.model_loaded, false);
   assert.equal(DAISY_LOC_GRAMMAR_EVIDENCE.activation_authorized, false);

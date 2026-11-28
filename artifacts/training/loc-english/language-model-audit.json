@@ -1,7 +1,7 @@
 {
   "schema": "daisy-loc-language-model-corpus-audit/v1",
   "sourceManifestSha256": "bdbaf8143e396ed868ecbc5a61a4e5f5c12a63c6d8a8cd52168d745a69504085",
-  "datasetSha256": "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7",
+  "datasetSha256": "875d81ae0769e39d1f657ede98ce3dca390784fbe44caf7399fd6c06ff3fc131",
   "sourceCount": 6,
   "recordCount": 847,
   "trainRecords": 726,
@@ -9,7 +9,7 @@
   "totalCharacters": 1406668,
   "splitPolicy": "Source-disjoint; validation sources are fixed by source ID",
   "trainingMode": "Plain-text causal language modeling; no synthetic conversations",
-  "eligibilityPolicy": "Use explicit source-level LOC public-domain/free-reuse declaration; do not require conversational annotation or human rights-review workflow flags",
+  "eligibilityPolicy": "Collection-wide Library of Congress boilerplate is not individual book approval. Records remain trainingEligible false.",
   "sources": [
     {
       "sourceId": "24000690",
@@ -21,7 +21,8 @@
       "split": "validation",
       "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
       "rightsEvidenceUrl": "https://www.loc.gov/item/24000690/",
-      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+      "eligibilityBasis": "NOT_APPROVED. The preserved rights sentence is collection boilerplate, not approval.",
+      "approval": "NOT_APPROVED"
     },
     {
       "sourceId": "10033634",
@@ -33,7 +34,8 @@
       "split": "train",
       "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
       "rightsEvidenceUrl": "https://www.loc.gov/item/10033634/",
-      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+      "eligibilityBasis": "NOT_APPROVED. The preserved rights sentence is collection boilerplate, not approval.",
+      "approval": "NOT_APPROVED"
     },
     {
       "sourceId": "tmp96027691",
@@ -45,7 +47,8 @@
       "split": "train",
       "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
       "rightsEvidenceUrl": "https://www.loc.gov/item/tmp96027691/",
-      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+      "eligibilityBasis": "NOT_APPROVED. The preserved rights sentence is collection boilerplate, not approval.",
+      "approval": "NOT_APPROVED"
     },
     {
       "sourceId": "11018039",
@@ -57,7 +60,8 @@
       "split": "train",
       "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
       "rightsEvidenceUrl": "https://www.loc.gov/item/11018039/",
-      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+      "eligibilityBasis": "NOT_APPROVED. The preserved rights sentence is collection boilerplate, not approval.",
+      "approval": "NOT_APPROVED"
     },
     {
       "sourceId": "40017591",
@@ -69,7 +73,8 @@
       "split": "train",
       "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
       "rightsEvidenceUrl": "https://www.loc.gov/item/40017591/",
-      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+      "eligibilityBasis": "NOT_APPROVED. The preserved rights sentence is collection boilerplate, not approval.",
+      "approval": "NOT_APPROVED"
     },
     {
       "sourceId": "31022301",
@@ -81,7 +86,12 @@
       "split": "validation",
       "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
       "rightsEvidenceUrl": "https://www.loc.gov/item/31022301/",
-      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+      "eligibilityBasis": "NOT_APPROVED. The preserved rights sentence is collection boilerplate, not approval.",
+      "approval": "NOT_APPROVED"
     }
-  ]
+  ],
+  "historicalDatasetSha256": "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7",
+  "corpusStatus": "STAGING_ONLY",
+  "approval": "NOT_APPROVED",
+  "use": "NOT_FOR_TRAINING"
 }

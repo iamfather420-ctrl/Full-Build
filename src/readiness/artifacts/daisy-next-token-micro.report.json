@@ -1,5 +1,7 @@
 {
   "modelName": "daisy-next-token-micro",
+  "classification": "EXPERIMENTAL_AUTHORED_SEED_MICRO_MODEL",
+  "proprietaryFromScratchDaisy": false,
   "corpusId": "solvex-authored-instructional-seed-v1",
   "optimizer": "sgd",
   "seed": 20261127,

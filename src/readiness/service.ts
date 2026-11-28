@@ -275,7 +275,7 @@ function daisyEvidence(run: DaisyRun | null): EvidenceRecord[] {
         status: "UNVERIFIED",
         state: "AUTHORIZATION_REQUIRED",
         failure: "Gates are not passed by default and are not marked not-applicable.",
-        remediation: "Approve Generate and verify proprietary Daisy model weights.",
+        remediation: "The authored-seed micro-model is experimental. It does not authorize proprietary Daisy weights.",
       }),
     ];
   }
@@ -448,10 +448,7 @@ function taskState(id: string, approved: boolean, daisy: DaisyRun | null, traini
   if (id === "discover-engine") return "REVIEW_REQUIRED";
   if (!daisy) return "BLOCKED";
   const gate = (gateId: string) => daisy.gates.find((item) => item.id === gateId);
-  if (id === "generate-weights") return gate("weights")?.passed && gate("integrity")?.passed ? "COMPLETED" : "VALIDATION_FAILED";
-  if (id === "model-engine") return gate("model-engine")?.passed ? "COMPLETED" : "VALIDATION_FAILED";
-  if (id === "training-engine") return gate("training-engine")?.passed ? "COMPLETED" : "VALIDATION_FAILED";
-  if (id === "inference-engine") return gate("inference")?.passed ? "COMPLETED" : "VALIDATION_FAILED";
+  if (id === "generate-weights" || id === "model-engine" || id === "training-engine" || id === "inference-engine") return "REVIEW_REQUIRED";
   if (id === "daisy-language") return gate("communication")?.passed ? "COMPLETED" : "VALIDATION_FAILED";
   return "BLOCKED";
 }
@@ -475,7 +472,10 @@ function taskDetail(id: string, approved: boolean, daisy: DaisyRun | null, train
   if (id === "critical-blockers") return "Critical blockers that require authorization remain blocked.";
   if (id === "complete-outstanding") return "Expanded tasks that are still blocked or failed prevent this plan from being complete.";
   if (id === "integration-wiring") return "Cross-repository wiring is recorded as incomplete wherever execution was not observed.";
-  if (daisy && (id === "generate-weights" || id === "training-engine" || id === "inference-engine" || id === "daisy-language" || id === "model-engine")) {
+  if (id === "generate-weights" || id === "model-engine" || id === "training-engine" || id === "inference-engine") {
+    return "EXPERIMENTAL_AUTHORED_SEED_MICRO_MODEL only. This artifact does not complete proprietary from-scratch Daisy.";
+  }
+  if (daisy && id === "daisy-language") {
     return `Run ${daisy.durationMs}ms on ${daisy.hardware}. Steps ${daisy.trainedSteps}. Loss ${daisy.trainLossBefore} -> ${daisy.trainLossAfter}. Held-out accuracy ${daisy.heldOutAccuracy}. Output: ${daisy.generatedText ?? "none"}. Source ${daisy.inferenceSource}.`;
   }
   if (id === "scan-only" || id === "production-verification" || id === "cross-repo") {

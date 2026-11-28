@@ -1,6 +1,12 @@
 {
   "schema": "daisy-experimental-grammar-cycle/v1",
   "status": "PAUSED_AUTHORIZATION_FAILURE",
+  "classification": "HISTORICAL_EXPERIMENTAL_ARTIFACT",
+  "authorizedProductionWeights": false,
+  "proprietaryDaisyWeights": false,
+  "detection": "The learning-engine gate reported BLOCKED while applySgd still executed.",
+  "containment": "The cycle was paused. The optimizer boundary now checks authorization inside step. The checkpoint was not reset.",
+  "remediation": "The four consumed books were not retroactively admitted. Production remains OFF.",
   "production": "OFF",
   "admission": "BLOCKED",
   "proprietaryDaisyTraining": "NOT_ACCEPTED",

@@ -5,6 +5,10 @@ on:
     paths:
       - "training/daisy-smollm2/**"
       - "scripts/prepare_loc_english_corpus.mjs"
+      - "scripts/prepare_loc_language_model_corpus.mjs"
+      - "scripts/loc_corpus_eligibility.mjs"
+      - "scripts/loc_corpus_eligibility.test.mjs"
+      - "artifacts/training/loc-english/**"
       - "data/training_sources/public_domain/english"
       - ".github/workflows/daisy-smollm2-validation.yml"
   push:
@@ -14,6 +18,10 @@ on:
     paths:
       - "training/daisy-smollm2/**"
       - "scripts/prepare_loc_english_corpus.mjs"
+      - "scripts/prepare_loc_language_model_corpus.mjs"
+      - "scripts/loc_corpus_eligibility.mjs"
+      - "scripts/loc_corpus_eligibility.test.mjs"
+      - "artifacts/training/loc-english/**"
       - "data/training_sources/public_domain/english"
       - ".github/workflows/daisy-smollm2-validation.yml"
 
@@ -36,7 +44,7 @@ jobs:
       - name: Run optimizer authorization boundary tests
         run: |
           set -euo pipefail
-          node --test training/daisy-smollm2/verify-authorization.test.mjs
+          node --test training/daisy-smollm2/verify-authorization.test.mjs scripts/loc_corpus_eligibility.test.mjs
           python training/daisy-smollm2/test_training_gate.py
       - name: Compile trainer
         run: python -m py_compile training/daisy-smollm2/train.py
