@@ -1,4 +1,6 @@
-const BOILERPLATE = /books in this collection are in the public domain and are free to use and reuse/i;\n\nexport function locBookEligibility({ source, gate, inventorySource, bookApproval }) {
+const BOILERPLATE = /books in this collection are in the public domain and are free to use and reuse/i;
+
+export function locBookEligibility({ source, gate, inventorySource, bookApproval }) {
   const reasons = [];
   if (!gate || typeof gate !== "object" || Array.isArray(gate) || !Array.isArray(gate.source_groups)) {
     reasons.push("Source-review record is missing or malformed.");
@@ -19,7 +21,13 @@ const BOILERPLATE = /books in this collection are in the public domain and are f
     || bookApproval.sourceSha256 !== String(source?.text_sha256 ?? "").toLowerCase()) {
     reasons.push("A cryptographically verified, source-digest-bound individual book approval is required.");
   }
-  const individuallyVerified = bookApproval?.verified === true\n    && bookApproval.sourceId === String(source?.item_id ?? "")\n    && bookApproval.sourceSha256 === String(source?.text_sha256 ?? "").toLowerCase();\n  if (BOILERPLATE.test(String(source?.loc_rights ?? source?.rightsEvidence ?? "")) && !individuallyVerified) {\n    reasons.push("Collection-wide Library of Congress boilerplate is not individual approval.");\n  }\n  if (source && (source.trainingEligible === true || source.training_eligible === true || source.approved === true)) {
+  const individuallyVerified = bookApproval?.verified === true
+    && bookApproval.sourceId === String(source?.item_id ?? "")
+    && bookApproval.sourceSha256 === String(source?.text_sha256 ?? "").toLowerCase();
+  if (BOILERPLATE.test(String(source?.loc_rights ?? source?.rightsEvidence ?? "")) && !individuallyVerified) {
+    reasons.push("Collection-wide Library of Congress boilerplate is not individual approval.");
+  }
+  if (source && (source.trainingEligible === true || source.training_eligible === true || source.approved === true)) {
     reasons.push("A client-supplied approval flag cannot authorize training.");
   }
   const trainingEligible = reasons.length === 0;
