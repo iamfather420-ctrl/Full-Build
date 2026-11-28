@@ -54,8 +54,6 @@ export function verifyBookApprovals({ provenancePath, approvalsPath, trustDir, n
     || packet.tenant !== REQUIRED_TENANT || !Array.isArray(packet.approvals) || !Array.isArray(packet.revocations)) {
     return { ok: false, reason: "Per-book approval packet schema or binding is invalid." };
   }
-  const keys = loadKeys(trustDir);
-  if (!keys.size) return { ok: false, reason: "Trusted source-approval verification key is unavailable." };
   const expected = new Map();
   for (const source of provenance.sources) {
     const id = String(source.item_id ?? "");
@@ -71,21 +69,25 @@ export function verifyBookApprovals({ provenancePath, approvalsPath, trustDir, n
     counts.set(id, (counts.get(id) ?? 0) + 1);
     if (!expected.has(id)) return { ok: false, reason: "Approval contains an unknown LOC sourceId." };
   }
-  for (const [id, digest] of expected) {
+  for (const [id] of expected) {
     if (counts.get(id) !== 1) return { ok: false, reason: `LOC book ${id} must have exactly one approval; found ${counts.get(id) ?? 0}.` };
+  }
+  const keys = loadKeys(trustDir);
+  if (!keys.size) return { ok: false, reason: "Trusted source-approval verification key is unavailable." };
+  for (const [id, digest] of expected) {
     const record = packet.approvals.find(item => item.sourceId === id);
     if (record.schema !== APPROVAL_SCHEMA || record.documentId !== `loc-book-${id}`) return { ok: false, reason: `LOC book ${id} approval document identity is invalid.` };
     if (record.sourceSha256 !== digest) return { ok: false, reason: `LOC book ${id} source digest does not match the pinned provenance manifest.` };
     if (record.scope !== REQUIRED_SCOPE || record.tenant !== REQUIRED_TENANT) return { ok: false, reason: `LOC book ${id} approval scope or tenant is invalid.` };
-    if (typeof record.approver !== "string" || !record.approver.trim() || !validTime(record, now)) return { ok: false, reason: `LOC book ${id} approver or validity period is invalid.` };
+    if (record.approver !== "Solvex-Paradox-Box" || !validTime(record, now)) return { ok: false, reason: `LOC book ${id} approver or validity period is invalid.` };
     if (!signatureValid(record, keys)) return { ok: false, reason: `LOC book ${id} approval signature is missing, forged, or untrusted.` };
     for (const revocation of packet.revocations) {
-      if (!revocation || revocation.schema !== "daisy-source-revocation/v1") continue;
-      if (!signatureValid(revocation, keys)) continue;
+      if (!revocation || revocation.schema !== "daisy-source-revocation/v1"
+        || typeof revocation.documentId !== "string" || !/^[a-f0-9]{64}$/.test(String(revocation.sourceSha256 ?? ""))
+        || revocation.tenant !== REQUIRED_TENANT || !Number.isFinite(Date.parse(revocation.revokedAt))
+        || !signatureValid(revocation, keys)) return { ok: false, reason: "Malformed, unsigned, or untrusted source revocation record." };
       if (revocation.documentId === record.documentId && revocation.sourceSha256 === digest
-        && revocation.tenant === REQUIRED_TENANT && Date.parse(revocation.revokedAt) <= now.getTime()) {
-        return { ok: false, reason: `LOC book ${id} approval is revoked.` };
-      }
+        && Date.parse(revocation.revokedAt) <= now.getTime()) return { ok: false, reason: `LOC book ${id} approval is revoked.` };
     }
   }
   return { ok: true, reason: null, approvedSourceIds: [...expected.keys()].sort() };
