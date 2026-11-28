@@ -93,23 +93,27 @@ PROPRIETARY_FROM_SCRATCH = False
 
 
 def loc_books_review_block(gate_path: Path) -> str | None:
-    """The six LOC books stay unauthorized until their own review record is approved."""
+    """Fail closed unless exactly one LOC six-book group has an explicit approval record."""
     if not gate_path.is_file():
-        return None
+        return "Learning-engine gate is missing; LOC source approval cannot be established."
     try:
         payload = json.loads(gate_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return None
+        return "Learning-engine gate is unreadable or malformed; LOC source approval cannot be established."
     groups = payload.get("source_groups") if isinstance(payload, dict) else None
     if not isinstance(groups, list):
-        return None
-    for group in groups:
-        if not isinstance(group, dict) or group.get("source_id") != "loc-english-grammar-six-books":
-            continue
-        status = group.get("training_status")
-        review = str(group.get("rights_and_review_status") or "")
-        if status != "approved" or "PENDING_REVIEW" in review:
-            return "LOC six books remain PENDING_REVIEW / training_status not_approved. A signature cannot authorize them until that source review is resolved."
+        return "Learning-engine gate has no valid source_groups list."
+    matches = [
+        group for group in groups
+        if isinstance(group, dict) and group.get("source_id") == "loc-english-grammar-six-books"
+    ]
+    if len(matches) != 1:
+        return "Learning-engine gate must contain exactly one LOC six-book source group."
+    group = matches[0]
+    status = group.get("training_status")
+    review = str(group.get("rights_and_review_status") or "")
+    if status != "approved" or "PENDING_REVIEW" in review:
+        return "LOC six books remain PENDING_REVIEW / training_status not_approved. A signature cannot authorize them until that source review is resolved."
     return None
 
 
