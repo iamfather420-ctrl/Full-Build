@@ -84,7 +84,9 @@ def independent_binding(dataset_path: Path, audit_path: Path = DEFAULT_AUDIT, te
         provenance = json.loads(DEFAULT_PROVENANCE.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return "Pinned LOC provenance manifest is missing or malformed."
-    pinned_rows = provenance.get("sources") if isinstance(provenance, dict) else None
+    if not isinstance(provenance, dict):
+        return "Pinned LOC provenance manifest is malformed."
+    pinned_rows = provenance.get("sources")
     if provenance.get("training_eligible") is not False or not isinstance(pinned_rows, list) or len(pinned_rows) != 6:
         return "Pinned LOC provenance is not a six-source non-eligible manifest."
     pinned = {str(row.get("item_id")): str(row.get("text_sha256", "")).lower() for row in pinned_rows if isinstance(row, dict)}
