@@ -1,0 +1,118 @@
+{
+  "modelName": "daisy-next-token-micro",
+  "classification": "EXPERIMENTAL_AUTHORED_SEED_MICRO_MODEL",
+  "proprietaryFromScratchDaisy": false,
+  "corpusId": "solvex-authored-instructional-seed-v1",
+  "optimizer": "sgd",
+  "seed": 20261127,
+  "hiddenSize": 24,
+  "epochs": 30,
+  "learningRate": 0.2,
+  "initSha256": "5f4f3a2bb34b9d44b41e2323ff0c33c4af8af15a18df5e4bdbf3987d991e8c12",
+  "artifactSha256": "5576c58488d2d277026891b8adcdbbb0120581e874727393694e0331d8e7bdd6",
+  "trainLossBefore": 0.12661590388071492,
+  "trainLossAfter": 0.02796475106102933,
+  "trainAccuracy": 0.68,
+  "heldOutAccuracy": 0,
+  "trainPairs": 25,
+  "heldOutPairs": 3,
+  "trainedSteps": 750,
+  "generatedText": "a verb",
+  "weightsChanged": true,
+  "documentsAdmitted": 0,
+  "languageAdmission": "BLOCKED",
+  "productionInferenceRouter": "BLOCKED",
+  "proprietaryConversationalModel": "NOT_COMPLETE",
+  "gates": [
+    {
+      "id": "architecture",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "daisy-next-token-micro mlp-classifier input=18 hidden=24 output=18. This is a next-token classifier, not a transformer and not the transitional GGUF."
+    },
+    {
+      "id": "provenance",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "Corpus solvex-authored-instructional-seed-v1. 4 authored sentences. Zero language-repository documents admitted."
+    },
+    {
+      "id": "tokenizer",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "Whitespace tokenizer, train vocabulary 18, unknown held-out tokens are not added."
+    },
+    {
+      "id": "model-engine",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "loadKernel produced 4 tensors"
+    },
+    {
+      "id": "training-engine",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "SGD lr=0.2 epochs=30 seed=20261127 steps=750 loss 0.126616 -> 0.027965"
+    },
+    {
+      "id": "records",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "Train loss 0.12661590388071492 -> 0.02796475106102933. Train next-token accuracy 0.680 is not the held-out result."
+    },
+    {
+      "id": "weights",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "format=daisy-tensors-v1 steps=750 init 5f4f3a2bb34b9d44b41e2323ff0c33c4af8af15a18df5e4bdbf3987d991e8c12 final 5576c58488d2d277026891b8adcdbbb0120581e874727393694e0331d8e7bdd6"
+    },
+    {
+      "id": "integrity",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "sha256 5576c58488d2d277026891b8adcdbbb0120581e874727393694e0331d8e7bdd6"
+    },
+    {
+      "id": "load",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "Reloaded JSON weights and executed the training-engine forward pass."
+    },
+    {
+      "id": "inference",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "Input \"a\" -> model token \"verb\". Source daisy-trained-weights. No template fallback."
+    },
+    {
+      "id": "communication",
+      "passed": false,
+      "status": "FAILED",
+      "detail": "Held-out next-token accuracy 0.0% on 3 pairs. Threshold is 50%. Train accuracy 68.0% is excluded."
+    },
+    {
+      "id": "evaluation",
+      "passed": false,
+      "status": "FAILED",
+      "detail": "Held-out sentences are disjoint from training pairs. Accuracy 0.0%."
+    },
+    {
+      "id": "persistence",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "In-process JSON round-trip preserved the tensor digest. Neon was not written."
+    },
+    {
+      "id": "recovery",
+      "passed": true,
+      "status": "PASSED",
+      "detail": "Checkpoint steps 200 resumed to 750."
+    },
+    {
+      "id": "temporary",
+      "passed": false,
+      "status": "FAILED",
+      "detail": "The Full-Build chat path still identifies the transitional GGUF. This micro-model was not substituted into InferenceRouter."
+    }
+  ]
+}

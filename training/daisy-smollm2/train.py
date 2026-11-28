@@ -12,6 +12,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from training_gate import bind_training_optimizer, block_reason_for_gate, fresh_step_authorization, install_trainer_step_boundary
+
 DEFAULT_MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
 DEFAULT_MODEL_REVISION = "eba0825ddc7730d24a88685a6c0a078cf919b383"
 REQUIRED = {
@@ -99,6 +102,15 @@ def main() -> int:
         print(str(exc), file=sys.stderr)
         return 2
 
+    gate_path = Path(os.environ.get(
+        "DAISY_LEARNING_GATE",
+        "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json",
+    ))
+    gate_block = block_reason_for_gate(gate_path, dataset_path=data_path)
+    if gate_block:
+        print(f"BLOCKED: {gate_block}", file=sys.stderr)
+        return 2
+
     # Imports are delayed until after provenance checks so invalid/missing data
     # fails closed without downloading a model or allocating training resources.
     try:
@@ -176,6 +188,7 @@ def main() -> int:
         tokenizer=tokenizer,
         data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
+    install_trainer_step_boundary(trainer, lambda: fresh_step_authorization(gate_path, data_path))
     result = trainer.train()
     evaluation = trainer.evaluate()
     final_dir = output_dir / "checkpoint"
@@ -185,6 +198,8 @@ def main() -> int:
     files = sorted(p for p in final_dir.rglob("*") if p.is_file())
     manifest = {
         "status": "TRAINING_COMPLETED",
+        "training_line": "smollm2-supervised-finetune",
+        "proprietary_from_scratch_daisy": False,
         "model_id": model_id,
         "model_revision": model_revision,
         "dataset_path": str(data_path),

@@ -1,0 +1,21 @@
+{
+  "status": "PROPOSAL_NOT_APPLIED",
+  "targetRepository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+  "targetFile": "manifests/learning-engine-gate-2026-11-27.json",
+  "authorizedApprover": "An administrator of Solvex-Paradox-Box/loc-english-grammar-source-collection, by a commit in that repository.",
+  "notAuthorizedToApply": [
+    "iamfather420-ctrl/Full-Build readiness subsystem",
+    "PR 206",
+    "Discover-Engine /v1/assertions",
+    "an automated training run"
+  ],
+  "doNotChange": {
+    "status.model_training_authorized_by_this_manifest": false,
+    "status.training_pipeline_enabled": false
+  },
+  "reason": "The gate and README say redistribution permission is not training approval, and consumer requirement 3 says training_status must not be set to approved without a separate source-specific review.",
+  "proposedAdditionOnlyAfterThatHumanCommit": {
+    "document_approvals": [],
+    "comment": "An empty list admits nothing. A later entry must name one document id, one human approver, an expiry, and scope document. Repository scope must be rejected."
+  }
+}

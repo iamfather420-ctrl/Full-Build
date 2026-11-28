@@ -1,0 +1,39 @@
+{
+  "repository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+  "gateHttp": 200,
+  "registerHttp": 200,
+  "inventoryHttp": 200,
+  "discoverEngineRepository": "Solvex-Paradox-Box/Discover-Engine",
+  "discoverEngineHttp": 404,
+  "manifest": {
+    "modelTrainingAuthorized": false,
+    "trainingPipelineEnabled": false,
+    "trainingCorpusGenerated": false
+  },
+  "registerItems": 17,
+  "registerTrainingEligible": 0,
+  "addedToTrainingInputs": 0,
+  "acquiredSources": 4,
+  "preservedCollections": [
+    {
+      "id": "loc-english-grammar-six-books",
+      "sourceCount": 6,
+      "trainingEligible": false
+    }
+  ],
+  "integrity": {
+    "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/LICENSE.md",
+    "http": 200,
+    "expectedSha256": "30fd3d756ccb4bd0a88297a597f747a8430adde7d413847ae3446ba80fe3d8e0",
+    "observedSha256": "30fd3d756ccb4bd0a88297a597f747a8430adde7d413847ae3446ba80fe3d8e0",
+    "match": true,
+    "admitted": false
+  },
+  "documentsDiscovered": 22,
+  "documentsIntegrityVerified": 1,
+  "documentsLicenseIdentifierRead": 4,
+  "documentsAdmitted": 0,
+  "documentsUsedInTraining": 0,
+  "discoveryIntegration": "BLOCKED",
+  "blockedReason": "Discover-Engine API returned HTTP 404. Source retrieval used the public language repository directly and did not admit documents."
+}

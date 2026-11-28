@@ -1,0 +1,36 @@
+{
+  "startingCommit": "63dc5b4d259813a8c14c92a66dd2d5f596f60044",
+  "baselineTests": "19 were not the baseline. Baseline at 63dc5b4 was 17 passing tests before this change.",
+  "preservedArtifactSha256": "5576c58488d2d277026891b8adcdbbb0120581e874727393694e0331d8e7bdd6",
+  "preservedWeightsFileSha256": "34d34490279ba80f64f5a57d13bbfff33ee4e7cd3b3539954899727b833e89fe",
+  "transitionalGgufSha256": "d158c64ff056f3c76fbbc6f4824c53e5ffd5de94931f71db5a418cb1df9e50fd",
+  "heldOutBefore": 0,
+  "contextProbe": {
+    "originalHeldOutAccuracy": 0,
+    "oneTokenFinalAccuracy": 0.75,
+    "twoTokenFinalAccuracy": 0,
+    "finalUnseenAccuracy": 0,
+    "locDocumentsUsed": 0,
+    "finalSetUsedForTuning": false,
+    "twoTokenDigest": "120",
+    "interpretation": "The one-token final score reuses training successors such as chart->shows and shows->action. It is not an independent pass. The two-token final contexts were not trained and scored 0. The original four-sentence held-out set was not used to tune either probe."
+  },
+  "proposal": "artifacts/proposed-manifest-change-2026-11-27.json",
+  "proposalApplied": false,
+  "reviewSummary": {
+    "discovered": 22,
+    "reviewed": 22,
+    "integrityVerified": 4,
+    "licenseVerified": 4,
+    "extracted": 0,
+    "approved": 0,
+    "admitted": 0,
+    "trainedOn": 0,
+    "fileChecksums": {
+      "listed": 79,
+      "matched": 79,
+      "failed": 0,
+      "skippedForSize": 0
+    }
+  }
+}

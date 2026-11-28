@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Solvex-Paradox-Box/loc-english-grammar-source-collection/blob/main/schemas/term-record.schema.json",
+  "title": "Canonical Language Resource Record",
+  "description": "A source-linked lexical, semantic, technical, or business-language record. Rights permission and training eligibility are separate review decisions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_id",
+    "term",
+    "language",
+    "source",
+    "rights",
+    "review"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable local record identifier; preserve upstream IDs separately."
+    },
+    "term": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lemma": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "description": "BCP 47 language tag or documented Wikidata language entity ID."
+    },
+    "part_of_speech": {
+      "type": "string"
+    },
+    "sense_id": {
+      "type": "string",
+      "description": "Source-native sense identifier where available."
+    },
+    "definition": {
+      "type": "string"
+    },
+    "aliases": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "morphology": {
+      "type": "object",
+      "description": "Source-native forms, inflections, or grammatical features; retain source identifiers."
+    },
+    "semantic_relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relation", "target_id", "source_record_id"],
+        "properties": {
+          "relation": { "type": "string" },
+          "target_id": { "type": "string" },
+          "source_record_id": { "type": "string" },
+          "source_url": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "domain": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "context": {
+      "type": "string",
+      "description": "Only source-attested context; do not synthesize examples."
+    },
+    "upstream_identifiers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "source_url", "revision", "retrieved_at"],
+      "properties": {
+        "source_id": { "type": "string" },
+        "source_url": { "type": "string", "format": "uri" },
+        "revision": { "type": "string" },
+        "source_record_id": { "type": "string" },
+        "source_path": { "type": "string" },
+        "source_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "retrieved_at": { "type": "string", "format": "date" },
+        "references": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["license", "license_url", "status"],
+      "properties": {
+        "license": { "type": "string" },
+        "license_url": { "type": "string", "format": "uri" },
+        "evidence_url": { "type": "string", "format": "uri" },
+        "status": {
+          "type": "string",
+          "enum": ["reviewed_allowed", "needs_human_review", "blocked", "public_domain_claimed_unverified"]
+        },
+        "conditions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "content_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["validation_status", "training_status"],
+      "properties": {
+        "validation_status": {
+          "type": "string",
+          "enum": ["not_checked", "integrity_verified", "content_reviewed", "rejected"]
+        },
+        "training_status": {
+          "type": "string",
+          "enum": ["not_evaluated", "quarantined", "approved", "rejected"]
+        },
+        "reviewer": { "type": "string" },
+        "reviewed_at": { "type": "string", "format": "date" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

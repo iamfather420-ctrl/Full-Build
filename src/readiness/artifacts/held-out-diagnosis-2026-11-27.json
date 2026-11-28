@@ -1,0 +1,60 @@
+{
+  "preservedCommit": "141d35f5d1cf80ea4c321b9fde6eaaf4211b796f",
+  "artifactSha256": "5576c58488d2d277026891b8adcdbbb0120581e874727393694e0331d8e7bdd6",
+  "initSha256": "5f4f3a2bb34b9d44b41e2323ff0c33c4af8af15a18df5e4bdbf3987d991e8c12",
+  "heldOutAccuracyBefore": 0,
+  "heldOutAccuracyAfter": 0,
+  "threshold": 0.5,
+  "thresholdChanged": false,
+  "scored": 3,
+  "unscored": 0,
+  "predictions": [
+    {
+      "previous": "thing",
+      "expected": "shows",
+      "predicted": "a",
+      "inVocabulary": true,
+      "correct": false
+    },
+    {
+      "previous": "shows",
+      "expected": "action",
+      "predicted": "an",
+      "inVocabulary": true,
+      "correct": false
+    },
+    {
+      "previous": "action",
+      "expected": "state",
+      "predicted": "or",
+      "inVocabulary": true,
+      "correct": false
+    }
+  ],
+  "additionalUnseen": [
+    {
+      "previous": "subject",
+      "expected": "needs",
+      "predicted": "and",
+      "inVocabulary": true,
+      "correct": false
+    },
+    {
+      "previous": "needs",
+      "expected": "verb",
+      "predicted": "a",
+      "inVocabulary": true,
+      "correct": false
+    },
+    {
+      "previous": "verb",
+      "expected": "state",
+      "predicted": "shows",
+      "inVocabulary": true,
+      "correct": false
+    }
+  ],
+  "additionalAccuracy": 0,
+  "rootCause": "All three held-out tokens are in the training vocabulary, so this is not an unknown-token failure. The model is a one-token MLP. It predicts the memorized training successor: shows->an and action->or. thing never occurred as a context token, so its prediction is the untrained bias token a, not shows.",
+  "result": "FAIL"
+}

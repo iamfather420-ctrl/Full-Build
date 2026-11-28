@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from training_gate import bind_training_optimizer, block_reason_for_gate, fresh_step_authorization, install_trainer_step_boundary
+
 DEFAULT_MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
 DEFAULT_REVISION = "eba0825ddc7730d24a88685a6c0a078cf919b383"
 RIGHTS_PHRASE = "books in this collection are in the public domain and are free to use and reuse"
@@ -45,7 +48,15 @@ def load_records(path: Path) -> tuple[list[dict[str, Any]], str]:
     return rows, digest
 
 def main() -> int:
+    gate_path = Path(os.environ.get(
+        "DAISY_LEARNING_GATE",
+        "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json",
+    ))
     data_path = Path(os.environ.get("DAISY_LM_TRAIN_FILE", "artifacts/training/loc-english/language-model-corpus.jsonl"))
+    gate_block = block_reason_for_gate(gate_path, dataset_path=data_path)
+    if gate_block:
+        print(f"BLOCKED: {gate_block}", file=sys.stderr)
+        return 2
     output_dir = Path(os.environ.get("DAISY_OUTPUT_DIR", "artifacts/daisy-smollm2-loc-grammar"))
     model_id = os.environ.get("DAISY_MODEL_ID", DEFAULT_MODEL)
     revision = os.environ.get("DAISY_MODEL_REVISION", DEFAULT_REVISION)
@@ -96,6 +107,7 @@ def main() -> int:
     )
     trainer = Trainer(model=model, args=args, train_dataset=train_ds, eval_dataset=val_ds,
         tokenizer=tokenizer, data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False))
+    install_trainer_step_boundary(trainer, lambda: fresh_step_authorization(gate_path, data_path))
     train_result = trainer.train()
     metrics = trainer.evaluate()
     checkpoint = output_dir / "checkpoint"
@@ -103,6 +115,7 @@ def main() -> int:
     files = sorted(p for p in checkpoint.rglob("*") if p.is_file())
     manifest = {
         "status":"TRAINING_COMPLETED", "training_mode":"plain_text_causal_language_modeling",
+        "training_line":"smollm2-supervised-finetune", "proprietary_from_scratch_daisy":False,
         "model_id":model_id, "model_revision":revision, "dataset_sha256":dataset_hash,
         "record_count":len(records), "train_records":len(train_texts), "validation_records":len(val_texts),
         "max_length":max_length, "epochs":epochs, "batch_size":batch_size, "learning_rate":learning_rate,

@@ -19,6 +19,7 @@ import { ProofBundlesView } from './components/ProofBundlesView';
 import { DaisyBrainView } from './components/DaisyBrainView';
 import { AuditLedgerView } from './components/AuditLedgerView';
 import { EnterpriseAuditRunner } from './components/EnterpriseAuditRunner';
+import { ReadinessConsole } from './components/ReadinessConsole';
 import { SovereignRole, UserContext } from './auth/AuthService';
 import { DurableStore } from './database/DurableStore';
 import { AuthLanding } from './components/AuthLanding';
@@ -33,7 +34,8 @@ type ActiveTab =
   | 'PROOF_VAULT'
   | 'DAISY_BRAIN'
   | 'MERKLE_LEDGER'
-  | 'AUDIT_SUITE';
+  | 'AUDIT_SUITE'
+  | 'READINESS';
 
 export default function App() {
   const durableStore = DurableStore.getInstance();
@@ -219,6 +221,18 @@ export default function App() {
           </button>
 
           <button
+            onClick={() => setActiveTab('READINESS')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'READINESS'
+                ? 'bg-slate-800 text-white font-semibold'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Production Readiness</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('AUDIT_SUITE')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-2 ${
               activeTab === 'AUDIT_SUITE'
@@ -369,6 +383,8 @@ export default function App() {
         {activeTab === 'MERKLE_LEDGER' && (
           <AuditLedgerView onChainVerified={refreshSystemStatus} />
         )}
+
+        {activeTab === 'READINESS' && <ReadinessConsole />}
 
         {activeTab === 'AUDIT_SUITE' && <EnterpriseAuditRunner />}
       </main>

@@ -1,0 +1,60 @@
+{
+  "schema": "daisy-experimental-grammar-cycle/v1",
+  "status": "PAUSED_AUTHORIZATION_FAILURE",
+  "classification": "HISTORICAL_EXPERIMENTAL_ARTIFACT",
+  "authorizedProductionWeights": false,
+  "proprietaryDaisyWeights": false,
+  "detection": "The learning-engine gate reported BLOCKED while applySgd still executed.",
+  "containment": "The cycle was paused. The optimizer boundary now checks authorization inside step. The checkpoint was not reset.",
+  "remediation": "The four consumed books were not retroactively admitted. Production remains OFF.",
+  "production": "OFF",
+  "admission": "BLOCKED",
+  "proprietaryDaisyTraining": "NOT_ACCEPTED",
+  "cause": "The sandbox read the learning-engine gate, displayed BLOCKED, and still called applySgd. The gate was a label, not a precondition.",
+  "preservedCheckpoint": {
+    "process": "vite preview",
+    "cycles": 2,
+    "sampleUpdates": 384,
+    "batchSize": 192,
+    "epochsPerCycle": 1,
+    "cursor": 384,
+    "trainPairs": 20448,
+    "trainLoss": 0.027753608736646854,
+    "validationLoss": 0.02583620876412414,
+    "heldOutAccuracy": 0.484375,
+    "heldOutScored": 128,
+    "weightDigest": "9a1d7520e6c8070aa4f2fe42346c6930c28cc3a604a01f7cc9508a568234d907",
+    "parameterCount": 1336,
+    "seed": 20261127,
+    "trainingMode": "from_scratch",
+    "baseModel": null,
+    "weightsFile": "src/readiness/artifacts/experimental-grammar-cycle-weights.json"
+  },
+  "unrecoverableObservation": {
+    "process": "vite dev, module reloaded before the tensors could be copied",
+    "lastObservedCursor": 14784,
+    "trainPairs": 20448,
+    "impliedSampleUpdates": 14784,
+    "lastObservedTrainLoss": 0.0207,
+    "lastObservedHeldOut": 0.492,
+    "weightDigest": null
+  },
+  "optimizerInputs": [
+    {"itemId": "31022301", "slug": "bullions-principles-grammar-1862", "role": "train", "sha256": "3a466bbe1e6df1c3dbb16ec1c222ffb16e9d799253069702b863b795c15b36d6"},
+    {"itemId": "10033634", "slug": "hart-elementary-grammar-1878", "role": "train", "sha256": "a84800227b7b1db35c17c6ade9fbad35f97fefab4971201578a81850b6eb2104"},
+    {"itemId": "40017591", "slug": "harvey-english-grammar-1870", "role": "train", "sha256": "eff8a209e8539a0c593770be148da1d1160e5192064cee0f161ef0fc4659cc6c"},
+    {"itemId": "tmp96027691", "slug": "lewis-applied-grammar-1902", "role": "train", "sha256": "bb0fd67980beb6c8b7f7f4c91789822f839175ab9ac78298c81232248965bca5"}
+  ],
+  "scoredNotUpdated": [
+    {"itemId": "24000690", "slug": "marks-english-grammar-1923", "role": "validation", "sha256": "638e9038cd91136d11b2bf7f46a6f8086a751d976f36bf234fd13afef99f3a61"},
+    {"itemId": "11018039", "slug": "vickroy-english-grammar-beginners-1870", "role": "heldout", "sha256": "523ed9d3f2b2f0f3333196a56ccede922cccc67991194172f66769768f8f65dc"}
+  ],
+  "preparerCorpusNotFedToOptimizer": {
+    "datasetSha256": "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7",
+    "records": 847,
+    "trainRecords": 726,
+    "validationRecords": 121,
+    "note": "The preparer marked records training-eligible and put Vickroy in its train split. applySgd did not read that JSONL. The file was left unchanged."
+  },
+  "admittedDocuments": 0
+}

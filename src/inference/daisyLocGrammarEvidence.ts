@@ -1,6 +1,6 @@
 /**
- * Evidence from the completed LOC grammar training run.
- * This record does not mean the checkpoint is loaded or that inference succeeded.
+ * Historical SmolLM2 workflow record. training_status PASS is the workflow
+ * conclusion, not source approval and not proprietary Daisy completion.
  */
 export const DAISY_LOC_GRAMMAR_EVIDENCE = {
   schema: 'daisy-loc-grammar-training-evidence/v1',
@@ -11,6 +11,9 @@ export const DAISY_LOC_GRAMMAR_EVIDENCE = {
   artifact_name: 'daisy-loc-grammar-cpu-checkpoint',
   artifact_bytes: 4965451169,
   training_status: 'PASS',
+  source_approval: 'NOT_APPROVED',
+  corpus_use: 'NOT_FOR_TRAINING',
+  proprietary_from_scratch_daisy: false,
   device: 'CPU',
   epochs: 3,
   train_loss: 2.674985606260974,

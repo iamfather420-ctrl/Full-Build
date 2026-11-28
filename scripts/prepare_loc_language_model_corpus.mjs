@@ -2,16 +2,18 @@
 /**
  * Build a plain-text causal-LM corpus from the six checksum-verified LOC books.
  * This does not synthesize conversations or alter the source manifest.
- * Eligibility is derived from LOC's explicit public-domain/free-reuse statement.
+ * Eligibility is not inferred from a Library of Congress collection sentence.
+ * Unapproved books fail closed and are not written as training-eligible records.
  */
 import { createHash } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { locBookEligibility } from "./loc_corpus_eligibility.mjs";
 
 const root = process.cwd();
-const sourceRoot = path.join(root, "data/training_sources/public_domain/english");
-const collectionRoot = path.join(sourceRoot, "data/training_sources/public_domain/english");
-const manifestPath = path.join(collectionRoot, "provenance-manifest.json");
+const collectionRoot = path.join(root, "sources/loc-english-grammar-source-collection");
+const manifestPath = path.join(collectionRoot, "data/training_sources/public_domain/english/provenance-manifest.json");
 const outputDir = path.join(root, "artifacts/training/loc-english");
 const chunkLimit = 1800;
 const validationSources = new Set(["24000690", "31022301"]);
@@ -20,8 +22,8 @@ const fail = (message) => { throw new Error(message); };
 
 function safeSourcePath(relativePath) {
   if (typeof relativePath !== "string" || !relativePath.trim()) fail("Source manifest contains an empty path.");
-  const resolved = path.resolve(sourceRoot, relativePath);
-  if (resolved !== sourceRoot && !resolved.startsWith(sourceRoot + path.sep)) fail(`Source path escapes submodule: ${relativePath}`);
+  const resolved = path.resolve(collectionRoot, relativePath);
+  if (resolved !== collectionRoot && !resolved.startsWith(collectionRoot + path.sep)) fail(`Source path escapes collection: ${relativePath}`);
   return resolved;
 }
 function splitLongParagraph(paragraph) {
@@ -51,6 +53,12 @@ function chunkText(value) {
 }
 
 async function main() {
+  const gatePath = path.join(root, "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json");
+  const checked = spawnSync("python3", ["training/daisy-smollm2/training_gate.py", gatePath], { cwd: root, encoding: "utf8" });
+  if (checked.status !== 0) fail((checked.stderr || checked.stdout || "Learning-engine gate is blocked.").trim());
+  const gate = JSON.parse(await readFile(gatePath, "utf8"));
+  const inventory = JSON.parse(await readFile(path.join(collectionRoot, "manifests/source-inventory.json"), "utf8"));
+  const inventoryBooks = (inventory.preserved_collections ?? []).flatMap((collection) => collection.sources ?? []);
   const rawManifest = await readFile(manifestPath, "utf8");
   const manifest = JSON.parse(rawManifest);
   if (!Array.isArray(manifest.sources) || manifest.sources.length !== 6) fail("Expected exactly six LOC source records.");
@@ -60,10 +68,10 @@ async function main() {
 
   for (const source of manifest.sources) {
     if (source.status !== "VERIFIED") fail(`LOC source ${source.item_id} is not checksum-verified.`);
+    const inventorySource = inventoryBooks.find((item) => String(item.item_id) === String(source.item_id));
+    const decision = locBookEligibility({ source, gate, inventorySource });
+    if (!decision.trainingEligible) fail(`NOT_APPROVED ${source.item_id}: ${decision.reasons.join(" ")}`);
     const rights = String(source.loc_rights ?? "");
-    if (!/books in this collection are in the public domain and are free to use and reuse/i.test(rights)) {
-      fail(`LOC does not explicitly declare public-domain/free-reuse status for ${source.item_id}.`);
-    }
     if (!/^\d{4}$/.test(String(source.publication_date ?? ""))) fail(`Missing publication year for ${source.item_id}.`);
     if (!/^[a-f0-9]{64}$/i.test(source.text_sha256 ?? "")) fail(`Invalid source text SHA-256 for ${source.item_id}.`);
 
@@ -92,8 +100,11 @@ async function main() {
         text: content,
         rightsEvidence: rights,
         rightsEvidenceUrl: source.source_url,
-        licenseStatus: "PUBLIC_DOMAIN_DECLARED_BY_LIBRARY_OF_CONGRESS",
-        trainingEligible: true
+        licenseStatus: decision.approval,
+        trainingEligible: decision.trainingEligible,
+        corpusStatus: decision.corpusStatus,
+        approval: decision.approval,
+        use: decision.use
       });
       characters += content.length;
     });
@@ -107,7 +118,7 @@ async function main() {
       split,
       rightsEvidence: rights,
       rightsEvidenceUrl: source.source_url,
-      eligibilityBasis: "Explicit LOC statement: public domain and free to use and reuse"
+      eligibilityBasis: "Source review approved this book. A collection-wide Library of Congress sentence was not the approval."
     });
   }
 
@@ -128,7 +139,10 @@ async function main() {
     totalCharacters: characters,
     splitPolicy: "Source-disjoint; validation sources are fixed by source ID",
     trainingMode: "Plain-text causal language modeling; no synthetic conversations",
-    eligibilityPolicy: "Use explicit source-level LOC public-domain/free-reuse declaration; do not require conversational annotation or human rights-review workflow flags",
+    corpusStatus: "APPROVED",
+    approval: "APPROVED",
+    use: "TRAINING",
+    eligibilityPolicy: "Each book must pass its own source review. Collection-wide Library of Congress boilerplate is not approval.",
     sources: auditSources
   };
   await writeFile(path.join(outputDir, "language-model-audit.json"), JSON.stringify(audit, null, 2) + "\n", "utf8");

@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0",
+  "created_on": "2026-11-27",
+  "repository": "Solvex-Paradox-Box/loc-english-grammar-source-collection",
+  "purpose": "Engine-neutral source preflight and staging gate; this file is not a training corpus or training authorization.",
+  "repository_access": "Public Git repository; clone the canonical repository and read the manifests listed below.",
+  "source_inventory": "manifests/source-inventory.json",
+  "acquired_file_checksums": "manifests/SHA256SUMS-acquired.txt",
+  "term_record_schema": "schemas/term-record.schema.json",
+  "candidate_review_register": "manifests/source-candidate-register-2026-11-27.json",
+  "review_report": "docs/audits/2026-11-27-source-review-and-training-gate.md",
+  "status": {
+    "source_library_accessible": true,
+    "preflight_or_staging_may_be_run_by_a_downstream_consumer": true,
+    "new_candidate_content_added": false,
+    "model_training_authorized_by_this_manifest": false,
+    "training_pipeline_enabled": false,
+    "training_corpus_generated": false,
+    "downstream_runtime_adapter_validated": false,
+    "full_build_modified": false
+  },
+  "source_groups": [
+    {
+      "source_id": "loc-english-grammar-six-books",
+      "path": "data/training_sources/public_domain/english/",
+      "source_count": 6,
+      "formats": ["PDF", "extracted TXT"],
+      "rights_and_review_status": "The saved LOC item metadata records the books as public domain and free to use and reuse, but the canonical inventory and provenance manifest still record PENDING_REVIEW and training_eligible=false. Preserve that status; do not auto-ingest or treat the books as training-approved until the existing review record is formally resolved.",
+      "technical_provenance": "See data/training_sources/public_domain/english/provenance-manifest.json and the original SHA256SUMS.txt. Existing paths, records, and hashes are not changed by this update.",
+      "staging_default": "hold_pending_review",
+      "training_status": "not_approved"
+    },
+    {
+      "source_id": "onet-database-31.0-selected-tables",
+      "path": "data/industry/onet/31.0/",
+      "formats": ["CSV"],
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "staging_default": "optional_only_if_the_consumer_accepts_CC_BY_attribution_and_scope_conditions",
+      "conditions": ["Provide O*NET attribution and indicate changes.", "Do not imply O*NET endorsement.", "Scope is limited to the three named tables in source-inventory.json."],
+      "strict_public_domain_or_cc0": false,
+      "training_status": "not_evaluated"
+    },
+    {
+      "source_id": "gsa-plain-language-guidelines-markdown",
+      "path": "data/communication/plain-language/gsa-plainlanguage-49d50c9/",
+      "formats": ["Markdown"],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "staging_default": "eligible_for_source_preflight_within_the_pinned_markdown_scope",
+      "training_status": "not_evaluated"
+    },
+    {
+      "source_id": "fankserver-llm-glossary-markdown",
+      "path": "data/technical-language/llm-glossary-c8483b3/",
+      "formats": ["Markdown"],
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "staging_default": "eligible_for_source_preflight_within_the_pinned_markdown_scope",
+      "conditions": ["Keep source URLs and original paths.", "The prior assessment notes possible third-party verbatim material; escalate any identified item rather than treating CC0 as a cure for third-party rights."],
+      "training_status": "not_evaluated"
+    },
+    {
+      "source_id": "wikidata-lexemes-2026-11-18",
+      "path": "data/semantic-knowledge/wikidata/lexemes-2026-11-18/",
+      "release_asset": "https://github.com/Solvex-Paradox-Box/loc-english-grammar-source-collection/releases/download/wikidata-lexemes-2026-11-18/wikidata-20261118-lexemes.json.bz2",
+      "formats": ["JSON.bz2"],
+      "license": "CC0-1.0 for the bounded Wikidata Lexeme structured-data namespace",
+      "license_url": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+      "staging_default": "eligible_for_source_preflight_within_the_lexeme_data_scope",
+      "conditions": ["Preserve Lexeme, Form, and Sense IDs, language codes, statements, and source references.", "Escalate any concrete third-party rights issue.", "The upstream publisher checksum listing was unavailable; use the recorded local SHA-256 as the repository reference hash."],
+      "training_status": "not_evaluated"
+    }
+  ],
+  "candidate_policy": {
+    "default_for_new_sources": "Only exact, scope-bounded public-domain or CC0 material may be considered for addition under the current user preference.",
+    "reviewed_register": "manifests/source-candidate-register-2026-11-27.json",
+    "items_from_2026_11_27_review_added_as_content": 0,
+    "noaa_nws_glossary": "Exclude. It is only a public-domain candidate; the A page was sampled but the remaining linked numeric/B-Z pages were not checked.",
+    "other_reviewed_candidates": "Excluded from content inputs or metadata-only because the exact material is copyrighted, mixed-source, unresolved, or not shown to be PD/CC0."
+  },
+  "consumer_requirements": [
+    "Read each source's NOTICE, license evidence, revision, path scope, and caveats in source-inventory.json before processing.",
+    "Do not infer model-training approval from redistribution permission, public availability, or staging eligibility.",
+    "Do not set training_status to approved without a separate source-specific content and training-suitability review.",
+    "Preserve provenance IDs, upstream references, applicable attribution, and the recorded SHA-256 values.",
+    "No Full-Build inputs or workflows are changed by this source-repository update."
+  ]
+}
