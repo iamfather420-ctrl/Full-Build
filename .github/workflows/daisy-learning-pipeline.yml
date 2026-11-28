@@ -90,7 +90,7 @@ jobs:
                   }
               ]
           }
-          (root / "audio-manifest.json").write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+          (root / "audio-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
           PY
 
       - name: Verify pinned source and produce eight-stage pipeline evidence
