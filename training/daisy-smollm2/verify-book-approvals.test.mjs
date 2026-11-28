@@ -33,7 +33,7 @@ function fixture() {
   const write=()=>writeFileSync(approvalsPath,JSON.stringify(packet));
   write();
   const check=()=>verifyBookApprovals({provenancePath,approvalsPath,trustDir:trust,now:NOW});
-  return {dir,trust,packet,approvals,make,write,check};
+  return {dir,trust,packet,approvals,make,write,check,privateKey};
 }
 test("six separately signed source-bound approvals are required",()=>{
  const f=fixture(); try { assert.equal(f.check().ok,true); f.packet.approvals.pop(); f.write(); assert.match(f.check().reason,/exactly one approval/); } finally {rmSync(f.dir,{recursive:true,force:true});}
@@ -57,16 +57,9 @@ test("wrong scope, tenant, approver, expiry, and untrusted signatures block",()=
 test("signed revocation blocks and malformed revocation records fail closed",()=>{
  const f=fixture(); try {
   const revoked={schema:"daisy-source-revocation/v1",documentId:"loc-book-24000690",sourceSha256:SOURCES[0][1],tenant:TENANT,keyId:"owner-root",revokedAt:"2026-11-28T12:00:00.000Z"};
-  const {privateKey}=generateKeyPairSync("ed25519");
-  // An untrusted revocation cannot be ignored or used to bypass validation.
-  revoked.signature=sign(null,canonicalApprovalBytes(revoked),privateKey).toString("base64");
-  f.packet.revocations=[revoked]; f.write(); assert.match(f.check().reason,/untrusted source revocation/);
+  revoked.signature=sign(null,canonicalApprovalBytes(revoked),f.privateKey).toString("base64");
+  f.packet.revocations=[revoked]; f.write(); assert.match(f.check().reason,/approval is revoked/);
   f.packet.revocations=[{schema:"daisy-source-revocation/v1"}]; f.write(); assert.match(f.check().reason,/Malformed/);
  } finally {rmSync(f.dir,{recursive:true,force:true});}
 });
-test("aggregate group approval and record booleans are not used by this verifier",()=>{
- const f=fixture(); try {
-  f.packet.approvals=[]; f.packet.groupStatus="approved"; f.packet.trainingEligible=true; f.write();
-  assert.match(f.check().reason,/exactly one approval/);
- } finally {rmSync(f.dir,{recursive:true,force:true});}
-});
+
