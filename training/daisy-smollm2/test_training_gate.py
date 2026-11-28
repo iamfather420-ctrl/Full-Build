@@ -149,7 +149,7 @@ class TrainingGateTest(unittest.TestCase):
     def test_loc_books_stay_not_approved(self):
         reason = fresh_step_authorization(GATE, DATASET)
         self.assertIn("not_approved", reason or "")
-        self.assertIn("PENDING_REVIEW", reason or "")
+        self.assertIn("PENDING_REVIEW", loc_books_review_block(GATE) or "")
 
     def test_unapproved_loc_corpus_is_staging_only_and_checkpoint_is_unchanged(self):
         audit = json.loads((ROOT / "artifacts/training/loc-english/language-model-audit.json").read_text(encoding="utf-8"))
