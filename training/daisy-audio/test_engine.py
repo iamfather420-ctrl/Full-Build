@@ -144,6 +144,8 @@ class AudioIngestTests(unittest.TestCase):
         item = ingest_file(wav, {
             "source_id": "voa-learning-english-level1-lesson1",
             "source_url": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
+            "media_url": "https://voa-audio.voanews.eu/vle/2016/02/08/49485bf8-4277-47f6-9abe-617ee2473f8c.mp3?download=1",
+            "reference_transcript_url": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
             "publisher": "VOA Learning English",
             "creator": "Voice of America",
             "license": "PUBLIC_DOMAIN_US",
@@ -153,6 +155,9 @@ class AudioIngestTests(unittest.TestCase):
         self.assertEqual(item["status"], "RIGHTS_RECORDED_NOT_APPROVED")
         self.assertEqual(item["source"]["publisher"], "VOA Learning English")
         self.assertEqual(item["source"]["license_evidence"], "https://learningenglish.voanews.com/p/6861.html")
+        self.assertEqual(item["source"]["reference_transcript_status"], "PUBLISHER_PROVIDED_REFERENCE_NOT_ASR")
+        self.assertEqual(item["source"]["media_url"], "https://voa-audio.voanews.eu/vle/2016/02/08/49485bf8-4277-47f6-9abe-617ee2473f8c.mp3?download=1")
+        self.assertEqual(item["transcription"]["status"], "BLOCKED_NO_LOCAL_ASR")
         self.assertFalse(item["authorization"]["training_authorized"])
         self.assertFalse(item["authorization"]["training_eligible"])
         self.assertEqual(item["optimizer_invocations"], 0)
