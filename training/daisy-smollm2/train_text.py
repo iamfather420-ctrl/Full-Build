@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from training_gate import block_reason_for_gate
+
 DEFAULT_MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
 DEFAULT_REVISION = "eba0825ddc7730d24a88685a6c0a078cf919b383"
 RIGHTS_PHRASE = "books in this collection are in the public domain and are free to use and reuse"
@@ -45,6 +48,14 @@ def load_records(path: Path) -> tuple[list[dict[str, Any]], str]:
     return rows, digest
 
 def main() -> int:
+    gate_path = Path(os.environ.get(
+        "DAISY_LEARNING_GATE",
+        "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json",
+    ))
+    gate_block = block_reason_for_gate(gate_path)
+    if gate_block:
+        print(f"BLOCKED: {gate_block}", file=sys.stderr)
+        return 2
     data_path = Path(os.environ.get("DAISY_LM_TRAIN_FILE", "artifacts/training/loc-english/language-model-corpus.jsonl"))
     output_dir = Path(os.environ.get("DAISY_OUTPUT_DIR", "artifacts/daisy-smollm2-loc-grammar"))
     model_id = os.environ.get("DAISY_MODEL_ID", DEFAULT_MODEL)

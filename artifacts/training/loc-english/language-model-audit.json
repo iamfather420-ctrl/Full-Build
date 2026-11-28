@@ -1,0 +1,87 @@
+{
+  "schema": "daisy-loc-language-model-corpus-audit/v1",
+  "sourceManifestSha256": "bdbaf8143e396ed868ecbc5a61a4e5f5c12a63c6d8a8cd52168d745a69504085",
+  "datasetSha256": "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7",
+  "sourceCount": 6,
+  "recordCount": 847,
+  "trainRecords": 726,
+  "validationRecords": 121,
+  "totalCharacters": 1406668,
+  "splitPolicy": "Source-disjoint; validation sources are fixed by source ID",
+  "trainingMode": "Plain-text causal language modeling; no synthetic conversations",
+  "eligibilityPolicy": "Use explicit source-level LOC public-domain/free-reuse declaration; do not require conversational annotation or human rights-review workflow flags",
+  "sources": [
+    {
+      "sourceId": "24000690",
+      "title": "English Grammar",
+      "publicationYear": "1923",
+      "sourceSha256": "638e9038cd91136d11b2bf7f46a6f8086a751d976f36bf234fd13afef99f3a61",
+      "bytes": 138775,
+      "chunks": 85,
+      "split": "validation",
+      "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
+      "rightsEvidenceUrl": "https://www.loc.gov/item/24000690/",
+      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+    },
+    {
+      "sourceId": "10033634",
+      "title": "An Elementary Grammar of the English Language",
+      "publicationYear": "1878",
+      "sourceSha256": "a84800227b7b1db35c17c6ade9fbad35f97fefab4971201578a81850b6eb2104",
+      "bytes": 178127,
+      "chunks": 102,
+      "split": "train",
+      "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
+      "rightsEvidenceUrl": "https://www.loc.gov/item/10033634/",
+      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+    },
+    {
+      "sourceId": "tmp96027691",
+      "title": "A Text-Book of Applied English Grammar",
+      "publicationYear": "1902",
+      "sourceSha256": "bb0fd67980beb6c8b7f7f4c91789822f839175ab9ac78298c81232248965bca5",
+      "bytes": 412903,
+      "chunks": 248,
+      "split": "train",
+      "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
+      "rightsEvidenceUrl": "https://www.loc.gov/item/tmp96027691/",
+      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+    },
+    {
+      "sourceId": "11018039",
+      "title": "An Introduction to the Study of English Grammar, for Beginners",
+      "publicationYear": "1870",
+      "sourceSha256": "523ed9d3f2b2f0f3333196a56ccede922cccc67991194172f66769768f8f65dc",
+      "bytes": 176730,
+      "chunks": 106,
+      "split": "train",
+      "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
+      "rightsEvidenceUrl": "https://www.loc.gov/item/11018039/",
+      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+    },
+    {
+      "sourceId": "40017591",
+      "title": "Harvey's English Grammar",
+      "publicationYear": "1870",
+      "sourceSha256": "eff8a209e8539a0c593770be148da1d1160e5192064cee0f161ef0fc4659cc6c",
+      "bytes": 472466,
+      "chunks": 270,
+      "split": "train",
+      "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
+      "rightsEvidenceUrl": "https://www.loc.gov/item/40017591/",
+      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+    },
+    {
+      "sourceId": "31022301",
+      "title": "The Principles of English Grammar",
+      "publicationYear": "1862",
+      "sourceSha256": "3a466bbe1e6df1c3dbb16ec1c222ffb16e9d799253069702b863b795c15b36d6",
+      "bytes": 55699,
+      "chunks": 36,
+      "split": "validation",
+      "rightsEvidence": "The books in this collection are in the public domain and are free to use and reuse. Credit Line: Library of Congress More about Copyright and other Restrictions . For guidance about compiling full citations consult Citing Primary Sources .",
+      "rightsEvidenceUrl": "https://www.loc.gov/item/31022301/",
+      "eligibilityBasis": "Explicit LOC statement: public domain and free to use and reuse"
+    }
+  ]
+}

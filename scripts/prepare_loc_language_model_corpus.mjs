@@ -6,6 +6,7 @@
  */
 import { createHash } from "node:crypto";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 
 const root = process.cwd();
@@ -50,6 +51,9 @@ function chunkText(value) {
 }
 
 async function main() {
+  const gatePath = path.join(root, "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json");
+  const checked = spawnSync("python3", ["training/daisy-smollm2/training_gate.py", gatePath], { cwd: root, encoding: "utf8" });
+  if (checked.status !== 0) fail((checked.stderr || checked.stdout || "Learning-engine gate is blocked.").trim());
   const rawManifest = await readFile(manifestPath, "utf8");
   const manifest = JSON.parse(rawManifest);
   if (!Array.isArray(manifest.sources) || manifest.sources.length !== 6) fail("Expected exactly six LOC source records.");
