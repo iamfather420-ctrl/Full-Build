@@ -12,6 +12,7 @@ from training_gate import (
     cryptographic_block,
     fresh_step_authorization,
     independent_binding,
+    loc_books_review_block,
     install_trainer_step_boundary,
     seal_optimizer,
 )
@@ -139,6 +140,21 @@ class TrainingGateTest(unittest.TestCase):
         reason = fresh_step_authorization(GATE, DATASET)
         self.assertIn("not_approved", reason or "")
         self.assertIn("PENDING_REVIEW", reason or "")
+
+    def test_loc_review_gate_fails_closed_when_missing_malformed_or_source_group_missing(self):
+        missing = Path("/tmp/missing-loc-review-gate.json")
+        self.assertIn("missing", loc_books_review_block(missing) or "")
+        with tempfile.TemporaryDirectory() as directory:
+            malformed = Path(directory) / "malformed.json"
+            malformed.write_text("{", encoding="utf-8")
+            self.assertIn("malformed", loc_books_review_block(malformed) or "")
+            no_group = Path(directory) / "no-loc-group.json"
+            no_group.write_text(json.dumps({"source_groups": []}), encoding="utf-8")
+            self.assertIn("exactly one", loc_books_review_block(no_group) or "")
+            duplicate = Path(directory) / "duplicate-loc-group.json"
+            group = {"source_id": "loc-english-grammar-six-books", "training_status": "approved"}
+            duplicate.write_text(json.dumps({"source_groups": [group, group]}), encoding="utf-8")
+            self.assertIn("exactly one", loc_books_review_block(duplicate) or "")
 
     def test_both_trainers_seal_the_optimizer_before_train(self):
         for name in ("train.py", "train_text.py"):
