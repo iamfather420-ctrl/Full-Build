@@ -63,21 +63,25 @@ export function verifyAuthorization({ authorization, trustDir, trustKeys, expect
   return null;
 }
 
-export function verifyGateFile(gatePath, trustDir, now = new Date()) {
+export function verifyGateFile(gatePath, trustDir, expected, now = new Date()) {
+  if (!expected || typeof expected.documentId !== "string" || !expected.documentId.trim()
+    || typeof expected.sourceSha256 !== "string" || !/^[a-f0-9]{64}$/.test(expected.sourceSha256)
+    || typeof expected.tenant !== "string" || !expected.tenant.trim()) {
+    return "Independent expected document, digest, or tenant is missing.";
+  }
   let payload;
   try { payload = JSON.parse(readFileSync(gatePath, "utf8")); }
   catch { return "Learning-engine gate is missing."; }
-  const authorization = payload?.authorization ?? null;
   return verifyAuthorization({
-    authorization,
+    authorization: payload?.authorization ?? null,
     trustDir,
     expected: {
-      documentId: authorization?.documentId,
-      sourceSha256: authorization?.sourceSha256,
-      tenant: authorization?.tenant,
+      documentId: expected.documentId,
+      sourceSha256: expected.sourceSha256,
+      tenant: expected.tenant,
     },
     now,
-    revocations: payload?.revocations ?? [],
+    revocations: Array.isArray(payload?.revocations) ? payload.revocations : [],
   });
 }
 
@@ -94,9 +98,11 @@ function readArg(flag) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
-  const gate = readArg("--gate");
-  const trust = readArg("--trust");
-  const reason = verifyGateFile(gate, trust, readArg("--now") ? new Date(readArg("--now")) : new Date());
+  const reason = verifyGateFile(readArg("--gate"), readArg("--trust"), {
+    documentId: readArg("--document-id"),
+    sourceSha256: readArg("--source-sha256"),
+    tenant: readArg("--tenant"),
+  }, readArg("--now") ? new Date(readArg("--now")) : new Date());
   if (reason) {
     process.stderr.write(`${reason}\n`);
     process.exit(2);

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from training_gate import block_reason_for_gate
+from training_gate import bind_training_optimizer, block_reason_for_gate, fresh_step_authorization, install_trainer_step_boundary
 
 DEFAULT_MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
 DEFAULT_MODEL_REVISION = "eba0825ddc7730d24a88685a6c0a078cf919b383"
@@ -106,7 +106,7 @@ def main() -> int:
         "DAISY_LEARNING_GATE",
         "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json",
     ))
-    gate_block = block_reason_for_gate(gate_path)
+    gate_block = block_reason_for_gate(gate_path, dataset_path=data_path)
     if gate_block:
         print(f"BLOCKED: {gate_block}", file=sys.stderr)
         return 2
@@ -188,10 +188,7 @@ def main() -> int:
         tokenizer=tokenizer,
         data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
-    gate_block = block_reason_for_gate(gate_path)
-    if gate_block:
-        print(f"BLOCKED: {gate_block}", file=sys.stderr)
-        return 2
+    install_trainer_step_boundary(trainer, lambda: fresh_step_authorization(gate_path, data_path))
     result = trainer.train()
     evaluation = trainer.evaluate()
     final_dir = output_dir / "checkpoint"

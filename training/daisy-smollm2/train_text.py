@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from training_gate import block_reason_for_gate
+from training_gate import bind_training_optimizer, block_reason_for_gate, fresh_step_authorization, install_trainer_step_boundary
 
 DEFAULT_MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
 DEFAULT_REVISION = "eba0825ddc7730d24a88685a6c0a078cf919b383"
@@ -52,11 +52,11 @@ def main() -> int:
         "DAISY_LEARNING_GATE",
         "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json",
     ))
-    gate_block = block_reason_for_gate(gate_path)
+    data_path = Path(os.environ.get("DAISY_LM_TRAIN_FILE", "artifacts/training/loc-english/language-model-corpus.jsonl"))
+    gate_block = block_reason_for_gate(gate_path, dataset_path=data_path)
     if gate_block:
         print(f"BLOCKED: {gate_block}", file=sys.stderr)
         return 2
-    data_path = Path(os.environ.get("DAISY_LM_TRAIN_FILE", "artifacts/training/loc-english/language-model-corpus.jsonl"))
     output_dir = Path(os.environ.get("DAISY_OUTPUT_DIR", "artifacts/daisy-smollm2-loc-grammar"))
     model_id = os.environ.get("DAISY_MODEL_ID", DEFAULT_MODEL)
     revision = os.environ.get("DAISY_MODEL_REVISION", DEFAULT_REVISION)
@@ -107,10 +107,7 @@ def main() -> int:
     )
     trainer = Trainer(model=model, args=args, train_dataset=train_ds, eval_dataset=val_ds,
         tokenizer=tokenizer, data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False))
-    gate_block = block_reason_for_gate(gate_path)
-    if gate_block:
-        print(f"BLOCKED: {gate_block}", file=sys.stderr)
-        return 2
+    install_trainer_step_boundary(trainer, lambda: fresh_step_authorization(gate_path, data_path))
     train_result = trainer.train()
     metrics = trainer.evaluate()
     checkpoint = output_dir / "checkpoint"

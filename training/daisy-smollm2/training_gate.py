@@ -1,6 +1,7 @@
 """Fail closed unless a trusted Ed25519 authorization is valid at the optimizer."""
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -10,6 +11,17 @@ from typing import Any, Callable
 
 SCRIPT = Path(__file__).resolve().parent / "verify-authorization.mjs"
 TRUST = Path(__file__).resolve().parent / "trust-root"
+ROOT = Path(__file__).resolve().parents[2]
+PINNED_DOCUMENT_ID = "loc-english-language-model-corpus"
+PINNED_TENANT = "iamfather420-ctrl/Full-Build"
+DEFAULT_GATE = ROOT / "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json"
+DEFAULT_AUDIT = ROOT / "artifacts/training/loc-english/language-model-audit.json"
+DEFAULT_DATASET = ROOT / "artifacts/training/loc-english/language-model-corpus.jsonl"
+DEFAULT_TEXT_ROOT = ROOT / "sources/loc-english-grammar-source-collection/data/training_sources/public_domain/english/extracted_text"
+
+
+class AuthorizationBlocked(RuntimeError):
+    pass
 
 
 def block_reason(status: Any, now: datetime | None = None) -> str | None:
@@ -41,13 +53,51 @@ def block_reason(status: Any, now: datetime | None = None) -> str | None:
     return "A nonempty signature is not cryptographic authorization."
 
 
-def cryptographic_block(gate_path: Path) -> str:
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def independent_binding(dataset_path: Path, audit_path: Path = DEFAULT_AUDIT, text_root: Path = DEFAULT_TEXT_ROOT) -> dict[str, str] | str:
+    """Expected identity comes from pinned configuration and recomputed files, never from an authorization record."""
+    if not dataset_path.is_file():
+        return "Dataset content is unavailable."
+    if not audit_path.is_file():
+        return "Dataset manifest is unavailable."
+    content_hash = file_sha256(dataset_path)
+    try:
+        audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "Dataset manifest is malformed."
+    if not isinstance(audit, dict) or content_hash != audit.get("datasetSha256"):
+        return "Dataset content hash does not match the manifest."
+    sources = audit.get("sources")
+    if not isinstance(sources, list) or not sources:
+        return "Dataset manifest has no source content hashes."
+    expected_hashes = {row.get("sourceSha256") for row in sources if isinstance(row, dict)}
+    if any(not isinstance(item, str) or len(item) != 64 for item in expected_hashes):
+        return "Dataset manifest source hashes are malformed."
+    if not text_root.is_dir():
+        return "Source content hashes are unavailable."
+    found = {file_sha256(path) for path in sorted(text_root.glob("*.txt"))}
+    if not found or found != expected_hashes:
+        return "Source content hashes do not match the manifest."
+    return {"documentId": PINNED_DOCUMENT_ID, "sourceSha256": content_hash, "tenant": PINNED_TENANT}
+
+
+def cryptographic_block(gate_path: Path, *, source_sha256: str, document_id: str, tenant: str) -> str:
+    if not document_id.strip() or not tenant.strip() or len(source_sha256) != 64:
+        return "Independent expected document, digest, or tenant is missing."
     if not gate_path.is_file():
         return "Learning-engine gate is missing."
     if not SCRIPT.is_file():
         return "Trusted verifier is unavailable."
     process = subprocess.run(
-        ["node", str(SCRIPT), "gate", "--gate", str(gate_path), "--trust", str(TRUST)],
+        ["node", str(SCRIPT), "gate", "--gate", str(gate_path), "--trust", str(TRUST),
+         "--document-id", document_id, "--source-sha256", source_sha256, "--tenant", tenant],
         capture_output=True, text=True,
     )
     if process.returncode == 0:
@@ -55,9 +105,60 @@ def cryptographic_block(gate_path: Path) -> str:
     return (process.stderr or process.stdout or "Authorization failed.").strip()
 
 
-def block_reason_for_gate(path: Path, now: datetime | None = None) -> str | None:
+def fresh_step_authorization(gate_path: Path, dataset_path: Path, audit_path: Path = DEFAULT_AUDIT, text_root: Path = DEFAULT_TEXT_ROOT) -> str | None:
+    binding = independent_binding(dataset_path, audit_path, text_root)
+    if isinstance(binding, str):
+        return binding
+    return cryptographic_block(
+        gate_path,
+        source_sha256=binding["sourceSha256"],
+        document_id=binding["documentId"],
+        tenant=binding["tenant"],
+    )
+
+
+def block_reason_for_gate(path: Path, now: datetime | None = None, dataset_path: Path = DEFAULT_DATASET) -> str | None:
     del now
-    return cryptographic_block(path)
+    return fresh_step_authorization(path, dataset_path)
+
+
+def seal_optimizer(optimizer: Any, verify: Callable[[], str | None]) -> Any:
+    if getattr(optimizer, "_daisy_sealed", False):
+        return optimizer
+    inner = optimizer.step
+
+    def step(*args: Any, **kwargs: Any) -> Any:
+        reason = verify()
+        if reason:
+            raise AuthorizationBlocked(f"BLOCKED: {reason}")
+        return inner(*args, **kwargs)
+
+    optimizer.step = step
+    optimizer._daisy_sealed = True
+    return optimizer
+
+
+def bind_training_optimizer(optimizer: Any, dataset_path: Path | str, gate_path: Path | str | None = None) -> Any:
+    gate = Path(gate_path) if gate_path else DEFAULT_GATE
+    dataset = Path(dataset_path)
+    return seal_optimizer(optimizer, lambda: fresh_step_authorization(gate, dataset))
+
+
+def install_trainer_step_boundary(trainer: Any, verify: Callable[[], str | None]) -> Any:
+    original_create = trainer.create_optimizer
+
+    def create_optimizer(*args: Any, **kwargs: Any) -> Any:
+        created = original_create(*args, **kwargs)
+        optimizer = getattr(trainer, "optimizer", None)
+        if optimizer is None:
+            raise AuthorizationBlocked("BLOCKED: trainer created no optimizer.")
+        seal_optimizer(optimizer, verify)
+        return created
+
+    trainer.create_optimizer = create_optimizer
+    if getattr(trainer, "optimizer", None) is not None:
+        seal_optimizer(trainer.optimizer, verify)
+    return trainer
 
 
 def guarded_optimizer_step(check: Callable[[], str | None], optimize: Callable[[], None]) -> str | None:
