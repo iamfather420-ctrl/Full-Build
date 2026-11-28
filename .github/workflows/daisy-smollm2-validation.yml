@@ -44,10 +44,10 @@ jobs:
       - name: Run optimizer authorization boundary tests
         run: |
           set -euo pipefail
-          node --test training/daisy-smollm2/verify-authorization.test.mjs scripts/loc_corpus_eligibility.test.mjs
+          node --test training/daisy-smollm2/verify-authorization.test.mjs training/daisy-smollm2/verify-book-approvals.test.mjs scripts/loc_corpus_eligibility.test.mjs
           python training/daisy-smollm2/test_training_gate.py
       - name: Compile trainer
-        run: python -m py_compile training/daisy-smollm2/train.py
+        run: python -m py_compile training/daisy-smollm2/train.py training/daisy-smollm2/train_text.py training/daisy-smollm2/training_gate.py
       - name: Verify missing corpus blocks before model download
         shell: bash
         run: |
