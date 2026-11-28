@@ -10,6 +10,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { locBookEligibility } from "./loc_corpus_eligibility.mjs";
+import { verifyBookApprovals } from "../training/daisy-smollm2/verify-book-approvals.mjs";
 
 const root = process.cwd();
 const collectionRoot = path.join(root, "sources/loc-english-grammar-source-collection");
@@ -57,6 +58,13 @@ async function main() {
   const checked = spawnSync("python3", ["training/daisy-smollm2/training_gate.py", gatePath], { cwd: root, encoding: "utf8" });
   if (checked.status !== 0) fail((checked.stderr || checked.stdout || "Learning-engine gate is blocked.").trim());
   const gate = JSON.parse(await readFile(gatePath, "utf8"));
+  const approvalResult = verifyBookApprovals({
+    provenancePath: manifestPath,
+    approvalsPath: path.join(root, "training/daisy-smollm2/book-approvals-2026-11-27.json"),
+    trustDir: path.join(root, "training/daisy-smollm2/trust-root"),
+  });
+  if (!approvalResult.ok) fail(approvalResult.reason);
+  const verifiedApprovals = new Map(approvalResult.approvedSourceIds.map((id) => [id, true]));
   const inventory = JSON.parse(await readFile(path.join(collectionRoot, "manifests/source-inventory.json"), "utf8"));
   const inventoryBooks = (inventory.preserved_collections ?? []).flatMap((collection) => collection.sources ?? []);
   const rawManifest = await readFile(manifestPath, "utf8");
@@ -69,7 +77,7 @@ async function main() {
   for (const source of manifest.sources) {
     if (source.status !== "VERIFIED") fail(`LOC source ${source.item_id} is not checksum-verified.`);
     const inventorySource = inventoryBooks.find((item) => String(item.item_id) === String(source.item_id));
-    const decision = locBookEligibility({ source, gate, inventorySource });
+    const decision = locBookEligibility({ source, gate, inventorySource, bookApproval: { verified: verifiedApprovals.get(String(source.item_id)) === true, sourceId: String(source.item_id), sourceSha256: String(source.text_sha256 ?? "").toLowerCase() } });
     if (!decision.trainingEligible) fail(`NOT_APPROVED ${source.item_id}: ${decision.reasons.join(" ")}`);
     const rights = String(source.loc_rights ?? "");
     if (!/^\d{4}$/.test(String(source.publication_date ?? ""))) fail(`Missing publication year for ${source.item_id}.`);

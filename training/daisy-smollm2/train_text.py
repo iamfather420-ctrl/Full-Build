@@ -28,13 +28,13 @@ def load_records(path: Path) -> tuple[list[dict[str, Any]], str]:
         for line_no, line in enumerate(f, 1):
             if not line.strip(): raise RuntimeError(f"BLOCKED: blank JSONL line {line_no}")
             row = json.loads(line)
-            required = {"schema","recordId","split","sourceId","sourceTitle","author","publicationYear","sourceUrl","sourceSha256","textSha256","text","rightsEvidence","rightsEvidenceUrl","licenseStatus","trainingEligible"}
+            required = {"schema","recordId","split","sourceId","sourceTitle","author","publicationYear","sourceUrl","sourceSha256","textSha256","text","rightsEvidence","rightsEvidenceUrl","licenseStatus","trainingEligible","corpusStatus","approval","use"}
             if not isinstance(row, dict) or set(row) != required: raise RuntimeError(f"BLOCKED: schema mismatch line {line_no}")
             if row["schema"] != "daisy-plain-text-lm-record/v1": raise RuntimeError(f"BLOCKED: unsupported record schema line {line_no}")
             if not isinstance(row["recordId"], str) or not row["recordId"] or row["recordId"] in ids: raise RuntimeError(f"BLOCKED: duplicate/empty recordId line {line_no}")
             ids.add(row["recordId"])
             if row["split"] not in {"train","validation"}: raise RuntimeError(f"BLOCKED: invalid split line {line_no}")
-            if row["licenseStatus"] != "PUBLIC_DOMAIN_DECLARED_BY_LIBRARY_OF_CONGRESS" or row["trainingEligible"] is not True: raise RuntimeError(f"BLOCKED: source is not training eligible line {line_no}")
+            if row["licenseStatus"] != "APPROVED" or row["trainingEligible"] is not True or row["corpusStatus"] != "APPROVED" or row["approval"] != "APPROVED" or row["use"] != "TRAINING": raise RuntimeError(f"BLOCKED: source is not individually approved for training line {line_no}")
             if not isinstance(row["rightsEvidence"], str) or RIGHTS_PHRASE not in row["rightsEvidence"].lower(): raise RuntimeError(f"BLOCKED: missing explicit LOC public-domain evidence line {line_no}")
             if not re.fullmatch(r"[a-fA-F0-9]{64}", str(row["sourceSha256"])): raise RuntimeError(f"BLOCKED: invalid source hash line {line_no}")
             if not re.fullmatch(r"[a-fA-F0-9]{64}", str(row["textSha256"])): raise RuntimeError(f"BLOCKED: invalid text hash line {line_no}")

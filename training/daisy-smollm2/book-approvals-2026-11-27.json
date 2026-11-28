@@ -1,0 +1,8 @@
+{
+  "schema": "daisy-source-approval-packet/v1",
+  "collectionId": "loc-english-grammar-six-books",
+  "tenant": "iamfather420-ctrl/Full-Build",
+  "policy": "Each book requires one separately signed source-text-training approval bound to its exact SHA-256. Empty approvals means no book is approved.",
+  "approvals": [],
+  "revocations": []
+}

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -18,6 +19,9 @@ DEFAULT_GATE = ROOT / "sources/loc-english-grammar-source-collection/manifests/l
 DEFAULT_AUDIT = ROOT / "artifacts/training/loc-english/language-model-audit.json"
 DEFAULT_DATASET = ROOT / "artifacts/training/loc-english/language-model-corpus.jsonl"
 DEFAULT_TEXT_ROOT = ROOT / "sources/loc-english-grammar-source-collection/data/training_sources/public_domain/english/extracted_text"
+DEFAULT_PROVENANCE = ROOT / "sources/loc-english-grammar-source-collection/data/training_sources/public_domain/english/provenance-manifest.json"
+DEFAULT_BOOK_APPROVALS = Path(__file__).resolve().parent / "book-approvals-2026-11-27.json"
+BOOK_APPROVAL_VERIFIER = Path(__file__).resolve().parent / "verify-book-approvals.mjs"
 
 
 class AuthorizationBlocked(RuntimeError):
@@ -75,16 +79,41 @@ def independent_binding(dataset_path: Path, audit_path: Path = DEFAULT_AUDIT, te
     if not isinstance(audit, dict) or content_hash != audit.get("datasetSha256"):
         return "Dataset content hash does not match the manifest."
     sources = audit.get("sources")
-    if not isinstance(sources, list) or not sources:
-        return "Dataset manifest has no source content hashes."
-    expected_hashes = {row.get("sourceSha256") for row in sources if isinstance(row, dict)}
-    if any(not isinstance(item, str) or len(item) != 64 for item in expected_hashes):
-        return "Dataset manifest source hashes are malformed."
+    if not isinstance(sources, list) or len(sources) != 6:
+        return "Dataset manifest must contain exactly six source content hashes."
+    try:
+        provenance = json.loads(DEFAULT_PROVENANCE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "Pinned LOC provenance manifest is missing or malformed."
+    if not isinstance(provenance, dict):
+        return "Pinned LOC provenance manifest is malformed."
+    pinned_rows = provenance.get("sources")
+    if provenance.get("training_eligible") is not False or not isinstance(pinned_rows, list) or len(pinned_rows) != 6:
+        return "Pinned LOC provenance is not a six-source non-eligible manifest."
+    pinned = {str(row.get("item_id")): str(row.get("text_sha256", "")).lower() for row in pinned_rows if isinstance(row, dict)}
+    audited = {str(row.get("sourceId")): str(row.get("sourceSha256", "")).lower() for row in sources if isinstance(row, dict)}
+    if len(pinned) != 6 or audited != pinned or any(not re.fullmatch(r"[a-f0-9]{64}", value) for value in pinned.values()):
+        return "Dataset audit source identities or digests do not match pinned LOC provenance."
     if not text_root.is_dir():
         return "Source content hashes are unavailable."
     found = {file_sha256(path) for path in sorted(text_root.glob("*.txt"))}
-    if not found or found != expected_hashes:
-        return "Source content hashes do not match the manifest."
+    if not found or found != set(pinned.values()):
+        return "Source content hashes do not match the pinned provenance manifest."
+    seen_sources: set[str] = set()
+    try:
+        with dataset_path.open(encoding="utf-8") as handle:
+            for line_no, line in enumerate(handle, 1):
+                row = json.loads(line)
+                source_id = str(row.get("sourceId", ""))
+                if source_id not in pinned or str(row.get("sourceSha256", "")).lower() != pinned[source_id]:
+                    return f"Dataset record source identity/digest mismatch at line {line_no}."
+                if row.get("trainingEligible") is not True or row.get("approval") != "APPROVED" or row.get("use") != "TRAINING":
+                    return "Dataset contains not_approved records."
+                seen_sources.add(source_id)
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return "Dataset records are malformed."
+    if seen_sources != set(pinned):
+        return "Dataset does not contain records from all six individually approved sources."
     return {"documentId": PINNED_DOCUMENT_ID, "sourceSha256": content_hash, "tenant": PINNED_TENANT}
 
 
@@ -114,6 +143,15 @@ def loc_books_review_block(gate_path: Path) -> str | None:
     review = str(group.get("rights_and_review_status") or "")
     if status != "approved" or "PENDING_REVIEW" in review:
         return "LOC six books remain PENDING_REVIEW / training_status not_approved. A signature cannot authorize them until that source review is resolved."
+    if not BOOK_APPROVAL_VERIFIER.is_file():
+        return "Per-book approval verifier is unavailable."
+    checked = subprocess.run(
+        ["node", str(BOOK_APPROVAL_VERIFIER), "--provenance", str(DEFAULT_PROVENANCE),
+         "--approvals", str(DEFAULT_BOOK_APPROVALS), "--trust", str(TRUST)],
+        capture_output=True, text=True,
+    )
+    if checked.returncode != 0:
+        return (checked.stderr or checked.stdout or "Per-book source approval failed.").strip()
     return None
 
 

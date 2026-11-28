@@ -27,3 +27,15 @@ test("missing or malformed review records block admission", () => {
     assert.match(decision.reasons.join(" "), /missing|malformed|duplicated/);
   }
 });
+
+test("a per-book approval must be present even if the collection group is approved", () => {
+  const approvedGate = { source_groups: [{ source_id: "loc-english-grammar-six-books", training_status: "approved", rights_and_review_status: "individual review completed" }] };
+  const approvedInventory = { item_id: "24000690", training_eligible: true, rights_status: "REVIEWED" };
+  const source = { item_id: "24000690", text_sha256: "a".repeat(64), loc_rights: boilerplate };
+  const missing = locBookEligibility({ source, gate: approvedGate, inventorySource: approvedInventory });
+  assert.equal(missing.trainingEligible, false);
+  assert.match(missing.reasons.join(" "), /individual book approval/);
+  const valid = locBookEligibility({ source, gate: approvedGate, inventorySource: approvedInventory, bookApproval: { verified: true, sourceId: "24000690", sourceSha256: "a".repeat(64) } });
+  assert.equal(valid.trainingEligible, true);
+  assert.equal(valid.approval, "APPROVED");
+});
