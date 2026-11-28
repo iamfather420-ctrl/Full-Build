@@ -96,12 +96,6 @@ def main() -> int:
     batch_size = int(os.environ.get("DAISY_BATCH_SIZE", "4"))
     learning_rate = float(os.environ.get("DAISY_LEARNING_RATE", "0.00002"))
 
-    try:
-        records, dataset_hash = load_verified_records(data_path)
-    except Exception as exc:
-        print(str(exc), file=sys.stderr)
-        return 2
-
     gate_path = Path(os.environ.get(
         "DAISY_LEARNING_GATE",
         "sources/loc-english-grammar-source-collection/manifests/learning-engine-gate-2026-11-27.json",
@@ -109,6 +103,12 @@ def main() -> int:
     gate_block = block_reason_for_gate(gate_path, dataset_path=data_path)
     if gate_block:
         print(f"BLOCKED: {gate_block}", file=sys.stderr)
+        return 2
+
+    try:
+        records, dataset_hash = load_verified_records(data_path)
+    except Exception as exc:
+        print(str(exc), file=sys.stderr)
         return 2
 
     # Imports are delayed until after provenance checks so invalid/missing data
