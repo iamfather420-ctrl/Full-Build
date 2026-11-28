@@ -9,9 +9,8 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-const sourceRoot = path.join(root, "data/training_sources/public_domain/english");
-const collectionRoot = path.join(sourceRoot, "data/training_sources/public_domain/english");
-const manifestPath = path.join(collectionRoot, "provenance-manifest.json");
+const collectionRoot = path.join(root, "sources/loc-english-grammar-source-collection");
+const manifestPath = path.join(collectionRoot, "data/training_sources/public_domain/english/provenance-manifest.json");
 const outputDir = path.join(root, "artifacts/training/loc-english");
 const chunkLimit = 1800;
 const validationSources = new Set(["24000690", "31022301"]);
@@ -20,8 +19,8 @@ const fail = (message) => { throw new Error(message); };
 
 function safeSourcePath(relativePath) {
   if (typeof relativePath !== "string" || !relativePath.trim()) fail("Source manifest contains an empty path.");
-  const resolved = path.resolve(sourceRoot, relativePath);
-  if (resolved !== sourceRoot && !resolved.startsWith(sourceRoot + path.sep)) fail(`Source path escapes submodule: ${relativePath}`);
+  const resolved = path.resolve(collectionRoot, relativePath);
+  if (resolved !== collectionRoot && !resolved.startsWith(collectionRoot + path.sep)) fail(`Source path escapes collection: ${relativePath}`);
   return resolved;
 }
 function splitLongParagraph(paragraph) {
