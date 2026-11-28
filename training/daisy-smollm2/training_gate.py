@@ -78,16 +78,39 @@ def independent_binding(dataset_path: Path, audit_path: Path = DEFAULT_AUDIT, te
     if not isinstance(audit, dict) or content_hash != audit.get("datasetSha256"):
         return "Dataset content hash does not match the manifest."
     sources = audit.get("sources")
-    if not isinstance(sources, list) or not sources:
-        return "Dataset manifest has no source content hashes."
-    expected_hashes = {row.get("sourceSha256") for row in sources if isinstance(row, dict)}
-    if any(not isinstance(item, str) or len(item) != 64 for item in expected_hashes):
-        return "Dataset manifest source hashes are malformed."
+    if not isinstance(sources, list) or len(sources) != 6:
+        return "Dataset manifest must contain exactly six source content hashes."
+    try:
+        provenance = json.loads(DEFAULT_PROVENANCE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "Pinned LOC provenance manifest is missing or malformed."
+    pinned_rows = provenance.get("sources") if isinstance(provenance, dict) else None
+    if provenance.get("training_eligible") is not False or not isinstance(pinned_rows, list) or len(pinned_rows) != 6:
+        return "Pinned LOC provenance is not a six-source non-eligible manifest."
+    pinned = {str(row.get("item_id")): str(row.get("text_sha256", "")).lower() for row in pinned_rows if isinstance(row, dict)}
+    audited = {str(row.get("sourceId")): str(row.get("sourceSha256", "")).lower() for row in sources if isinstance(row, dict)}
+    if len(pinned) != 6 or audited != pinned or any(not re.fullmatch(r"[a-f0-9]{64}", value) for value in pinned.values()):
+        return "Dataset audit source identities or digests do not match pinned LOC provenance."
     if not text_root.is_dir():
         return "Source content hashes are unavailable."
     found = {file_sha256(path) for path in sorted(text_root.glob("*.txt"))}
-    if not found or found != expected_hashes:
-        return "Source content hashes do not match the manifest."
+    if not found or found != set(pinned.values()):
+        return "Source content hashes do not match the pinned provenance manifest."
+    seen_sources: set[str] = set()
+    try:
+        with dataset_path.open(encoding="utf-8") as handle:
+            for line_no, line in enumerate(handle, 1):
+                row = json.loads(line)
+                source_id = str(row.get("sourceId", ""))
+                if source_id not in pinned or str(row.get("sourceSha256", "")).lower() != pinned[source_id]:
+                    return f"Dataset record source identity/digest mismatch at line {line_no}."
+                if row.get("trainingEligible") is not True or row.get("approval") != "APPROVED" or row.get("use") != "TRAINING":
+                    return "Dataset contains not_approved records."
+                seen_sources.add(source_id)
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return "Dataset records are malformed."
+    if seen_sources != set(pinned):
+        return "Dataset does not contain records from all six individually approved sources."
     return {"documentId": PINNED_DOCUMENT_ID, "sourceSha256": content_hash, "tenant": PINNED_TENANT}
 
 
