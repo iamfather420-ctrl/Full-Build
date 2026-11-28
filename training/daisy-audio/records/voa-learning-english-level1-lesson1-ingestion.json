@@ -1,0 +1,93 @@
+{
+  "schema": "solvex-daisy-audio-ingestion-evidence/v1",
+  "collection_id": "voa-learning-english-level1-lesson1",
+  "purpose": "Beginner English listening, pronunciation, vocabulary, and conversational evidence",
+  "publisher": "VOA Learning English",
+  "creator": "Voice of America",
+  "license": "PUBLIC_DOMAIN_US",
+  "rights_evidence_url": "https://learningenglish.voanews.com/p/6861.html",
+  "rights_evidence_summary": "VOA Learning English states that its Learning English texts and MP3s are public domain and may be reused for educational and commercial purposes with credit to learningenglish.voanews.com. Third-party agency material is excluded.",
+  "required_attribution": "learningenglish.voanews.com",
+  "rights_state": "RIGHTS_RECORDED_NOT_APPROVED",
+  "training_eligible": false,
+  "training_authorized": false,
+  "source_items": [
+    {
+      "source_id": "VOA-LE-L1-LEGACY-48S",
+      "source_page": "https://learningenglish.voanews.com/a/3181228.html",
+      "direct_media_url": "https://voa-audio.voanews.eu/vle/2016/02/08/88510d8e-f2b1-4678-b4e5-65bd97cc356c.mp3?download=1",
+      "uploaded_variants": [
+        {
+          "uploaded_filename": "56246d7b-5fa4-42d2-90b0-d403e6b46227_hq.mp3",
+          "sha256": "e6751b1bc6dd6ce2ad418b253cd0e3f0e6962273562c522ea13c23f60a4fc5d1",
+          "size_bytes": 769125,
+          "duration_seconds": 48.039184,
+          "codec": "mp3",
+          "sample_rate_hz": 44100,
+          "channels": 2,
+          "role": "canonical_hq_variant"
+        },
+        {
+          "uploaded_filename": "56246d7b-5fa4-42d2-90b0-d403e6b46227.mp3",
+          "sha256": "e943ca83c8a0d33bb3e505ba61cfda86c31f821bd065feb414aa83788faed2db",
+          "size_bytes": 384603,
+          "duration_seconds": 48.039184,
+          "codec": "mp3",
+          "sample_rate_hz": 44100,
+          "channels": 2,
+          "role": "alternate_lower_bitrate_variant"
+        }
+      ],
+      "source_mapping_confidence": "PROBABLE; matched to VOA lesson page by lesson context, duration, and 0.9951685 decoded-signal correlation; remote source bytes not independently downloaded for byte-for-byte comparison",
+      "duplicate_handling": "One canonical HQ version for learning; lower-bitrate version retained as alternate-encoding provenance, not a second independent example."
+    },
+    {
+      "source_id": "VOA-LE-L1-WELCOME-DIALOGUE",
+      "source_page": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
+      "direct_media_url": "https://voa-audio.voanews.eu/vle/2016/02/08/49485bf8-4277-47f6-9abe-617ee2473f8c.mp3?download=1",
+      "uploaded_filename": "49485bf8-4277-47f6-9abe-617ee2473f8c.mp3",
+      "sha256": "f9bd90edddbb8736f64fb5cb3a34ab5a27aecd6e99510977e7b820caf47c5cf7",
+      "size_bytes": 236944,
+      "duration_seconds": 29.570612,
+      "codec": "mp3",
+      "sample_rate_hz": 44100,
+      "channels": 2,
+      "source_mapping_confidence": "EXACT_MEDIA_UUID_MATCH_TO_OFFICIAL_VOA_DIRECT_LINK",
+      "reference_transcript_url": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
+      "reference_transcript_status": "PUBLISHER_PROVIDED_REFERENCE_TEXT_NOT_ASR_OUTPUT"
+    }
+  ],
+  "processing": {
+    "files_decoded": 3,
+    "local_decoder": "ffmpeg",
+    "local_decode_format": "s16le mono 16000 Hz",
+    "audio_activity": "RMS energy measured in 20ms frames; this is not verified speech",
+    "local_asr": "BLOCKED_NO_LOCAL_ASR",
+    "local_language_identification": "BLOCKED_NO_LOCAL_LID",
+    "diarization": "UNSUPPORTED",
+    "forced_alignment": "UNSUPPORTED",
+    "daisy_first_party_inference": "BLOCKED",
+    "grok_to_daisy_exchanges": 0,
+    "optimizer_invocations": 0,
+    "checkpoint_modified": false,
+    "preserved_weight_digest": "9a1d7520e6c8070aa4f2fe42346c6930c28cc3a604a01f7cc9508a568234d907"
+  },
+  "reference_learning_content": {
+    "lesson": "Let's Learn English - Level 1 - Lesson 1: Welcome!",
+    "transcript_url": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
+    "reference_transcript_is_asr": false,
+    "learning_targets": [
+      "greetings",
+      "introductions",
+      "asking and answering Are you...?",
+      "I am / I'm",
+      "Nice to meet you",
+      "spelling names",
+      "alphabet listening"
+    ]
+  },
+  "exclusions": [
+    "Six excluded Library of Congress grammar books remain outside this initiative."
+  ],
+  "note": "This is an ingestion-evidence record, not a training manifest or training authorization. The uploaded audio bytes are not committed in this record."
+}
