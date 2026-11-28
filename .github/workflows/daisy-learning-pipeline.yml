@@ -7,12 +7,14 @@ on:
     paths:
       - "config/daisy/canonical-language-source.json"
       - "scripts/daisy_learning_pipeline.py"
+      - "training/daisy-audio/**"
       - ".github/workflows/daisy-learning-pipeline.yml"
   push:
     branches: [main]
     paths:
       - "config/daisy/canonical-language-source.json"
       - "scripts/daisy_learning_pipeline.py"
+      - "training/daisy-audio/**"
       - ".github/workflows/daisy-learning-pipeline.yml"
 
 permissions:
@@ -44,6 +46,53 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Acquire VOA Learning English Lesson 1 audio and build provenance manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/daisy-learning-pipeline/audio
+          curl --fail --location --retry 3 --retry-all-errors --silent --show-error \
+            'https://voa-audio.voanews.eu/vle/2016/02/08/88510d8e-f2b1-4678-b4e5-65bd97cc356c.mp3?download=1' \
+            --output artifacts/daisy-learning-pipeline/audio/voa-lesson1-legacy-48s.mp3
+          curl --fail --location --retry 3 --retry-all-errors --silent --show-error \
+            'https://voa-audio.voanews.eu/vle/2016/02/08/49485bf8-4277-47f6-9abe-617ee2473f8c.mp3?download=1' \
+            --output artifacts/daisy-learning-pipeline/audio/voa-lesson1-welcome-dialogue.mp3
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("artifacts/daisy-learning-pipeline")
+          manifest = {
+              "schema": "solvex-daisy-audio-ingestion-manifest/v1",
+              "collection_id": "voa-learning-english-level1-lesson1",
+              "items": [
+                  {
+                      "path": "audio/voa-lesson1-legacy-48s.mp3",
+                      "source_id": "VOA-LE-L1-LEGACY-48S",
+                      "source_url": "https://learningenglish.voanews.com/a/3181228.html",
+                      "media_url": "https://voa-audio.voanews.eu/vle/2016/02/08/88510d8e-f2b1-4678-b4e5-65bd97cc356c.mp3?download=1",
+                      "publisher": "VOA Learning English",
+                      "creator": "Voice of America",
+                      "license": "PUBLIC_DOMAIN_US",
+                      "license_evidence": "https://learningenglish.voanews.com/p/6861.html",
+                      "restrictions": ["Third-party agency material excluded."]
+                  },
+                  {
+                      "path": "audio/voa-lesson1-welcome-dialogue.mp3",
+                      "source_id": "VOA-LE-L1-WELCOME-DIALOGUE",
+                      "source_url": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
+                      "media_url": "https://voa-audio.voanews.eu/vle/2016/02/08/49485bf8-4277-47f6-9abe-617ee2473f8c.mp3?download=1",
+                      "reference_transcript_url": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
+                      "publisher": "VOA Learning English",
+                      "creator": "Voice of America",
+                      "license": "PUBLIC_DOMAIN_US",
+                      "license_evidence": "https://learningenglish.voanews.com/p/6861.html",
+                      "restrictions": ["Third-party agency material excluded."]
+                  }
+              ]
+          }
+          (root / "audio-manifest.json").write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+          PY
+
       - name: Verify pinned source and produce eight-stage pipeline evidence
         id: pipeline
         shell: bash
@@ -52,6 +101,7 @@ jobs:
           python3 scripts/daisy_learning_pipeline.py \
             --source-root .sources/loc-english-grammar-source-collection \
             --expected-commit f05574caa02c9962f5ad14491fc0459116e733c2 \
+            --audio-manifest artifacts/daisy-learning-pipeline/audio-manifest.json \
             --output artifacts/daisy-learning-pipeline/preflight.json
           status="$(python3 -c 'import json; print(json.load(open("artifacts/daisy-learning-pipeline/preflight.json"))["status"])')"
           echo "status=$status" >> "$GITHUB_OUTPUT"
