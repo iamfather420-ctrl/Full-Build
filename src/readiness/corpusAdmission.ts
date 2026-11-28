@@ -63,6 +63,9 @@ export function duplicateIds(documents: readonly Pick<SourceDocument, "id" | "sh
 export interface DocumentApproval {
   documentId: string;
   approver: string;
+  signature?: string;
+  keyId?: string;
+  sourceSha256?: string;
   scope: "document" | "repository";
   issuedAt: string;
   expiresAt: string;
@@ -108,6 +111,10 @@ export function approvalRefusal(approval: DocumentApproval | null, documentId: s
   if (approval.scope !== "document") return "A repository-level permission does not authorize this file.";
   if (approval.documentId !== documentId) return "The approval names a different document.";
   if (!approval.approver.trim()) return "The approval has no human approver.";
+  if (!approval.signature || !approval.keyId || !approval.sourceSha256) {
+    return "Cryptographic approval proof, key identity, or source digest is missing.";
+  }
+  return "No trusted cryptographic signature verifier is configured; approval is blocked.";
   if (approval.revokedAt && approval.revokedAt <= now) return "The approval was revoked.";
   if (approval.expiresAt <= now) return "The approval is expired.";
   if (approval.issuedAt > now) return "The approval is not yet in force.";
@@ -118,10 +125,12 @@ export function admitDocument(
   manifest: ManifestGate,
   duplicateOf: string | null,
   approval: DocumentApproval | null = null,
-  now = "2026-11-27T23:59:00.000Z",
+  now = new Date().toISOString(),
 ): AdmissionResult {
   const reasons: string[] = [];
   if (!manifest.modelTrainingAuthorized) reasons.push("Repository manifest does not authorize model training.");
+  if (!manifest.trainingPipelineEnabled) reasons.push("Repository manifest has not enabled the training pipeline.");
+  if (!manifest.trainingCorpusGenerated) reasons.push("Repository manifest does not certify a generated training corpus.");
   const approvalReason = approvalRefusal(approval, document.id, now);
   if (approvalReason) reasons.push(approvalReason);
   if (document.reviewStatus === "PENDING_REVIEW") reasons.push("Review status is PENDING_REVIEW.");
@@ -145,7 +154,7 @@ export function selectTrainingDocuments(
   documents: readonly SourceDocument[],
   manifest: ManifestGate,
   approvals: readonly DocumentApproval[] = [],
-  now = "2026-11-27T23:59:00.000Z",
+  now = new Date().toISOString(),
 ): {
   admitted: SourceDocument[];
   results: AdmissionResult[];
