@@ -139,5 +139,24 @@ class AudioIngestTests(unittest.TestCase):
         self.assertEqual(blocked["items"][0]["failure"]["code"], "DAISY_OUTPUT_REJECTED")
 
 
+    def test_voa_learning_english_rights_are_recorded_but_not_approved(self) -> None:
+        wav = self._wav("voa-lesson1.wav")
+        item = ingest_file(wav, {
+            "source_id": "voa-learning-english-level1-lesson1",
+            "source_url": "https://learningenglish.voanews.com/a/lets-learn-english-lesson-one/3111026.html",
+            "publisher": "VOA Learning English",
+            "creator": "Voice of America",
+            "license": "PUBLIC_DOMAIN_US",
+            "license_evidence": "https://learningenglish.voanews.com/p/6861.html",
+            "restrictions": ["Exclude third-party agency material."],
+        })
+        self.assertEqual(item["status"], "RIGHTS_RECORDED_NOT_APPROVED")
+        self.assertEqual(item["source"]["publisher"], "VOA Learning English")
+        self.assertEqual(item["source"]["license_evidence"], "https://learningenglish.voanews.com/p/6861.html")
+        self.assertFalse(item["authorization"]["training_authorized"])
+        self.assertFalse(item["authorization"]["training_eligible"])
+        self.assertEqual(item["optimizer_invocations"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()
