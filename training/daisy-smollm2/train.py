@@ -198,6 +198,8 @@ def main() -> int:
     files = sorted(p for p in final_dir.rglob("*") if p.is_file())
     manifest = {
         "status": "TRAINING_COMPLETED",
+        "training_line": "smollm2-supervised-finetune",
+        "proprietary_from_scratch_daisy": False,
         "model_id": model_id,
         "model_revision": model_revision,
         "dataset_path": str(data_path),

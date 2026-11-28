@@ -115,6 +115,7 @@ def main() -> int:
     files = sorted(p for p in checkpoint.rglob("*") if p.is_file())
     manifest = {
         "status":"TRAINING_COMPLETED", "training_mode":"plain_text_causal_language_modeling",
+        "training_line":"smollm2-supervised-finetune", "proprietary_from_scratch_daisy":False,
         "model_id":model_id, "model_revision":revision, "dataset_sha256":dataset_hash,
         "record_count":len(records), "train_records":len(train_texts), "validation_records":len(val_texts),
         "max_length":max_length, "epochs":epochs, "batch_size":batch_size, "learning_rate":learning_rate,

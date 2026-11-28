@@ -88,7 +88,32 @@ def independent_binding(dataset_path: Path, audit_path: Path = DEFAULT_AUDIT, te
     return {"documentId": PINNED_DOCUMENT_ID, "sourceSha256": content_hash, "tenant": PINNED_TENANT}
 
 
-def cryptographic_block(gate_path: Path, *, source_sha256: str, document_id: str, tenant: str) -> str:
+TRAINING_LINE = "smollm2-supervised-finetune"
+PROPRIETARY_FROM_SCRATCH = False
+
+
+def loc_books_review_block(gate_path: Path) -> str | None:
+    """The six LOC books stay unauthorized until their own review record is approved."""
+    if not gate_path.is_file():
+        return None
+    try:
+        payload = json.loads(gate_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    groups = payload.get("source_groups") if isinstance(payload, dict) else None
+    if not isinstance(groups, list):
+        return None
+    for group in groups:
+        if not isinstance(group, dict) or group.get("source_id") != "loc-english-grammar-six-books":
+            continue
+        status = group.get("training_status")
+        review = str(group.get("rights_and_review_status") or "")
+        if status != "approved" or "PENDING_REVIEW" in review:
+            return "LOC six books remain PENDING_REVIEW / training_status not_approved. A signature cannot authorize them until that source review is resolved."
+    return None
+
+
+def cryptographic_block(gate_path: Path, *, source_sha256: str, document_id: str, tenant: str, trust_dir: Path = TRUST) -> str | None:
     if not document_id.strip() or not tenant.strip() or len(source_sha256) != 64:
         return "Independent expected document, digest, or tenant is missing."
     if not gate_path.is_file():
@@ -96,12 +121,12 @@ def cryptographic_block(gate_path: Path, *, source_sha256: str, document_id: str
     if not SCRIPT.is_file():
         return "Trusted verifier is unavailable."
     process = subprocess.run(
-        ["node", str(SCRIPT), "gate", "--gate", str(gate_path), "--trust", str(TRUST),
+        ["node", str(SCRIPT), "gate", "--gate", str(gate_path), "--trust", str(trust_dir),
          "--document-id", document_id, "--source-sha256", source_sha256, "--tenant", tenant],
         capture_output=True, text=True,
     )
     if process.returncode == 0:
-        return "Verifier accepted without a trusted production key."
+        return None
     return (process.stderr or process.stdout or "Authorization failed.").strip()
 
 
@@ -109,6 +134,9 @@ def fresh_step_authorization(gate_path: Path, dataset_path: Path, audit_path: Pa
     binding = independent_binding(dataset_path, audit_path, text_root)
     if isinstance(binding, str):
         return binding
+    review = loc_books_review_block(gate_path)
+    if review:
+        return review
     return cryptographic_block(
         gate_path,
         source_sha256=binding["sourceSha256"],

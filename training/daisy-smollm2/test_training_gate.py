@@ -1,4 +1,7 @@
 import hashlib
+import json
+import os
+import subprocess
 import tempfile
 import unittest
 from datetime import datetime, timezone
@@ -6,9 +9,11 @@ from pathlib import Path
 from training_gate import (
     AuthorizationBlocked,
     block_reason,
+    cryptographic_block,
     fresh_step_authorization,
     independent_binding,
     install_trainer_step_boundary,
+    seal_optimizer,
 )
 from train import bind_training_optimizer as bind_train
 from train_text import bind_training_optimizer as bind_text
@@ -129,6 +134,99 @@ class TrainingGateTest(unittest.TestCase):
         self.assertEqual(reason, "Trusted verification key is unavailable.")
         self._assert_zero_updates(bind_train, DATASET, forged)
         self._assert_zero_updates(bind_text, DATASET, forged)
+
+    def test_loc_books_stay_not_approved(self):
+        reason = fresh_step_authorization(GATE, DATASET)
+        self.assertIn("not_approved", reason or "")
+        self.assertIn("PENDING_REVIEW", reason or "")
+
+    def test_both_trainers_seal_the_optimizer_before_train(self):
+        for name in ("train.py", "train_text.py"):
+            text = (Path(__file__).resolve().parent / name).read_text(encoding="utf-8")
+            self.assertIn("install_trainer_step_boundary(", text)
+            self.assertLess(text.index("install_trainer_step_boundary("), text.index("trainer.train("))
+            self.assertIn("proprietary_from_scratch_daisy", text)
+            self.assertIn("smollm2-supervised-finetune", text)
+
+    def test_valid_signature_passes_and_bad_cases_stay_blocked(self):
+        document_id = "fixture-document"
+        tenant = "iamfather420-ctrl/Full-Build"
+        source_sha256 = "ab" * 32
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            trust = root / "trust"
+            empty = root / "empty-trust"
+            empty.mkdir()
+            gate = root / "gate.json"
+            self._write_fixture(trust, gate, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "valid")
+            self.assertIsNone(cryptographic_block(gate, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust))
+            self.assertEqual(
+                cryptographic_block(gate, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=empty),
+                "Trusted verification key is unavailable.",
+            )
+            invalid = root / "invalid.json"
+            self._write_fixture(trust, invalid, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "invalid")
+            self.assertIn("forged", cryptographic_block(invalid, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust) or "")
+            expired = root / "expired.json"
+            self._write_fixture(trust, expired, document_id, source_sha256, tenant, "2020-01-01T00:00:00.000Z", "valid")
+            self.assertIn("expired", cryptographic_block(expired, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust) or "")
+            revoked = root / "revoked.json"
+            self._write_fixture(trust, revoked, document_id, source_sha256, tenant, "2027-12-01T00:00:00.000Z", "revoked")
+            self.assertIn("revoked", cryptographic_block(revoked, source_sha256=source_sha256, document_id=document_id, tenant=tenant, trust_dir=trust) or "")
+            altered = root / "altered.jsonl"
+            altered.write_bytes(DATASET.read_bytes() + b"\n")
+            optimizer = CountingOptimizer()
+            seal_optimizer(optimizer, lambda: independent_binding(altered))
+            with self.assertRaises(AuthorizationBlocked):
+                optimizer.step()
+            self.assertEqual(optimizer.inner_steps, 0)
+            production_keys = list((ROOT / "training/daisy-smollm2/trust-root").glob("*.spki.pem"))
+            self.assertEqual(production_keys, [])
+
+    def _write_fixture(self, trust: Path, gate: Path, document_id: str, source_sha256: str, tenant: str, expires: str, mode: str) -> None:
+        script = r"""
+import { mkdirSync, writeFileSync } from "node:fs";
+import { generateKeyPairSync, sign } from "node:crypto";
+import { canonicalBytes } from process.env.VERIFIER;
+const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+const record = {
+  schema: "daisy-training-authorization/v1",
+  documentId: process.env.DOC,
+  sourceSha256: process.env.SHA,
+  scope: "optimizer-update",
+  approver: "test-approver",
+  keyId: "test-root",
+  tenant: process.env.TENANT,
+  issuedAt: "2026-11-27T00:00:00.000Z",
+  expiresAt: process.env.EXPIRES,
+};
+record.signature = sign(null, canonicalBytes(record), privateKey).toString("base64");
+if (process.env.MODE === "invalid") record.signature = Buffer.alloc(64).toString("base64");
+const payload = { authorization: record, revocations: [] };
+if (process.env.MODE === "revoked") {
+  const revocation = {
+    schema: "daisy-training-revocation/v1",
+    documentId: record.documentId,
+    sourceSha256: record.sourceSha256,
+    keyId: "test-root",
+    tenant: record.tenant,
+    revokedAt: "2026-11-27T12:00:00.000Z",
+  };
+  revocation.signature = sign(null, canonicalBytes(revocation), privateKey).toString("base64");
+  payload.revocations = [revocation];
+}
+mkdirSync(process.env.TRUST, { recursive: true });
+writeFileSync(`${process.env.TRUST}/test-root.spki.pem`, publicKey.export({ type: "spki", format: "pem" }));
+writeFileSync(process.env.GATE, JSON.stringify(payload));
+"""
+        # The import line above is rewritten below; this string is a template.
+        verifier = Path(__file__).resolve().parent / "verify-authorization.mjs"
+        script = script.replace("import { canonicalBytes } from process.env.VERIFIER;", f"import {{ canonicalBytes }} from {json.dumps(verifier.as_uri())};")
+        env = os.environ.copy()
+        env.update({"DOC": document_id, "SHA": source_sha256, "TENANT": tenant, "EXPIRES": expires, "MODE": mode, "TRUST": str(trust), "GATE": str(gate)})
+        completed = subprocess.run(["node", "--input-type=module", "--eval", script], env=env, capture_output=True, text=True)
+        if completed.returncode != 0:
+            raise AssertionError(completed.stderr or completed.stdout)
 
 
 if __name__ == "__main__":
