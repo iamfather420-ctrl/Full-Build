@@ -16,11 +16,34 @@ def sha256_file(path: pathlib.Path) -> str:
             h.update(chunk)
     return h.hexdigest()
 
+def _audio_ingestion(manifest: pathlib.Path | None) -> dict:
+    if manifest is None:
+        return {
+            "status": "NOT_REQUESTED",
+            "training_authorized": False,
+            "optimizer_invocations": 0,
+            "daisy_first_party_inference": "BLOCKED",
+            "daisy_exchange_count": 0,
+        }
+    import importlib.util
+    engine_path = pathlib.Path(__file__).resolve().parents[1] / "training" / "daisy-audio" / "engine.py"
+    spec = importlib.util.spec_from_file_location("daisy_audio_engine", engine_path)
+    if spec is None or spec.loader is None:
+        raise SystemExit("BLOCKED: audio ingestion engine is missing")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    report = module.ingest_manifest(json.loads(manifest.read_text(encoding="utf-8")), root=manifest.parent)
+    if report["training_started"] or report["optimizer_invocations"] or report["model_weights_changed"]:
+        raise SystemExit("BLOCKED: audio ingestion attempted to train or change a checkpoint")
+    return report
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--source-root", required=True, type=pathlib.Path)
     p.add_argument("--expected-commit", required=True)
     p.add_argument("--output", required=True, type=pathlib.Path)
+    p.add_argument("--audio-manifest", type=pathlib.Path)
     args = p.parse_args()
     root = args.source_root.resolve()
     actual = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
@@ -76,6 +99,8 @@ def main() -> int:
       "consumer_repository": "iamfather420-ctrl/Full-Build",
       "training_started": False,
       "model_weights_created": False,
+      "optimizer_invocations": 0,
+      "audio_ingestion": _audio_ingestion(args.audio_manifest),
       "approved_source_count": approved_count,
       "stages": stages,
       "safety_note": "A successful preflight is not a training run, a model evaluation, or production authorization."
