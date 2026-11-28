@@ -283,6 +283,13 @@ def ingest_file(path: Path, record: dict | None = None, *, limits: dict | None =
         "detected_format": kind,
         "source": {
             "source_url": record.get("source_url"),
+            "media_url": record.get("media_url"),
+            "reference_transcript_url": record.get("reference_transcript_url"),
+            "reference_transcript_status": (
+                "PUBLISHER_PROVIDED_REFERENCE_NOT_ASR"
+                if record.get("reference_transcript_url")
+                else "NOT_PROVIDED"
+            ),
             "publisher": record.get("publisher"),
             "creator": record.get("creator"),
             "license": record.get("license"),
