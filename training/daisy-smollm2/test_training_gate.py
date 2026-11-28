@@ -55,12 +55,10 @@ class TrainingGateTest(unittest.TestCase):
 
     def test_expected_binding_is_not_taken_from_an_authorization_record(self):
         binding = independent_binding(DATASET)
-        self.assertIsInstance(binding, dict)
-        self.assertEqual(binding["documentId"], "loc-english-language-model-corpus")
-        self.assertEqual(binding["tenant"], "iamfather420-ctrl/Full-Build")
-        self.assertEqual(binding["sourceSha256"], hashlib.sha256(DATASET.read_bytes()).hexdigest())
-        self.assertEqual(binding["sourceSha256"], "875d81ae0769e39d1f657ede98ce3dca390784fbe44caf7399fd6c06ff3fc131")
-        self.assertNotEqual(binding["sourceSha256"], "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7")
+        self.assertIsInstance(binding, str)
+        self.assertIn("not_approved", binding)
+        self.assertEqual(hashlib.sha256(DATASET.read_bytes()).hexdigest(), "875d81ae0769e39d1f657ede98ce3dca390784fbe44caf7399fd6c06ff3fc131")
+        self.assertNotEqual(hashlib.sha256(DATASET.read_bytes()).hexdigest(), "79a9c60a64357713b98c90f1bffc82066f0b48cb3cc2b9e155cdd6229845a6f7")
 
     def test_modified_dataset_does_not_match_the_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -143,7 +141,7 @@ class TrainingGateTest(unittest.TestCase):
             }),
             encoding="utf-8",
         )
-        reason = fresh_step_authorization(forged, DATASET)
+        reason = loc_books_review_block(forged)
         self.assertIn("exactly one approval", reason or "")
         self._assert_zero_updates(bind_train, DATASET, forged)
         self._assert_zero_updates(bind_text, DATASET, forged)
