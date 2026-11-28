@@ -90,3 +90,24 @@ export function authorizationMatrix(env: RuntimeEnv, githubPublic: boolean): Aut
     cell(false, "Repository and organization secrets", "BLOCKED"),
   ];
 }
+
+
+const TRAINING_TASK_IDS = new Set([
+  "generate-weights",
+  "model-engine",
+  "training-engine",
+  "inference-engine",
+  "daisy-language",
+]);
+
+export function isTrainingTaskSelection(taskIds: readonly string[]): boolean {
+  return taskIds.some((id) => TRAINING_TASK_IDS.has(id));
+}
+
+export function hasVerifiedTenantSession(input: {
+  authenticated: boolean;
+  userId: string | undefined;
+  tenantUserId: unknown;
+}): boolean {
+  return input.authenticated && Boolean(input.userId) && input.tenantUserId === input.userId;
+}
