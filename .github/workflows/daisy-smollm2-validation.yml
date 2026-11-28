@@ -56,13 +56,22 @@ jobs:
           printf '%s\n' "$output"
           grep -q "BLOCKED: verified training corpus not found" <<< "$output"
           test ! -e /tmp/daisy-output-must-not-exist
-      - name: Prepare the real LOC corpus in quarantine
-        run: node scripts/prepare_loc_english_corpus.mjs
-      - name: Verify quarantined LOC corpus cannot enter training
+      - name: Verify LOC corpus preparation remains blocked and immutable
         shell: bash
         run: |
           set -euo pipefail
-          output="$(DAISY_TRAIN_FILE=artifacts/training/loc-english/quarantined-corpus.jsonl DAISY_OUTPUT_DIR=/tmp/daisy-quarantined-training-must-not-exist python training/daisy-smollm2/train.py 2>&1 || true)"
+          corpus="artifacts/training/loc-english/language-model-corpus.jsonl"
+          before="$(sha256sum "$corpus" | cut -d' ' -f1)"
+          output="$(node scripts/prepare_loc_language_model_corpus.mjs 2>&1 || true)"
           printf '%s\n' "$output"
-          grep -q "BLOCKED: schema keys mismatch" <<< "$output"
-          test ! -e /tmp/daisy-quarantined-training-must-not-exist
+          grep -q "NOT_APPROVED\|PENDING_REVIEW\|not_approved" <<< "$output"
+          after="$(sha256sum "$corpus" | cut -d' ' -f1)"
+          test "$before" = "$after"
+      - name: Verify staged LOC corpus cannot enter text training
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(DAISY_LM_TRAIN_FILE=artifacts/training/loc-english/language-model-corpus.jsonl DAISY_OUTPUT_DIR=/tmp/daisy-staged-training-must-not-exist python training/daisy-smollm2/train_text.py 2>&1 || true)"
+          printf '%s\n' "$output"
+          grep -q "BLOCKED: Dataset contains not_approved records" <<< "$output"
+          test ! -e /tmp/daisy-staged-training-must-not-exist
